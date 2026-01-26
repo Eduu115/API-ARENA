@@ -1,0 +1,63 @@
+# En la raíz del proyecto
+cat > .gitignore << 'EOF'
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Backend - Maven/Gradle
+**/target/
+**/.mvn/
+**/mvnw
+**/mvnw.cmd
+**/.gradle/
+**/build/
+**/*.jar
+**/*.war
+**/*.ear
+**/*.class
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+
+# Frontend - Node
+**/node_modules/
+**/dist/
+**/build/
+**/.vite/
+**/.cache/
+**/coverage/
+
+# Docker
+**/volumes/
+**/data/
+
+# Logs
+**/*.log
+**/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+*~
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Uploads (temporal)
+**/uploads/*.zip
+**/uploads/*.tar.gz
+
+# SSL Certificates (no commitear)
+**/ssl/*.key
+**/ssl/*.pem
+!**/ssl/.gitkeep
+
+# Backups
+**/backups/
+
+EOF
