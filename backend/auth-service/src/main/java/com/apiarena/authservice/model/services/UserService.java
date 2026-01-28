@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.apiarena.authservice.exception.ResourceNotFoundException;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.entities.User;
@@ -23,7 +24,8 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
         return org.springframework.security.core.userdetails.User.builder() // se pone asi porque ya he importado el User (entidad) del modelo
             .username(user.getEmail())
             .password(user.getPasswordHash())
@@ -33,18 +35,21 @@ public class UserService implements UserDetailsService {
 
 
     public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id).orElse(null);
+        User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return UserDTO.fromEntity(user);
     }
 
     public UserDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return UserDTO.fromEntity(user);
     }
 
     @Transactional
     public UserDTO updateProfile(Long userId, UpdateProfileRequest request) {
-        User user = userRepository.findById(userId).orElse(null);
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         if (request.getAvatarUrl() != null) {
             user.setAvatarUrl(request.getAvatarUrl());
@@ -62,13 +67,15 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void updateLastLogin(String email) {
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
     }
 
     public User getUserEntityByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
 
 }

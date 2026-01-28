@@ -36,7 +36,8 @@ public class RefreshTokenService {
     }
 
     public RefreshToken verifyRefreshToken(String token) {
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(token).orElse(null);
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+            .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
 
         if (refreshToken.getIsRevoked()) {
             throw new UnauthorizedException("Refresh token has been revoked");
@@ -52,7 +53,8 @@ public class RefreshTokenService {
 
     @Transactional
     public void revokeRefreshToken(String token) {
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(token).orElse(null);
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+            .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
         refreshToken.setIsRevoked(true);
         refreshTokenRepository.save(refreshToken);
     }
