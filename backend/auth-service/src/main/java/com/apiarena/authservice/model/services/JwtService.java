@@ -1,5 +1,16 @@
-
 package com.apiarena.authservice.model.services;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import com.apiarena.authservice.config.JwtProperties;
 
@@ -7,25 +18,13 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.SecretKey;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 
 @Service
-
+@RequiredArgsConstructor
 public class JwtService {
 
-    @Autowired
-    private JwtProperties jwtProperties;
+    private final JwtProperties jwtProperties;
 
     // ========================================
     // EXTRACCIÓN DE INFORMACIÓN DEL TOKEN
@@ -57,10 +56,22 @@ public class JwtService {
     // ========================================
     
     public String generateAccessToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails, jwtProperties.getExpiration());
+        Map<String, Object> claims = new HashMap<>();
+        
+        // AÑADIR ROLES AL TOKEN
+        claims.put("authorities", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        
+        return generateToken(claims, userDetails, jwtProperties.getExpiration());
     }
 
     public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        // AÑADIR ROLES AL TOKEN
+        extraClaims.put("authorities", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        
         return generateToken(extraClaims, userDetails, jwtProperties.getExpiration());
     }
 
