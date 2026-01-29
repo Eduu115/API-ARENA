@@ -24,7 +24,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email) // pondria orElse(null) pero me da problemas en el auth service ya que al hacer despues el getEmail me da nullpointer exception y no se como solucionarlo
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
         return org.springframework.security.core.userdetails.User.builder() // se pone asi porque ya he importado el User (entidad) del modelo
             .username(user.getEmail())
