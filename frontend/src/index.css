@@ -1,68 +1,162 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ==================== BASE STYLES ==================== */
+@layer base {
+  body {
+    @apply bg-background-primary text-text-primary font-body antialiased;
   }
-  a:hover {
-    color: #747bff;
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+/* ==================== COMPONENT STYLES ==================== */
+@layer components {
+  /* Cards */
+  .card {
+    @apply bg-background-secondary border border-primary/10 rounded-2xl p-6;
+    @apply transition-all duration-300;
   }
+  
+  .card:hover {
+    @apply border-primary/30 shadow-glow -translate-y-1;
+  }
+  
+  /* Buttons */
+  .btn {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer;
+  }
+  
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-secondary text-white hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply bg-transparent text-primary border-2 border-primary hover:bg-primary/10;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent text-text-primary hover:bg-background-tertiary;
+  }
+  
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold font-mono;
+  }
+  
+  .badge-success {
+    @apply bg-success/10 text-success border border-success/30;
+  }
+  
+  .badge-error {
+    @apply bg-error/10 text-error border border-error/30;
+  }
+  
+  .badge-warning {
+    @apply bg-warning/10 text-warning border border-warning/30;
+  }
+  
+  .badge-info {
+    @apply bg-info/10 text-info border border-info/30;
+  }
+  
+  /* Input Fields */
+  .input {
+    @apply w-full px-4 py-3 rounded-lg bg-background-secondary border border-primary/20;
+    @apply text-text-primary placeholder:text-[#535D73];
+    @apply focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20;
+    @apply transition-all duration-200;
+  }
+  
+  /* Challenge Cards */
+  .challenge-card {
+    @apply relative bg-background-secondary border border-primary/10 rounded-2xl p-6 transition-all duration-300;
+  }
+  
+  .challenge-card:hover {
+    @apply border-primary/30 shadow-glow -translate-y-1;
+  }
+  
+  .challenge-card::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-1;
+  }
+  
+  .challenge-card.difficulty-easy::before {
+    @apply bg-success;
+  }
+  
+  .challenge-card.difficulty-medium::before {
+    @apply bg-warning;
+  }
+  
+  .challenge-card.difficulty-hard::before {
+    @apply bg-error;
+  }
+  
+  .challenge-card.difficulty-expert::before {
+    @apply bg-secondary;
+  }
+  
+  /* Progress Bar */
+  .progress-container {
+    @apply w-full h-2 bg-background-tertiary rounded-full overflow-hidden relative;
+  }
+  
+  .progress-bar {
+    @apply h-full bg-gradient-to-r from-primary to-secondary rounded-full;
+    @apply transition-all duration-500 relative overflow-hidden;
+  }
+  
+  /* Code Block */
+  .code-block {
+    @apply bg-[#0D1117] border border-primary/20 rounded-lg p-4;
+    @apply font-mono text-sm overflow-x-auto relative;
+  }
+  
+  /* Glow Effects */
+  .glow-text {
+    text-shadow: 
+      0 0 10px rgba(0, 217, 255, 0.5),
+      0 0 20px rgba(0, 217, 255, 0.3),
+      0 0 30px rgba(0, 217, 255, 0.1);
+  }
+  
+  .live-indicator {
+    @apply animate-pulse-glow;
+  }
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+  
+  .animate-in {
+    @apply animate-slide-up;
+  }
+}
+
+/* ==================== SCROLLBAR ==================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-background-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/50;
 }
