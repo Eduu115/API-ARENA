@@ -1,4 +1,3 @@
-cat > README.md << 'EOF'
 # 🎮 APIArena
 
 Plataforma competitiva de desarrollo de APIs donde estudiantes compiten creando APIs que son evaluadas automáticamente.
@@ -30,10 +29,17 @@ docker ps
 
 ### Desarrollo
 
-**Backend:**
+**Backend (auth-service, challenge-service):**  
+Primero asegúrate de tener Postgres (y Redis para auth-service) en marcha:
+```bash
+docker compose up -d postgres redis
+```
+
+Si ves *"Connection to localhost:5432 refused"*, es que Postgres no está corriendo; levanta los contenedores antes de iniciar el backend.
+
 ```bash
 cd backend/auth-service
-mvn spring-boot:run
+./mvnw spring-boot:run -DskipTests
 ```
 
 **Frontend:**

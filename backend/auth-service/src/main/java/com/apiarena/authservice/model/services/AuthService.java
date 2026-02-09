@@ -63,15 +63,11 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        // Generar tokens
-        UserDetails userDetails = userService.loadUserByUsername(savedUser.getEmail());
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser);
-
+        // No generar tokens en registro: el usuario debe hacer login para obtenerlos
         return AuthResponse.builder()
             .user(UserDTO.fromEntity(savedUser))
-            .accessToken(accessToken)
-            .refreshToken(refreshToken.getToken())
+            .accessToken(null)
+            .refreshToken(null)
             .build();
     }
 
