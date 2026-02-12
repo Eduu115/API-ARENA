@@ -1,0 +1,66 @@
+/* Landing Hero */
+.hero {
+    @apply min-h-screen flex flex-col items-center justify-center relative overflow-hidden;
+    @apply bg-gradient-to-br from-background-primary to-background-secondary;
+  }
+  
+  .hero::before {
+    content: '';
+    @apply absolute w-[500px] h-[500px] rounded-full;
+    @apply bg-[radial-gradient(circle,rgba(0,217,255,0.15)_0%,transparent_70%)];
+    @apply -top-[200px] -right-[200px];
+  }
+  
+  .hero::after {
+    content: '';
+    @apply absolute w-[400px] h-[400px] rounded-full;
+    @apply bg-[radial-gradient(circle,rgba(178,75,243,0.1)_0%,transparent_70%)];
+    @apply -bottom-[150px] -left-[150px];
+  }
+  
+  .hero-content {
+    @apply text-center relative z-10 max-w-[900px] px-6;
+  }
+  
+  .hero .logo {
+    @apply font-display font-bold text-5xl sm:text-6xl md:text-7xl mb-5;
+    @apply bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent;
+  }
+  
+  .hero .tagline {
+    @apply text-2xl font-medium text-text-secondary mb-10;
+  }
+  
+  .hero .cta-buttons {
+    @apply flex flex-wrap gap-5 justify-center;
+  }
+  
+  .hero .btn-primary {
+    @apply px-12 py-4 rounded-lg font-display font-semibold text-lg;
+    @apply bg-gradient-to-br from-primary to-primary-dark text-background-primary;
+    @apply border-0 shadow-[0_0_30px_rgba(0,217,255,0.4)];
+    @apply transition-all duration-300;
+  }
+  
+  .hero .btn-primary:hover {
+    @apply -translate-y-0.5 shadow-[0_0_40px_rgba(0,217,255,0.6)];
+  }
+  
+  .hero .btn-secondary {
+    @apply px-12 py-4 rounded-lg font-display font-semibold text-lg;
+    @apply bg-transparent text-primary border-2 border-primary;
+    @apply transition-all duration-300;
+  }
+  
+  .hero .btn-secondary:hover {
+    @apply bg-primary/10;
+  }
+  
+  .hero .glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(0, 217, 255, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(0, 217, 255, 0.6); }
+  }
