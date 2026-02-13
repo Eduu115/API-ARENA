@@ -5,12 +5,12 @@ import ChallengeDetail from "../pages/ChallengeDetail";
 import Challenges from "../pages/Challenges";
 import Dashboard from "../pages/Dashboard";
 import Leaderboard from "../pages/Leaderboard";
-import Login from "../pages/Login";
+import Login from "../pages/auth/Login";
 import MultiplayerHub from "../pages/MultiplayerHub";
 import MySubmissions from "../pages/MySubmissions";
 import NotFound from "../pages/NotFound";
 import Profile from "../pages/Profile";
-import Register from "../pages/Register";
+import Register from "../pages/auth/Register";
 import SubmissionDetail from "../pages/SubmissionDetail";
 
 export default function RoutesConfig() {
