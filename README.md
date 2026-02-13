@@ -1,8 +1,8 @@
-# 🎮 APIArena
+# APIArena
 
 Plataforma competitiva de desarrollo de APIs donde estudiantes compiten creando APIs que son evaluadas automáticamente.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerrequisitos
 - Docker & Docker Compose
@@ -13,8 +13,8 @@ Plataforma competitiva de desarrollo de APIs donde estudiantes compiten creando 
 ### Levantar infraestructura
 ```bash
 # Clonar repositorio
-git clone <tu-repo>
-cd apiarena
+git clone https://github.com/Eduu115/API-ARENA.git
+cd API-ARENA
 
 # Copiar variables de entorno
 cp .env.example .env
@@ -49,7 +49,7 @@ npm install
 npm run dev
 ```
 
-## 📁 Estructura del Proyecto
+## Estructura general del Proyecto
 ```
 apiarena/
 ├── frontend/           # React 19 + Vite
@@ -64,7 +64,7 @@ apiarena/
 └── docs/
 ```
 
-## 🛠️ Stack Tecnológico
+## Stack
 
 - **Backend**: Java 21, Spring Boot 3.3
 - **Frontend**: React 19, Vite
@@ -72,16 +72,14 @@ apiarena/
 - **Message Broker**: Kafka
 - **Infraestructura**: Docker, NGINX
 
-## 📚 Documentación
+## Documentación
 
 Ver carpeta `docs/` para documentación detallada.
 
-## 👥 Equipo
+## Equipo
 
-- Desarrollador 1: Backend + DevOps
-- Desarrollador 2: Frontend + Integration
+- Eduardo Serrano Trenado: Backend Lead + DevOps
+- Juan Angel Guevara Manzanilla: Frontend + Integration
 
-## 📝 Licencia
-
-MIT
-EOF
+## Licencia
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International

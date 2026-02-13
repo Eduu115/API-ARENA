@@ -1,0 +1,227 @@
+/* Auth Layout - Estilo neumórfico con colores API Arena */
+.auth-main {
+  @apply relative w-full max-w-[1000px] min-h-[600px] p-6;
+  @apply bg-background-secondary rounded-xl overflow-hidden;
+  box-shadow:
+    10px 10px 20px rgba(10, 14, 39, 0.8),
+    -10px -10px 20px rgba(0, 217, 255, 0.03),
+    inset 0 0 0 1px rgba(0, 217, 255, 0.05);
+}
+
+/* Switch panel - izquierda */
+.auth-switch {
+  @apply absolute top-0 left-0 h-full w-[400px] py-12 px-10 z-10;
+  @apply flex flex-col justify-center items-center;
+  @apply bg-background-secondary overflow-hidden;
+  box-shadow:
+    4px 4px 12px rgba(10, 14, 39, 0.6),
+    -4px -4px 12px rgba(0, 217, 255, 0.02);
+}
+
+.auth-switch__circle {
+  @apply absolute rounded-full bg-background-secondary;
+  box-shadow: inset 8px 8px 16px rgba(10, 14, 39, 0.8), inset -8px -8px 16px rgba(0, 217, 255, 0.03);
+}
+
+.auth-switch__circle--1 {
+  @apply w-[500px] h-[500px] -bottom-[60%] -left-[60%];
+}
+
+.auth-switch__circle--2 {
+  @apply w-[300px] h-[300px] -top-[30%] left-[60%];
+}
+
+.auth-switch__content {
+  @apply relative z-10 flex flex-col items-center text-center max-w-[320px];
+}
+
+.auth-switch__title {
+  @apply font-display font-bold text-3xl text-text-primary mb-4;
+}
+
+.auth-switch__description {
+  @apply text-sm text-text-secondary leading-relaxed mb-8;
+}
+
+.auth-switch__button {
+  @apply px-8 py-4 rounded-full font-display font-semibold text-sm tracking-wide;
+  @apply bg-gradient-to-br from-primary to-primary-dark text-background-primary;
+  @apply border-0 cursor-pointer transition-all duration-300;
+  box-shadow: 8px 8px 16px rgba(10, 14, 39, 0.6), -8px -8px 16px rgba(0, 217, 255, 0.05);
+}
+
+.auth-switch__button:hover {
+  box-shadow: 6px 6px 12px rgba(10, 14, 39, 0.6), -6px -6px 12px rgba(0, 217, 255, 0.08);
+  @apply -translate-y-0.5;
+}
+
+.auth-switch__button:active {
+  box-shadow: 2px 2px 8px rgba(10, 14, 39, 0.8);
+  transform: scale(0.98);
+}
+
+/* Form container - derecha */
+.auth-form-container {
+  @apply absolute top-0 right-0 flex justify-center items-center;
+  @apply w-[600px] h-full p-10;
+  @apply bg-background-secondary;
+}
+
+
+.auth-form {
+  @apply flex flex-col items-center w-full max-w-[350px];
+}
+
+.auth-form__title {
+  @apply font-display font-bold text-3xl text-text-primary mb-2;
+  @apply bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent;
+}
+
+.auth-form__icons {
+  @apply flex gap-2 my-6;
+}
+
+.auth-form__icon {
+  @apply w-8 h-8 rounded-full border border-primary/30 opacity-50 transition-opacity duration-150;
+  @apply bg-primary/5;
+}
+
+.auth-form__icon:hover {
+  @apply opacity-100 cursor-pointer;
+}
+
+.auth-form__span {
+  @apply text-text-secondary text-sm mb-4;
+}
+
+.auth-form__input {
+  @apply w-full h-11 my-1 pl-6 text-sm;
+  @apply font-body text-text-primary rounded-lg border-0 outline-none;
+  @apply transition-all duration-300;
+  background-color: #131829;
+  box-shadow: inset 2px 2px 6px rgba(10, 14, 39, 0.8), inset -2px -2px 6px rgba(0, 217, 255, 0.02);
+}
+
+.auth-form__input::placeholder {
+  color: #535D73;
+}
+
+.auth-form__input:focus {
+  box-shadow: inset 4px 4px 8px rgba(10, 14, 39, 0.8), inset -4px -4px 8px rgba(0, 217, 255, 0.03), 0 0 0 2px rgba(0, 217, 255, 0.2);
+}
+
+.auth-form__link {
+  @apply text-primary text-sm mt-6 no-underline border-b border-primary/30;
+}
+
+.auth-form__link:hover {
+  @apply border-primary;
+}
+
+.auth-form__button {
+  @apply w-[180px] h-12 rounded-full mt-10 font-display font-semibold text-sm;
+  @apply bg-gradient-to-br from-primary to-primary-dark text-background-primary;
+  @apply border-0 cursor-pointer transition-all duration-300 tracking-wider;
+  box-shadow: 8px 8px 16px rgba(10, 14, 39, 0.6), -8px -8px 16px rgba(0, 217, 255, 0.05);
+}
+
+.auth-form__button:hover {
+  box-shadow: 6px 6px 12px rgba(10, 14, 39, 0.6), -6px -6px 12px rgba(0, 217, 255, 0.1);
+  @apply -translate-y-0.5;
+}
+
+.auth-form__button:active {
+  box-shadow: 2px 2px 8px rgba(10, 14, 39, 0.8);
+  transform: scale(0.98);
+}
+
+/* Wrapper para centrar todo */
+.auth-wrapper {
+  @apply min-h-screen flex items-center justify-center bg-background-primary p-6 overflow-y-auto;
+}
+
+/* ========== RESPONSIVE - Vertical en tablets/móvil ========== */
+@media (max-width: 1040px) {
+  .auth-main {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    max-width: 100%;
+    min-height: 500px;
+  }
+  
+  .auth-switch {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 220px;
+    flex-shrink: 0;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+  
+  .auth-form-container {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 400px;
+    flex: 1 0 auto;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
+  
+  .auth-switch__circle--1 {
+    width: 280px;
+    height: 280px;
+    bottom: -40%;
+    left: -40%;
+  }
+  
+  .auth-switch__circle--2 {
+    width: 180px;
+    height: 180px;
+    top: -20%;
+    left: 50%;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-wrapper {
+    @apply p-4;
+  }
+  
+  .auth-main {
+    @apply p-4;
+  }
+  
+  .auth-switch {
+    min-height: 180px;
+    @apply py-6 px-4;
+  }
+  
+  .auth-form-container {
+    min-height: 360px;
+    @apply p-6;
+  }
+  
+  .auth-switch__title {
+    @apply text-xl mb-2;
+  }
+  
+  .auth-switch__description {
+    @apply text-xs mb-4;
+  }
+  
+  .auth-form__title {
+    @apply text-xl;
+  }
+}
