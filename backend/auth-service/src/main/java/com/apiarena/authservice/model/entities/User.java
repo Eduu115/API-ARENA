@@ -24,8 +24,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
-@Data @NoArgsConstructor @AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -98,10 +98,23 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
+    public User(String username, String email, String passwordHash, Role role) {
+        this.username = username;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+        this.rating = 1000;
+        this.level = 1;
+        this.experiencePoints = 0;
+        this.totalChallengesCompleted = 0;
+        this.totalTestsPassed = 0;
+        this.isActive = true;
+        this.emailVerified = false;
+    }
+
     public enum Role {
         STUDENT,
         TEACHER,
         ADMIN
     }
-    
 }

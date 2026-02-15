@@ -126,6 +126,18 @@
   @apply border-primary;
 }
 
+.auth-form__link-wrap {
+  @apply w-full mt-1 mb-0 text-right;
+}
+
+.auth-form__link--button {
+  @apply bg-transparent border-0 cursor-pointer p-0 text-primary text-sm border-b border-primary/30 rounded-none font-body;
+}
+
+.auth-form__link--button:hover {
+  @apply border-primary;
+}
+
 .auth-form__button {
   @apply w-[180px] h-12 rounded-full mt-10 font-display font-semibold text-sm;
   @apply bg-gradient-to-br from-primary to-primary-dark text-background-primary;
@@ -158,7 +170,7 @@
     max-width: 100%;
     min-height: 500px;
   }
-  
+
   .auth-switch {
     position: relative !important;
     width: 100% !important;
@@ -172,7 +184,7 @@
     right: auto !important;
     bottom: auto !important;
   }
-  
+
   .auth-form-container {
     position: relative !important;
     width: 100% !important;
@@ -186,14 +198,14 @@
     right: auto !important;
     bottom: auto !important;
   }
-  
+
   .auth-switch__circle--1 {
     width: 280px;
     height: 280px;
     bottom: -40%;
     left: -40%;
   }
-  
+
   .auth-switch__circle--2 {
     width: 180px;
     height: 180px;
@@ -206,29 +218,29 @@
   .auth-wrapper {
     @apply p-4;
   }
-  
+
   .auth-main {
     @apply p-4;
   }
-  
+
   .auth-switch {
     min-height: 180px;
     @apply py-6 px-4;
   }
-  
+
   .auth-form-container {
     min-height: 360px;
     @apply p-6;
   }
-  
+
   .auth-switch__title {
     @apply text-xl mb-2;
   }
-  
+
   .auth-switch__description {
     @apply text-xs mb-4;
   }
-  
+
   .auth-form__title {
     @apply text-xl;
   }
