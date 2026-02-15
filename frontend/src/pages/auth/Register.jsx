@@ -1,11 +1,37 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./register.css";
 
 export default function Register() {
-  function handleSubmit(e) {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [fieldError, setFieldError] = useState(null);
+  const { register: doRegister, error, clearError } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    // TODO: implementar registro
+    clearError();
+    setFieldError(null);
+    if (password !== confirmPassword) {
+      setFieldError("Las contraseñas no coinciden.");
+      return;
+    }
+    if (password.length < 6) {
+      setFieldError("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+    setSubmitting(true);
+    const result = await doRegister(username, email, password, null);
+    setSubmitting(false);
+    if (result?.success) navigate("/dashboard", { replace: true });
   }
+
+  const displayError = fieldError || error;
 
   return (
     <div className="auth-wrapper">
@@ -35,11 +61,20 @@ export default function Register() {
               <div className="auth-form__icon" title="OAuth" aria-hidden />
             </div>
             <span className="auth-form__span">o usa email para registrarte</span>
+            {displayError && (
+              <div className="auth-form__error" role="alert">
+                {displayError}
+              </div>
+            )}
             <input
               type="text"
               className="auth-form__input"
               placeholder="Usuario"
               autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              minLength={3}
+              maxLength={50}
               required
             />
             <input
@@ -47,6 +82,8 @@ export default function Register() {
               className="auth-form__input"
               placeholder="Email"
               autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
             />
             <input
@@ -54,6 +91,9 @@ export default function Register() {
               className="auth-form__input"
               placeholder="Contraseña"
               autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
               required
             />
             <input
@@ -61,10 +101,12 @@ export default function Register() {
               className="auth-form__input"
               placeholder="Confirmar contraseña"
               autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
-            <button type="submit" className="auth-form__button">
-              Registrarse
+            <button type="submit" className="auth-form__button" disabled={submitting}>
+              {submitting ? "Creando cuenta…" : "Registrarse"}
             </button>
           </form>
         </div>

@@ -94,6 +94,14 @@
   @apply text-text-secondary text-sm mb-4;
 }
 
+.auth-form__error {
+  @apply w-full text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 mb-2;
+}
+
+.auth-form__button:disabled {
+  @apply opacity-60 cursor-not-allowed;
+}
+
 .auth-form__input {
   @apply w-full h-11 my-1 pl-6 text-sm;
   @apply font-body text-text-primary rounded-lg border-0 outline-none;
