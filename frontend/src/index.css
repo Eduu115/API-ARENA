@@ -4,6 +4,72 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==================== THEME (modo claro / oscuro) ==================== */
+:root,
+[data-theme="dark"] {
+  --arena-primary: #00D9FF;
+  --arena-primary-dark: #0095B3;
+  --arena-primary-5: rgba(0, 217, 255, 0.05);
+  --arena-primary-10: rgba(0, 217, 255, 0.1);
+  --arena-primary-15: rgba(0, 217, 255, 0.15);
+  --arena-primary-20: rgba(0, 217, 255, 0.2);
+  --arena-primary-30: rgba(0, 217, 255, 0.3);
+  --arena-primary-40: rgba(0, 217, 255, 0.4);
+  --arena-primary-50: rgba(0, 217, 255, 0.5);
+  --arena-secondary: #B24BF3;
+  --arena-accent: #00FFA3;
+  --arena-bg-primary: #0A0E27;
+  --arena-bg-secondary: #131829;
+  --arena-bg-tertiary: #1E2439;
+  --arena-text-primary: #E8EDF4;
+  --arena-text-secondary: #8B95AD;
+  --arena-text-muted: #535D73;
+  --arena-success: #00FFA3;
+  --arena-success-10: rgba(0, 255, 163, 0.1);
+  --arena-success-30: rgba(0, 255, 163, 0.3);
+  --arena-warning: #FFB800;
+  --arena-warning-10: rgba(255, 184, 0, 0.1);
+  --arena-warning-30: rgba(255, 184, 0, 0.3);
+  --arena-error: #FF3366;
+  --arena-error-10: rgba(255, 51, 102, 0.1);
+  --arena-error-30: rgba(255, 51, 102, 0.3);
+  --arena-info: #00D9FF;
+  --arena-info-10: rgba(0, 217, 255, 0.1);
+  --arena-info-30: rgba(0, 217, 255, 0.3);
+}
+
+[data-theme="light"] {
+  --arena-primary: #0095B3;
+  --arena-primary-dark: #007a94;
+  --arena-primary-5: rgba(0, 149, 179, 0.08);
+  --arena-primary-10: rgba(0, 149, 179, 0.12);
+  --arena-primary-15: rgba(0, 149, 179, 0.18);
+  --arena-primary-20: rgba(0, 149, 179, 0.25);
+  --arena-primary-30: rgba(0, 149, 179, 0.35);
+  --arena-primary-40: rgba(0, 149, 179, 0.45);
+  --arena-primary-50: rgba(0, 149, 179, 0.55);
+  --arena-secondary: #8B3DD9;
+  --arena-accent: #00C97C;
+  --arena-bg-primary: #F0F4F8;
+  --arena-bg-secondary: #FFFFFF;
+  --arena-bg-tertiary: #E2E8F0;
+  --arena-text-primary: #0A0E27;
+  --arena-text-secondary: #475569;
+  --arena-text-muted: #64748B;
+  --arena-success: #00C97C;
+  --arena-success-10: rgba(0, 201, 124, 0.12);
+  --arena-success-30: rgba(0, 201, 124, 0.3);
+  --arena-warning: #E6A800;
+  --arena-warning-10: rgba(230, 168, 0, 0.12);
+  --arena-warning-30: rgba(230, 168, 0, 0.3);
+  --arena-error: #E62E52;
+  --arena-error-10: rgba(230, 46, 82, 0.12);
+  --arena-error-30: rgba(230, 46, 82, 0.3);
+  --arena-info: #0095B3;
+  --arena-info-10: rgba(0, 149, 179, 0.12);
+  --arena-info-30: rgba(0, 149, 179, 0.3);
+}
+
 /* ==================== BASE STYLES ==================== */
 @layer base {
   body {
@@ -19,12 +85,12 @@
 @layer components {
   /* Cards */
   .card {
-    @apply bg-background-secondary border border-primary/10 rounded-2xl p-6;
+    @apply bg-background-secondary border border-primary-10 rounded-2xl p-6;
     @apply transition-all duration-300;
   }
   
   .card:hover {
-    @apply border-primary/30 shadow-glow -translate-y-1;
+    @apply border-primary-30 shadow-glow -translate-y-1;
   }
   
   /* Buttons */
@@ -37,7 +103,7 @@
   }
   
   .btn-secondary {
-    @apply bg-transparent text-primary border-2 border-primary hover:bg-primary/10;
+    @apply bg-transparent text-primary border-2 border-primary hover:bg-primary-10;
   }
   
   .btn-ghost {
@@ -50,36 +116,36 @@
   }
   
   .badge-success {
-    @apply bg-success/10 text-success border border-success/30;
+    @apply bg-success-10 text-success border border-success-30;
   }
   
   .badge-error {
-    @apply bg-error/10 text-error border border-error/30;
+    @apply bg-error-10 text-error border border-error-30;
   }
   
   .badge-warning {
-    @apply bg-warning/10 text-warning border border-warning/30;
+    @apply bg-warning-10 text-warning border border-warning-30;
   }
   
   .badge-info {
-    @apply bg-info/10 text-info border border-info/30;
+    @apply bg-info-10 text-info border border-info-30;
   }
   
   /* Input Fields */
   .input {
-    @apply w-full px-4 py-3 rounded-lg bg-background-secondary border border-primary/20;
-    @apply text-text-primary placeholder:text-[#535D73];
-    @apply focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20;
+@apply w-full px-4 py-3 rounded-lg bg-background-secondary border border-primary-20;
+  @apply text-text-primary placeholder:text-[#535D73];
+  @apply focus:outline-none focus:border-primary-50 focus:ring-2 focus:ring-primary-20;
     @apply transition-all duration-200;
   }
   
   /* Challenge Cards */
   .challenge-card {
-    @apply relative bg-background-secondary border border-primary/10 rounded-2xl p-6 transition-all duration-300;
+    @apply relative bg-background-secondary border border-primary-10 rounded-2xl p-6 transition-all duration-300;
   }
   
   .challenge-card:hover {
-    @apply border-primary/30 shadow-glow -translate-y-1;
+    @apply border-primary-30 shadow-glow -translate-y-1;
   }
   
   .challenge-card::before {
@@ -115,7 +181,7 @@
   
   /* Code Block */
   .code-block {
-    @apply bg-[#0D1117] border border-primary/20 rounded-lg p-4;
+    @apply bg-[#0D1117] border border-primary-20 rounded-lg p-4;
     @apply font-mono text-sm overflow-x-auto relative;
   }
   
@@ -154,9 +220,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-primary/30 rounded-full;
+  @apply bg-primary-30 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/50;
+  @apply bg-primary-50;
 }

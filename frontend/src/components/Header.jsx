@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 /**
  * Cabecera reutilizable con título del proyecto y avatar/usuario.
@@ -15,16 +16,17 @@ export default function Header({ title = "APIArena" }) {
       : "?";
 
   return (
-    <header className="border-b border-primary/10 bg-background-secondary">
+    <header className="border-b border-primary-10 bg-background-secondary">
       <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         <Link to="/" className="text-2xl font-display text-primary hover:opacity-90 transition">
           {title}
         </Link>
 
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <Link
             to="/profile"
-            className="w-9 h-9 rounded-full bg-background-tertiary border border-primary/20 flex items-center justify-center text-sm hover:border-primary/40 transition"
+            className="w-9 h-9 rounded-full bg-background-tertiary border border-primary-20 flex items-center justify-center text-sm hover:border-primary-40 transition"
             title={user ? user.username || user.email : "Perfil"}
             aria-label="Ir al perfil"
           >

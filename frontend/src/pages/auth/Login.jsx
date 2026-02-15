@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import ThemeToggle from "../../components/ThemeToggle";
 import "./auth.css";
 
 export default function Login() {
@@ -21,6 +22,9 @@ export default function Login() {
 
   return (
     <div className="auth-wrapper">
+      <div className="auth-theme-toggle">
+        <ThemeToggle />
+      </div>
       <div className="auth-main">
         {/* Panel izquierdo - Switch */}
         <div className="auth-switch">
