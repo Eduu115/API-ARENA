@@ -1,19 +1,22 @@
 package com.apiarena.authservice.model.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.apiarena.authservice.exception.BadRequestException;
-import com.apiarena.authservice.model.dto.*;
-import com.apiarena.authservice.model.entities.RefreshToken;
-import com.apiarena.authservice.model.entities.User;
-import com.apiarena.authservice.repository.UserRepository;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.apiarena.authservice.exception.BadRequestException;
+import com.apiarena.authservice.model.dto.AuthResponse;
+import com.apiarena.authservice.model.dto.LoginRequest;
+import com.apiarena.authservice.model.dto.RefreshTokenRequest;
+import com.apiarena.authservice.model.dto.RegisterRequest;
+import com.apiarena.authservice.model.dto.UserDTO;
+import com.apiarena.authservice.model.entities.RefreshToken;
+import com.apiarena.authservice.model.entities.User;
+import com.apiarena.authservice.repository.UserRepository;
 
 @Service
 public class AuthService {
@@ -43,7 +46,7 @@ public class AuthService {
             throw new BadRequestException("Username already taken");
         }
 
-        // Determinar el rol
+        // derterminar el rol
         User.Role role = User.Role.STUDENT;
         if (request.getRole() != null) {
             try {
@@ -53,27 +56,21 @@ public class AuthService {
             }
         }
 
-        // Crear usuario
-        User user = User.builder()
-            .username(request.getUsername())
-            .email(request.getEmail())
-            .passwordHash(passwordEncoder.encode(request.getPassword()))
-            .role(role)
-            .build();
+        User u = new User(
+            request.getUsername(),
+            request.getEmail(),
+            passwordEncoder.encode(request.getPassword()),
+            role
+        );
 
-        User savedUser = userRepository.save(user);
-
-        // No generar tokens en registro: el usuario debe hacer login para obtenerlos
-        return AuthResponse.builder()
-            .user(UserDTO.fromEntity(savedUser))
-            .accessToken(null)
-            .refreshToken(null)
-            .build();
+        User savedUser = userRepository.save(u);
+        // No genero tokens en el regsistro 
+        return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        // Autenticar usuario
+        
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                     request.getEmail(),
@@ -81,22 +78,18 @@ public class AuthService {
             )
         );
 
-        // Obtener usuario
+
         User user = userService.getUserEntityByEmail(request.getEmail());
 
         // Actualizar last login
         userService.updateLastLogin(request.getEmail());
 
-        // Generar tokens
+        // generar tokens
         UserDetails userDetails = userService.loadUserByUsername(request.getEmail());
         String accessToken = jwtService.generateAccessToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return AuthResponse.builder()
-            .user(UserDTO.fromEntity(user))
-            .accessToken(accessToken)
-            .refreshToken(refreshToken.getToken())
-            .build();
+        return new AuthResponse(UserDTO.fromEntity(user), accessToken, refreshToken.getToken());
     }
 
     @Transactional
@@ -104,24 +97,19 @@ public class AuthService {
         // Verificar refresh token
         RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
 
-        // Obtener usuario
         User user = refreshToken.getUser();
 
-        // Generar nuevo access token
+        // fenerar token
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
         String accessToken = jwtService.generateAccessToken(userDetails);
 
-        // Rotar refresh token (generar uno nuevo)
+        // rotar refresh token
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
-        // Revocar el refresh token viejo
+        // eliminar el refresh token viejo
         refreshTokenService.revokeRefreshToken(request.getRefreshToken());
 
-        return AuthResponse.builder()
-                .user(UserDTO.fromEntity(user))
-                .accessToken(accessToken)
-                .refreshToken(newRefreshToken.getToken())
-                .build();
+        return new AuthResponse(UserDTO.fromEntity(user), accessToken, newRefreshToken.getToken());
     }
 
     @Transactional

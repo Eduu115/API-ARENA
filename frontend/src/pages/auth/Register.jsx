@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import "./register.css";
+import ThemeToggle from "../../components/ThemeToggle";
+import "./auth.css";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -35,6 +36,9 @@ export default function Register() {
 
   return (
     <div className="auth-wrapper">
+      <div className="auth-theme-toggle">
+        <ThemeToggle />
+      </div>
       <div className="auth-main">
         {/* Panel izquierdo - Switch */}
         <div className="auth-switch">

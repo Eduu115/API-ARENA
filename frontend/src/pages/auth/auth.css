@@ -1,4 +1,3 @@
-/* Auth Layout - Estilo neumórfico con colores API Arena */
 .auth-main {
   @apply relative w-full max-w-[1000px] min-h-[600px] p-6;
   @apply bg-background-secondary rounded-xl overflow-hidden;
@@ -82,8 +81,9 @@
 }
 
 .auth-form__icon {
-  @apply w-8 h-8 rounded-full border border-primary/30 opacity-50 transition-opacity duration-150;
-  @apply bg-primary/5;
+  @apply w-8 h-8 rounded-full opacity-50 transition-opacity duration-150;
+  border: 1px solid var(--arena-primary-30);
+  background-color: var(--arena-primary-5);
 }
 
 .auth-form__icon:hover {
@@ -106,12 +106,12 @@
   @apply w-full h-11 my-1 pl-6 text-sm;
   @apply font-body text-text-primary rounded-lg border-0 outline-none;
   @apply transition-all duration-300;
-  background-color: #131829;
+  background-color: var(--arena-bg-tertiary);
   box-shadow: inset 2px 2px 6px rgba(10, 14, 39, 0.8), inset -2px -2px 6px rgba(0, 217, 255, 0.02);
 }
 
 .auth-form__input::placeholder {
-  color: #535D73;
+  color: var(--arena-text-muted);
 }
 
 .auth-form__input:focus {
@@ -119,10 +119,24 @@
 }
 
 .auth-form__link {
-  @apply text-primary text-sm mt-6 no-underline border-b border-primary/30;
+  @apply text-primary text-sm mt-6 no-underline border-b;
+  border-bottom-color: var(--arena-primary-30);
 }
 
 .auth-form__link:hover {
+  @apply border-primary;
+}
+
+.auth-form__link-wrap {
+  @apply w-full mt-1 mb-0 text-right;
+}
+
+.auth-form__link--button {
+  @apply bg-transparent border-0 cursor-pointer p-0 text-primary text-sm border-b rounded-none font-body;
+  border-bottom-color: var(--arena-primary-30);
+}
+
+.auth-form__link--button:hover {
   @apply border-primary;
 }
 
@@ -143,12 +157,15 @@
   transform: scale(0.98);
 }
 
-/* Wrapper para centrar todo */
 .auth-wrapper {
-  @apply min-h-screen flex items-center justify-center bg-background-primary p-6 overflow-y-auto;
+  @apply relative min-h-screen flex items-center justify-center bg-background-primary p-6 overflow-y-auto;
 }
 
-/* ========== RESPONSIVE - Vertical en tablets/móvil ========== */
+.auth-theme-toggle {
+  @apply absolute top-4 right-4 z-20;
+}
+
+/* ========== RESPONSIVE - Vertical========== */
 @media (max-width: 1040px) {
   .auth-main {
     display: flex;
@@ -158,7 +175,7 @@
     max-width: 100%;
     min-height: 500px;
   }
-  
+
   .auth-switch {
     position: relative !important;
     width: 100% !important;
@@ -172,7 +189,7 @@
     right: auto !important;
     bottom: auto !important;
   }
-  
+
   .auth-form-container {
     position: relative !important;
     width: 100% !important;
@@ -186,14 +203,14 @@
     right: auto !important;
     bottom: auto !important;
   }
-  
+
   .auth-switch__circle--1 {
     width: 280px;
     height: 280px;
     bottom: -40%;
     left: -40%;
   }
-  
+
   .auth-switch__circle--2 {
     width: 180px;
     height: 180px;
@@ -206,29 +223,29 @@
   .auth-wrapper {
     @apply p-4;
   }
-  
+
   .auth-main {
     @apply p-4;
   }
-  
+
   .auth-switch {
     min-height: 180px;
     @apply py-6 px-4;
   }
-  
+
   .auth-form-container {
     min-height: 360px;
     @apply p-6;
   }
-  
+
   .auth-switch__title {
     @apply text-xl mb-2;
   }
-  
+
   .auth-switch__description {
     @apply text-xs mb-4;
   }
-  
+
   .auth-form__title {
     @apply text-xl;
   }

@@ -7,33 +7,50 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary colors
+        // Theme-aware (CSS vars en index.css); variantes de opacidad para @apply
         primary: {
-          DEFAULT: '#00D9FF',
-          dark: '#0095B3',
+          DEFAULT: 'var(--arena-primary)',
+          dark: 'var(--arena-primary-dark)',
+          5: 'var(--arena-primary-5)',
+          10: 'var(--arena-primary-10)',
+          15: 'var(--arena-primary-15)',
+          20: 'var(--arena-primary-20)',
+          30: 'var(--arena-primary-30)',
+          40: 'var(--arena-primary-40)',
+          50: 'var(--arena-primary-50)',
         },
-        secondary: '#B24BF3',
-        accent: '#00FFA3',
-        
-        // Background colors
+        secondary: 'var(--arena-secondary)',
+        accent: 'var(--arena-accent)',
         background: {
-          primary: '#0A0E27',
-          secondary: '#131829',
-          tertiary: '#1E2439',
+          primary: 'var(--arena-bg-primary)',
+          secondary: 'var(--arena-bg-secondary)',
+          tertiary: 'var(--arena-bg-tertiary)',
         },
-        
-        // Text colors
         text: {
-          primary: '#E8EDF4',
-          secondary: '#8B95AD',
-          muted: '#535D73',
+          primary: 'var(--arena-text-primary)',
+          secondary: 'var(--arena-text-secondary)',
+          muted: 'var(--arena-text-muted)',
         },
-        
-        // Status colors
-        success: '#00FFA3',
-        warning: '#FFB800',
-        error: '#FF3366',
-        info: '#00D9FF',
+        success: {
+          DEFAULT: 'var(--arena-success)',
+          10: 'var(--arena-success-10)',
+          30: 'var(--arena-success-30)',
+        },
+        warning: {
+          DEFAULT: 'var(--arena-warning)',
+          10: 'var(--arena-warning-10)',
+          30: 'var(--arena-warning-30)',
+        },
+        error: {
+          DEFAULT: 'var(--arena-error)',
+          10: 'var(--arena-error-10)',
+          30: 'var(--arena-error-30)',
+        },
+        info: {
+          DEFAULT: 'var(--arena-info)',
+          10: 'var(--arena-info-10)',
+          30: 'var(--arena-info-30)',
+        },
       },
       
       fontFamily: {

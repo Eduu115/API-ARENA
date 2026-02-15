@@ -53,7 +53,7 @@
   }
   
   .hero .btn-secondary:hover {
-    @apply bg-primary/10;
+    background-color: var(--arena-primary-10);
   }
   
   .hero .glow {
