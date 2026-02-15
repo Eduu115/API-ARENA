@@ -18,29 +18,45 @@ cd API-ARENA
 
 # Copiar variables de entorno
 cp .env.example .env
-# Editar .env con tus valores
+# Editar .env con tus valores (OPCIONAL)
 
-# Levantar bases de datos
-docker-compose up -d postgres redis mongodb kafka
+# ABRIR DOCKER DESKTOP (y dejalo corriendo, minimizado o como quieras) - IMPORTANTE
 
-# Verificar que estén corriendo
+# Levantar infraestructura de datos + backend
+docker-compose up -d postgres redis auth-service challenge-service
+
+# Frontend (en otra terminal)
+cd frontend
+npm install
+npm run dev
+# App en http://localhost:5173 — auth API en http://localhost:8081
+
+# Comprobar contenedores
 docker ps
 ```
 
-### Desarrollo
+### Desarrollo local [ - SOLO PARA DESARROLLO - ]
 
-**Backend (auth-service, challenge-service):**  
-Primero asegúrate de tener Postgres (y Redis para auth-service) en marcha:
+**Opción A – Todo en Docker**  
+Desde la raíz: `docker compose up -d` (levanta postgres, redis, auth-service, challenge-service y el resto de servicios definidos en `docker-compose.yml`).
+
+**Opción B – Backend en local, bases de datos en Docker**  
+1. Levantar solo Postgres y Redis:
 ```bash
 docker compose up -d postgres redis
 ```
-
-Si ves *"Connection to localhost:5432 refused"*, es que Postgres no está corriendo; levanta los contenedores antes de iniciar el backend.
-
+2. Ejecutar los servicios Java con Maven (en terminales separadas si quieres ambos):
 ```bash
 cd backend/auth-service
-./mvnw spring-boot:run -DskipTests
+mvn spring-boot:run -DskipTests
+# auth-service en http://localhost:8081
 ```
+```bash
+cd backend/challenge-service
+mvn spring-boot:run -DskipTests
+# challenge-service en http://localhost:8082
+```
+Si aparece *"Connection to localhost:5432 refused"*, Postgres no está arriba: ejecuta antes `docker compose up -d postgres redis`.
 
 **Frontend:**
 ```bash
@@ -48,29 +64,29 @@ cd frontend
 npm install
 npm run dev
 ```
+Configura `VITE_AUTH_API_URL=http://localhost:8081` en `.env` (o usa el `.env.example` como referencia).
 
-## Estructura general del Proyecto
+## Estructura del proyecto
 ```
-apiarena/
-├── frontend/           # React 19 + Vite
+API-ARENA/
+├── frontend/              # React 19 + Vite
 ├── backend/
-│   ├── auth-service/
-│   ├── challenge-service/
-│   ├── submission-service/
+│   ├── auth-service/      # Auth, JWT, usuarios (puerto 8081)
+│   ├── challenge-service/ # Retos (puerto 8082)
 │   └── ...
 ├── docker/
-│   ├── nginx/
-│   └── postgres/
+│   └── postgres/          # init scripts
+├── docker-compose.yml     # Un solo compose en la raíz
 └── docs/
 ```
 
 ## Stack
 
-- **Backend**: Java 21, Spring Boot 3.3
+- **Backend**: Java 21, Spring Boot 3.5
 - **Frontend**: React 19, Vite
 - **Bases de datos**: PostgreSQL, Redis, MongoDB, InfluxDB
 - **Message Broker**: Kafka
-- **Infraestructura**: Docker, NGINX
+- **Infraestructura**: Docker (compose en raíz)
 
 ## Documentación
 

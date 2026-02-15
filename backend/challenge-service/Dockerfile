@@ -1,13 +1,11 @@
-# Stage 1: Build (usa Maven del imagen; no requiere mvnw)
+# Stage 1: Build
 FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
 WORKDIR /app
 
-# Copiar pom y descargar dependencias (capa cacheable)
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copiar código y compilar
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 
@@ -23,9 +21,9 @@ RUN chown spring:spring app.jar
 
 USER spring:spring
 
-EXPOSE 8081
+EXPOSE 8082
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8082/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
