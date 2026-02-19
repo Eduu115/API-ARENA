@@ -1,39 +1,42 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import ThemeToggle from "./ThemeToggle";
+import "../pages/landing/landing.css";
 
-/**
- * Cabecera reutilizable con título del proyecto y avatar/usuario.
- * Usa el usuario del AuthContext para las iniciales cuando hay sesión.
- */
-export default function Header({ title = "APIArena" }) {
-  const { user } = useAuth();
-
-  const initials = user?.username
-    ? user.username.slice(0, 2).toUpperCase()
-    : user?.email
-      ? user.email.slice(0, 2).toUpperCase()
-      : "?";
-
+export default function Header() {
   return (
-    <header className="border-b border-primary-10 bg-background-secondary">
-      <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-display text-primary hover:opacity-90 transition">
-          {title}
-        </Link>
-
-        <div className="flex items-center gap-4">
-          <ThemeToggle />
-          <Link
-            to="/profile"
-            className="w-9 h-9 rounded-full bg-background-tertiary border border-primary-20 flex items-center justify-center text-sm hover:border-primary-40 transition"
-            title={user ? user.username || user.email : "Perfil"}
-            aria-label="Ir al perfil"
-          >
-            {initials}
-          </Link>
-        </div>
+    <nav>
+      <div className="nav-logo">
+        <svg className="nav-logo-hex" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="nc" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style={{stopColor:'#00D9FF'}} />
+              <stop offset="100%" style={{stopColor:'#00FFA3'}} />
+            </linearGradient>
+            <filter id="ng">
+              <feGaussianBlur stdDeviation="1.5" result="b" />
+              <feMerge>
+                <feMergeNode in="b" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#1A2040" stroke="url(#nc)" strokeWidth="1.2" />
+          <g filter="url(#ng)">
+            <path d="M11,14 L9,14 Q7,14 7,16 L7,20 Q7,22 5,22 Q7,22 7,24 L7,28 Q7,30 9,30 L11,30" fill="none" stroke="url(#nc)" strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M29,14 L31,14 Q33,14 33,16 L33,20 Q33,22 35,22 Q33,22 33,24 L33,28 Q33,30 31,30 L29,30" fill="none" stroke="url(#nc)" strokeWidth="1.8" strokeLinecap="round" />
+            <line x1="17" y1="31" x2="23" y2="13" stroke="#B24BF3" strokeWidth="2.2" strokeLinecap="round" />
+          </g>
+        </svg>
+        <Link to="/" className="nav-logo-text"><span>API</span>Arena</Link>
       </div>
-    </header>
+
+      <ul className="nav-links">
+        <li><Link to="/challenges">Challenges</Link></li>
+        <li><Link to="/leaderboard">Leaderboard</Link></li>
+        <li><a href="#">Docs</a></li>
+        <li><a href="#">About</a></li>
+      </ul>
+
+      <Link to="/register" className="nav-cta">Enter Arena</Link>
+    </nav>
   );
 }
