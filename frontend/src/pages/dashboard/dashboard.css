@@ -1,0 +1,766 @@
+/* ============================================================
+   DASHBOARD PAGE — Custom CSS  (db- prefix)
+   Requiere que el componente padre tenga la clase .challenges-page
+   para que hereden las variables CSS y estilos base de layout.
+   ============================================================ */
+
+/* ============================================================
+   SIDEBAR — PERFIL DE USUARIO
+   ============================================================ */
+.db-profile-wrap {
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid var(--dim);
+  text-align: center;
+}
+
+.db-avatar {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--bg0);
+  margin: 0 auto 14px;
+  position: relative;
+}
+.db-avatar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  z-index: -1;
+  opacity: 0.3;
+  filter: blur(6px);
+}
+
+.db-profile-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.db-profile-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.db-elo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,184,0,0.08);
+  border: 1px solid rgba(255,184,0,0.3);
+  padding: 5px 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--warn);
+  letter-spacing: 1.5px;
+}
+.db-elo-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--warn);
+  box-shadow: 0 0 6px var(--warn);
+  flex-shrink: 0;
+}
+
+/* ── Quick stats 2×2 en sidebar ────────────────────────────── */
+.db-quick-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--dim);
+  border: 1px solid var(--dim);
+  margin-bottom: 0;
+}
+.db-qs-cell {
+  background: var(--bg1);
+  padding: 12px 10px;
+  text-align: center;
+}
+.db-qs-val {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.db-qs-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Category progress en sidebar ──────────────────────────── */
+.db-cat-row {
+  margin-bottom: 10px;
+}
+.db-cat-row:last-child { margin-bottom: 0; }
+.db-cat-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.db-cat-pct { color: var(--text); }
+.db-cat-track {
+  height: 3px;
+  background: var(--bg3);
+}
+.db-cat-fill {
+  height: 100%;
+  transition: width 1s ease;
+}
+
+/* ============================================================
+   KPI STAT CARDS (row of 4)
+   ============================================================ */
+.db-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.db-kpi-card {
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  position: relative;
+  overflow: hidden;
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.db-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.1);
+}
+.db-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--kpi-color, var(--cyan));
+  box-shadow: 0 0 10px var(--kpi-color, var(--cyan));
+}
+
+.db-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.db-kpi-icon {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--kpi-color, var(--cyan));
+  line-height: 1;
+}
+.db-kpi-change {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+.db-kpi-change.up   { color: var(--green); }
+.db-kpi-change.down { color: var(--red); }
+
+.db-kpi-val {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 52px;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.db-kpi-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  flex: 1;
+}
+.db-kpi-bar {
+  height: 3px;
+  background: var(--kpi-color, var(--cyan));
+  box-shadow: 0 0 8px var(--kpi-color, var(--cyan));
+  opacity: 0.4;
+  margin: 0 -20px;
+}
+
+/* ============================================================
+   CONTENT GRID — activity + right panel
+   ============================================================ */
+.db-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* ── Generic panel box ─────────────────────────────────────── */
+.db-panel {
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+}
+.db-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--dim);
+}
+.db-panel-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-live-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: db-blink 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes db-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.db-panel-action {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.db-panel-action:hover { color: var(--cyan); }
+
+/* ── Activity rows ─────────────────────────────────────────── */
+.db-activity-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--dim);
+  transition: background 0.15s;
+  cursor: none;
+}
+.db-activity-row:last-child { border-bottom: none; }
+.db-activity-row:hover { background: rgba(255,255,255,0.02); }
+
+.db-row-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.db-row-info { flex: 1; min-width: 0; }
+.db-row-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-row-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.db-row-score {
+  width: 110px;
+  flex-shrink: 0;
+}
+.db-row-score-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.db-row-track {
+  height: 2px;
+  background: var(--bg3);
+}
+.db-row-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+}
+
+.db-row-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  width: 70px;
+  justify-content: flex-end;
+}
+.db-row-time {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted);
+  flex-shrink: 0;
+  width: 36px;
+  text-align: right;
+}
+
+/* ── Right panel stack ─────────────────────────────────────── */
+.db-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Mini leaderboard ──────────────────────────────────────── */
+.db-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--dim);
+  transition: background 0.15s;
+  position: relative;
+}
+.db-lb-row:last-child { border-bottom: none; }
+.db-lb-row:hover { background: rgba(255,255,255,0.02); }
+.db-lb-row.db-lb-me {
+  background: rgba(0,217,255,0.05);
+  border-bottom-color: rgba(0,217,255,0.15);
+}
+.db-lb-row.db-lb-me::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--cyan);
+}
+
+.db-lb-rank {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.db-lb-hex {
+  width: 22px; height: 22px;
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 8px;
+  color: var(--bg0);
+  flex-shrink: 0;
+}
+.db-lb-name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-lb-row.db-lb-me .db-lb-name { color: var(--cyan); }
+.db-lb-pts {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--cyan);
+  flex-shrink: 0;
+}
+.db-lb-row.db-lb-me .db-lb-pts { color: var(--warn); }
+
+/* ── Streak widget ─────────────────────────────────────────── */
+.db-streak-body {
+  padding: 16px 18px;
+}
+.db-streak-top {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.db-streak-num {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 48px;
+  line-height: 0.9;
+  color: var(--warn);
+  letter-spacing: -2px;
+}
+.db-streak-unit {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 4px;
+}
+
+.db-streak-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.db-streak-dot {
+  aspect-ratio: 1;
+  background: var(--bg3);
+  border: 1px solid var(--dim);
+  transition: background 0.2s;
+}
+.db-streak-dot.active {
+  background: var(--warn);
+  border-color: rgba(255,184,0,0.5);
+  box-shadow: 0 0 6px rgba(255,184,0,0.4);
+}
+.db-streak-dot.today {
+  background: var(--warn);
+  border-color: var(--warn);
+  box-shadow: 0 0 10px rgba(255,184,0,0.6);
+  animation: db-streak-pulse 1.5s ease-in-out infinite;
+}
+@keyframes db-streak-pulse {
+  0%,100% { box-shadow: 0 0 6px rgba(255,184,0,0.4); }
+  50%      { box-shadow: 0 0 14px rgba(255,184,0,0.8); }
+}
+.db-streak-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.db-streak-day-label {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   RECOMMENDED CHALLENGES STRIP
+   ============================================================ */
+.db-rec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.db-rec-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--white);
+}
+.db-rec-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.db-rec-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.db-rec-card {
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  padding: 16px 16px 14px 20px;
+  position: relative;
+  overflow: hidden;
+  cursor: none;
+  transition: transform 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.db-rec-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--rc-color, var(--cyan));
+}
+.db-rec-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.1);
+}
+
+.db-rec-card-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+}
+.db-rec-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.db-rec-card-pts {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--rc-color, var(--cyan));
+  line-height: 1;
+}
+.db-rec-pts-label {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  display: block;
+  text-align: right;
+}
+
+/* ============================================================
+   ACTIVITY HEADER TABLE
+   ============================================================ */
+.db-table-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 18px;
+  background: var(--bg1);
+  border-bottom: 1px solid var(--dim);
+}
+.db-th {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.db-th-challenge { flex: 1; }
+.db-th-score     { width: 110px; flex-shrink: 0; }
+.db-th-status    { width: 70px; flex-shrink: 0; text-align: right; }
+.db-th-time      { width: 36px; flex-shrink: 0; text-align: right; }
+
+/* ============================================================
+   SEPARADOR VISUAL
+   ============================================================ */
+.db-separator {
+  height: 1px;
+  background: var(--dim);
+  margin: 24px 0;
+}
+
+/* ============================================================
+   WELCOME HEADER OVERRIDE
+   ============================================================ */
+.db-page-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.db-page-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 52px;
+  line-height: 0.9;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+  color: var(--white);
+}
+.db-page-title em {
+  color: var(--cyan);
+  font-style: normal;
+}
+.db-page-sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.db-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.db-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  background: none;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  cursor: none;
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.db-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.db-btn-primary {
+  background: rgba(0,217,255,0.08);
+  border-color: rgba(0,217,255,0.4);
+  color: var(--cyan);
+}
+.db-btn-primary:hover {
+  background: rgba(0,217,255,0.14);
+}
+
+/* ============================================================
+   RESPONSIVE — TABLET  ≤1024px
+   ============================================================ */
+@media (max-width: 1024px) {
+
+  /* KPI: 2 columns */
+  .db-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Content: single column */
+  .db-content-grid { grid-template-columns: 1fr; }
+
+  /* Right panel pair: side by side */
+  .db-right-stack            { flex-direction: row; gap: 16px; }
+  .db-right-stack .db-panel  { flex: 1; min-width: 0; }
+
+  /* Recommended: 2 columns */
+  .db-rec-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Profile wrap: slightly tighter */
+  .db-profile-wrap { padding: 20px 20px 18px; }
+}
+
+/* ============================================================
+   RESPONSIVE — MOBILE  ≤768px
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* Main area: bottom padding for bottom nav */
+  .ch-main { padding: 20px 16px 80px; }
+
+  /* Typography */
+  .db-page-title { font-size: 38px; }
+  .db-kpi-val    { font-size: 38px; }
+
+  /* Hide CTA buttons in header */
+  .db-header-actions { display: none; }
+
+  /* KPI gap */
+  .db-kpi-grid { gap: 8px; }
+  .db-kpi-card { padding: 16px 16px 0; }
+
+  /* Right panel stack: vertical */
+  .db-right-stack { flex-direction: column; }
+
+  /* Recommended: single column */
+  .db-rec-grid { grid-template-columns: 1fr; }
+
+  /* Activity table: hide time column */
+  .db-th-time,
+  .db-row-time { display: none; }
+
+  /* Narrow score column */
+  .db-row-score { width: 90px; }
+  .db-th-score  { width: 90px; }
+
+  /* Streak */
+  .db-streak-body { padding: 12px 16px; }
+  .db-streak-num  { font-size: 40px; }
+
+  /* Rec card */
+  .db-rec-head  { flex-direction: column; gap: 4px; align-items: flex-start; }
+}
+
+/* ============================================================
+   RESPONSIVE — SMALL MOBILE  ≤480px
+   ============================================================ */
+@media (max-width: 480px) {
+
+  /* KPI cards: compact */
+  .db-kpi-card  { padding: 12px 12px 0; }
+  .db-kpi-val   { font-size: 28px; letter-spacing: -1px; }
+  .db-kpi-label { font-size: 7px; letter-spacing: 1px; }
+  .db-kpi-icon  { font-size: 10px; }
+  .db-kpi-change { font-size: 7px; }
+
+  /* Activity table: hide score column too */
+  .db-th-score,
+  .db-row-score { display: none; }
+
+  /* Simplify activity rows */
+  .db-row-status { width: auto; }
+  .db-activity-row { padding: 10px 14px; gap: 10px; }
+
+  /* Leaderboard */
+  .db-lb-hex  { display: none; }
+  .db-lb-pts  { font-size: 12px; }
+  .db-lb-rank { font-size: 13px; width: 16px; }
+
+  /* Profile sidebar */
+  .db-avatar        { width: 56px; height: 56px; font-size: 22px; }
+  .db-profile-name  { font-size: 18px; }
+  .db-qs-val        { font-size: 18px; }
+  .db-qs-label      { font-size: 7px; }
+
+  /* Rec cards */
+  .db-rec-card-title { font-size: 15px; }
+  .db-rec-card-pts   { font-size: 15px; }
+
+  /* Page title */
+  .db-page-title { font-size: 28px; }
+  .db-page-sub   { font-size: 9px; }
+}

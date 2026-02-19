@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Landing from "../pages/landing/Landing";
-import ChallengeDetail from "../pages/ChallengeDetail";
-import Challenges from "../pages/Challenges";
-import Dashboard from "../pages/Dashboard";
+import ChallengeDetail from "../pages/challenges/ChallengeDetail";
+import Challenges from "../pages/challenges/Challenges";
+import Dashboard from "../pages/dashboard/Dashboard";
 import Leaderboard from "../pages/Leaderboard";
 import Login from "../pages/auth/Login";
 import MultiplayerHub from "../pages/MultiplayerHub";
