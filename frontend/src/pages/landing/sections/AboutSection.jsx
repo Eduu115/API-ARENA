@@ -1,4 +1,4 @@
-import MetricBar from '../components/MetricBar';
+import MetricBar from '../../../components/landing/MetricBar';
 import { ABOUT_METRICS, ABOUT_TAGS } from '../landing.data';
 
 export default function AboutSection() {

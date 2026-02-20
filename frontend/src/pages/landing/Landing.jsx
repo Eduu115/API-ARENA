@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import Header from '../../components/Header';
-import SlashDivider from './components/SlashDivider';
+import SlashDivider from '../../components/landing/SlashDivider';
 import HeroSection from './sections/HeroSection';
 import TickerSection from './sections/TickerSection';
 import AboutSection from './sections/AboutSection';

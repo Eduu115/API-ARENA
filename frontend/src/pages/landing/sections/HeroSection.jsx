@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import TerminalWindow from '../components/TerminalWindow';
+import TerminalWindow from '../../../components/landing/TerminalWindow';
 import { HERO_STATS } from '../landing.data';
 
 export default function HeroSection() {

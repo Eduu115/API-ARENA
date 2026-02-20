@@ -1,4 +1,4 @@
-import { TERMINAL_SCORE_DIMS } from '../landing.data';
+import { TERMINAL_SCORE_DIMS } from '../../pages/landing/landing.data';
 
 const TERMINAL_LINES = [
   { type: 'cmd',     prompt: '$', text: 'arena submit ./my-api --challenge crud-master' },
