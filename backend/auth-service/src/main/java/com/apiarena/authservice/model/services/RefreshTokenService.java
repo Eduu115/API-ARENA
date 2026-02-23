@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Service
-public class RefreshTokenService {
+public class RefreshTokenService implements IRefreshTokenService {
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
@@ -23,18 +23,19 @@ public class RefreshTokenService {
     @Value("${jwt.refresh-expiration}")
     private Long refreshExpiration;
 
+    @Override
     @Transactional
     public RefreshToken createRefreshToken(User user) {
-        RefreshToken refreshToken = RefreshToken.builder()
-            .user(user)
-            .token(UUID.randomUUID().toString())
-            .expiresAt(LocalDateTime.now().plusSeconds(refreshExpiration / 1000))
-            .isRevoked(false)
-            .build();
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setUser(user);
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiresAt(LocalDateTime.now().plusSeconds(refreshExpiration / 1000));
+        refreshToken.setIsRevoked(false);
 
         return refreshTokenRepository.save(refreshToken);
     }
 
+    @Override
     public RefreshToken verifyRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
             .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
@@ -51,6 +52,7 @@ public class RefreshTokenService {
         return refreshToken;
     }
 
+    @Override
     @Transactional
     public void revokeRefreshToken(String token) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
@@ -59,6 +61,7 @@ public class RefreshTokenService {
         refreshTokenRepository.save(refreshToken);
     }
 
+    @Override
     @Transactional
     public void revokeAllUserTokens(User user) {
         refreshTokenRepository.deleteByUser(user);

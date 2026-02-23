@@ -17,11 +17,12 @@ import com.apiarena.challengeservice.repository.ChallengeRepository;
 
 
 @Service
-public class ChallengeService {
+public class ChallengeService implements IChallengeService {
 
     @Autowired
     private ChallengeRepository challengeRepository;
 
+    @Override
     @Transactional
     public ChallengeDTO createChallenge(CreateChallengeRequest request, Long userId) {
         // Generar slug desde el título
@@ -41,54 +42,57 @@ public class ChallengeService {
         }
 
         // Crear challenge
-        Challenge.ChallengeBuilder challengeBuilder = Challenge.builder()
-                .title(request.getTitle())
-                .slug(slug)
-                .description(request.getDescription())
-                .difficulty(difficulty)
-                .category(request.getCategory())
-                .requiredEndpoints(request.getRequiredEndpoints())
-                .requiredStatusCodes(request.getRequiredStatusCodes())
-                .requiredHeaders(request.getRequiredHeaders())
-                .testSuite(request.getTestSuite())
-                .performanceRequirements(request.getPerformanceRequirements())
-                .designCriteria(request.getDesignCriteria())
-                .hints(request.getHints())
-                .solutionExplanation(request.getSolutionExplanation())
-                .learningObjectives(request.getLearningObjectives())
-                .createdBy(userId);
+        Challenge challenge = new Challenge();
+        challenge.setTitle(request.getTitle());
+        challenge.setSlug(slug);
+        challenge.setDescription(request.getDescription());
+        challenge.setDifficulty(difficulty);
+        challenge.setCategory(request.getCategory());
+        challenge.setRequiredEndpoints(request.getRequiredEndpoints());
+        challenge.setRequiredStatusCodes(request.getRequiredStatusCodes());
+        challenge.setRequiredHeaders(request.getRequiredHeaders());
+        challenge.setTestSuite(request.getTestSuite());
+        challenge.setPerformanceRequirements(request.getPerformanceRequirements());
+        challenge.setDesignCriteria(request.getDesignCriteria());
+        challenge.setHints(request.getHints());
+        challenge.setSolutionExplanation(request.getSolutionExplanation());
+        challenge.setLearningObjectives(request.getLearningObjectives());
+        challenge.setCreatedBy(userId);
         
         // Solo sobrescribir valores por defecto si vienen en el request
         if (request.getMaxScore() != null) {
-            challengeBuilder.maxScore(request.getMaxScore());
+            challenge.setMaxScore(request.getMaxScore());
         }
         if (request.getTimeLimitMinutes() != null) {
-            challengeBuilder.timeLimitMinutes(request.getTimeLimitMinutes());
+            challenge.setTimeLimitMinutes(request.getTimeLimitMinutes());
         }
         
-        Challenge challenge = challengeBuilder.build();
         Challenge savedChallenge = challengeRepository.save(challenge);
         return ChallengeDTO.fromEntity(savedChallenge);
     }
 
+    @Override
     public ChallengeDTO getChallengeById(Long id) {
         Challenge challenge = challengeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Challenge not found with id: " + id));
         return ChallengeDTO.fromEntity(challenge);
     }
 
+    @Override
     public ChallengeDTO getChallengeBySlug(String slug) {
         Challenge challenge = challengeRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Challenge not found with slug: " + slug));
         return ChallengeDTO.fromEntity(challenge);
     }
 
+    @Override
     public List<ChallengeSummaryDTO> getAllChallenges() {
         return challengeRepository.findByIsActiveTrue().stream()
                 .map(ChallengeSummaryDTO::fromEntity)
                 .toList();
     }
 
+    @Override
     public List<ChallengeSummaryDTO> getChallengesByFilters(
             String difficulty,
             String category,
@@ -128,16 +132,19 @@ public class ChallengeService {
         return getAllChallenges();
     }
 
+    @Override
     public List<ChallengeSummaryDTO> getFeaturedChallenges() {
         return challengeRepository.findByFeaturedTrue().stream()
                 .map(ChallengeSummaryDTO::fromEntity)
                 .toList();
     }
 
+    @Override
     public List<String> getAllCategories() {
         return challengeRepository.findAllCategories();
     }
 
+    @Override
     @Transactional
     public ChallengeDTO updateChallenge(Long id, UpdateChallengeRequest request) {
         Challenge challenge = challengeRepository.findById(id)
@@ -201,6 +208,7 @@ public class ChallengeService {
         return ChallengeDTO.fromEntity(updatedChallenge);
     }
 
+    @Override
     @Transactional
     public void deleteChallenge(Long id) {
         Challenge challenge = challengeRepository.findById(id)

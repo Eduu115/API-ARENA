@@ -16,15 +16,13 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
 @Entity
 @Table(name = "users")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data @NoArgsConstructor
 
 public class User {
     @Id
@@ -59,23 +57,18 @@ public class User {
     @Column(name = "github_username", length = 100)
     private String githubUsername;
 
-    @Builder.Default
     @Column(nullable = false)
     private Integer rating = 1000;
 
-    @Builder.Default
     @Column(nullable = false)
     private Integer level = 1;
 
-    @Builder.Default
     @Column(name = "experience_points", nullable = false)
     private Integer experiencePoints = 0;
 
-    @Builder.Default
     @Column(name = "total_challenges_completed", nullable = false)
     private Integer totalChallengesCompleted = 0;
 
-    @Builder.Default
     @Column(name = "total_tests_passed", nullable = false)
     private Integer totalTestsPassed = 0;
 
@@ -90,11 +83,9 @@ public class User {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
-    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Builder.Default
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 

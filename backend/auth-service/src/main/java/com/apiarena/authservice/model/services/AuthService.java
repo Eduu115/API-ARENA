@@ -19,21 +19,22 @@ import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.repository.UserRepository;
 
 @Service
-public class AuthService {
+public class AuthService implements IAuthService {
 
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
-    private JwtService jwtService;
+    private IJwtService jwtService;
     @Autowired
-    private RefreshTokenService refreshTokenService;
+    private IRefreshTokenService refreshTokenService;
     @Autowired
-    private UserService userService;
+    private IUserService userService;
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) { // para los errores, uso los exception handleres que he creado, estan en /exception
         // Validar que el email no exista
@@ -68,6 +69,7 @@ public class AuthService {
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }
 
+    @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
         
@@ -92,6 +94,7 @@ public class AuthService {
         return new AuthResponse(UserDTO.fromEntity(user), accessToken, refreshToken.getToken());
     }
 
+    @Override
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         // Verificar refresh token
@@ -112,6 +115,7 @@ public class AuthService {
         return new AuthResponse(UserDTO.fromEntity(user), accessToken, newRefreshToken.getToken());
     }
 
+    @Override
     @Transactional
     public void logout(String refreshToken) {
         if (refreshToken != null && !refreshToken.isEmpty()) {

@@ -1,7 +1,7 @@
 package com.apiarena.authservice.config;
 
-import com.apiarena.authservice.model.services.JwtService;
-import com.apiarena.authservice.model.services.UserService;
+import com.apiarena.authservice.model.services.IJwtService;
+import com.apiarena.authservice.model.services.IUserService;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -30,10 +30,10 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtService jwtService;
+    private IJwtService jwtService;
 
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {

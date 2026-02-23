@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +16,7 @@ import com.apiarena.authservice.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -33,19 +32,21 @@ public class UserService implements UserDetailsService {
             .build();
     }
 
-
+    @Override
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         return UserDTO.fromEntity(user);
     }
 
+    @Override
     public UserDTO getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
         return UserDTO.fromEntity(user);
     }
 
+    @Override
     @Transactional
     public UserDTO updateProfile(Long userId, UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
@@ -65,6 +66,7 @@ public class UserService implements UserDetailsService {
         return UserDTO.fromEntity(savedUser);
     }
 
+    @Override
     @Transactional
     public void updateLastLogin(String email) {
         User user = userRepository.findByEmail(email)
@@ -73,9 +75,9 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    @Override
     public User getUserEntityByEmail(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
-
 }

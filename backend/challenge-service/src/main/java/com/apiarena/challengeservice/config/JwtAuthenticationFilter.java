@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtService jwtService;
+    private IJwtService jwtService;
 
     @Override
     protected void doFilterInternal(

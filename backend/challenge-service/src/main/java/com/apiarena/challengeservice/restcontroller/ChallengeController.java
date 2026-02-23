@@ -22,7 +22,7 @@ import com.apiarena.challengeservice.model.dto.ChallengeDTO;
 import com.apiarena.challengeservice.model.dto.ChallengeSummaryDTO;
 import com.apiarena.challengeservice.model.dto.CreateChallengeRequest;
 import com.apiarena.challengeservice.model.dto.UpdateChallengeRequest;
-import com.apiarena.challengeservice.model.services.ChallengeService;
+import com.apiarena.challengeservice.model.services.IChallengeService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -35,7 +35,7 @@ import jakarta.validation.Valid;
 public class ChallengeController {
 
     @Autowired
-    private ChallengeService challengeService;
+    private IChallengeService challengeService;
 
     // ========================================
     // ENDPOINTS PÚBLICOS (todos pueden ver)
