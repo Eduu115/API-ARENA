@@ -1,4 +1,4 @@
-package com.apiarena.challengeservice.config;
+package com.apiarena.submissionservice.config;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -30,9 +30,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        
+
         final String authHeader = request.getHeader("Authorization");
-        
+
+        // Si no hay Bearer token, continuar sin autenticación
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -41,25 +42,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
+            final Long userId = jwtService.extractUserId(jwt);
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                
+
                 if (jwtService.isTokenValid(jwt)) {
                     Claims claims = jwtService.extractAllClaims(jwt);
-                    
-                    // El token del auth-service incluye authorities en formato ROLE_STUDENT
+
+                    // El token del auth-service incluye authorities y userId
                     List<SimpleGrantedAuthority> authorities;
-                    
                     try {
                         @SuppressWarnings("unchecked")
                         List<String> roles = (List<String>) claims.get("authorities");
-                        
+
                         if (roles != null && !roles.isEmpty()) {
                             authorities = roles.stream()
                                     .map(SimpleGrantedAuthority::new)
                                     .collect(Collectors.toList());
                         } else {
-                            // Fallback: extraer de otro campo si existe
+                             // Fallback: extraer de otro campo si existe
                             String role = claims.get("role", String.class);
                             if (role != null) {
                                 authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
@@ -72,8 +73,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authorities = List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
                     }
 
+                    SubmissionPrincipal userDetails = new SubmissionPrincipal(userEmail, userId);
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userEmail,
+                            userDetails,
                             null,
                             authorities
                     );
