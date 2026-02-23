@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import TerminalWindow from '../../../components/landing/TerminalWindow';
+import ArrowRightIcon from '../../../components/icons/ArrowRightIcon';
 import { HERO_STATS } from '../landing.data';
 
 export default function HeroSection() {
@@ -27,14 +28,7 @@ export default function HeroSection() {
           <Link to="/register" className="btn-primary">▶ Start Competing</Link>
           <Link to="/challenges" className="btn-secondary">
             Ver challenges
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M3 8H13M13 8L9 4M13 8L9 12"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            <ArrowRightIcon />
           </Link>
         </div>
 
