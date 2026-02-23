@@ -1,0 +1,21 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lg-nc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D9FF" />
+      <stop offset="100%" stop-color="#00FFA3" />
+    </linearGradient>
+    <filter id="lg-ng">
+      <feGaussianBlur stdDeviation="1.5" result="b" />
+      <feMerge>
+        <feMergeNode in="b" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+  <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#1A2040" stroke="url(#lg-nc)" stroke-width="1.2" />
+  <g filter="url(#lg-ng)">
+    <path d="M11,14 L9,14 Q7,14 7,16 L7,20 Q7,22 5,22 Q7,22 7,24 L7,28 Q7,30 9,30 L11,30" fill="none" stroke="url(#lg-nc)" stroke-width="1.8" stroke-linecap="round" />
+    <path d="M29,14 L31,14 Q33,14 33,16 L33,20 Q33,22 35,22 Q33,22 33,24 L33,28 Q33,30 31,30 L29,30" fill="none" stroke="url(#lg-nc)" stroke-width="1.8" stroke-linecap="round" />
+    <line x1="17" y1="31" x2="23" y2="13" stroke="#B24BF3" stroke-width="2.2" stroke-linecap="round" />
+  </g>
+</svg>

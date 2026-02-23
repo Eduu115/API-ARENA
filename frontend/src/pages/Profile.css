@@ -1,0 +1,327 @@
+/* ============================================================
+   PROFILE — Vista de perfil con datos reales del usuario
+   ============================================================ */
+
+.profile-page .profile-main {
+  min-height: calc(100vh - 56px - 60px);
+  padding: 32px 24px 48px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.profile-loading {
+  text-align: center;
+  font-size: 18px;
+  color: var(--muted);
+  padding: 80px 24px;
+}
+
+.profile-back-link {
+  display: inline-block;
+  margin-bottom: 32px;
+  color: var(--cyan);
+  font-size: 14px;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+  transition: opacity 0.2s;
+}
+
+.profile-back-link:hover {
+  opacity: 0.8;
+}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 40px 48px;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.06) 0%, rgba(178, 75, 243, 0.04) 100%);
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  position: relative;
+}
+
+.profile-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  background: var(--bg3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 36px;
+  color: var(--cyan);
+}
+
+.profile-hero-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-username {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -0.5px;
+  color: var(--white);
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.profile-email {
+  font-size: 15px;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+}
+
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+}
+
+.profile-badge-active {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.profile-badge-verified {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+/* ── Sections ──────────────────────────────────────────────── */
+.profile-section {
+  margin-bottom: 40px;
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  padding: 32px 40px;
+}
+
+.profile-section-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: var(--cyan);
+  margin: 0 0 24px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--dim);
+  text-transform: uppercase;
+}
+
+/* Info display */
+.profile-info-display {
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.profile-bio {
+  margin: 0 0 12px 0;
+}
+
+.profile-github {
+  margin: 0 0 20px 0;
+}
+
+.profile-github a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.profile-github a:hover {
+  text-decoration: underline;
+}
+
+.profile-empty {
+  color: var(--muted);
+  margin: 0 0 20px 0;
+}
+
+.profile-btn-edit {
+  padding: 10px 24px;
+  background: var(--cyan);
+  color: #080B1E;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.profile-btn-edit:hover {
+  opacity: 0.9;
+}
+
+/* Form */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-error {
+  padding: 12px 16px;
+  background: rgba(255, 77, 106, 0.15);
+  color: var(--red);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.profile-form-group label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.profile-form-group input,
+.profile-form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg1);
+  border: 1px solid var(--dim);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.profile-form-group input:focus,
+.profile-form-group textarea:focus {
+  outline: none;
+  border-color: var(--cyan);
+}
+
+.profile-form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.profile-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.profile-btn-save {
+  padding: 10px 24px;
+  background: var(--cyan);
+  color: #080B1E;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.profile-btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-btn-cancel {
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--dim);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.profile-btn-cancel:hover {
+  color: var(--text);
+}
+
+/* Stats */
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 24px;
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  background: var(--bg1);
+  border: 1px solid var(--dim);
+}
+
+.profile-stat-value {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--cyan);
+  line-height: 1;
+}
+
+.profile-stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Meta */
+.profile-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.profile-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-meta-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.profile-meta-value {
+  font-size: 14px;
+  color: var(--text);
+}
