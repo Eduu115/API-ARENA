@@ -1,0 +1,843 @@
+{
+	"info": {
+		"_postman_id": "apiarena-backend-collection",
+		"name": "API-ARENA Backend Tests",
+		"description": "Colección completa para probar todos los endpoints del backend API-ARENA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth Service",
+			"item": [
+				{
+					"name": "1. Register Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has user\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.user).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"student1\",\n  \"email\": \"student1@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"STUDENT\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Register Teacher",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"teacher1\",\n  \"email\": \"teacher1@example.com\",\n  \"password\": \"Password123!\",\n  \"role\": \"TEACHER\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Has access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accessToken).to.exist;",
+									"    pm.collectionVariables.set(\"student_token\", jsonData.accessToken);",
+									"    pm.collectionVariables.set(\"refresh_token\", jsonData.refreshToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"student1@example.com\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Teacher",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Has access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accessToken).to.exist;",
+									"    pm.collectionVariables.set(\"teacher_token\", jsonData.accessToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"teacher1@example.com\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Get Current User (Student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Has user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.email).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8081/api/auth/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"bio\": \"Soy un estudiante apasionado por las APIs\",\n  \"githubUsername\": \"student1-github\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Has new access token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.accessToken).to.exist;",
+									"    pm.collectionVariables.set(\"student_token\", jsonData.accessToken);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/refresh",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/auth/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Challenge Service",
+			"item": [
+				{
+					"name": "Public Endpoints",
+					"item": [
+						{
+							"name": "1. Get All Challenges",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});",
+											"",
+											"pm.test(\"Response is array\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData).to.be.an('array');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Get Challenges by Difficulty (EASY)",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges?difficulty=EASY",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges"
+									],
+									"query": [
+										{
+											"key": "difficulty",
+											"value": "EASY"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Get Challenges by Category",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges?category=REST",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges"
+									],
+									"query": [
+										{
+											"key": "category",
+											"value": "REST"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4. Search Challenges",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges?search=API",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges"
+									],
+									"query": [
+										{
+											"key": "search",
+											"value": "API"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "5. Get Featured Challenges",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges/featured",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges",
+										"featured"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "6. Get All Categories",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges/categories",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges",
+										"categories"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "7. Get Challenge by ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges/1",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "8. Get Challenge by Slug",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges/slug/rest-api-basica",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges",
+										"slug",
+										"rest-api-basica"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Protected Endpoints (TEACHER/ADMIN)",
+					"item": [
+						{
+							"name": "1. Create Challenge (EASY)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201);",
+											"});",
+											"",
+											"pm.test(\"Has challenge ID\", function () {",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.id).to.exist;",
+											"    pm.collectionVariables.set(\"challenge_id\", jsonData.id);",
+											"    pm.collectionVariables.set(\"challenge_slug\", jsonData.slug);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{teacher_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"REST API Básica\",\n  \"description\": \"Crea una API REST simple con operaciones CRUD básicas para gestionar una lista de items.\",\n  \"difficulty\": \"EASY\",\n  \"category\": \"REST\",\n  \"maxScore\": 1000,\n  \"timeLimitMinutes\": 60,\n  \"requiredEndpoints\": {\n    \"GET\": [\"/api/items\", \"/api/items/{id}\"],\n    \"POST\": [\"/api/items\"],\n    \"PUT\": [\"/api/items/{id}\"],\n    \"DELETE\": [\"/api/items/{id}\"]\n  },\n  \"requiredStatusCodes\": {\n    \"GET\": [200, 404],\n    \"POST\": [201],\n    \"PUT\": [200, 404],\n    \"DELETE\": [204, 404]\n  },\n  \"testSuite\": {\n    \"tests\": [\n      {\n        \"name\": \"GET /api/items debe retornar 200\",\n        \"endpoint\": \"/api/items\",\n        \"method\": \"GET\",\n        \"expectedStatus\": 200\n      },\n      {\n        \"name\": \"POST /api/items debe crear item\",\n        \"endpoint\": \"/api/items\",\n        \"method\": \"POST\",\n        \"body\": {\"name\": \"Test Item\"},\n        \"expectedStatus\": 201\n      }\n    ]\n  },\n  \"hints\": {\n    \"1\": \"Usa un Map o List para almacenar los items en memoria\",\n    \"2\": \"No olvides validar los datos de entrada\",\n    \"3\": \"Retorna 404 cuando un item no existe\"\n  },\n  \"solutionExplanation\": \"Esta API básica debe implementar CRUD completo con validación de errores.\",\n  \"learningObjectives\": {\n    \"objectives\": [\n      \"Entender los métodos HTTP\",\n      \"Implementar endpoints RESTful\",\n      \"Manejar códigos de estado HTTP correctamente\"\n    ]\n  }\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8082/api/challenges",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "2. Create Challenge (MEDIUM)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{teacher_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"API con Autenticación JWT\",\n  \"description\": \"Implementa una API REST con autenticación JWT y endpoints protegidos.\",\n  \"difficulty\": \"MEDIUM\",\n  \"category\": \"SECURITY\",\n  \"maxScore\": 1500,\n  \"timeLimitMinutes\": 120,\n  \"requiredEndpoints\": {\n    \"POST\": [\"/api/auth/register\", \"/api/auth/login\"],\n    \"GET\": [\"/api/protected/data\"]\n  },\n  \"requiredHeaders\": {\n    \"Authorization\": \"Bearer <token>\"\n  },\n  \"testSuite\": {\n    \"tests\": [\n      {\n        \"name\": \"POST /api/auth/register debe crear usuario\",\n        \"endpoint\": \"/api/auth/register\",\n        \"method\": \"POST\",\n        \"expectedStatus\": 201\n      },\n      {\n        \"name\": \"POST /api/auth/login debe retornar token\",\n        \"endpoint\": \"/api/auth/login\",\n        \"method\": \"POST\",\n        \"expectedStatus\": 200\n      }\n    ]\n  },\n  \"hints\": {\n    \"1\": \"Usa una librería JWT como jjwt\",\n    \"2\": \"Implementa un filtro de autenticación\",\n    \"3\": \"Valida el token en cada request protegido\"\n  },\n  \"learningObjectives\": {\n    \"objectives\": [\n      \"Implementar autenticación JWT\",\n      \"Proteger endpoints\",\n      \"Manejar tokens de acceso\"\n    ]\n  }\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8082/api/challenges",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "3. Update Challenge",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{teacher_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"featured\": true,\n  \"maxScore\": 1200\n}"
+								},
+								"url": {
+									"raw": "http://localhost:8082/api/challenges/{{challenge_id}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges",
+										"{{challenge_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "4. Delete Challenge (Soft Delete)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{teacher_token}}"
+									}
+								],
+								"url": {
+									"raw": "http://localhost:8082/api/challenges/{{challenge_id}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8082",
+									"path": [
+										"api",
+										"challenges",
+										"{{challenge_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "Auth Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Challenge Service Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "student_token",
+			"value": ""
+		},
+		{
+			"key": "teacher_token",
+			"value": ""
+		},
+		{
+			"key": "refresh_token",
+			"value": ""
+		},
+		{
+			"key": "challenge_id",
+			"value": ""
+		},
+		{
+			"key": "challenge_slug",
+			"value": ""
+		}
+	]
+}

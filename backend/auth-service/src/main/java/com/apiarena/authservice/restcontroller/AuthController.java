@@ -18,8 +18,8 @@ import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
-import com.apiarena.authservice.model.services.AuthService;
-import com.apiarena.authservice.model.services.UserService;
+import com.apiarena.authservice.model.services.IAuthService;
+import com.apiarena.authservice.model.services.IUserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,9 +32,9 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     @Autowired
-    private AuthService authService;
+    private IAuthService authService;
     @Autowired
-    private UserService userService;
+    private IUserService userService;
 
 
     // AUTh

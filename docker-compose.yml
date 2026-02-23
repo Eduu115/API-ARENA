@@ -153,24 +153,24 @@ services:
     restart: unless-stopped
 
   # ===========================================
-  # FRONTEND (por ahora en development mode)
+  # FRONTEND (React + Vite)
   # ===========================================
   
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: apiarena-frontend
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #   environment:
-  #     - VITE_API_URL=${API_URL}
-  #   networks:
-  #     - apiarena-network
-  #   restart: unless-stopped
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: apiarena-frontend
+    depends_on:
+      - auth-service
+      - challenge-service
+    ports:
+      - "3000:80"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
 
 networks:
   apiarena-network:

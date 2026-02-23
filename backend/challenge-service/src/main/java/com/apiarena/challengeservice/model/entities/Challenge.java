@@ -21,8 +21,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,8 +28,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "challenges")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Challenge {
 
     // PAra meter listas o JSON como en mongo Usamos JdbcTypeCode para mapear el JSON como un tipo de java
@@ -66,12 +62,10 @@ public class Challenge {
 
     @Min(0)
     @Column(name = "max_score", nullable = false)
-    @Builder.Default
     private Integer maxScore = 1000;
 
     @Min(1)
     @Column(name = "time_limit_minutes", nullable = false)
-    @Builder.Default
     private Integer timeLimitMinutes = 60;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -110,23 +104,18 @@ public class Challenge {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_active", nullable = false)
-    @Builder.Default
     private Boolean isActive = true;
 
     @Column(nullable = false)
-    @Builder.Default
     private Boolean featured = false;
 
     @Column(name = "times_attempted", nullable = false)
-    @Builder.Default
     private Integer timesAttempted = 0;
 
     @Column(name = "times_completed", nullable = false)
-    @Builder.Default
     private Integer timesCompleted = 0;
 
     @Column(name = "average_score", precision = 5, scale = 2)
-    @Builder.Default
     private BigDecimal averageScore = BigDecimal.ZERO;
 
     @JdbcTypeCode(SqlTypes.JSON)

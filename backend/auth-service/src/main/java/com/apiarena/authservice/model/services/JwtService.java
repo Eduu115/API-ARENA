@@ -22,22 +22,25 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class JwtService implements IJwtService {
 
     private final JwtProperties jwtProperties;
 
     // ========================================
     // EXTRACCIÓN DE INFORMACIÓN DEL TOKEN
     // ========================================
-    
+
+    @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    @Override
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -54,7 +57,8 @@ public class JwtService {
     // ========================================
     // GENERACIÓN DE TOKENS
     // ========================================
-    
+
+    @Override
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         
@@ -66,6 +70,7 @@ public class JwtService {
         return generateToken(claims, userDetails, jwtProperties.getExpiration());
     }
 
+    @Override
     public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         // AÑADIR ROLES AL TOKEN
         extraClaims.put("authorities", userDetails.getAuthorities().stream()
@@ -75,6 +80,7 @@ public class JwtService {
         return generateToken(extraClaims, userDetails, jwtProperties.getExpiration());
     }
 
+    @Override
     public String generateRefreshToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails, jwtProperties.getRefreshExpiration());
     }
@@ -98,12 +104,14 @@ public class JwtService {
     // ========================================
     // VALIDACIÓN DE TOKENS
     // ========================================
-    
+
+    @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
+    @Override
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
@@ -111,7 +119,7 @@ public class JwtService {
     // ========================================
     // UTILIDADES
     // ========================================
-    
+
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
         return Keys.hmacShaKeyFor(keyBytes);
