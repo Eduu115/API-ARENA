@@ -9,16 +9,26 @@
 
 ## Inicio con Docker Compose
 
-### Opción 1: Levantar todo el backend (Recomendado)
+### Opción 1: Levantar todo (Backend + Frontend)
+
+Este comando levanta PostgreSQL, Redis, ambos servicios Spring Boot y el frontend React:
+
+```bash
+# Desde la raíz del proyecto (donde está docker-compose.yml)
+docker-compose up -d postgres redis auth-service challenge-service frontend
+```
+
+El frontend estará disponible en: http://localhost:3000
+
+### Opción 2: Solo backend completo
 
 Este comando levanta PostgreSQL, Redis y ambos servicios Spring Boot:
 
 ```bash
-# Desde la raíz del proyecto (donde está docker-compose.yml)
 docker-compose up -d postgres redis auth-service challenge-service
 ```
 
-### Opción 2: Levantar solo las bases de datos
+### Opción 3: Solo bases de datos
 
 Si prefieres ejecutar los servicios Spring Boot desde tu IDE:
 
@@ -29,6 +39,13 @@ docker-compose up -d postgres redis
 Luego ejecuta desde tu IDE:
 - `AuthServiceApplication.java` (puerto 8081)
 - `ChallengeServiceApplication.java` (puerto 8082)
+
+Y para el frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ---
 
@@ -43,6 +60,7 @@ docker-compose logs -f
 # Ver logs de un servicio específico
 docker-compose logs -f auth-service
 docker-compose logs -f challenge-service
+docker-compose logs -f frontend
 docker-compose logs -f postgres
 docker-compose logs -f redis
 ```
@@ -68,12 +86,18 @@ docker-compose down -v
 Si haces cambios en el código, necesitas reconstruir:
 
 ```bash
-# Reconstruir y levantar
+# Reconstruir y levantar backend
 docker-compose up -d --build auth-service challenge-service
 
+# Reconstruir y levantar frontend
+docker-compose up -d --build frontend
+
+# Reconstruir todo
+docker-compose up -d --build
+
 # O reconstruir sin caché
-docker-compose build --no-cache auth-service challenge-service
-docker-compose up -d auth-service challenge-service
+docker-compose build --no-cache auth-service challenge-service frontend
+docker-compose up -d
 ```
 
 ### Reiniciar un servicio específico
@@ -81,6 +105,7 @@ docker-compose up -d auth-service challenge-service
 ```bash
 docker-compose restart auth-service
 docker-compose restart challenge-service
+docker-compose restart frontend
 ```
 
 ---
@@ -96,10 +121,20 @@ curl http://localhost:8081/actuator/health
 # Challenge Service
 curl http://localhost:8082/actuator/health
 
-# Ambos deberían responder: {"status":"UP"}
+# Frontend
+curl http://localhost:3000/health
+
+# Ambos servicios backend deberían responder: {"status":"UP"}
+# Frontend debería responder: "healthy"
 ```
 
-### 2. Swagger UI
+### 2. Acceder a las aplicaciones
+
+- Frontend: http://localhost:3000
+- Auth Service API: http://localhost:8081
+- Challenge Service API: http://localhost:8082
+
+### 3. Swagger UI (Backend)
 
 - Auth Service: http://localhost:8081/swagger-ui.html
 - Challenge Service: http://localhost:8082/swagger-ui.html
@@ -312,6 +347,7 @@ docker-compose logs -f
 
 | Servicio | Puerto | URL |
 |----------|--------|-----|
+| Frontend | 3000 | http://localhost:3000 |
 | Auth Service | 8081 | http://localhost:8081 |
 | Challenge Service | 8082 | http://localhost:8082 |
 | PostgreSQL | 5432 | localhost:5432 |
@@ -346,6 +382,9 @@ docker-compose up -d postgres redis
 # Backend completo
 docker-compose up -d postgres redis auth-service challenge-service
 
+# Backend + Frontend (aplicación completa)
+docker-compose up -d postgres redis auth-service challenge-service frontend
+
 # Todo (incluye MongoDB, InfluxDB, Kafka si los necesitas)
 docker-compose up -d
 ```
@@ -354,17 +393,23 @@ docker-compose up -d
 
 ## Notas importantes
 
-1. **Primera ejecución:** La primera vez que ejecutes `docker-compose up`, Docker descargará las imágenes base y compilará los servicios Spring Boot. Esto puede tardar 5-10 minutos.
+1. **Primera ejecución:** La primera vez que ejecutes `docker-compose up`, Docker descargará las imágenes base y compilará los servicios. Esto puede tardar 5-10 minutos para el backend y 2-3 minutos para el frontend.
 
-2. **Tiempo de inicio:** Los servicios Spring Boot tardan aproximadamente 30-60 segundos en iniciar después de que PostgreSQL esté listo.
+2. **Tiempo de inicio:** 
+   - Los servicios Spring Boot tardan aproximadamente 30-60 segundos en iniciar
+   - El frontend está disponible inmediatamente después de construirse
 
 3. **Tablas automáticas:** Las tablas se crean automáticamente gracias a `spring.jpa.hibernate.ddl-auto=update`.
 
 4. **Script SQL:** El archivo `docker/postgres/init-db.sql` se ejecuta automáticamente la primera vez que se crea el contenedor de PostgreSQL.
 
-5. **Hot Reload:** Si haces cambios en el código, necesitas reconstruir las imágenes con `docker-compose up -d --build`.
+5. **Hot Reload:** 
+   - Backend: Si haces cambios en el código Java, necesitas reconstruir las imágenes con `docker-compose up -d --build`
+   - Frontend: Si haces cambios en el código React, necesitas reconstruir con `docker-compose up -d --build frontend`
 
-6. **Desarrollo local:** Si prefieres desarrollo rápido, usa `docker-compose up -d postgres redis` y ejecuta los servicios Spring Boot desde tu IDE.
+6. **Desarrollo local:** Si prefieres desarrollo rápido:
+   - Backend: usa `docker-compose up -d postgres redis` y ejecuta los servicios Spring Boot desde tu IDE
+   - Frontend: usa `npm run dev` en la carpeta frontend (puerto 5173 por defecto)
 
 ---
 
@@ -373,11 +418,23 @@ docker-compose up -d
 ### Durante desarrollo:
 
 ```bash
+# Opción A: Desarrollo rápido con hot reload
 # 1. Levantar solo bases de datos
 docker-compose up -d postgres redis
 
-# 2. Ejecutar servicios Spring Boot desde tu IDE
-# (más rápido para desarrollo y debugging)
+# 2. Backend: Ejecutar desde tu IDE (hot reload automático)
+# 3. Frontend: Ejecutar en modo dev
+cd frontend
+npm run dev  # http://localhost:5173
+```
+
+```bash
+# Opción B: Testing con Docker
+# Levantar todo con Docker
+docker-compose up -d postgres redis auth-service challenge-service frontend
+
+# Ver logs en tiempo real
+docker-compose logs -f
 ```
 
 ### Para testing/producción:
@@ -388,6 +445,9 @@ docker-compose up -d --build
 
 # Ver logs
 docker-compose logs -f
+
+# Verificar estado
+docker-compose ps
 ```
 
 ---
