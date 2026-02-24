@@ -1,12 +1,5 @@
-/* ============================================================
-   DASHBOARD PAGE — Custom CSS  (db- prefix)
-   Requiere que el componente padre tenga la clase .challenges-page
-   para que hereden las variables CSS y estilos base de layout.
-   ============================================================ */
 
-/* ============================================================
-   SIDEBAR — PERFIL DE USUARIO
-   ============================================================ */
+
 .db-profile-wrap {
   padding: 28px 20px 24px;
   border-bottom: 1px solid var(--dim);
@@ -75,7 +68,6 @@
   flex-shrink: 0;
 }
 
-/* ── Quick stats 2×2 en sidebar ────────────────────────────── */
 .db-quick-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -104,7 +96,6 @@
   color: var(--muted);
 }
 
-/* ── Category progress en sidebar ──────────────────────────── */
 .db-cat-row {
   margin-bottom: 10px;
 }
@@ -128,9 +119,6 @@
   transition: width 1s ease;
 }
 
-/* ============================================================
-   KPI STAT CARDS (row of 4)
-   ============================================================ */
 .db-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -208,9 +196,6 @@
   margin: 0 -20px;
 }
 
-/* ============================================================
-   CONTENT GRID — activity + right panel
-   ============================================================ */
 .db-content-grid {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -218,7 +203,6 @@
   margin-bottom: 24px;
 }
 
-/* ── Generic panel box ─────────────────────────────────────── */
 .db-panel {
   background: var(--bg2);
   border: 1px solid var(--dim);
@@ -260,7 +244,6 @@
 }
 .db-panel-action:hover { color: var(--cyan); }
 
-/* ── Activity rows ─────────────────────────────────────────── */
 .db-activity-row {
   display: flex;
   align-items: center;
@@ -344,14 +327,12 @@
   text-align: right;
 }
 
-/* ── Right panel stack ─────────────────────────────────────── */
 .db-right-stack {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* ── Mini leaderboard ──────────────────────────────────────── */
 .db-lb-row {
   display: flex;
   align-items: center;
@@ -412,7 +393,6 @@
 }
 .db-lb-row.db-lb-me .db-lb-pts { color: var(--warn); }
 
-/* ── Streak widget ─────────────────────────────────────────── */
 .db-streak-body {
   padding: 16px 18px;
 }
@@ -480,9 +460,6 @@
   text-transform: uppercase;
 }
 
-/* ============================================================
-   RECOMMENDED CHALLENGES STRIP
-   ============================================================ */
 .db-rec-head {
   display: flex;
   align-items: baseline;
@@ -563,9 +540,6 @@
   text-align: right;
 }
 
-/* ============================================================
-   ACTIVITY HEADER TABLE
-   ============================================================ */
 .db-table-header {
   display: flex;
   align-items: center;
@@ -586,18 +560,12 @@
 .db-th-status    { width: 70px; flex-shrink: 0; text-align: right; }
 .db-th-time      { width: 36px; flex-shrink: 0; text-align: right; }
 
-/* ============================================================
-   SEPARADOR VISUAL
-   ============================================================ */
 .db-separator {
   height: 1px;
   background: var(--dim);
   margin: 24px 0;
 }
 
-/* ============================================================
-   WELCOME HEADER OVERRIDE
-   ============================================================ */
 .db-page-eyebrow {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -662,105 +630,74 @@
   background: rgba(0,217,255,0.14);
 }
 
-/* ============================================================
-   RESPONSIVE — TABLET  ≤1024px
-   ============================================================ */
 @media (max-width: 1024px) {
 
-  /* KPI: 2 columns */
   .db-kpi-grid { grid-template-columns: repeat(2, 1fr); }
 
-  /* Content: single column */
   .db-content-grid { grid-template-columns: 1fr; }
 
-  /* Right panel pair: side by side */
   .db-right-stack            { flex-direction: row; gap: 16px; }
   .db-right-stack .db-panel  { flex: 1; min-width: 0; }
 
-  /* Recommended: 2 columns */
   .db-rec-grid { grid-template-columns: repeat(2, 1fr); }
 
-  /* Profile wrap: slightly tighter */
   .db-profile-wrap { padding: 20px 20px 18px; }
 }
 
-/* ============================================================
-   RESPONSIVE — MOBILE  ≤768px
-   ============================================================ */
 @media (max-width: 768px) {
 
-  /* Main area: bottom padding for bottom nav */
   .ch-main { padding: 20px 16px 80px; }
 
-  /* Typography */
   .db-page-title { font-size: 38px; }
   .db-kpi-val    { font-size: 38px; }
 
-  /* Hide CTA buttons in header */
   .db-header-actions { display: none; }
 
-  /* KPI gap */
   .db-kpi-grid { gap: 8px; }
   .db-kpi-card { padding: 16px 16px 0; }
 
-  /* Right panel stack: vertical */
   .db-right-stack { flex-direction: column; }
 
-  /* Recommended: single column */
   .db-rec-grid { grid-template-columns: 1fr; }
 
-  /* Activity table: hide time column */
   .db-th-time,
   .db-row-time { display: none; }
 
-  /* Narrow score column */
   .db-row-score { width: 90px; }
   .db-th-score  { width: 90px; }
 
-  /* Streak */
   .db-streak-body { padding: 12px 16px; }
   .db-streak-num  { font-size: 40px; }
 
-  /* Rec card */
   .db-rec-head  { flex-direction: column; gap: 4px; align-items: flex-start; }
 }
 
-/* ============================================================
-   RESPONSIVE — SMALL MOBILE  ≤480px
-   ============================================================ */
 @media (max-width: 480px) {
 
-  /* KPI cards: compact */
   .db-kpi-card  { padding: 12px 12px 0; }
   .db-kpi-val   { font-size: 28px; letter-spacing: -1px; }
   .db-kpi-label { font-size: 7px; letter-spacing: 1px; }
   .db-kpi-icon  { font-size: 10px; }
   .db-kpi-change { font-size: 7px; }
 
-  /* Activity table: hide score column too */
   .db-th-score,
   .db-row-score { display: none; }
 
-  /* Simplify activity rows */
   .db-row-status { width: auto; }
   .db-activity-row { padding: 10px 14px; gap: 10px; }
 
-  /* Leaderboard */
   .db-lb-hex  { display: none; }
   .db-lb-pts  { font-size: 12px; }
   .db-lb-rank { font-size: 13px; width: 16px; }
 
-  /* Profile sidebar */
   .db-avatar        { width: 56px; height: 56px; font-size: 22px; }
   .db-profile-name  { font-size: 18px; }
   .db-qs-val        { font-size: 18px; }
   .db-qs-label      { font-size: 7px; }
 
-  /* Rec cards */
   .db-rec-card-title { font-size: 15px; }
   .db-rec-card-pts   { font-size: 15px; }
 
-  /* Page title */
   .db-page-title { font-size: 28px; }
   .db-page-sub   { font-size: 9px; }
 }

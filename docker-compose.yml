@@ -1,8 +1,4 @@
 services:
-  # ===========================================
-  # DATABASES
-  # ===========================================
-  
   postgres:
     image: postgres:16-alpine
     container_name: apiarena-postgres
@@ -74,10 +70,6 @@ services:
       - apiarena-network
     restart: unless-stopped
 
-  # ===========================================
-  # MESSAGE BROKER
-  # ===========================================
-
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: apiarena-zookeeper
@@ -107,10 +99,6 @@ services:
     networks:
       - apiarena-network
     restart: unless-stopped
-
-  # ===========================================
-  # BACKEND (Java / Spring Boot)
-  # ===========================================
 
   auth-service:
     build:
@@ -152,10 +140,6 @@ services:
       - apiarena-network
     restart: unless-stopped
 
-  # ===========================================
-  # FRONTEND (React + Vite)
-  # ===========================================
-  
   frontend:
     build:
       context: ./frontend

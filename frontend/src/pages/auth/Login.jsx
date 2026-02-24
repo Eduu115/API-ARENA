@@ -26,7 +26,6 @@ export default function Login() {
         <ThemeToggle />
       </div>
       <div className="auth-main">
-        {/* Panel izquierdo - Switch */}
         <div className="auth-switch">
           <div className="auth-switch__circle auth-switch__circle--1" />
           <div className="auth-switch__circle auth-switch__circle--2" />
@@ -41,7 +40,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Panel derecho - Formulario Login */}
         <div className="auth-form-container">
           <form className="auth-form" onSubmit={handleSubmit}>
             <h2 className="auth-form__title">Iniciar sesión</h2>

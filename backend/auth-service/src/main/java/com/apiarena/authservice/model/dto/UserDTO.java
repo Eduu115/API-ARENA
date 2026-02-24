@@ -31,7 +31,6 @@ public class UserDTO {
     private Boolean isActive;
     private Boolean emailVerified;
 
-
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
             user.getId(),

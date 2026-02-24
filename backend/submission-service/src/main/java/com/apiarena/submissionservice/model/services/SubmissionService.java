@@ -31,11 +31,9 @@ public class SubmissionService {
     @Autowired
     private SubmissionWebSocketService webSocketService;
 
-    // Creamos la submission
-
     @Transactional
     public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile) {
-        // Validar parámetros requeridos
+
         if (challengeId == null) {
             throw new IllegalArgumentException("Challenge ID is required");
         }
@@ -51,7 +49,6 @@ public class SubmissionService {
 
         Submission saved = submissionRepository.save(submission);
 
-        // Guardar ZIP en disco y actualizar la entidad
         String zipFilePath = uploadStorageService.storeZip(zipFile, saved.getId());
         saved.setZipFilePath(zipFilePath);
         saved.setStatus(Submission.Status.PENDING);
@@ -67,13 +64,10 @@ public class SubmissionService {
         return new CreateSubmissionResponse(saved.getId(), saved.getStatus().name(), wsTopic);
     }
 
-    // Consultamos la submission
-
     public SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
-        // Verificar permisos: solo el admin o el teacher pueden ver las submissions
         if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
             throw new SecurityException("You are not allowed to access this submission");
         }
@@ -86,7 +80,6 @@ public class SubmissionService {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
-        // Verificar permisos
         if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
             throw new SecurityException("You are not allowed to access this submission");
         }
@@ -100,14 +93,11 @@ public class SubmissionService {
                 .toList();
     }
 
-    // Eliminamos la submission
-
     @Transactional
     public void deleteSubmission(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
-        // Verificar permisos
         if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
             throw new SecurityException("You are not allowed to delete this submission");
         }
@@ -116,15 +106,13 @@ public class SubmissionService {
         submissionRepository.delete(submission);
     }
 
-    // Actualizamos el estado de la submission
-
     public void updateStatus(Long submissionId, Submission.Status status, String errorMessage) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
 
         submission.setStatus(status);
         submission.setErrorMessage(errorMessage);
-        // Marcamos completedAt cuando termina  independientemente de si es éxito o un fallo
+
         if (status == Submission.Status.COMPLETED || status == Submission.Status.FAILED) {
             submission.setCompletedAt(LocalDateTime.now());
         }
@@ -138,7 +126,6 @@ public class SubmissionService {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
         if (submission == null) return;  
 
-
         String existing = submission.getBuildLogs() != null ? submission.getBuildLogs() : "";
         submission.setBuildLogs(existing + logs);
         submissionRepository.save(submission);
@@ -149,7 +136,6 @@ public class SubmissionService {
     public void appendTestLogs(Long submissionId, String logs) {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
         if (submission == null) return;  
-
 
         String existing = submission.getTestLogs() != null ? submission.getTestLogs() : "";
         submission.setTestLogs(existing + logs);

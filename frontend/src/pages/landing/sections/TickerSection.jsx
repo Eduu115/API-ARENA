@@ -1,7 +1,6 @@
 import { TICKER_ITEMS } from '../landing.data';
 
 export default function TickerSection() {
-  /* Duplicamos los items para que el scroll infinito no deje huecos */
   const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
 
   return (

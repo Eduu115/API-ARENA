@@ -1,6 +1,4 @@
-/* ============================================================
-   CHALLENGE DETAIL — Vista completa a pantalla entera
-   ============================================================ */
+
 
 .chd-page .chd-main {
   min-height: calc(100vh - 56px - 60px);
@@ -76,7 +74,6 @@
   transform: translateY(-1px);
 }
 
-/* ── Hero ──────────────────────────────────────────────────── */
 .chd-hero {
   background: linear-gradient(135deg, rgba(0, 217, 255, 0.06) 0%, rgba(178, 75, 243, 0.04) 100%);
   border: 1px solid rgba(0, 217, 255, 0.2);
@@ -161,7 +158,6 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Sections ──────────────────────────────────────────────── */
 .chd-section {
   margin-bottom: 40px;
 }
@@ -178,7 +174,6 @@
   text-transform: uppercase;
 }
 
-/* Descripción */
 .chd-description {
   background: var(--bg2);
   border: 1px solid var(--dim);
@@ -193,7 +188,6 @@
   white-space: pre-wrap;
 }
 
-/* JSON blocks */
 .chd-json-block {
   background: var(--bg1);
   border: 1px solid var(--dim);
@@ -218,7 +212,6 @@
   background: var(--dim);
 }
 
-/* Lists */
 .chd-list {
   margin: 0;
   padding-left: 24px;
@@ -231,7 +224,6 @@
   margin-bottom: 8px;
 }
 
-/* Hints */
 .chd-hints-list {
   margin: 0;
   padding: 0;
@@ -256,7 +248,6 @@
   min-width: 24px;
 }
 
-/* Solution */
 .chd-solution-text {
   font-size: 16px;
   line-height: 1.75;
@@ -265,7 +256,6 @@
   white-space: pre-wrap;
 }
 
-/* Footer */
 .chd-footer {
   margin-top: 48px;
   padding-top: 32px;

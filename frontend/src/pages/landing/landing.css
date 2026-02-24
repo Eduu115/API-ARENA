@@ -1,6 +1,4 @@
-/* ========================
-   CSS VARIABLES
-======================== */
+
 :root {
   --cyan: #00D9FF;
   --purple: #B24BF3;
@@ -16,9 +14,6 @@
 
 html { scroll-behavior: smooth; }
 
-/* ========================
-   LANDING PAGE WRAPPER
-======================== */
 .landing-page {
   background: var(--bg0);
   color: var(--text);
@@ -27,7 +22,6 @@ html { scroll-behavior: smooth; }
   cursor: none;
 }
 
-/* CUSTOM CURSOR */
 .cursor {
   width: 12px; height: 12px;
   background: var(--cyan);
@@ -52,7 +46,6 @@ html { scroll-behavior: smooth; }
   opacity: 0.4;
 }
 
-/* SCANLINES OVERLAY */
 .landing-page::before {
   content: '';
   position: fixed;
@@ -69,7 +62,6 @@ html { scroll-behavior: smooth; }
   z-index: 1000;
 }
 
-/* NOISE GRAIN */
 .landing-page::after {
   content: '';
   position: fixed;
@@ -81,9 +73,6 @@ html { scroll-behavior: smooth; }
   opacity: 0.35;
 }
 
-/* ========================
-   NAVBAR
-======================== */
 nav {
   position: fixed; top: 0; left: 0; right: 0;
   z-index: 100;
@@ -160,9 +149,6 @@ nav {
 .nav-cta:hover { color: var(--bg0); }
 .nav-cta:hover::before { left: 0; }
 
-/* ========================
-   HERO SECTION
-======================== */
 .hero {
   min-height: 100vh;
   display: grid;
@@ -453,9 +439,6 @@ nav {
   text-align: right;
 }
 
-/* ========================
-   MARQUEE / TICKER
-======================== */
 .ticker {
   background: rgba(0,217,255,0.06);
   border-top: 1px solid rgba(0,217,255,0.15);
@@ -491,9 +474,6 @@ nav {
   100% { transform: translateX(-50%); }
 }
 
-/* ========================
-   SECTIONS
-======================== */
 .section {
   padding: 120px 60px;
   position: relative;
@@ -526,7 +506,6 @@ nav {
   letter-spacing: -1px;
 }
 
-/* ABOUT */
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -625,9 +604,6 @@ nav {
   user-select: none;
 }
 
-/* ========================
-   HOW IT WORKS
-======================== */
 .how-section {
   background: var(--bg1);
   padding: 120px 60px;
@@ -702,9 +678,6 @@ nav {
   letter-spacing: 0.5px;
 }
 
-/* ========================
-   FEATURES BENTO
-======================== */
 .features-section { padding: 120px 60px; position: relative; }
 .features-header {
   display: flex;
@@ -781,9 +754,6 @@ nav {
 .mini-badge.purple { border: 1px solid var(--purple); color: var(--purple); }
 .mini-badge.green { border: 1px solid var(--green); color: var(--green); }
 
-/* ========================
-   LEADERBOARD
-======================== */
 .lb-section {
   background: var(--bg1);
   padding: 120px 60px;
@@ -888,9 +858,6 @@ nav {
   margin-bottom: 40px;
 }
 
-/* ========================
-   CTA SECTION
-======================== */
 .cta-section {
   padding: 160px 60px;
   text-align: center;
@@ -984,9 +951,6 @@ nav {
   letter-spacing: 2px;
 }
 
-/* ========================
-   FOOTER
-======================== */
 footer {
   border-top: 1px solid rgba(255,255,255,0.04);
   padding: 48px 60px;
@@ -1013,16 +977,10 @@ footer {
 }
 .footer-right a:hover { color: var(--cyan); }
 
-/* ========================
-   SCROLLBAR
-======================== */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg0); }
 ::-webkit-scrollbar-thumb { background: var(--cyan); }
 
-/* ========================
-   SECTION DIVIDERS
-======================== */
 .slash-divider {
   text-align: center;
   padding: 8px 0;
@@ -1033,7 +991,6 @@ footer {
   background: var(--bg0);
 }
 
-/* CORNER BRACKETS */
 .bracket-hover { position: relative; }
 .bracket-hover::before,
 .bracket-hover::after {

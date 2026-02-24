@@ -6,7 +6,6 @@ export default function AboutSection() {
     <section className="section">
       <div className="about-grid">
 
-        {/* Left: copy + tags */}
         <div className="about-left">
           <div className="section-label">¿Qué es APIArena?</div>
           <h2 className="section-title">
@@ -32,7 +31,6 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* Right: metric bars */}
         <div className="about-right">
           <div className="about-corner-text">API</div>
           <div className="metrics-stack">

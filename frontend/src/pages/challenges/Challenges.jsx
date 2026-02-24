@@ -6,9 +6,6 @@ import CustomCursor from '../../components/CustomCursor';
 import * as challengesApi from '../../lib/challengesApi';
 import './challenges.css';
 
-/* ============================================================
-   MAP API RESPONSE TO CARD FORMAT
-   ============================================================ */
 function mapApiToCard(api) {
   const diff = (api.difficulty || 'EASY').toLowerCase();
   const glowMap = { easy: 'ch-glow-green', medium: 'ch-glow-warn', hard: 'ch-glow-red', expert: 'ch-glow-purple' };
@@ -31,9 +28,6 @@ function mapApiToCard(api) {
   };
 }
 
-/* ============================================================
-   CHALLENGE CARD
-   ============================================================ */
 function ChallengeCard({ challenge }) {
   const navigate = useNavigate();
   const {
@@ -140,9 +134,6 @@ function ChallengeCard({ challenge }) {
   );
 }
 
-/* ============================================================
-   MAIN PAGE
-   ============================================================ */
 export default function Challenges() {
   const [search, setSearch]           = useState('');
   const [diffFilter, setDiffFilter]   = useState('all');
@@ -157,7 +148,6 @@ export default function Challenges() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState(null);
 
-  /* ── Fetch challenges from backend ─────────────────────── */
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -189,9 +179,6 @@ export default function Challenges() {
     return () => { cancelled = true; };
   }, [diffFilter, catFilter, search]);
 
-  /* Cursor personalizado gestionado por <CustomCursor /> */
-
-  /* ── Derived data ──────────────────────────────────────── */
   const diffCounts = useMemo(() => {
     return {
       all:    challenges.length,
@@ -245,7 +232,6 @@ export default function Challenges() {
 
   const statusLabel = statusFilter === 'all' ? null : statusFilter.toUpperCase();
 
-  /* ── Render ────────────────────────────────────────────── */
   return (
     <div className="challenges-page">
       <CustomCursor />
@@ -257,13 +243,11 @@ export default function Challenges() {
           sidebarOpen={sidebarOpen}
         />
 
-        {/* Overlay backdrop (tablet/mobile) */}
         <div
           className={`ch-sidebar-overlay${sidebarOpen ? ' open' : ''}`}
           onClick={() => setSidebarOpen(false)}
         />
 
-        {/* ── Sidebar ─────────────────────────────────────── */}
         <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`}>
 
           <div className="ch-sidebar-section">
@@ -371,7 +355,6 @@ export default function Challenges() {
 
         </aside>
 
-        {/* ── Main content ────────────────────────────────── */}
         <main className="ch-main">
 
           <div className="ch-page-header">
@@ -414,7 +397,6 @@ export default function Challenges() {
             </div>
           </div>
 
-          {/* Active filters bar */}
           <div className="ch-active-filters">
             <div className="ch-active-filter-tag">
               {diffLabel}
@@ -439,7 +421,6 @@ export default function Challenges() {
             </span>
           </div>
 
-          {/* Grid */}
           <div className="ch-challenges-grid">
             {loading ? (
               <div className="ch-empty-state">

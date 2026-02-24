@@ -26,10 +26,6 @@ public class JwtService implements IJwtService {
 
     private final JwtProperties jwtProperties;
 
-    // ========================================
-    // EXTRACCIÓN DE INFORMACIÓN DEL TOKEN
-    // ========================================
-
     @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -54,15 +50,10 @@ public class JwtService implements IJwtService {
             .getPayload();
     }
 
-    // ========================================
-    // GENERACIÓN DE TOKENS
-    // ========================================
-
     @Override
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        
-        // AÑADIR ROLES AL TOKEN
+
         claims.put("authorities", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -72,7 +63,7 @@ public class JwtService implements IJwtService {
 
     @Override
     public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        // AÑADIR ROLES AL TOKEN
+
         extraClaims.put("authorities", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
@@ -101,10 +92,6 @@ public class JwtService implements IJwtService {
             .compact();
     }
 
-    // ========================================
-    // VALIDACIÓN DE TOKENS
-    // ========================================
-
     @Override
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
@@ -115,10 +102,6 @@ public class JwtService implements IJwtService {
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
-
-    // ========================================
-    // UTILIDADES
-    // ========================================
 
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());

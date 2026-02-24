@@ -33,8 +33,6 @@ public class SubmissionController {
     @Autowired
     private SubmissionService submissionService;
 
-    // Endpoints de submissions (autenticados)
-
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "bearerAuth")
@@ -43,7 +41,7 @@ public class SubmissionController {
             @RequestParam Long challengeId,
             @RequestParam("file") MultipartFile file
     ) {
-        // Obtener el ID del usuario autenticado
+
         Long userId = extractUserIdFromAuthentication();
         if (userId == null) {
             throw new IllegalArgumentException("User ID not found in token. Auth service must include userId in JWT claims.");
@@ -98,7 +96,6 @@ public class SubmissionController {
         submissionService.deleteSubmission(id, userId, isAdminOrTeacher);
         return ResponseEntity.noContent().build();
     }
-
 
     private Long extractUserIdFromAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

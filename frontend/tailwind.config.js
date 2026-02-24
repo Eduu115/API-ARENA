@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -7,7 +6,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Theme-aware (CSS vars en index.css); variantes de opacidad para @apply
         primary: {
           DEFAULT: 'var(--arena-primary)',
           dark: 'var(--arena-primary-dark)',

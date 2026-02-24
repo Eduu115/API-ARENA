@@ -19,7 +19,6 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Table(name = "users")
 @Data @NoArgsConstructor

@@ -1,9 +1,7 @@
-/**
- * Cliente API para el challenge-service (backend Java).
- * Base: /api/challenges - listado, detalle, categorías, featured.
- */
-
 import { getStoredTokens } from "./authApi.js";
+
+// esta lib es oara abstraer el backend pero sobre todo, no tener que repetir las llamadas a la API en cada componente
+// y asi tener un solo lugar para las llamadas a la API y el auth centralizado
 
 function getBaseUrl() {
   const url = import.meta.env.VITE_CHALLENGES_API_URL;
@@ -42,10 +40,6 @@ async function request(path, options = {}) {
   return body;
 }
 
-/**
- * Obtiene todos los challenges con filtros opcionales.
- * @param {{ difficulty?: string, category?: string, search?: string }}
- */
 export async function getChallenges(filters = {}) {
   const params = new URLSearchParams();
   if (filters.difficulty) params.set("difficulty", filters.difficulty);
@@ -55,30 +49,18 @@ export async function getChallenges(filters = {}) {
   return request(`/api/challenges${qs ? `?${qs}` : ""}`);
 }
 
-/**
- * Obtiene un challenge por ID.
- */
 export async function getChallengeById(id) {
   return request(`/api/challenges/${id}`);
 }
 
-/**
- * Obtiene un challenge por slug.
- */
 export async function getChallengeBySlug(slug) {
   return request(`/api/challenges/slug/${slug}`);
 }
 
-/**
- * Obtiene los challenges destacados.
- */
 export async function getFeaturedChallenges() {
   return request("/api/challenges/featured");
 }
 
-/**
- * Obtiene todas las categorías disponibles.
- */
 export async function getAllCategories() {
   return request("/api/challenges/categories");
 }

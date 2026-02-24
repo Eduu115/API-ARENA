@@ -14,8 +14,6 @@ public class SubmissionWebSocketService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    // Enviamos mensajes por WebSocket notificaciones en tiempo real
-
     public void sendStatusUpdate(Long submissionId, SubmissionStatusCacheDTO status) {
         String destination = DESTINATION_PREFIX + submissionId;
         messagingTemplate.convertAndSend(destination, status);

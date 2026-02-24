@@ -7,7 +7,6 @@
     inset 0 0 0 1px rgba(0, 217, 255, 0.05);
 }
 
-/* Switch panel - izquierda */
 .auth-switch {
   @apply absolute top-0 left-0 h-full w-[400px] py-12 px-10 z-10;
   @apply flex flex-col justify-center items-center;
@@ -59,13 +58,11 @@
   transform: scale(0.98);
 }
 
-/* Form container - derecha */
 .auth-form-container {
   @apply absolute top-0 right-0 flex justify-center items-center;
   @apply w-[600px] h-full p-10;
   @apply bg-background-secondary;
 }
-
 
 .auth-form {
   @apply flex flex-col items-center w-full max-w-[350px];
@@ -165,7 +162,6 @@
   @apply absolute top-4 right-4 z-20;
 }
 
-/* ========== RESPONSIVE - Vertical========== */
 @media (max-width: 1040px) {
   .auth-main {
     display: flex;

@@ -36,7 +36,6 @@ export default function LeaderboardSection() {
     <section className="lb-section">
       <div className="lb-grid">
 
-        {/* Table */}
         <div>
           <div className="live-badge">
             <span className="live-dot" />
@@ -55,7 +54,6 @@ export default function LeaderboardSection() {
           </div>
         </div>
 
-        {/* Right copy */}
         <div className="lb-right">
           <div className="section-label">Competencia</div>
           <h2 className="section-title">

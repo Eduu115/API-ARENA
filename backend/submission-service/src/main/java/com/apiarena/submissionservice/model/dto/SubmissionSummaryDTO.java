@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SubmissionSummaryDTO {
 
-    // Para listados de submissions del usuario: versión ligera del DTO completo
     private Long id;
     private Long challengeId;
     private Long userId;

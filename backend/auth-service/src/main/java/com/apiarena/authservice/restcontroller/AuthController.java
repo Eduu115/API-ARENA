@@ -36,9 +36,6 @@ public class AuthController {
     @Autowired
     private IUserService userService;
 
-
-    // AUTh
-
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account. No tokens are returned; use /login to get access and refresh tokens.")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
@@ -66,8 +63,6 @@ public class AuthController {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.noContent().build();
     }
-
-    // CArga de perfil de usuario
 
     @GetMapping("/me")
     @Operation(summary = "Get current user", description = "Get authenticated user information")

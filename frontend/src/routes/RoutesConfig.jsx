@@ -17,10 +17,7 @@ export default function RoutesConfig() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Raíz */}
         <Route path="/" element={<Landing />} />
-
-        {/* Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -37,7 +34,6 @@ export default function RoutesConfig() {
 
         <Route path="/multiplayer" element={<MultiplayerHub />} />
 
-        {/* Cualquier otra ruta */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

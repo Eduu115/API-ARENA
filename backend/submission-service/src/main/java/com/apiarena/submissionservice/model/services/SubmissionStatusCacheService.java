@@ -24,15 +24,13 @@ public class SubmissionStatusCacheService {
     @Value("${submission.redis-ttl-seconds:7200}")
     private long ttlSeconds;
 
-    // cache de estado con redis
-
     public void cacheStatus(Submission submission) {
         SubmissionStatusCacheDTO dto = SubmissionStatusCacheDTO.fromEntity(submission);
         try {
             String json = objectMapper.writeValueAsString(dto);
             redisTemplate.opsForValue().set(KEY_PREFIX + submission.getId(), json, Duration.ofSeconds(ttlSeconds));
         } catch (JsonProcessingException e) {
-            // no guardar en caché si falla la serialización
+
         }
     }
 

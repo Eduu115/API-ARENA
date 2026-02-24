@@ -15,7 +15,6 @@ import com.apiarena.challengeservice.model.entities.Challenge;
 import com.apiarena.challengeservice.model.repositories.CategoryRepository;
 import com.apiarena.challengeservice.repository.ChallengeRepository;
 
-
 @Service
 public class ChallengeService implements IChallengeService {
 
@@ -28,30 +27,26 @@ public class ChallengeService implements IChallengeService {
     @Override
     @Transactional
     public ChallengeDTO createChallenge(CreateChallengeRequest request, Long userId) {
-        // Generar slug desde el título
+
         String slug = generateSlug(request.getTitle());
 
-        // Validar que el slug no exista
         if (challengeRepository.existsBySlug(slug)) {
             throw new IllegalArgumentException("Challenge with this title already exists");
         }
 
-        // Validar dificultad
         Challenge.Difficulty difficulty;
         try {
             difficulty = Challenge.Difficulty.valueOf(request.getDifficulty().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid difficulty: " + request.getDifficulty());
         }
-        
-        // Buscar categoría
+
         if (request.getCategoryId() == null) {
             throw new IllegalArgumentException("Category ID is required");
         }
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + request.getCategoryId()));
 
-        // Crear challenge
         Challenge challenge = new Challenge();
         challenge.setTitle(request.getTitle());
         challenge.setSlug(slug);
@@ -68,8 +63,7 @@ public class ChallengeService implements IChallengeService {
         challenge.setSolutionExplanation(request.getSolutionExplanation());
         challenge.setLearningObjectives(request.getLearningObjectives());
         challenge.setCreatedBy(userId);
-        
-        // Solo sobrescribir valores por defecto si vienen en el request
+
         if (request.getMaxScore() != null) {
             challenge.setMaxScore(request.getMaxScore());
         }
@@ -108,14 +102,13 @@ public class ChallengeService implements IChallengeService {
             String category,
             String search
     ) {
-        // Si hay búsqueda, usarla
+
         if (search != null && !search.isEmpty()) {
             return challengeRepository.searchChallenges(search).stream()
                     .map(ChallengeSummaryDTO::fromEntity)
                     .toList();
         }
 
-        // Filtros combinados
         if (difficulty != null && category != null) {
             Challenge.Difficulty diff = Challenge.Difficulty.valueOf(difficulty.toUpperCase());
             Category cat = categoryRepository.findByName(category)
@@ -125,7 +118,6 @@ public class ChallengeService implements IChallengeService {
                     .toList();
         }
 
-        // Solo dificultad
         if (difficulty != null) {
             Challenge.Difficulty diff = Challenge.Difficulty.valueOf(difficulty.toUpperCase());
             return challengeRepository.findByDifficultyAndIsActiveTrue(diff).stream()
@@ -133,7 +125,6 @@ public class ChallengeService implements IChallengeService {
                     .toList();
         }
 
-        // Solo categoría
         if (category != null) {
             Category cat = categoryRepository.findByName(category)
                     .orElseThrow(() -> new IllegalArgumentException("Category not found: " + category));
@@ -142,7 +133,6 @@ public class ChallengeService implements IChallengeService {
                     .toList();
         }
 
-        // Sin filtros
         return getAllChallenges();
     }
 
@@ -155,7 +145,7 @@ public class ChallengeService implements IChallengeService {
 
     @Override
     public List<String> getAllCategories() {
-        // Ahora las categorías vienen de la tabla categories
+
         return categoryRepository.findAllByIsActiveOrderByDisplayOrderAsc(true)
                 .stream()
                 .map(Category::getName)
@@ -168,7 +158,6 @@ public class ChallengeService implements IChallengeService {
         Challenge challenge = challengeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
 
-        // Actualizar campos solo si vienen en el request
         if (request.getTitle() != null) {
             challenge.setTitle(request.getTitle());
             challenge.setSlug(generateSlug(request.getTitle()));
@@ -233,13 +222,11 @@ public class ChallengeService implements IChallengeService {
     public void deleteChallenge(Long id) {
         Challenge challenge = challengeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
-        
-        // Soft delete
+
         challenge.setIsActive(false);
         challengeRepository.save(challenge);
     }
 
-    // Utilidad: generar slug desde título
     private String generateSlug(String title) {
         return title.toLowerCase()
                 .replaceAll("[^a-z0-9\\s-]", "")

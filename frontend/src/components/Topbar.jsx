@@ -30,7 +30,6 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
         </Link>
       </div>
 
-      {/* Hamburger: visible only on tablet/mobile via CSS */}
       <button
         className={`ch-menu-btn${sidebarOpen ? ' open' : ''}`}
         onClick={onMenuToggle}

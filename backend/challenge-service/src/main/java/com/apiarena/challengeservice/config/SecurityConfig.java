@@ -30,7 +30,7 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                    // Endpoints públicos
+
                     .requestMatchers(
                             "/api/challenges",
                             "/api/challenges/{id}",
@@ -44,8 +44,7 @@ public class SecurityConfig {
                             "/actuator/health",
                             "/error"
                     ).permitAll()
-                    
-                    // Todos los demás requieren autenticación
+
                     .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

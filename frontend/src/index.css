@@ -4,7 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==================== THEME (modo claro / oscuro) ==================== */
 :root,
 [data-theme="dark"] {
   --arena-primary: #00D9FF;
@@ -70,7 +69,6 @@
   --arena-info-30: rgba(0, 149, 179, 0.3);
 }
 
-/* ==================== BASE STYLES ==================== */
 @layer base {
   body {
     @apply bg-background-primary text-text-primary font-body antialiased;
@@ -81,9 +79,8 @@
   }
 }
 
-/* ==================== COMPONENT STYLES ==================== */
 @layer components {
-  /* Cards */
+  
   .card {
     @apply bg-background-secondary border border-primary-10 rounded-2xl p-6;
     @apply transition-all duration-300;
@@ -92,8 +89,7 @@
   .card:hover {
     @apply border-primary-30 shadow-glow -translate-y-1;
   }
-  
-  /* Buttons */
+
   .btn {
     @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 cursor-pointer;
   }
@@ -109,8 +105,7 @@
   .btn-ghost {
     @apply bg-transparent text-text-primary hover:bg-background-tertiary;
   }
-  
-  /* Badges */
+
   .badge {
     @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold font-mono;
   }
@@ -130,16 +125,14 @@
   .badge-info {
     @apply bg-info-10 text-info border border-info-30;
   }
-  
-  /* Input Fields */
+
   .input {
 @apply w-full px-4 py-3 rounded-lg bg-background-secondary border border-primary-20;
   @apply text-text-primary placeholder:text-[#535D73];
   @apply focus:outline-none focus:border-primary-50 focus:ring-2 focus:ring-primary-20;
     @apply transition-all duration-200;
   }
-  
-  /* Challenge Cards */
+
   .challenge-card {
     @apply relative bg-background-secondary border border-primary-10 rounded-2xl p-6 transition-all duration-300;
   }
@@ -168,8 +161,7 @@
   .challenge-card.difficulty-expert::before {
     @apply bg-secondary;
   }
-  
-  /* Progress Bar */
+
   .progress-container {
     @apply w-full h-2 bg-background-tertiary rounded-full overflow-hidden relative;
   }
@@ -178,14 +170,12 @@
     @apply h-full bg-gradient-to-r from-primary to-secondary rounded-full;
     @apply transition-all duration-500 relative overflow-hidden;
   }
-  
-  /* Code Block */
+
   .code-block {
     @apply bg-[#0D1117] border border-primary-20 rounded-lg p-4;
     @apply font-mono text-sm overflow-x-auto relative;
   }
-  
-  /* Glow Effects */
+
   .glow-text {
     text-shadow: 
       0 0 10px rgba(0, 217, 255, 0.5),
@@ -198,7 +188,6 @@
   }
 }
 
-/* ==================== UTILITY CLASSES ==================== */
 @layer utilities {
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
@@ -209,7 +198,6 @@
   }
 }
 
-/* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

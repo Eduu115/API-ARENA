@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SubmissionStatusCacheDTO {
 
-    // DTO ligero para caché Redis y notificaciones WebSocket de estado en tiempo real
     private Long id;
     private String status;
     private String stage;

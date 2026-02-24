@@ -130,7 +130,6 @@ export default function ChallengeDetail() {
             </button>
           </div>
 
-          {/* Hero */}
           <header className="chd-hero">
             <div className="chd-hero-tags">
               <span className={`ch-badge ${diffBadgeClass}`}>{challenge.difficulty}</span>
@@ -172,37 +171,19 @@ export default function ChallengeDetail() {
             </div>
           </header>
 
-          {/* Descripción */}
           <section className="chd-section chd-description">
             <h2 className="chd-section-title">Descripción</h2>
             <p className="chd-description-text">{challenge.description || 'Sin descripción.'}</p>
           </section>
 
-          {/* Endpoints requeridos */}
           <JsonBlock title="Endpoints requeridos" data={challenge.requiredEndpoints} />
-
-          {/* Códigos de estado requeridos */}
           <JsonBlock title="Códigos de estado requeridos" data={challenge.requiredStatusCodes} />
-
-          {/* Headers requeridos */}
           <JsonBlock title="Headers requeridos" data={challenge.requiredHeaders} />
-
-          {/* Test suite */}
           <JsonBlock title="Test suite" data={challenge.testSuite} />
-
-          {/* Requisitos de rendimiento */}
           <JsonBlock title="Requisitos de rendimiento" data={challenge.performanceRequirements} />
-
-          {/* Criterios de diseño */}
           <JsonBlock title="Criterios de diseño" data={challenge.designCriteria} />
-
-          {/* Pistas */}
           <HintsBlock hints={challenge.hints} />
-
-          {/* Objetivos de aprendizaje */}
           <ListBlock title="Objetivos de aprendizaje" items={challenge.learningObjectives} />
-
-          {/* Explicación de la solución */}
           {challenge.solutionExplanation && (
             <section className="chd-section">
               <h2 className="chd-section-title">Explicación de la solución</h2>

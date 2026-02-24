@@ -9,13 +9,11 @@ import lombok.Data;
 @ConfigurationProperties(prefix = "jwt")
 @Data
 public class JwtProperties {
-    
 
     private String secret;
     private long expiration;
     private long refreshExpiration;
 
-    // metodos QOL que convierte los milisegundos a segundos
     public long getExpiration() {
         return expiration/1000;
     }

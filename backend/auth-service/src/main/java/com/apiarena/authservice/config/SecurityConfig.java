@@ -32,7 +32,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserService userService;
 
-    // IMPORTANTE: PasswordEncoder DEBE estar ANTES de authenticationProvider
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -44,7 +43,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos (sin autenticación)
+
                         .requestMatchers(
                                 "/api/auth/register",
                                 "/api/auth/login",
@@ -53,8 +52,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        
-                        // Todos los demás endpoints requieren autenticación
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

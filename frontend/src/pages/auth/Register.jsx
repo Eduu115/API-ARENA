@@ -40,7 +40,6 @@ export default function Register() {
         <ThemeToggle />
       </div>
       <div className="auth-main">
-        {/* Panel izquierdo - Switch */}
         <div className="auth-switch">
           <div className="auth-switch__circle auth-switch__circle--1" />
           <div className="auth-switch__circle auth-switch__circle--2" />
@@ -55,7 +54,6 @@ export default function Register() {
           </div>
         </div>
 
-        {/* Panel derecho - Formulario Register */}
         <div className="auth-form-container">
           <form className="auth-form" onSubmit={handleSubmit}>
             <h2 className="auth-form__title">Crear cuenta</h2>

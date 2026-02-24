@@ -83,7 +83,6 @@ export default function Profile() {
             ← Volver al Dashboard
           </Link>
 
-          {/* Hero del perfil */}
           <header className="profile-hero">
             <div
               className="profile-avatar"
@@ -109,7 +108,6 @@ export default function Profile() {
             </div>
           </header>
 
-          {/* Información editable */}
           <section className="profile-section">
             <h2 className="profile-section-title">Información del perfil</h2>
 
@@ -173,7 +171,6 @@ export default function Profile() {
             )}
           </section>
 
-          {/* Estadísticas */}
           <section className="profile-section">
             <h2 className="profile-section-title">Estadísticas</h2>
             <div className="profile-stats-grid">
@@ -200,7 +197,6 @@ export default function Profile() {
             </div>
           </section>
 
-          {/* Metadata */}
           <section className="profile-section">
             <h2 className="profile-section-title">Información de la cuenta</h2>
             <div className="profile-meta-grid">

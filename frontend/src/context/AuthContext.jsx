@@ -59,7 +59,6 @@ export function AuthProvider({ children }) {
       setError(null);
       try {
         const data = await authApi.register({ username, email, password, role });
-        // El backend no devuelve tokens en registro; hacemos login para obtener sesión
         if (data?.user && !data?.accessToken) {
           const loginData = await authApi.login({ email, password });
           setUser(loginData?.user ?? data.user);

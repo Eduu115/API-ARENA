@@ -36,17 +36,15 @@ public class AuthService implements IAuthService {
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        // Validar que el email no exista
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered");
         }
 
-        // Validar que el username no exista
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Username already taken");
         }
 
-        // derterminar el rol
         User.Role role = User.Role.STUDENT;
         if (request.getRole() != null) {
             try {
@@ -64,7 +62,7 @@ public class AuthService implements IAuthService {
         );
 
         User savedUser = userRepository.save(u);
-        // No genero tokens en el regsistro 
+
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }
 
@@ -79,13 +77,10 @@ public class AuthService implements IAuthService {
             )
         );
 
-
         User user = userService.getUserEntityByEmail(request.getEmail());
 
-        // Actualizar last login
         userService.updateLastLogin(request.getEmail());
 
-        // generar tokens
         UserDetails userDetails = userService.loadUserByUsername(request.getEmail());
         String accessToken = jwtService.generateAccessToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
@@ -96,19 +91,16 @@ public class AuthService implements IAuthService {
     @Override
     @Transactional
     public AuthResponse refreshToken(RefreshTokenRequest request) {
-        // Verificar refresh token
+
         RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
 
         User user = refreshToken.getUser();
 
-        // fenerar token
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
         String accessToken = jwtService.generateAccessToken(userDetails);
 
-        // rotar refresh token
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
-        // eliminar el refresh token viejo
         refreshTokenService.revokeRefreshToken(request.getRefreshToken());
 
         return new AuthResponse(UserDTO.fromEntity(user), accessToken, newRefreshToken.getToken());

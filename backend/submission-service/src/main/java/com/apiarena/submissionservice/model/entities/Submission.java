@@ -29,7 +29,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Submission {
 
-    // Para mapear listas o JSON (como en MongoDB) usamos JdbcTypeCode
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

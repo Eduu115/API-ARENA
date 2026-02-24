@@ -1,8 +1,3 @@
-/* ============================================================
-   LANDING PAGE — Static Data
-   Centraliza todos los datos estáticos de la landing page.
-   ============================================================ */
-
 export const HERO_STATS = [
   { num: '2.4K', label: 'Submissions' },
   { num: '48',   label: 'Challenges' },

@@ -33,7 +33,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Si no hay Bearer token, continuar sin autenticación
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -49,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtService.isTokenValid(jwt)) {
                     Claims claims = jwtService.extractAllClaims(jwt);
 
-                    // El token del auth-service incluye authorities y userId
                     List<SimpleGrantedAuthority> authorities;
                     try {
                         @SuppressWarnings("unchecked")
@@ -60,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     .map(SimpleGrantedAuthority::new)
                                     .collect(Collectors.toList());
                         } else {
-                             // Fallback: extraer de otro campo si existe
+
                             String role = claims.get("role", String.class);
                             if (role != null) {
                                 authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));

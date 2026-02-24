@@ -105,7 +105,6 @@ export default function Dashboard() {
     return source.slice(0, 3);
   }, [featured, challenges]);
 
-  /* ── Render ────────────────────────────────────────────── */
   return (
     <div className="challenges-page">
       <CustomCursor />
@@ -122,7 +121,6 @@ export default function Dashboard() {
           onClick={() => setSidebarOpen(false)}
         />
 
-        {/* ── SIDEBAR ─────────────────────────────────────── */}
         <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`}>
 
           <div className="db-profile-wrap">
@@ -201,7 +199,6 @@ export default function Dashboard() {
 
         </aside>
 
-        {/* ── MAIN CONTENT ────────────────────────────────── */}
         <main className="ch-main">
 
           <div className="ch-page-header" style={{ marginBottom: 28 }}>
@@ -225,7 +222,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* KPI stat cards */}
           <div className="db-kpi-grid">
             {kpiCards.map(card => (
               <div
@@ -243,10 +239,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Challenges + right panel */}
           <div className="db-content-grid">
-
-            {/* Available challenges */}
             <div className="db-panel">
               <div className="db-panel-head">
                 <div className="db-panel-title">
@@ -316,10 +309,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* Right column */}
             <div className="db-right-stack">
-
-              {/* Your Stats panel */}
               <div className="db-panel">
                 <div className="db-panel-head">
                   <div className="db-panel-title">Your Stats</div>
@@ -363,7 +353,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Account info */}
               <div className="db-panel">
                 <div className="db-panel-head">
                   <div className="db-panel-title">Account Info</div>
@@ -396,7 +385,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Recommended / Featured */}
           <div>
             <div className="db-rec-head">
               <div className="db-rec-title">

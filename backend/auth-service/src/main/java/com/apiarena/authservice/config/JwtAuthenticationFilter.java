@@ -37,26 +37,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        // Extraer el header Auth
+
         final String authHeader = request.getHeader("Authorization");
-        
-        // Si no hay header o no empieza con "Bearer ", continuar sin autenticar
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extraer el token (quitar "Bearer ")
         final String jwt = authHeader.substring(7);
         final String userEmail;
 
-        // Try 1: Extraer el email del token JWT
         try {
             userEmail = jwtService.extractUsername(jwt);
         } catch (MalformedJwtException e) { // no manejaria los errores de esta manera, pero es para las buenas practicas y si no, me sale en amarillo
             logger.error("Token JWT mal formado", e); // tanto en este, como en los demas, porque son excepciones que no voy a manejar, 
-                                                      // sino que las manejo en el exception handler, si no, me sale en amarillo,
-                                                      //  pero en este caso, no me interesa manejarlo
+
             filterChain.doFilter(request, response);
             return;
         } catch (ExpiredJwtException e) {
@@ -81,11 +77,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         } 
 
-        // Si hay email y el usuario no está ya autenticado
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             final UserDetails userDetails;
 
-            // Try 2: Cargar el usuario de la base de datos
             try {
                 userDetails = userService.loadUserByUsername(userEmail);
             } catch (UsernameNotFoundException e) {
@@ -102,22 +96,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // Try 3: Validar el token y establecer autenticación
             try {
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    // Crear authentication token
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
                             userDetails.getAuthorities()
                     );
 
-                    // Agregar detalles del request
                     authToken.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request)
                     );
 
-                    // Establecer en el SecurityContext
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             } catch (JwtException | IllegalArgumentException e) {

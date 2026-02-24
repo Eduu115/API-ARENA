@@ -1,10 +1,5 @@
-/* ============================================================
-   CHALLENGES PAGE — Custom CSS
-   Todas las clases prefixadas con ch- para evitar conflictos
-   con Tailwind y con el index.css (.card, .badge, etc.)
-   ============================================================ */
 
-/* ── Variables scoped a la página ─────────────────────────── */
+
 .challenges-page {
   --bg0: #080B1E;
   --bg1: #0A0E27;
@@ -25,7 +20,6 @@
   --font-mono:    'Share Tech Mono', monospace;
 }
 
-/* ── Base ──────────────────────────────────────────────────── */
 .challenges-page {
   background: var(--bg0);
   color: var(--text);
@@ -36,7 +30,6 @@
   position: relative;
 }
 
-/* ── Cursor personalizado ─────────────────────────────────── */
 .ch-cursor-dot {
   width: 6px; height: 6px;
   background: var(--cyan);
@@ -59,7 +52,6 @@
   transition: width 0.2s, height 0.2s, border-color 0.2s;
 }
 
-/* ── Scanlines overlay ─────────────────────────────────────── */
 .challenges-page::before {
   content: '';
   position: fixed;
@@ -72,7 +64,6 @@
   z-index: 9990;
 }
 
-/* ── Grid background ───────────────────────────────────────── */
 .ch-grid-bg {
   position: fixed;
   inset: 0;
@@ -84,7 +75,6 @@
   z-index: 0;
 }
 
-/* ── Layout grid ───────────────────────────────────────────── */
 .ch-layout {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -94,9 +84,6 @@
   z-index: 1;
 }
 
-/* ============================================================
-   TOPBAR
-   ============================================================ */
 .ch-topbar {
   grid-column: 1 / -1;
   display: flex;
@@ -203,9 +190,6 @@
   cursor: none;
 }
 
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
 .ch-sidebar {
   border-right: 1px solid var(--dim);
   padding: 24px 0;
@@ -237,7 +221,6 @@
 }
 .ch-sidebar-section:first-child .ch-sidebar-label { padding-top: 0; }
 
-/* Search */
 .ch-search-wrap { position: relative; }
 .ch-search-input {
   width: 100%;
@@ -268,7 +251,6 @@
   line-height: 1;
 }
 
-/* Filter buttons */
 .ch-filter-btn {
   display: flex;
   align-items: center;
@@ -322,7 +304,6 @@
   flex-shrink: 0;
 }
 
-/* Category tags */
 .ch-cat-grid {
   display: flex;
   flex-wrap: wrap;
@@ -348,7 +329,6 @@
   background: rgba(178,75,243,0.08);
 }
 
-/* Progress stats */
 .ch-stat-row {
   display: flex;
   align-items: center;
@@ -394,9 +374,6 @@
   transition: width 1s ease;
 }
 
-/* ============================================================
-   MAIN CONTENT
-   ============================================================ */
 .ch-main {
   padding: 28px 32px;
   min-height: calc(100vh - 56px);
@@ -473,7 +450,6 @@
 .ch-view-btn.ch-active { background: var(--bg3); color: var(--cyan); }
 .ch-view-btn:hover:not(.ch-active) { background: rgba(255,255,255,0.03); color: var(--text); }
 
-/* ── Active filters bar ────────────────────────────────────── */
 .ch-active-filters {
   display: flex;
   align-items: center;
@@ -516,18 +492,12 @@
 }
 .ch-results-count span { color: var(--text); }
 
-/* ============================================================
-   CHALLENGES GRID
-   ============================================================ */
 .ch-challenges-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 16px;
 }
 
-/* ============================================================
-   CHALLENGE CARD
-   ============================================================ */
 .ch-card {
   background: var(--bg2);
   border: 1px solid var(--dim);
@@ -598,7 +568,6 @@
   flex: 1;
 }
 
-/* Badges de las cards */
 .ch-badge {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -667,7 +636,6 @@
   padding: 3px 7px;
 }
 
-/* Score bar */
 .ch-card-score-bar { margin-bottom: 14px; }
 .ch-score-bar-label {
   display: flex;
@@ -685,7 +653,6 @@
   box-shadow: 0 0 6px rgba(0,217,255,0.5);
 }
 
-/* Card footer */
 .ch-card-footer {
   display: flex;
   align-items: center;
@@ -726,9 +693,6 @@
   text-align: right;
 }
 
-/* ============================================================
-   FEATURED CARD (WIDE)
-   ============================================================ */
 .ch-card-featured { grid-column: 1 / -1; }
 
 .ch-card-featured .ch-card-inner {
@@ -852,9 +816,6 @@
   color: var(--cyan);
 }
 
-/* ============================================================
-   EMPTY STATE
-   ============================================================ */
 .ch-empty-state {
   grid-column: 1 / -1;
   text-align: center;
@@ -875,9 +836,6 @@
   letter-spacing: 1px;
 }
 
-/* ============================================================
-   LOAD MORE
-   ============================================================ */
 .ch-load-more-wrap {
   margin-top: 32px;
   display: flex;
@@ -912,18 +870,12 @@
 }
 .ch-load-more-btn:hover::before { transform: translateX(100%); }
 
-/* ============================================================
-   GLOW ACCENT CLASSES
-   ============================================================ */
 .ch-glow-cyan   { --accent-color: var(--cyan); }
 .ch-glow-green  { --accent-color: var(--green); }
 .ch-glow-warn   { --accent-color: var(--warn); }
 .ch-glow-red    { --accent-color: var(--red); }
 .ch-glow-purple { --accent-color: var(--purple); }
 
-/* ============================================================
-   CARD ENTER ANIMATION
-   ============================================================ */
 @keyframes ch-card-in {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -938,9 +890,6 @@
 .ch-card:nth-child(8) { animation-delay: 0.30s; }
 .ch-card:nth-child(9) { animation-delay: 0.34s; }
 
-/* ============================================================
-   TOOLTIP via data-tip
-   ============================================================ */
 [data-tip] { position: relative; }
 [data-tip]::after {
   content: attr(data-tip);
@@ -963,9 +912,6 @@
 }
 [data-tip]:hover::after { opacity: 1; }
 
-/* ============================================================
-   HAMBURGER BUTTON (visible tablet/mobile)
-   ============================================================ */
 .ch-menu-btn {
   display: none;
   align-items: center;
@@ -1002,14 +948,10 @@
 .ch-hamburger::before { top: -6px; }
 .ch-hamburger::after  { top:  6px; }
 
-/* Animated X on open */
 .ch-menu-btn.open .ch-hamburger            { background: transparent; }
 .ch-menu-btn.open .ch-hamburger::before    { top: 0; transform: rotate(45deg); }
 .ch-menu-btn.open .ch-hamburger::after     { top: 0; transform: rotate(-45deg); }
 
-/* ============================================================
-   SIDEBAR OVERLAY BACKDROP
-   ============================================================ */
 .ch-sidebar-overlay {
   display: none;
   position: fixed;
@@ -1021,9 +963,6 @@
 }
 .ch-sidebar-overlay.open { display: block; }
 
-/* ============================================================
-   BOTTOM NAVIGATION (mobile only)
-   ============================================================ */
 .ch-bottom-nav {
   display: none;
   position: fixed;
@@ -1064,20 +1003,14 @@
   text-transform: uppercase;
 }
 
-/* ============================================================
-   RESPONSIVE — TABLET  ≤1024px
-   ============================================================ */
 @media (max-width: 1024px) {
 
-  /* Show hamburger, hide desktop nav */
   .ch-menu-btn    { display: flex; }
   .ch-topbar-nav  { display: none; }
   .ch-topbar-logo { width: auto; border-right: none; flex-shrink: 0; }
 
-  /* Single-column layout (sidebar is now a drawer) */
   .ch-layout { grid-template-columns: 1fr; }
 
-  /* Sidebar: off-screen fixed drawer */
   .ch-sidebar {
     position: fixed;
     left: -260px;
@@ -1093,26 +1026,19 @@
     box-shadow: 8px 0 48px rgba(0, 0, 0, 0.7);
   }
 
-  /* Featured card: single column */
   .ch-card-featured .ch-card-inner { grid-template-columns: 1fr; }
   .ch-card-right { display: none; }
 }
 
-/* ============================================================
-   RESPONSIVE — MOBILE  ≤768px
-   ============================================================ */
 @media (max-width: 768px) {
 
-  /* Disable custom cursor on touch screens */
   .ch-cursor-dot,
   .ch-cursor-ring { display: none; }
   .challenges-page { cursor: auto; }
 
-  /* Show bottom nav, add bottom padding to main */
   .ch-bottom-nav { display: flex; }
   .ch-main       { padding: 20px 16px 80px; }
 
-  /* Page header: stack vertically */
   .ch-page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -1123,10 +1049,8 @@
   .ch-page-controls { width: 100%; justify-content: space-between; }
   .ch-page-eyebrow  { font-size: 9px; }
 
-  /* Topbar: hide ELO badge on small screens */
   .ch-user-rank { display: none; }
 
-  /* Active filters: horizontal scroll instead of wrap */
   .ch-active-filters {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -1138,40 +1062,30 @@
   .ch-active-filter-tag,
   .ch-results-count { flex-shrink: 0; }
 
-  /* Cards: tighter */
   .ch-card-inner    { padding: 14px 14px 14px 18px; }
   .ch-card-featured { margin-bottom: 0; }
 
-  /* Sort select full-width on mobile */
   .ch-sort-select { font-size: 9px; }
 }
 
-/* ============================================================
-   RESPONSIVE — SMALL MOBILE  ≤480px
-   ============================================================ */
 @media (max-width: 480px) {
 
-  /* Topbar: slightly smaller */
   .ch-topbar { height: 48px; }
   .ch-layout  { grid-template-rows: 48px 1fr; }
   .ch-sidebar { top: 48px; height: calc(100vh - 48px); }
   .ch-sidebar-overlay { top: 48px !important; }
   .ch-bottom-nav { height: 56px; }
 
-  /* Typography */
   .ch-logo-text   { font-size: 17px; }
   .ch-page-title  { font-size: 28px; }
   .ch-card-title  { font-size: 18px; }
   .ch-card-featured .ch-card-title { font-size: 22px; }
   .ch-card-desc   { font-size: 10px; }
 
-  /* Single-column card grid */
   .ch-challenges-grid { grid-template-columns: 1fr; }
 
-  /* Compact card meta */
   .ch-card-meta { gap: 8px; }
   .ch-meta-item { font-size: 9px; }
 
-  /* Load more button full-width */
   .ch-load-more-btn { width: 100%; justify-content: center; }
 }

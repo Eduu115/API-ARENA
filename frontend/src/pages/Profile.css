@@ -1,6 +1,4 @@
-/* ============================================================
-   PROFILE — Vista de perfil con datos reales del usuario
-   ============================================================ */
+
 
 .profile-page .profile-main {
   min-height: calc(100vh - 56px - 60px);
@@ -37,7 +35,6 @@
   opacity: 0.8;
 }
 
-/* ── Hero ──────────────────────────────────────────────────── */
 .profile-hero {
   display: flex;
   align-items: center;
@@ -120,7 +117,6 @@
   color: var(--cyan);
 }
 
-/* ── Sections ──────────────────────────────────────────────── */
 .profile-section {
   margin-bottom: 40px;
   background: var(--bg2);
@@ -140,7 +136,6 @@
   text-transform: uppercase;
 }
 
-/* Info display */
 .profile-info-display {
   font-size: 15px;
   line-height: 1.6;
@@ -184,7 +179,6 @@
   opacity: 0.9;
 }
 
-/* Form */
 .profile-form {
   display: flex;
   flex-direction: column;
@@ -268,7 +262,6 @@
   color: var(--text);
 }
 
-/* Stats */
 .profile-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -300,7 +293,6 @@
   color: var(--muted);
 }
 
-/* Meta */
 .profile-meta-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

@@ -20,21 +20,17 @@ public class UploadStorageService {
 
     private static final String[] ALLOWED_EXTENSIONS = {".zip"};
 
-    // Guardamos el archivo en el disco
-
     public String storeZip(MultipartFile file, Long submissionId) {
-        // Validar archivo requerido
+
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is required");
         }
 
-        // Validar extensión: solo ZIP
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".zip")) {
             throw new IllegalArgumentException("Only ZIP files are allowed");
         }
 
-        // Validar tamaño máximo donde se puede tocar dependiendo que querasmos al final 
         if (file.getSize() > maxFileSize) {
             throw new IllegalArgumentException("File size exceeds maximum allowed (" + (maxFileSize / 1024 / 1024) + " MB)");
         }
@@ -43,7 +39,6 @@ public class UploadStorageService {
             Path basePath = Paths.get(uploadDir);
             Files.createDirectories(basePath);
 
-            // Nombre único para evitar una confusion
             String safeName = submissionId + "_" + UUID.randomUUID().toString().substring(0, 8) + ".zip";
             Path targetPath = basePath.resolve(safeName);
 

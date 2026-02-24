@@ -37,10 +37,6 @@ public class ChallengeController {
     @Autowired
     private IChallengeService challengeService;
 
-    // ========================================
-    // ENDPOINTS PÚBLICOS (todos pueden ver)
-    // ========================================
-
     @GetMapping
     @Operation(summary = "Get all challenges", description = "Get all active challenges")
     public ResponseEntity<List<ChallengeSummaryDTO>> getAllChallenges(
@@ -82,16 +78,12 @@ public class ChallengeController {
         return ResponseEntity.ok(categories);
     }
 
-    // ========================================
-    // ENDPOINTS PROTEGIDOS (TEACHER/ADMIN)
-    // ========================================
-
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Create challenge", description = "Create a new challenge (TEACHER/ADMIN only)")
     public ResponseEntity<ChallengeDTO> createChallenge(@Valid @RequestBody CreateChallengeRequest request) {
-        // Obtener el ID del usuario autenticado
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Long userId = extractUserIdFromAuthentication(authentication);
         
@@ -120,14 +112,8 @@ public class ChallengeController {
         return ResponseEntity.noContent().build();
     }
 
-    // ========================================
-    // UTILIDADES
-    // ========================================
-
     private Long extractUserIdFromAuthentication(Authentication authentication) {
-        // Por ahora retornamos null, esto lo implementaremos cuando tengamos
-        // comunicación entre servicios o cuando el JWT incluya el userId
-        // TODO: Implementar extracción de userId del JWT
+
         return null;
     }
 }

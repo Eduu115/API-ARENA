@@ -1,12 +1,12 @@
 # Implementación de Tabla de Categorías
 
-## 📋 Resumen de Cambios
+## Resumen de Cambios
 
 Se ha implementado una **tabla de categorías normalizada** en el sistema, reemplazando el campo `category` (VARCHAR) por una relación `ManyToOne` con la nueva entidad `Category`.
 
 ---
 
-## 🗂️ Archivos Creados
+## Archivos Creados
 
 ### Backend (Java)
 
@@ -35,35 +35,35 @@ Se ha implementado una **tabla de categorías normalizada** en el sistema, reemp
 
 ---
 
-## 🔧 Archivos Modificados
+## Archivos Modificados
 
 ### Backend
 
 1. **`Challenge.java`:**
-   - ❌ Eliminado: `private String category`
-   - ✅ Añadido: `@ManyToOne private Category category`
+   - Eliminado: `private String category`
+   - Añadido: `@ManyToOne private Category category`
 
 2. **`ChallengeDTO.java` y `ChallengeSummaryDTO.java`:**
-   - ✅ Añadidos campos: `categoryId`, `categoryIcon`, `categoryColor`
-   - ✅ Actualizado `fromEntity()` para mapear desde `Challenge.category` (entity)
+   - Añadidos campos: `categoryId`, `categoryIcon`, `categoryColor`
+   - Actualizado `fromEntity()` para mapear desde `Challenge.category` (entity)
 
 3. **`CreateChallengeRequest.java` y `UpdateChallengeRequest.java`:**
-   - ❌ Eliminado: `private String category`
-   - ✅ Añadido: `private Long categoryId`
+   - Eliminado: `private String category`
+   - Añadido: `private Long categoryId`
 
 4. **`ChallengeService.java`:**
-   - ✅ Inyección de `CategoryRepository`
-   - ✅ Busca `Category` por ID en create/update
-   - ✅ Filtros usan `Category` entity en lugar de String
-   - ✅ `getAllCategories()` ahora consulta tabla `categories`
+   - Inyección de `CategoryRepository`
+   - Busca `Category` por ID en create/update
+   - Filtros usan `Category` entity en lugar de String
+   - `getAllCategories()` ahora consulta tabla `categories`
 
 5. **`ChallengeRepository.java`:**
-   - ✅ Métodos actualizados para usar `Category` en lugar de `String`
-   - ❌ Eliminado: `findAllCategories()` (ya no necesario)
+   - Métodos actualizados para usar `Category` en lugar de `String`
+   - Eliminado: `findAllCategories()` (ya no necesario)
 
 ---
 
-## 🚀 Cómo Aplicar los Cambios
+## Cómo Aplicar los Cambios
 
 ### Opción 1: Migration Automática (Recomendada para dev)
 
@@ -112,7 +112,7 @@ docker-compose up -d --build
 
 ---
 
-## 📊 Estructura de la Tabla Categories
+## Estructura de la Tabla Categories
 
 ```sql
 CREATE TABLE categories (
@@ -142,7 +142,7 @@ CREATE TABLE categories (
 
 ---
 
-## 🌐 Nuevos Endpoints
+## Nuevos Endpoints
 
 ### GET `/api/categories`
 **Descripción:** Obtener categorías activas  
@@ -184,7 +184,7 @@ CREATE TABLE categories (
   "name": "GraphQL",
   "slug": "graphql",
   "description": "Build GraphQL APIs...",
-  "icon": "📊",
+  "icon": "",
   "color": "#E10098",
   "displayOrder": 11
 }
@@ -200,7 +200,7 @@ CREATE TABLE categories (
 
 ---
 
-## ⚠️ IMPORTANTE: Cambios en Challenges API
+## IMPORTANTE: Cambios en Challenges API
 
 ### Crear Challenge (POST `/api/challenges`)
 
@@ -208,7 +208,7 @@ CREATE TABLE categories (
 ```json
 {
   "title": "My Challenge",
-  "category": "REST",  // ❌ String
+  "category": "REST",
   ...
 }
 ```
@@ -217,7 +217,7 @@ CREATE TABLE categories (
 ```json
 {
   "title": "My Challenge",
-  "categoryId": 1,  // ✅ ID de la categoría
+  "categoryId": 1,
   ...
 }
 ```
@@ -227,7 +227,7 @@ CREATE TABLE categories (
 **ANTES:**
 ```json
 {
-  "category": "CRUD"  // ❌ String
+  "category": "CRUD"
 }
 ```
 
@@ -245,10 +245,10 @@ CREATE TABLE categories (
 {
   "id": 1,
   "title": "...",
-  "category": "REST API Design",     // ✅ Nombre legible
-  "categoryId": 1,                   // ✅ ID para operaciones
-  "categoryIcon": "◎",               // ✅ Icono
-  "categoryColor": "#00D9FF",        // ✅ Color
+  "category": "REST API Design",
+  "categoryId": 1,
+  "categoryIcon": "",
+  "categoryColor": "#00D9FF",
   ...
 }
 ```
@@ -286,7 +286,7 @@ GET http://localhost:8082/api/challenges?category=REST API Design
 
 ---
 
-## 🎨 Beneficios de Esta Implementación
+## Beneficios de Esta Implementación
 
 ### 1. **Gestión Dinámica**
 - TEACHER puede crear/editar categorías sin tocar código
@@ -312,7 +312,7 @@ GET http://localhost:8082/api/challenges?category=REST API Design
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Error: "Category not found with id: X"
 
@@ -341,7 +341,7 @@ docker exec -i apiarena-postgres psql -U apiarena_user -d apiarena < docker/post
 
 ---
 
-## 📖 Próximos Pasos Recomendados
+## Próximos Pasos Recomendados
 
 1. **Frontend:** Actualizar `challengesApi.js` para:
    - Fetch de `/api/categories` en lugar de hardcodear
@@ -356,7 +356,7 @@ docker exec -i apiarena-postgres psql -U apiarena_user -d apiarena < docker/post
 
 ---
 
-## ✅ Checklist de Verificación
+## Checklist de Verificación
 
 - [x] Migration SQL creada
 - [x] Entidad Category creada
@@ -370,7 +370,7 @@ docker exec -i apiarena-postgres psql -U apiarena_user -d apiarena < docker/post
 - [x] ChallengeRepository actualizado
 - [x] No hay errores de lint
 
-**Estado:** ✅ **IMPLEMENTACIÓN COMPLETA**
+**Estado:** IMPLEMENTACIÓN COMPLETA
 
 ---
 
