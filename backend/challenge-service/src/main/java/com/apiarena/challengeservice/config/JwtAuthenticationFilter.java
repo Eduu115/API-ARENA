@@ -1,10 +1,9 @@
 package com.apiarena.challengeservice.config;
 
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,9 +13,11 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.jsonwebtoken.Claims;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -47,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtService.isTokenValid(jwt)) {
                     Claims claims = jwtService.extractAllClaims(jwt);
                     
-                    // El token del auth-service incluye authorities en formato ROLE_STUDENT
                     List<SimpleGrantedAuthority> authorities;
                     
                     try {
@@ -59,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     .map(SimpleGrantedAuthority::new)
                                     .collect(Collectors.toList());
                         } else {
-                            // Fallback: extraer de otro campo si existe
                             String role = claims.get("role", String.class);
                             if (role != null) {
                                 authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
@@ -86,7 +85,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Cannot set user authentication: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

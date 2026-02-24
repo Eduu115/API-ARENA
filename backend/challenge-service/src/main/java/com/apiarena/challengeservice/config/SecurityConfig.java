@@ -37,10 +37,12 @@ public class SecurityConfig {
                             "/api/challenges/slug/{slug}",
                             "/api/challenges/featured",
                             "/api/challenges/categories",
+                            "/api/categories/**",
                             "/swagger-ui/**",
                             "/v3/api-docs/**",
                             "/swagger-ui.html",
-                            "/actuator/health"
+                            "/actuator/health",
+                            "/error"
                     ).permitAll()
                     
                     // Todos los demás requieren autenticación
