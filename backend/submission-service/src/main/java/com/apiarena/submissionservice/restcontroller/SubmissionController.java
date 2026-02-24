@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.apiarena.submissionservice.config.SubmissionPrincipal;
-import com.apiarena.submissionservice.exception.BadRequestException;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
@@ -47,7 +46,7 @@ public class SubmissionController {
         // Obtener el ID del usuario autenticado
         Long userId = extractUserIdFromAuthentication();
         if (userId == null) {
-            throw new BadRequestException("User ID not found in token. Auth service must include userId in JWT claims.");
+            throw new IllegalArgumentException("User ID not found in token. Auth service must include userId in JWT claims.");
         }
 
         CreateSubmissionResponse response = submissionService.createSubmission(challengeId, userId, file);
@@ -83,7 +82,7 @@ public class SubmissionController {
     public ResponseEntity<List<SubmissionSummaryDTO>> getMySubmissions() {
         Long userId = extractUserIdFromAuthentication();
         if (userId == null) {
-            throw new BadRequestException("User ID not found in token.");
+            throw new IllegalArgumentException("User ID not found in token.");
         }
         List<SubmissionSummaryDTO> submissions = submissionService.getMySubmissions(userId);
         return ResponseEntity.ok(submissions);

@@ -7,10 +7,15 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UpdateChallengeRequest {
 
     @Size(max = 200, message = "Title must not exceed 200 characters")
@@ -18,9 +23,7 @@ public class UpdateChallengeRequest {
 
     private String description;
     private String difficulty;
-
-    @Size(max = 50)
-    private String category;
+    private Long categoryId;
 
     @Min(value = 1, message = "Max score must be at least 1")
     private Integer maxScore;

@@ -6,13 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.apiarena.challengeservice.exception.BadRequestException;
-import com.apiarena.challengeservice.exception.ResourceNotFoundException;
 import com.apiarena.challengeservice.model.dto.ChallengeDTO;
 import com.apiarena.challengeservice.model.dto.ChallengeSummaryDTO;
 import com.apiarena.challengeservice.model.dto.CreateChallengeRequest;
 import com.apiarena.challengeservice.model.dto.UpdateChallengeRequest;
+import com.apiarena.challengeservice.model.entities.Category;
 import com.apiarena.challengeservice.model.entities.Challenge;
+import com.apiarena.challengeservice.model.repositories.CategoryRepository;
 import com.apiarena.challengeservice.repository.ChallengeRepository;
 
 
@@ -21,6 +21,9 @@ public class ChallengeService implements IChallengeService {
 
     @Autowired
     private ChallengeRepository challengeRepository;
+    
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Override
     @Transactional
@@ -30,7 +33,7 @@ public class ChallengeService implements IChallengeService {
 
         // Validar que el slug no exista
         if (challengeRepository.existsBySlug(slug)) {
-            throw new BadRequestException("Challenge with this title already exists");
+            throw new IllegalArgumentException("Challenge with this title already exists");
         }
 
         // Validar dificultad
@@ -38,8 +41,15 @@ public class ChallengeService implements IChallengeService {
         try {
             difficulty = Challenge.Difficulty.valueOf(request.getDifficulty().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid difficulty: " + request.getDifficulty());
+            throw new IllegalArgumentException("Invalid difficulty: " + request.getDifficulty());
         }
+        
+        // Buscar categoría
+        if (request.getCategoryId() == null) {
+            throw new IllegalArgumentException("Category ID is required");
+        }
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + request.getCategoryId()));
 
         // Crear challenge
         Challenge challenge = new Challenge();
@@ -47,7 +57,7 @@ public class ChallengeService implements IChallengeService {
         challenge.setSlug(slug);
         challenge.setDescription(request.getDescription());
         challenge.setDifficulty(difficulty);
-        challenge.setCategory(request.getCategory());
+        challenge.setCategory(category);
         challenge.setRequiredEndpoints(request.getRequiredEndpoints());
         challenge.setRequiredStatusCodes(request.getRequiredStatusCodes());
         challenge.setRequiredHeaders(request.getRequiredHeaders());
@@ -74,14 +84,14 @@ public class ChallengeService implements IChallengeService {
     @Override
     public ChallengeDTO getChallengeById(Long id) {
         Challenge challenge = challengeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Challenge not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
         return ChallengeDTO.fromEntity(challenge);
     }
 
     @Override
     public ChallengeDTO getChallengeBySlug(String slug) {
         Challenge challenge = challengeRepository.findBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Challenge not found with slug: " + slug));
+                .orElseThrow(() -> new IllegalArgumentException("Challenge not found with slug: " + slug));
         return ChallengeDTO.fromEntity(challenge);
     }
 
@@ -108,7 +118,9 @@ public class ChallengeService implements IChallengeService {
         // Filtros combinados
         if (difficulty != null && category != null) {
             Challenge.Difficulty diff = Challenge.Difficulty.valueOf(difficulty.toUpperCase());
-            return challengeRepository.findByDifficultyAndCategoryAndIsActiveTrue(diff, category).stream()
+            Category cat = categoryRepository.findByName(category)
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found: " + category));
+            return challengeRepository.findByDifficultyAndCategoryAndIsActiveTrue(diff, cat).stream()
                     .map(ChallengeSummaryDTO::fromEntity)
                     .toList();
         }
@@ -123,7 +135,9 @@ public class ChallengeService implements IChallengeService {
 
         // Solo categoría
         if (category != null) {
-            return challengeRepository.findByCategoryAndIsActiveTrue(category).stream()
+            Category cat = categoryRepository.findByName(category)
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found: " + category));
+            return challengeRepository.findByCategoryAndIsActiveTrue(cat).stream()
                     .map(ChallengeSummaryDTO::fromEntity)
                     .toList();
         }
@@ -141,14 +155,18 @@ public class ChallengeService implements IChallengeService {
 
     @Override
     public List<String> getAllCategories() {
-        return challengeRepository.findAllCategories();
+        // Ahora las categorías vienen de la tabla categories
+        return categoryRepository.findAllByIsActiveOrderByDisplayOrderAsc(true)
+                .stream()
+                .map(Category::getName)
+                .toList();
     }
 
     @Override
     @Transactional
     public ChallengeDTO updateChallenge(Long id, UpdateChallengeRequest request) {
         Challenge challenge = challengeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Challenge not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
 
         // Actualizar campos solo si vienen en el request
         if (request.getTitle() != null) {
@@ -161,8 +179,10 @@ public class ChallengeService implements IChallengeService {
         if (request.getDifficulty() != null) {
             challenge.setDifficulty(Challenge.Difficulty.valueOf(request.getDifficulty().toUpperCase()));
         }
-        if (request.getCategory() != null) {
-            challenge.setCategory(request.getCategory());
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found with id: " + request.getCategoryId()));
+            challenge.setCategory(category);
         }
         if (request.getMaxScore() != null) {
             challenge.setMaxScore(request.getMaxScore());
@@ -212,7 +232,7 @@ public class ChallengeService implements IChallengeService {
     @Transactional
     public void deleteChallenge(Long id) {
         Challenge challenge = challengeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Challenge not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
         
         // Soft delete
         challenge.setIsActive(false);

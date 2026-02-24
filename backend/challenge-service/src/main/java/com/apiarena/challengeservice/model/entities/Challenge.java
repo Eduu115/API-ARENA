@@ -13,9 +13,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -29,8 +32,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class Challenge {
-
-    // PAra meter listas o JSON como en mongo Usamos JdbcTypeCode para mapear el JSON como un tipo de java
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,10 +56,10 @@ public class Challenge {
     @Column(length = 20, nullable = false)
     private Difficulty difficulty;
 
-    @NotBlank
-    @Size(max = 50)
-    @Column(nullable = false)
-    private String category;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Min(0)
     @Column(name = "max_score", nullable = false)

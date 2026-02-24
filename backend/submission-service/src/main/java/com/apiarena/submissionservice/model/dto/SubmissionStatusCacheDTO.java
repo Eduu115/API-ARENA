@@ -37,7 +37,8 @@ public class SubmissionStatusCacheDTO {
     private static int statusToPercent(Submission.Status status) {
         return switch (status) {
             case PENDING -> 0;
-            case BUILDING -> 50;
+            case BUILDING -> 33;
+            case TESTING -> 66;
             case COMPLETED, FAILED -> 100;
         };
     }

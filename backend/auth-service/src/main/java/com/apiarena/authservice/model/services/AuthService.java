@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.apiarena.authservice.exception.BadRequestException;
 import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.LoginRequest;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
@@ -36,15 +35,15 @@ public class AuthService implements IAuthService {
 
     @Override
     @Transactional
-    public AuthResponse register(RegisterRequest request) { // para los errores, uso los exception handleres que he creado, estan en /exception
+    public AuthResponse register(RegisterRequest request) {
         // Validar que el email no exista
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already registered");
+            throw new IllegalArgumentException("Email already registered");
         }
 
         // Validar que el username no exista
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new BadRequestException("Username already taken");
+            throw new IllegalArgumentException("Username already taken");
         }
 
         // derterminar el rol
@@ -53,7 +52,7 @@ public class AuthService implements IAuthService {
             try {
                 role = User.Role.valueOf(request.getRole().toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new BadRequestException("Invalid role: " + request.getRole());
+                throw new IllegalArgumentException("Invalid role: " + request.getRole());
             }
         }
 

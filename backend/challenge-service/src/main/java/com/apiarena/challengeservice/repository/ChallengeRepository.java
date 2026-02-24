@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.apiarena.challengeservice.model.entities.Category;
 import com.apiarena.challengeservice.model.entities.Challenge;
 
 public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
@@ -16,11 +17,11 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     List<Challenge> findByFeaturedTrue();
     List<Challenge> findByIsActiveTrue();
     List<Challenge> findByDifficultyAndIsActiveTrue(Challenge.Difficulty difficulty);
-    List<Challenge> findByCategoryAndIsActiveTrue(String category);
+    List<Challenge> findByCategoryAndIsActiveTrue(Category category);
     
     List<Challenge> findByDifficultyAndCategoryAndIsActiveTrue(
         Challenge.Difficulty difficulty, 
-        String category
+        Category category
     );
     
     @Query("SELECT c FROM Challenge c WHERE " +
@@ -28,7 +29,4 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
            "(LOWER(c.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(c.description) LIKE LOWER(CONCAT('%', :search, '%')))")
     List<Challenge> searchChallenges(@Param("search") String search);
-    
-    @Query("SELECT DISTINCT c.category FROM Challenge c WHERE c.isActive = true ORDER BY c.category")
-    List<String> findAllCategories();
 }

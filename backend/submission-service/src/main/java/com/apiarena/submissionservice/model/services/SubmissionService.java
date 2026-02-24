@@ -2,13 +2,12 @@ package com.apiarena.submissionservice.model.services;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import com.apiarena.submissionservice.exception.BadRequestException;
-import com.apiarena.submissionservice.exception.ResourceNotFoundException;
-import com.apiarena.submissionservice.exception.UnauthorizedException;
+
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
@@ -38,10 +37,10 @@ public class SubmissionService {
     public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile) {
         // Validar parámetros requeridos
         if (challengeId == null) {
-            throw new BadRequestException("Challenge ID is required");
+            throw new IllegalArgumentException("Challenge ID is required");
         }
         if (userId == null) {
-            throw new BadRequestException("User must be authenticated");
+            throw new IllegalArgumentException("User must be authenticated");
         }
 
         Submission submission = Submission.builder()
@@ -72,11 +71,11 @@ public class SubmissionService {
 
     public SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
         // Verificar permisos: solo el admin o el teacher pueden ver las submissions
         if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
-            throw new UnauthorizedException("You are not allowed to access this submission");
+            throw new SecurityException("You are not allowed to access this submission");
         }
 
         String wsTopic = webSocketService.getWsTopicForSubmission(id);
@@ -85,11 +84,11 @@ public class SubmissionService {
 
     public LogsResponse getLogs(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
         // Verificar permisos
         if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
-            throw new UnauthorizedException("You are not allowed to access this submission");
+            throw new SecurityException("You are not allowed to access this submission");
         }
 
         return new LogsResponse(submission.getBuildLogs(), submission.getTestLogs());
@@ -106,11 +105,11 @@ public class SubmissionService {
     @Transactional
     public void deleteSubmission(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
         // Verificar permisos
         if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
-            throw new UnauthorizedException("You are not allowed to delete this submission");
+            throw new SecurityException("You are not allowed to delete this submission");
         }
 
         statusCacheService.evictStatus(id);
@@ -121,7 +120,7 @@ public class SubmissionService {
 
     public void updateStatus(Long submissionId, Submission.Status status, String errorMessage) {
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + submissionId));
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
 
         submission.setStatus(status);
         submission.setErrorMessage(errorMessage);

@@ -21,6 +21,9 @@ public class ChallengeDTO {
     private String description;
     private String difficulty;
     private String category;
+    private Long categoryId;
+    private String categoryIcon;
+    private String categoryColor;
     private Integer maxScore;
     private Integer timeLimitMinutes;
     private Map<String, Object> requiredEndpoints;
@@ -42,32 +45,40 @@ public class ChallengeDTO {
     private Map<String, Object> learningObjectives;
 
     public static ChallengeDTO fromEntity(Challenge challenge) {
-        return new ChallengeDTO(
-            challenge.getId(),  
-            challenge.getTitle(),
-            challenge.getSlug(),
-            challenge.getDescription(),
-            challenge.getDifficulty().name(),
-            challenge.getCategory(),
-            challenge.getMaxScore(),
-            challenge.getTimeLimitMinutes(),
-            challenge.getRequiredEndpoints(),
-            challenge.getRequiredStatusCodes(),
-            challenge.getRequiredHeaders(),
-            challenge.getTestSuite(),
-            challenge.getPerformanceRequirements(),
-            challenge.getDesignCriteria(),
-            challenge.getCreatedBy(),
-            challenge.getCreatedAt(),
-            challenge.getUpdatedAt(),
-            challenge.getIsActive(),
-            challenge.getFeatured(),
-            challenge.getTimesAttempted(),
-            challenge.getTimesCompleted(),
-            challenge.getAverageScore(),
-            challenge.getHints(),
-            challenge.getSolutionExplanation(),
-            challenge.getLearningObjectives()
-        );
+        ChallengeDTO dto = new ChallengeDTO();
+        dto.setId(challenge.getId());
+        dto.setTitle(challenge.getTitle());
+        dto.setSlug(challenge.getSlug());
+        dto.setDescription(challenge.getDescription());
+        dto.setDifficulty(challenge.getDifficulty().name());
+        
+        if (challenge.getCategory() != null) {
+            dto.setCategory(challenge.getCategory().getName());
+            dto.setCategoryId(challenge.getCategory().getId());
+            dto.setCategoryIcon(challenge.getCategory().getIcon());
+            dto.setCategoryColor(challenge.getCategory().getColor());
+        }
+        
+        dto.setMaxScore(challenge.getMaxScore());
+        dto.setTimeLimitMinutes(challenge.getTimeLimitMinutes());
+        dto.setRequiredEndpoints(challenge.getRequiredEndpoints());
+        dto.setRequiredStatusCodes(challenge.getRequiredStatusCodes());
+        dto.setRequiredHeaders(challenge.getRequiredHeaders());
+        dto.setTestSuite(challenge.getTestSuite());
+        dto.setPerformanceRequirements(challenge.getPerformanceRequirements());
+        dto.setDesignCriteria(challenge.getDesignCriteria());
+        dto.setCreatedBy(challenge.getCreatedBy());
+        dto.setCreatedAt(challenge.getCreatedAt());
+        dto.setUpdatedAt(challenge.getUpdatedAt());
+        dto.setIsActive(challenge.getIsActive());
+        dto.setFeatured(challenge.getFeatured());
+        dto.setTimesAttempted(challenge.getTimesAttempted());
+        dto.setTimesCompleted(challenge.getTimesCompleted());
+        dto.setAverageScore(challenge.getAverageScore());
+        dto.setHints(challenge.getHints());
+        dto.setSolutionExplanation(challenge.getSolutionExplanation());
+        dto.setLearningObjectives(challenge.getLearningObjectives());
+        
+        return dto;
     }
 }

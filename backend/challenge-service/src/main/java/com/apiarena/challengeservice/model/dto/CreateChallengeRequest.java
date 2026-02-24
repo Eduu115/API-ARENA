@@ -4,6 +4,7 @@ import java.util.Map;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,9 +25,8 @@ public class CreateChallengeRequest {
     @NotBlank(message = "Difficulty is required")
     private String difficulty;
 
-    @NotBlank(message = "Category is required")
-    @Size(max = 50)
-    private String category;
+    @NotNull(message = "Category ID is required")
+    private Long categoryId;
 
     @Min(value = 1, message = "Max score must be at least 1")
     private Integer maxScore;

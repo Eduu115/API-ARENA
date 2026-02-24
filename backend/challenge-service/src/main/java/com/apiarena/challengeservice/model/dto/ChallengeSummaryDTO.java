@@ -13,14 +13,15 @@ import lombok.NoArgsConstructor;
 
 public class ChallengeSummaryDTO {
     
-    // Para mostrar en la lista de challenges: ESTA LISTA ES MAS LIGERA QUE EL DTO COMPLETO, ES PARA MANEJAR LISTAS/LISTADOS DE CHALLENGES
-    
     private Long id;
     private String title;
     private String slug;
     private String description;
     private String difficulty;
     private String category;
+    private Long categoryId;
+    private String categoryIcon;
+    private String categoryColor;
     private Integer maxScore;
     private Integer timeLimitMinutes;
     private Boolean featured;
@@ -29,19 +30,27 @@ public class ChallengeSummaryDTO {
     private BigDecimal averageScore;
 
     public static ChallengeSummaryDTO fromEntity(Challenge challenge) {
-        return new ChallengeSummaryDTO(
-            challenge.getId(),
-            challenge.getTitle(),
-            challenge.getSlug(),
-            challenge.getDescription(),
-            challenge.getDifficulty().name(),
-            challenge.getCategory(),
-            challenge.getMaxScore(),
-            challenge.getTimeLimitMinutes(),
-            challenge.getFeatured(),
-            challenge.getTimesAttempted(),
-            challenge.getTimesCompleted(),
-            challenge.getAverageScore()
-        );
+        ChallengeSummaryDTO dto = new ChallengeSummaryDTO();
+        dto.setId(challenge.getId());
+        dto.setTitle(challenge.getTitle());
+        dto.setSlug(challenge.getSlug());
+        dto.setDescription(challenge.getDescription());
+        dto.setDifficulty(challenge.getDifficulty().name());
+        
+        if (challenge.getCategory() != null) {
+            dto.setCategory(challenge.getCategory().getName());
+            dto.setCategoryId(challenge.getCategory().getId());
+            dto.setCategoryIcon(challenge.getCategory().getIcon());
+            dto.setCategoryColor(challenge.getCategory().getColor());
+        }
+        
+        dto.setMaxScore(challenge.getMaxScore());
+        dto.setTimeLimitMinutes(challenge.getTimeLimitMinutes());
+        dto.setFeatured(challenge.getFeatured());
+        dto.setTimesAttempted(challenge.getTimesAttempted());
+        dto.setTimesCompleted(challenge.getTimesCompleted());
+        dto.setAverageScore(challenge.getAverageScore());
+        
+        return dto;
     }
 }
