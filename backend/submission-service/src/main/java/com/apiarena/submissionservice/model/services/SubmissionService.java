@@ -1,5 +1,6 @@
 package com.apiarena.submissionservice.model.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import com.apiarena.submissionservice.model.entities.Submission;
 import com.apiarena.submissionservice.repository.SubmissionRepository;
 
 @Service
-public class SubmissionService {
+public class SubmissionService implements ISubmissionService {
 
     @Autowired
     private SubmissionRepository submissionRepository;
@@ -31,6 +32,7 @@ public class SubmissionService {
     @Autowired
     private SubmissionWebSocketService webSocketService;
 
+    @Override
     @Transactional
     public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile) {
 
@@ -64,6 +66,7 @@ public class SubmissionService {
         return new CreateSubmissionResponse(saved.getId(), saved.getStatus().name(), wsTopic);
     }
 
+    @Override
     public SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
@@ -76,6 +79,7 @@ public class SubmissionService {
         return SubmissionDTO.fromEntity(submission, wsTopic);
     }
 
+    @Override
     public LogsResponse getLogs(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
@@ -87,12 +91,14 @@ public class SubmissionService {
         return new LogsResponse(submission.getBuildLogs(), submission.getTestLogs());
     }
 
+    @Override
     public List<SubmissionSummaryDTO> getMySubmissions(Long userId) {
         return submissionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(SubmissionSummaryDTO::fromEntity)
                 .toList();
     }
 
+    @Override
     @Transactional
     public void deleteSubmission(Long id, Long userId, boolean isAdminOrTeacher) {
         Submission submission = submissionRepository.findById(id)
@@ -106,6 +112,7 @@ public class SubmissionService {
         submissionRepository.delete(submission);
     }
 
+    @Override
     public void updateStatus(Long submissionId, Submission.Status status, String errorMessage) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
@@ -122,9 +129,10 @@ public class SubmissionService {
         webSocketService.sendStatusUpdate(submissionId, SubmissionStatusCacheDTO.fromEntity(submission));
     }
 
+    @Override
     public void appendBuildLogs(Long submissionId, String logs) {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
-        if (submission == null) return;  
+        if (submission == null) return;
 
         String existing = submission.getBuildLogs() != null ? submission.getBuildLogs() : "";
         submission.setBuildLogs(existing + logs);
@@ -133,9 +141,10 @@ public class SubmissionService {
         webSocketService.sendLogAppend(submissionId, "build", logs, "info");
     }
 
+    @Override
     public void appendTestLogs(Long submissionId, String logs) {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
-        if (submission == null) return;  
+        if (submission == null) return;
 
         String existing = submission.getTestLogs() != null ? submission.getTestLogs() : "";
         submission.setTestLogs(existing + logs);
@@ -144,9 +153,10 @@ public class SubmissionService {
         webSocketService.sendLogAppend(submissionId, "test", logs, "info");
     }
 
-    public void updateScores(Long submissionId, java.math.BigDecimal totalScore,
-                            java.math.BigDecimal correctnessScore, java.math.BigDecimal performanceScore,
-                            java.math.BigDecimal designScore) {
+    @Override
+    public void updateScores(Long submissionId, BigDecimal totalScore,
+                            BigDecimal correctnessScore, BigDecimal performanceScore,
+                            BigDecimal designScore) {
         Submission submission = submissionRepository.findById(submissionId).orElse(null);
         if (submission == null) return;
 

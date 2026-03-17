@@ -15,14 +15,16 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class JwtService {
+public class JwtService implements IJwtService {
 
     private final JwtProperties jwtProperties;
 
+    @Override
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    @Override
     public Long extractUserId(String token) {
         Claims claims = extractAllClaims(token);
         if (claims.get("userId") != null) {
@@ -33,15 +35,18 @@ public class JwtService {
         return null;
     }
 
+    @Override
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    @Override
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
+    @Override
     public Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey())
@@ -50,10 +55,12 @@ public class JwtService {
                 .getPayload();
     }
 
+    @Override
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
+    @Override
     public boolean isTokenValid(String token) {
         try {
             return !isTokenExpired(token);

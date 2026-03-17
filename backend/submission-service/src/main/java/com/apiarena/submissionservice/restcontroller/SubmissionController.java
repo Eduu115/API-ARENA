@@ -1,6 +1,7 @@
 package com.apiarena.submissionservice.restcontroller;
 
 import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +16,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.apiarena.submissionservice.config.SubmissionPrincipal;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
-import com.apiarena.submissionservice.model.services.SubmissionService;
+import com.apiarena.submissionservice.model.services.ISubmissionService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class SubmissionController {
 
     @Autowired
-    private SubmissionService submissionService;
+    private ISubmissionService submissionService;
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
@@ -110,6 +113,7 @@ public class SubmissionController {
     }
 
     private boolean hasAdminOrTeacherRole() {
-        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_TEACHER".equals(a.getAuthority()));
+        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_TEACHER".equals(a.getAuthority()));
     }
 }
