@@ -177,7 +177,7 @@ export default function Dashboard() {
                 </div>
               ))
             ) : (
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--muted)' }}>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
                 {loadingChallenges ? 'Cargando...' : 'Sin categorias'}
               </div>
             )}
@@ -215,9 +215,6 @@ export default function Dashboard() {
             <div className="db-header-actions">
               <Link to="/challenges" className="db-btn db-btn-primary">
                 Enter Arena
-              </Link>
-              <Link to="/profile" className="db-btn">
-                View Profile
               </Link>
             </div>
           </div>
@@ -303,7 +300,7 @@ export default function Dashboard() {
                   );
                 })
               ) : (
-                <div style={{ padding: 24, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
+                <div style={{ padding: 24, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--muted)' }}>
                   No hay challenges disponibles
                 </div>
               )}
@@ -313,7 +310,6 @@ export default function Dashboard() {
               <div className="db-panel">
                 <div className="db-panel-head">
                   <div className="db-panel-title">Your Stats</div>
-                  <Link to="/profile" className="db-panel-action">Profile →</Link>
                 </div>
                 <div style={{ padding: '12px 18px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
@@ -341,12 +337,12 @@ export default function Dashboard() {
                       padding: '6px 0', borderBottom: '1px solid var(--dim)',
                     }}>
                       <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 9,
+                        fontFamily: 'var(--font-mono)', fontSize: 12,
                         color: 'var(--muted)', letterSpacing: 1,
                       }}>{stat.label}</span>
                       <span style={{
                         fontFamily: 'var(--font-display)', fontWeight: 700,
-                        fontSize: 14, color: stat.color,
+                        fontSize: 18, color: stat.color,
                       }}>{stat.value}</span>
                     </div>
                   ))}
@@ -370,11 +366,11 @@ export default function Dashboard() {
                       padding: '5px 0', borderBottom: '1px solid var(--dim)',
                     }}>
                       <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 9,
+                        fontFamily: 'var(--font-mono)', fontSize: 12,
                         color: 'var(--muted)', letterSpacing: 1,
                       }}>{item.label}</span>
                       <span style={{
-                        fontFamily: 'var(--font-mono)', fontSize: 10,
+                        fontFamily: 'var(--font-mono)', fontSize: 13,
                         color: 'var(--text)',
                       }}>{item.value}</span>
                     </div>
@@ -432,7 +428,7 @@ export default function Dashboard() {
               ) : (
                 <div style={{
                   gridColumn: '1 / -1', padding: 24, textAlign: 'center',
-                  fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)',
+                  fontFamily: 'var(--font-mono)', fontSize: 15, color: 'var(--muted)',
                 }}>
                   {loadingChallenges ? 'Cargando...' : 'No hay challenges destacados'}
                 </div>

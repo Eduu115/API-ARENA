@@ -7,11 +7,12 @@ import Dashboard from "../pages/dashboard/Dashboard";
 import Leaderboard from "../pages/Leaderboard";
 import Login from "../pages/auth/Login";
 import MultiplayerHub from "../pages/MultiplayerHub";
-import MySubmissions from "../pages/MySubmissions";
+import MySubmissions from "../pages/submissions/MySubmissions";
 import NotFound from "../pages/NotFound";
 import Profile from "../pages/Profile";
 import Register from "../pages/auth/Register";
-import SubmissionDetail from "../pages/SubmissionDetail";
+import SubmissionDetail from "../pages/submissions/SubmissionDetail";
+import Replay from "../pages/Replay";
 
 export default function RoutesConfig() {
   return (
@@ -31,6 +32,7 @@ export default function RoutesConfig() {
 
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/replay" element={<Replay />} />
 
         <Route path="/multiplayer" element={<MultiplayerHub />} />
 
