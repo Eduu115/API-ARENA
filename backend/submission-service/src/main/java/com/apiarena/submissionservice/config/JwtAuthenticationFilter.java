@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtService jwtService;
+    private IJwtService jwtService;
 
     @Override
     protected void doFilterInternal(
@@ -49,6 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     Claims claims = jwtService.extractAllClaims(jwt);
 
                     List<SimpleGrantedAuthority> authorities;
+
                     try {
                         @SuppressWarnings("unchecked")
                         List<String> roles = (List<String>) claims.get("authorities");
@@ -58,7 +59,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     .map(SimpleGrantedAuthority::new)
                                     .collect(Collectors.toList());
                         } else {
-
                             String role = claims.get("role", String.class);
                             if (role != null) {
                                 authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            logger.error("Cannot set user authentication: {}", e);
+            logger.error("Cannot set user authentication: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
