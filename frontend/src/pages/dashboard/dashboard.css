@@ -32,7 +32,7 @@
 .db-profile-name {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 22px;
+  font-size: 25px;
   letter-spacing: -0.5px;
   text-transform: uppercase;
   color: var(--white);
@@ -41,7 +41,7 @@
 }
 .db-profile-sub {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -56,7 +56,7 @@
   border: 1px solid rgba(255,184,0,0.3);
   padding: 5px 14px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 15px;
   color: var(--warn);
   letter-spacing: 1.5px;
 }
@@ -84,13 +84,13 @@
 .db-qs-val {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 22px;
+  font-size: 32px;
   line-height: 1;
   margin-bottom: 3px;
 }
 .db-qs-label {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
@@ -104,7 +104,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--muted);
   margin-bottom: 5px;
@@ -157,7 +157,7 @@
 }
 .db-kpi-icon {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 22px;
   color: var(--kpi-color, var(--cyan));
   line-height: 1;
 }
@@ -173,7 +173,7 @@
 .db-kpi-val {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 52px;
+  font-size: 48px;
   line-height: 0.9;
   letter-spacing: -2px;
   color: var(--white);
@@ -181,7 +181,7 @@
 }
 .db-kpi-label {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 11px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--muted);
@@ -216,7 +216,7 @@
 }
 .db-panel-title {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--cyan);
@@ -232,17 +232,21 @@
   animation: db-blink 1.5s ease-in-out infinite;
   flex-shrink: 0;
 }
-@keyframes db-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes db-blink { 
+  0%,100%{opacity:1} 50%{opacity:0.3} 
+}
 
 .db-panel-action {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 13px;
   letter-spacing: 1px;
   color: var(--muted);
   text-decoration: none;
   transition: color 0.2s;
 }
-.db-panel-action:hover { color: var(--cyan); }
+.db-panel-action:hover { 
+  color: var(--cyan); 
+}
 
 .db-activity-row {
   display: flex;
@@ -253,15 +257,23 @@
   transition: background 0.15s;
   cursor: none;
 }
-.db-activity-row:last-child { border-bottom: none; }
-.db-activity-row:hover { background: rgba(255,255,255,0.02); }
+.db-activity-row:last-child { 
+  border-bottom: none; 
+}
+
+.db-activity-row:hover { 
+  background: rgba(255,255,255,0.02); 
+}
 
 .db-row-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.db-row-info { flex: 1; min-width: 0; }
+.db-row-info { 
+  flex: 1; min-width: 0; 
+}
+
 .db-row-title {
   font-family: var(--font-display);
   font-weight: 900;
@@ -275,6 +287,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .db-row-meta {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -289,6 +302,7 @@
   width: 110px;
   flex-shrink: 0;
 }
+
 .db-row-score-label {
   display: flex;
   justify-content: space-between;
@@ -302,6 +316,7 @@
   height: 2px;
   background: var(--bg3);
 }
+
 .db-row-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--cyan), var(--green));
@@ -318,6 +333,7 @@
   width: 70px;
   justify-content: flex-end;
 }
+
 .db-row-time {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -342,8 +358,14 @@
   transition: background 0.15s;
   position: relative;
 }
-.db-lb-row:last-child { border-bottom: none; }
-.db-lb-row:hover { background: rgba(255,255,255,0.02); }
+.db-lb-row:last-child { 
+  border-bottom: none; 
+}
+
+.db-lb-row:hover { 
+  background: rgba(255,255,255,0.02); 
+}
+
 .db-lb-row.db-lb-me {
   background: rgba(0,217,255,0.05);
   border-bottom-color: rgba(0,217,255,0.15);
@@ -550,7 +572,7 @@
 }
 .db-th {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -568,7 +590,7 @@
 
 .db-page-eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 3px;
   color: var(--cyan);
   text-transform: uppercase;
@@ -589,7 +611,7 @@
 }
 .db-page-sub {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 0.5px;
   color: var(--muted);
   margin-top: 8px;
