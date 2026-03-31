@@ -24,7 +24,7 @@
   display: inline-block;
   margin-bottom: 32px;
   color: var(--cyan);
-  font-size: 14px;
+  font-size: 15px;
   text-decoration: none;
   font-family: var(--font-mono);
   letter-spacing: 0.5px;
@@ -87,7 +87,7 @@
 }
 
 .profile-email {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--muted);
   margin: 0 0 16px 0;
 }
@@ -100,7 +100,7 @@
 
 .profile-badge {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   padding: 4px 10px;
   border: 1px solid var(--dim);
@@ -137,7 +137,7 @@
 }
 
 .profile-info-display {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
 }
 
@@ -171,7 +171,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.5px;
 }
 
@@ -190,13 +190,13 @@
   background: rgba(255, 77, 106, 0.15);
   color: var(--red);
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .profile-form-group label {
   display: block;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 1px;
   color: var(--muted);
   margin-bottom: 8px;
@@ -211,7 +211,7 @@
   border: 1px solid var(--dim);
   border-radius: 6px;
   color: var(--text);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .profile-form-group input:focus,
@@ -239,7 +239,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .profile-btn-save:disabled {
@@ -255,7 +255,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .profile-btn-cancel:hover {
@@ -287,7 +287,7 @@
 
 .profile-stat-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--muted);
@@ -307,13 +307,13 @@
 
 .profile-meta-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--muted);
   text-transform: uppercase;
 }
 
 .profile-meta-value {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text);
 }

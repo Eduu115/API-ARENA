@@ -43,7 +43,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 0.5px;
   margin-bottom: 0;
   transition: background 0.2s, color 0.2s;
@@ -63,7 +63,7 @@
   border-radius: 6px;
   cursor: pointer;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.5px;
   transition: opacity 0.2s, transform 0.15s;
@@ -113,7 +113,7 @@
 
 .chd-hero-slug {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
   letter-spacing: 1px;
   margin: 0 0 28px 0;
@@ -142,7 +142,7 @@
 
 .chd-stat-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -153,7 +153,7 @@
   flex-wrap: wrap;
   gap: 20px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.5px;
 }
@@ -194,7 +194,7 @@
   padding: 24px 28px;
   overflow-x: auto;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   color: var(--text);
   margin: 0;
@@ -237,7 +237,7 @@
   margin-bottom: 8px;
   background: var(--bg2);
   border-left: 3px solid var(--cyan);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
 }
 

@@ -41,7 +41,7 @@
 }
 .db-profile-sub {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -56,7 +56,7 @@
   border: 1px solid rgba(255,184,0,0.3);
   padding: 5px 14px;
   font-family: var(--font-mono);
-  font-size: 15px;
+  font-size: 16px;
   color: var(--warn);
   letter-spacing: 1.5px;
 }
@@ -90,7 +90,7 @@
 }
 .db-qs-label {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
@@ -104,7 +104,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1px;
   color: var(--muted);
   margin-bottom: 5px;
@@ -163,7 +163,7 @@
 }
 .db-kpi-change {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   color: var(--muted);
 }
@@ -181,7 +181,7 @@
 }
 .db-kpi-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--muted);
@@ -216,7 +216,7 @@
 }
 .db-panel-title {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--cyan);
@@ -238,7 +238,7 @@
 
 .db-panel-action {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 1px;
   color: var(--muted);
   text-decoration: none;
@@ -277,7 +277,7 @@
 .db-row-title {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 15px;
+  font-size: 16px;
   letter-spacing: -0.3px;
   text-transform: uppercase;
   color: var(--white);
@@ -290,7 +290,7 @@
 
 .db-row-meta {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   color: var(--muted);
   display: flex;
@@ -307,7 +307,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 12px;
   color: var(--muted);
   margin-bottom: 4px;
   letter-spacing: 0.5px;
@@ -324,7 +324,7 @@
 
 .db-row-status {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   display: flex;
   align-items: center;
@@ -336,7 +336,7 @@
 
 .db-row-time {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   color: var(--muted);
   flex-shrink: 0;
   width: 36px;
@@ -381,7 +381,7 @@
 .db-lb-rank {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 15px;
+  font-size: 16px;
   width: 20px;
   text-align: center;
   flex-shrink: 0;
@@ -392,13 +392,13 @@
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 8px;
+  font-size: 12px;
   color: var(--bg0);
   flex-shrink: 0;
 }
 .db-lb-name {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text);
   flex: 1;
   white-space: nowrap;
@@ -409,7 +409,7 @@
 .db-lb-pts {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--cyan);
   flex-shrink: 0;
 }
@@ -434,7 +434,7 @@
 }
 .db-streak-unit {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -475,7 +475,7 @@
 }
 .db-streak-day-label {
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   color: var(--muted);
   text-align: center;
@@ -498,7 +498,7 @@
 }
 .db-rec-sub {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--muted);
 }
@@ -555,7 +555,7 @@
 }
 .db-rec-pts-label {
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   color: var(--muted);
   display: block;
@@ -572,7 +572,7 @@
 }
 .db-th {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -590,7 +590,7 @@
 
 .db-page-eyebrow {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 3px;
   color: var(--cyan);
   text-transform: uppercase;
@@ -611,7 +611,7 @@
 }
 .db-page-sub {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.5px;
   color: var(--muted);
   margin-top: 8px;
@@ -625,7 +625,7 @@
 }
 .db-btn {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   padding: 9px 18px;
@@ -698,9 +698,9 @@
 
   .db-kpi-card  { padding: 12px 12px 0; }
   .db-kpi-val   { font-size: 28px; letter-spacing: -1px; }
-  .db-kpi-label { font-size: 7px; letter-spacing: 1px; }
-  .db-kpi-icon  { font-size: 10px; }
-  .db-kpi-change { font-size: 7px; }
+  .db-kpi-label { font-size: 12px; letter-spacing: 1px; }
+  .db-kpi-icon  { font-size: 12px; }
+  .db-kpi-change { font-size: 12px; }
 
   .db-th-score,
   .db-row-score { display: none; }
@@ -709,17 +709,17 @@
   .db-activity-row { padding: 10px 14px; gap: 10px; }
 
   .db-lb-hex  { display: none; }
-  .db-lb-pts  { font-size: 12px; }
-  .db-lb-rank { font-size: 13px; width: 16px; }
+  .db-lb-pts  { font-size: 14px; }
+  .db-lb-rank { font-size: 15px; width: 16px; }
 
   .db-avatar        { width: 56px; height: 56px; font-size: 22px; }
   .db-profile-name  { font-size: 18px; }
   .db-qs-val        { font-size: 18px; }
-  .db-qs-label      { font-size: 7px; }
+  .db-qs-label      { font-size: 12px; }
 
-  .db-rec-card-title { font-size: 15px; }
-  .db-rec-card-pts   { font-size: 15px; }
+  .db-rec-card-title { font-size: 16px; }
+  .db-rec-card-pts   { font-size: 16px; }
 
   .db-page-title { font-size: 28px; }
-  .db-page-sub   { font-size: 9px; }
+  .db-page-sub   { font-size: 12px; }
 }

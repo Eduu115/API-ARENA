@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import Landing from "../pages/landing/Landing";
 import ChallengeDetail from "../pages/challenges/ChallengeDetail";
@@ -15,6 +16,8 @@ import SubmissionDetail from "../pages/submissions/SubmissionDetail";
 import Replay from "../pages/Replay";
 
 export default function RoutesConfig() {
+  const { isAuthenticated, isLoading } = useAuth();
+
   return (
     <BrowserRouter>
       <Routes>
@@ -31,7 +34,12 @@ export default function RoutesConfig() {
         <Route path="/submissions/:id" element={<SubmissionDetail />} />
 
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/profile"
+          element={
+            isLoading ? null : isAuthenticated ? <Profile /> : <Navigate to="/register" replace />
+          }
+        />
         <Route path="/replay" element={<Replay />} />
 
         <Route path="/multiplayer" element={<MultiplayerHub />} />
