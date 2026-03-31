@@ -38,11 +38,11 @@
 }
 
 .auth-switch__description {
-  @apply text-sm text-text-secondary leading-relaxed mb-8;
+  @apply text-base text-text-secondary leading-relaxed mb-8;
 }
 
 .auth-switch__button {
-  @apply px-8 py-4 rounded-full font-display font-semibold text-sm tracking-wide;
+  @apply px-8 py-4 rounded-full font-display font-semibold text-base tracking-wide;
   @apply bg-gradient-to-br from-primary to-primary-dark text-background-primary;
   @apply border-0 cursor-pointer transition-all duration-300;
   box-shadow: 8px 8px 16px rgba(10, 14, 39, 0.6), -8px -8px 16px rgba(0, 217, 255, 0.05);
@@ -88,11 +88,11 @@
 }
 
 .auth-form__span {
-  @apply text-text-secondary text-sm mb-4;
+  @apply text-text-secondary text-base mb-4;
 }
 
 .auth-form__error {
-  @apply w-full text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 mb-2;
+  @apply w-full text-base text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2 mb-2;
 }
 
 .auth-form__button:disabled {
@@ -100,7 +100,7 @@
 }
 
 .auth-form__input {
-  @apply w-full h-11 my-1 pl-6 text-sm;
+  @apply w-full h-11 my-1 pl-6 text-base;
   @apply font-body text-text-primary rounded-lg border-0 outline-none;
   @apply transition-all duration-300;
   background-color: var(--arena-bg-tertiary);
@@ -116,7 +116,7 @@
 }
 
 .auth-form__link {
-  @apply text-primary text-sm mt-6 no-underline border-b;
+  @apply text-primary text-base mt-6 no-underline border-b;
   border-bottom-color: var(--arena-primary-30);
 }
 
@@ -129,7 +129,7 @@
 }
 
 .auth-form__link--button {
-  @apply bg-transparent border-0 cursor-pointer p-0 text-primary text-sm border-b rounded-none font-body;
+  @apply bg-transparent border-0 cursor-pointer p-0 text-primary text-base border-b rounded-none font-body;
   border-bottom-color: var(--arena-primary-30);
 }
 
@@ -138,7 +138,7 @@
 }
 
 .auth-form__button {
-  @apply w-[180px] h-12 rounded-full mt-10 font-display font-semibold text-sm;
+  @apply w-[180px] h-12 rounded-full mt-10 font-display font-semibold text-base;
   @apply bg-gradient-to-br from-primary to-primary-dark text-background-primary;
   @apply border-0 cursor-pointer transition-all duration-300 tracking-wider;
   box-shadow: 8px 8px 16px rgba(10, 14, 39, 0.6), -8px -8px 16px rgba(0, 217, 255, 0.05);
@@ -239,7 +239,7 @@
   }
 
   .auth-switch__description {
-    @apply text-xs mb-4;
+    @apply text-base mb-4;
   }
 
   .auth-form__title {

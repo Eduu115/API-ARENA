@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
@@ -20,6 +20,12 @@ export default function Profile() {
     githubUsername: '',
   });
 
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !user)) {
+      navigate('/register', { replace: true });
+    }
+  }, [isLoading, isAuthenticated, user, navigate]);
+
   if (isLoading) {
     return (
       <div className="challenges-page profile-page">
@@ -34,7 +40,6 @@ export default function Profile() {
   }
 
   if (!isAuthenticated || !user) {
-    navigate('/login', { replace: true });
     return null;
   }
 

@@ -133,7 +133,7 @@
 }
 .ch-nav-item {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
@@ -165,7 +165,7 @@
 }
 .ch-user-rank {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--warn);
   display: flex;
   align-items: center;
@@ -175,7 +175,7 @@
   background: rgba(255,184,0,0.12);
   border: 1px solid rgba(255,184,0,0.3);
   padding: 3px 8px;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
 }
 .ch-user-avatar {
@@ -185,7 +185,7 @@
   display: flex; align-items: center; justify-content: center;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--bg0);
   cursor: none;
 }
@@ -212,7 +212,7 @@
 
 .ch-sidebar-label {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--muted);
@@ -228,7 +228,7 @@
   border: 1px solid var(--dim);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 15px;
   padding: 9px 12px 9px 32px;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -245,7 +245,7 @@
   left: 10px; top: 50%;
   transform: translateY(-50%);
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
   pointer-events: none;
   font-family: var(--font-mono);
   line-height: 1;
@@ -261,7 +261,7 @@
   cursor: none;
   padding: 7px 10px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 0.5px;
   color: var(--muted);
   transition: color 0.2s, background 0.2s;
@@ -296,7 +296,7 @@
 
 .ch-filter-count {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   background: var(--bg3);
   padding: 2px 6px;
@@ -311,7 +311,7 @@
 }
 .ch-cat-tag {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   padding: 4px 8px;
@@ -337,7 +337,7 @@
 }
 .ch-stat-row-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.5px;
 }
@@ -357,7 +357,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   color: var(--muted);
   margin-bottom: 6px;
   letter-spacing: 1px;
@@ -387,7 +387,7 @@
 }
 .ch-page-eyebrow {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 3px;
   color: var(--cyan);
   text-transform: uppercase;
@@ -418,7 +418,7 @@
   border: 1px solid var(--dim);
   color: var(--text);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   padding: 8px 28px 8px 12px;
   outline: none;
@@ -443,7 +443,7 @@
   cursor: none;
   padding: 8px 12px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 15px;
   transition: all 0.2s;
   line-height: 1;
 }
@@ -462,7 +462,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   padding: 4px 10px;
   background: rgba(0,217,255,0.08);
@@ -472,7 +472,7 @@
 .ch-remove-btn {
   color: var(--muted);
   cursor: none;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1;
   transition: color 0.2s;
   background: none;
@@ -485,7 +485,7 @@
 
 .ch-results-count {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 1px;
   margin-left: auto;
@@ -570,7 +570,7 @@
 
 .ch-badge {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 3px 8px;
@@ -598,7 +598,7 @@
   flex-shrink: 0;
   width: 22px; height: 22px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1;
 }
 
@@ -614,7 +614,7 @@
 }
 .ch-card-desc {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: 12px;
   line-height: 1.7;
   color: var(--muted);
   margin-bottom: 16px;
@@ -629,7 +629,7 @@
 }
 .ch-skill-tag {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.8px;
   color: var(--muted);
   background: var(--bg3);
@@ -641,7 +641,7 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   color: var(--muted);
   margin-bottom: 5px;
   letter-spacing: 1px;
@@ -671,11 +671,11 @@
   align-items: center;
   gap: 4px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.3px;
 }
-.ch-meta-icon { font-size: 11px; line-height: 1; }
+.ch-meta-icon { font-size: 13px; line-height: 1; }
 
 .ch-card-pts {
   font-family: var(--font-display);
@@ -686,7 +686,7 @@
 }
 .ch-pts-label {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   color: var(--muted);
   display: block;
@@ -720,7 +720,7 @@
   align-items: center;
   gap: 6px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--warn);
@@ -752,7 +752,7 @@
 }
 .ch-score-dim-label {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   color: var(--muted);
   width: 100px;
@@ -770,7 +770,7 @@
 }
 .ch-score-dim-val {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   width: 28px;
   text-align: right;
   flex-shrink: 0;
@@ -778,7 +778,7 @@
 
 .ch-lb-mini-title {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 2px;
   color: var(--muted);
   margin-bottom: 8px;
@@ -795,7 +795,7 @@
 .ch-lb-rank-num {
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 14px;
+  font-size: 15px;
   width: 16px;
   text-align: center;
 }
@@ -805,14 +805,14 @@
 .ch-rank-other  { color: var(--muted); }
 .ch-lb-username {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text);
   flex: 1;
 }
 .ch-lb-score-mini {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--cyan);
 }
 
@@ -831,7 +831,7 @@
 }
 .ch-empty-text {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   letter-spacing: 1px;
 }
@@ -843,7 +843,7 @@
 }
 .ch-load-more-btn {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--muted);
@@ -898,7 +898,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--text);
   background: var(--bg3);
@@ -998,7 +998,7 @@
 }
 .ch-bni-label {
   font-family: var(--font-mono);
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
@@ -1047,7 +1047,7 @@
   }
   .ch-page-title    { font-size: 38px; }
   .ch-page-controls { width: 100%; justify-content: space-between; }
-  .ch-page-eyebrow  { font-size: 9px; }
+  .ch-page-eyebrow  { font-size: 12px; }
 
   .ch-user-rank { display: none; }
 
@@ -1065,7 +1065,7 @@
   .ch-card-inner    { padding: 14px 14px 14px 18px; }
   .ch-card-featured { margin-bottom: 0; }
 
-  .ch-sort-select { font-size: 9px; }
+  .ch-sort-select { font-size: 12px; }
 }
 
 @media (max-width: 480px) {
@@ -1080,12 +1080,12 @@
   .ch-page-title  { font-size: 28px; }
   .ch-card-title  { font-size: 18px; }
   .ch-card-featured .ch-card-title { font-size: 22px; }
-  .ch-card-desc   { font-size: 10px; }
+  .ch-card-desc   { font-size: 12px; }
 
   .ch-challenges-grid { grid-template-columns: 1fr; }
 
   .ch-card-meta { gap: 8px; }
-  .ch-meta-item { font-size: 9px; }
+  .ch-meta-item { font-size: 12px; }
 
   .ch-load-more-btn { width: 100%; justify-content: center; }
 }

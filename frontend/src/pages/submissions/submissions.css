@@ -44,7 +44,7 @@
 }
 .sub-kpi-label {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--muted);
@@ -68,7 +68,7 @@
 }
 .sub-filter-btn {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 6px 14px;
@@ -104,7 +104,7 @@
 }
 .sub-th {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -126,7 +126,7 @@
 
 .sub-row-id {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   letter-spacing: 0.5px;
 }
@@ -146,7 +146,7 @@
 }
 .sub-row-challenge-meta {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
   letter-spacing: 0.5px;
   display: flex;
@@ -177,7 +177,7 @@
 
 .sub-status-badge {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 4px 10px;
@@ -234,7 +234,7 @@
 
 .sub-row-time {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   text-align: right;
 }
@@ -246,7 +246,7 @@
 }
 .sub-action-btn {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 1px;
   text-transform: uppercase;
   padding: 5px 10px;
@@ -273,7 +273,7 @@
 
 .sd-back-btn {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 1px;
   color: var(--muted);
   background: none;
@@ -318,7 +318,7 @@
 }
 .sd-hero-meta {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.5px;
   display: flex;
@@ -340,7 +340,7 @@
 }
 .sd-total-score-label {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--muted);
@@ -367,7 +367,7 @@
 }
 .sd-score-cell-label {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
@@ -403,7 +403,7 @@
 }
 .sd-panel-title {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--cyan);
@@ -426,7 +426,7 @@
 .sd-perf-row:last-child { border-bottom: none; }
 .sd-perf-label {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.5px;
 }
@@ -447,20 +447,20 @@
 }
 .sd-test-row:last-child { border-bottom: none; }
 .sd-test-icon {
-  font-size: 11px;
+  font-size: 13px;
   flex-shrink: 0;
   width: 18px;
   text-align: center;
 }
 .sd-test-name {
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--text);
   flex: 1;
 }
 .sd-test-time {
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 12px;
   color: var(--muted);
 }
 
@@ -470,7 +470,7 @@
   border: 1px solid var(--dim);
   padding: 16px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.8;
   color: var(--text);
   max-height: 220px;
@@ -527,7 +527,7 @@
 }
 .sd-timeline-label {
   font-family: var(--font-mono);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
