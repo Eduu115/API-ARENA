@@ -130,6 +130,72 @@
   font-weight: 700;
 }
 
+/*
+ * Efecto tele / CRT: líneas horizontales sobre el bloque del título (scanlines locales),
+ * coherente con el grano de la página (.challenges-page::before) pero solo en el texto.
+ */
+.auth-title-crt {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.auth-title-crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.14) 2px,
+    rgba(0, 0, 0, 0.14) 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.72;
+}
+
+[data-theme="light"] .auth-title-crt::after {
+  mix-blend-mode: soft-light;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 3px
+  );
+  opacity: 0.55;
+}
+
+.auth-title-crt--sm::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+}
+
+[data-theme="light"] .auth-title-crt--sm::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.05) 1px,
+    rgba(0, 0, 0, 0.05) 2px
+  );
+}
+
+.auth-title-crt .ch-page-title,
+.auth-title-crt .ch-card-title {
+  position: relative;
+  z-index: 0;
+}
+
 /* Tarjeta formulario: mismo lenguaje que .ch-card (borde + acento superior) */
 .auth-form-card {
   position: relative;

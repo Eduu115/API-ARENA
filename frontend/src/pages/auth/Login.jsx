@@ -49,10 +49,12 @@ export default function Login() {
               </Link>
 
               <div className="ch-page-eyebrow">// Login</div>
-              <h1 className="ch-page-title">
-                Vuelve a la
-                <em>Arena</em>
-              </h1>
+              <div className="auth-title-crt">
+                <h1 className="ch-page-title">
+                  Vuelve a la
+                  <em>Arena</em>
+                </h1>
+              </div>
               <p className="ch-card-desc auth-copy-lead">
                 Compite en retos de APIs, escala el leaderboard y mejora tu ELO.{" "}
                 <span className="auth-copy-strong">Sin ruido, directo al combate.</span>
@@ -74,7 +76,9 @@ export default function Login() {
                 <div className="auth-form__head">
                   <div>
                     <div className="ch-page-eyebrow">// Credenciales</div>
-                    <h2 className="ch-card-title">Iniciar sesión</h2>
+                    <div className="auth-title-crt auth-title-crt--sm">
+                      <h2 className="ch-card-title">Iniciar sesión</h2>
+                    </div>
                   </div>
                   <div className="auth-form__status">{submitting ? "// autenticando…" : "// listo"}</div>
                 </div>

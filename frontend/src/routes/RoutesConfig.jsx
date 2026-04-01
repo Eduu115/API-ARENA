@@ -32,7 +32,6 @@ export default function RoutesConfig() {
         <Route path="/challenges/:id" element={<ChallengeDetail />} />
 
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/replay" element={<Replay />} />
         <Route path="/multiplayer" element={<MultiplayerHub />} />
 
         <Route element={<ProtectedLayout />}>
@@ -40,6 +39,7 @@ export default function RoutesConfig() {
           <Route path="profile" element={<Profile />} />
           <Route path="submissions" element={<MySubmissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
+          <Route path="replay" element={<Replay />} />
         </Route>
 
         <Route element={<TeacherLayout />}>

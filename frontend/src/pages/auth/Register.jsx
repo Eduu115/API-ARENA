@@ -63,10 +63,12 @@ export default function Register() {
               </Link>
 
               <div className="ch-page-eyebrow">// Registro</div>
-              <h1 className="ch-page-title">
-                Crea tu
-                <em>perfil</em>
-              </h1>
+              <div className="auth-title-crt">
+                <h1 className="ch-page-title">
+                  Crea tu
+                  <em>perfil</em>
+                </h1>
+              </div>
               <p className="ch-card-desc auth-copy-lead">
                 Una cuenta, un nombre, y listo. Entras al dashboard y a pelear por el ELO.
               </p>
@@ -87,7 +89,9 @@ export default function Register() {
                 <div className="auth-form__head">
                   <div>
                     <div className="ch-page-eyebrow">// Datos</div>
-                    <h2 className="ch-card-title">Crear cuenta</h2>
+                    <div className="auth-title-crt auth-title-crt--sm">
+                      <h2 className="ch-card-title">Crear cuenta</h2>
+                    </div>
                   </div>
                   <div className="auth-form__status">{submitting ? "// creando…" : "// listo"}</div>
                 </div>

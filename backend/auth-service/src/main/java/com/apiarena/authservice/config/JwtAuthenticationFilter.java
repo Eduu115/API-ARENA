@@ -75,9 +75,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.error("Error al procesar el token JWT", e);
             filterChain.doFilter(request, response);
             return;
-        } 
+        }
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        /*
+         * Hay que aplicar el JWT aunque ya exista un AnonymousAuthenticationToken:
+         * AnonymousAuthenticationFilter suele ejecutarse antes que este filtro y deja
+         * getAuthentication() != null, lo que antes hacía que nunca se cargara el usuario
+         * real → 403 en /api/auth/me (PUT), etc.
+         */
+        if (userEmail != null) {
             final UserDetails userDetails;
 
             try {
