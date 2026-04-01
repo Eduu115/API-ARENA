@@ -1,25 +1,48 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 const HOVER_SELECTOR =
   'button, a, select, input, textarea, .ch-card, .db-rec-card, .db-activity-row, .db-kpi-card';
+
+// Persist last known cursor position across route changes (component unmount/mount).
+let GLOBAL_POS = { x: null, y: null };
 
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const dot = dotRef.current;
     const ring = ringRef.current;
     if (!dot || !ring) return;
 
-    let mx = 0, my = 0, rx = 0, ry = 0;
+    // Avoid 0,0 jump on mount by using last known position.
+    const initialX = Number.isFinite(GLOBAL_POS.x) ? GLOBAL_POS.x : window.innerWidth / 2;
+    const initialY = Number.isFinite(GLOBAL_POS.y) ? GLOBAL_POS.y : window.innerHeight / 2;
+
+    let mx = initialX;
+    let my = initialY;
+    let rx = mx, ry = my;
+    let lastValidX = mx;
+    let lastValidY = my;
     let animId;
 
-    const onMove = (e) => {
-      mx = e.clientX;
-      my = e.clientY;
+    const applyPos = (x, y) => {
+      mx = x;
+      my = y;
+      lastValidX = x;
+      lastValidY = y;
+      GLOBAL_POS.x = x;
+      GLOBAL_POS.y = y;
       dot.style.left = `${mx}px`;
       dot.style.top = `${my}px`;
+    };
+
+    const pickCoords = (e) => {
+      // Some events can fire without coordinates; ignore them.
+      if (!Number.isFinite(e?.clientX) || !Number.isFinite(e?.clientY)) return;
+      // Guard against occasional (0,0) reports on click / focus changes.
+      if (e.clientX === 0 && e.clientY === 0) return;
+      applyPos(e.clientX, e.clientY);
     };
 
     const animRing = () => {
@@ -30,8 +53,23 @@ export default function CustomCursor() {
       animId = requestAnimationFrame(animRing);
     };
 
+    // Set initial position before first paint.
+    dot.style.left = `${mx}px`;
+    dot.style.top = `${my}px`;
+    ring.style.left = `${rx}px`;
+    ring.style.top = `${ry}px`;
+
     animId = requestAnimationFrame(animRing);
-    document.addEventListener('mousemove', onMove);
+    const onPointerMove = (e) => pickCoords(e);
+    const onPointerDown = (e) => pickCoords(e);
+    const onBlur = () => {
+      // Keep cursor where it was instead of snapping.
+      applyPos(lastValidX, lastValidY);
+    };
+
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+    window.addEventListener('pointerdown', onPointerDown, { passive: true });
+    window.addEventListener('blur', onBlur);
 
     const hoverEls = document.querySelectorAll(HOVER_SELECTOR);
     const onEnter = () => {
@@ -52,14 +90,16 @@ export default function CustomCursor() {
     });
 
     return () => {
-      document.removeEventListener('mousemove', onMove);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('blur', onBlur);
       cancelAnimationFrame(animId);
       hoverEls.forEach((el) => {
         el.removeEventListener('mouseenter', onEnter);
         el.removeEventListener('mouseleave', onLeave);
       });
     };
-  });
+  }, []);
 
   return (
     <>

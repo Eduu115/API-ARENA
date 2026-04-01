@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const NAV_ITEMS = [
   { label: 'Dashboard',   path: '/dashboard' },
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 export default function Topbar({ onMenuToggle, sidebarOpen }) {
   const { pathname } = useLocation();
   const { user } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const initials = user?.username
     ? user.username.slice(0, 2).toUpperCase()
     : 'AA';
@@ -60,6 +62,24 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
         <Link to="/profile" className="ch-user-avatar" title="Ver perfil">
           {initials}
         </Link>
+        <button
+          type="button"
+          className="ch-theme-toggle"
+          onClick={toggleTheme}
+          title={isDark ? 'Modo claro' : 'Modo oscuro'}
+          aria-label={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
+        >
+          {isDark ? (
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <circle cx="10" cy="10" r="4" />
+              <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+            </svg>
+          )}
+        </button>
       </div>
     </header>
   );
