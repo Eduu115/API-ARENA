@@ -6,6 +6,13 @@
   text-align: center;
 }
 
+/* Dashboard sidebar should grow with page (avoid inner scroll + "half height") */
+.dashboard-page .ch-sidebar {
+  height: auto;
+  overflow: visible;
+  align-self: stretch;
+}
+
 .db-avatar {
   width: 72px; height: 72px;
   background: linear-gradient(135deg, var(--cyan), var(--purple));
