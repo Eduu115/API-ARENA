@@ -11,6 +11,8 @@ public interface IChallengeService {
 
     ChallengeDTO createChallenge(CreateChallengeRequest request, Long userId);
 
+    List<ChallengeDTO> getMyChallenges(Long userId, boolean includeInactive);
+
     ChallengeDTO getChallengeById(Long id);
 
     ChallengeDTO getChallengeBySlug(String slug);

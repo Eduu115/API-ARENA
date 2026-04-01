@@ -16,6 +16,8 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     boolean existsBySlug(String slug);
     List<Challenge> findByFeaturedTrue();
     List<Challenge> findByIsActiveTrue();
+    List<Challenge> findByCreatedByOrderByCreatedAtDesc(Long createdBy);
+    List<Challenge> findByCreatedByAndIsActiveTrueOrderByCreatedAtDesc(Long createdBy);
     List<Challenge> findByDifficultyAndIsActiveTrue(Challenge.Difficulty difficulty);
     List<Challenge> findByCategoryAndIsActiveTrue(Category category);
     

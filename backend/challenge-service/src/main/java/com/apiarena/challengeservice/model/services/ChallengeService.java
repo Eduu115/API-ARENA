@@ -76,6 +76,17 @@ public class ChallengeService implements IChallengeService {
     }
 
     @Override
+    public List<ChallengeDTO> getMyChallenges(Long userId, boolean includeInactive) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID is required");
+        }
+        List<Challenge> list = includeInactive
+                ? challengeRepository.findByCreatedByOrderByCreatedAtDesc(userId)
+                : challengeRepository.findByCreatedByAndIsActiveTrueOrderByCreatedAtDesc(userId);
+        return list.stream().map(ChallengeDTO::fromEntity).toList();
+    }
+
+    @Override
     public ChallengeDTO getChallengeById(Long id) {
         Challenge challenge = challengeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));

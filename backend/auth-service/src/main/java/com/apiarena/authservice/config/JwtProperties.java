@@ -11,14 +11,8 @@ import lombok.Data;
 public class JwtProperties {
 
     private String secret;
+    /** Duración del access token en milisegundos (p. ej. jwt.expiration=86400000). */
     private long expiration;
+    /** Duración del refresh token en milisegundos. */
     private long refreshExpiration;
-
-    public long getExpiration() {
-        return expiration/1000;
-    }
-
-    public long getRefreshExpiration() {
-        return refreshExpiration/1000;
-    }
 }

@@ -1,5 +1,8 @@
 package com.apiarena.authservice.model.services;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -82,7 +85,9 @@ public class AuthService implements IAuthService {
         userService.updateLastLogin(request.getEmail());
 
         UserDetails userDetails = userService.loadUserByUsername(request.getEmail());
-        String accessToken = jwtService.generateAccessToken(userDetails);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        String accessToken = jwtService.generateAccessToken(claims, userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         return new AuthResponse(UserDTO.fromEntity(user), accessToken, refreshToken.getToken());
@@ -97,7 +102,9 @@ public class AuthService implements IAuthService {
         User user = refreshToken.getUser();
 
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
-        String accessToken = jwtService.generateAccessToken(userDetails);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        String accessToken = jwtService.generateAccessToken(claims, userDetails);
 
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
