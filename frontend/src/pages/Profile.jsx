@@ -22,7 +22,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      navigate('/login', { replace: true, state: { from: { pathname: '/profile' } } });
+      navigate('/login', { replace: true, state: { from: { pathname: '/perfil' } } });
     }
   }, [isLoading, isAuthenticated, user, navigate]);
 

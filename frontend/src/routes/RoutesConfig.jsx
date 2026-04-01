@@ -36,7 +36,8 @@ export default function RoutesConfig() {
 
         <Route element={<ProtectedLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="profile" element={<Profile />} />
+          <Route path="perfil" element={<Profile />} />
+          <Route path="profile" element={<Navigate to="/perfil" replace />} />
           <Route path="submissions" element={<MySubmissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
           <Route path="replay" element={<Replay />} />

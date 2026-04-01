@@ -10,7 +10,7 @@ const ITEMS_AUTH = [
   { path: '/dashboard', icon: '◇', label: 'Home' },
   { path: '/challenges', icon: '⊞', label: 'Challenges' },
   { path: '/leaderboard', icon: '≋', label: 'Rankings' },
-  { path: '/profile', icon: '◉', label: 'Profile' },
+  { path: '/perfil', icon: '◉', label: 'Profile' },
 ];
 
 export default function BottomNav() {
