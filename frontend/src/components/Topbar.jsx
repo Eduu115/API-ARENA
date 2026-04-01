@@ -19,6 +19,7 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
     ? user.username.slice(0, 2).toUpperCase()
     : 'AA';
   const rating = user?.rating ?? 1000;
+  const isTeacher = String(user?.role || "").toUpperCase() === "TEACHER";
 
   return (
     <header className="ch-topbar">
@@ -53,6 +54,14 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
             </Link>
           );
         })}
+        {isTeacher && (
+          <Link
+            to="/teacher"
+            className={`ch-nav-item${pathname.startsWith("/teacher") ? " ch-active" : ""}`}
+          >
+            Teacher
+          </Link>
+        )}
       </nav>
 
       <div className="ch-topbar-right">
