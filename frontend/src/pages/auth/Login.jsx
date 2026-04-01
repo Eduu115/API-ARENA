@@ -193,13 +193,13 @@ export default function Login() {
 
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-primary-10 pt-6">
                   <p className="font-mono text-xs uppercase tracking-[0.35em] text-text-muted">
-                    ¿No tienes cuenta?
+                    ¿Eres profesor?
                   </p>
                   <Link
-                    to="/register"
+                    to="/login?mode=edu"
                     className="font-mono text-xs uppercase tracking-[0.35em] text-primary hover:text-text-primary transition no-underline"
                   >
-                    Regístrate →
+                    Inicia sesión (cuenta educativa) →
                   </Link>
                 </div>
               </form>

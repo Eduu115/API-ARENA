@@ -1,20 +1,22 @@
 
 
 .challenges-page {
-  --bg0: #080B1E;
-  --bg1: #0A0E27;
-  --bg2: #111628;
-  --bg3: #1A2040;
-  --bg4: #222848;
-  --cyan:   #00D9FF;
-  --purple: #B24BF3;
-  --green:  #00FFA3;
-  --warn:   #FFB800;
-  --red:    #FF4D6A;
-  --white:  #FFFFFF;
-  --text:   #C8CCE8;
-  --muted:  #4A5278;
-  --dim:    #1E2445;
+  /* Theme-aware mapping: these variables drive ALL the dashboard UI */
+  --bg0: var(--arena-bg-primary);
+  --bg1: var(--arena-bg-primary);
+  --bg2: var(--arena-bg-secondary);
+  --bg3: var(--arena-bg-tertiary);
+  --bg4: var(--arena-bg-tertiary);
+  --cyan:   var(--arena-primary);
+  --purple: var(--arena-secondary);
+  --green:  var(--arena-success);
+  --warn:   var(--arena-warning);
+  --red:    var(--arena-error);
+  --white:  var(--arena-text-primary);
+  --text:   var(--arena-text-primary);
+  --muted:  var(--arena-text-muted);
+  --dim:    var(--arena-primary-10);
+  /* Keep original product typography */
   --font-display: 'Barlow Condensed', sans-serif;
   --font-body:    'Syne', sans-serif;
   --font-mono:    'Share Tech Mono', monospace;
@@ -88,6 +90,7 @@
   grid-column: 1 / -1;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   border-bottom: 1px solid var(--dim);
   background: rgba(8,11,30,0.92);
   backdrop-filter: blur(12px);
@@ -129,6 +132,8 @@
   gap: 2px;
   padding: 0 24px;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
   height: 100%;
 }
 .ch-nav-item {
@@ -161,7 +166,7 @@
   align-items: center;
   gap: 16px;
   padding: 0 20px;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 .ch-user-rank {
   font-family: var(--font-mono);
@@ -188,6 +193,26 @@
   font-size: 13px;
   color: var(--bg0);
   cursor: none;
+}
+
+.ch-theme-toggle {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--dim);
+  background: transparent;
+  color: var(--muted);
+  cursor: none;
+  transition: border-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+.ch-theme-toggle:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.ch-theme-toggle svg {
+  width: 14px; height: 14px;
+  display: block;
+  flex-shrink: 0;
 }
 
 .ch-sidebar {
