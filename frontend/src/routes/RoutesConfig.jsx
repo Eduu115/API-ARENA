@@ -14,9 +14,15 @@ import Profile from "../pages/Profile";
 import Register from "../pages/auth/Register";
 import SubmissionDetail from "../pages/submissions/SubmissionDetail";
 import Replay from "../pages/Replay";
+import TeacherDashboard from "../pages/teacher/TeacherDashboard";
+import Corrections from "../pages/teacher/Corrections";
+import TeacherChallenges from "../pages/teacher/TeacherChallenges";
+import CreateChallenge from "../pages/teacher/CreateChallenge";
 
 export default function RoutesConfig() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  const isTeacher = (role) => String(role || "").toUpperCase() === "TEACHER";
 
   return (
     <BrowserRouter>
@@ -43,6 +49,31 @@ export default function RoutesConfig() {
         <Route path="/replay" element={<Replay />} />
 
         <Route path="/multiplayer" element={<MultiplayerHub />} />
+
+        <Route
+          path="/teacher"
+          element={
+            isLoading ? null : isAuthenticated && isTeacher(user?.role) ? <TeacherDashboard /> : <Navigate to="/dashboard" replace />
+          }
+        />
+        <Route
+          path="/teacher/corrections"
+          element={
+            isLoading ? null : isAuthenticated && isTeacher(user?.role) ? <Corrections /> : <Navigate to="/dashboard" replace />
+          }
+        />
+        <Route
+          path="/teacher/challenges"
+          element={
+            isLoading ? null : isAuthenticated && isTeacher(user?.role) ? <TeacherChallenges /> : <Navigate to="/dashboard" replace />
+          }
+        />
+        <Route
+          path="/teacher/challenges/new"
+          element={
+            isLoading ? null : isAuthenticated && isTeacher(user?.role) ? <CreateChallenge /> : <Navigate to="/dashboard" replace />
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

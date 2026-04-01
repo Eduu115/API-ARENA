@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 import com.apiarena.challengeservice.model.dto.ChallengeDTO;
 import com.apiarena.challengeservice.model.dto.ChallengeSummaryDTO;
 import com.apiarena.challengeservice.model.dto.CreateChallengeRequest;
@@ -78,6 +80,19 @@ public class ChallengeController {
         return ResponseEntity.ok(categories);
     }
 
+    @GetMapping("/mine")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get my challenges", description = "Get challenges created by current user (TEACHER/ADMIN only)")
+    public ResponseEntity<List<ChallengeDTO>> getMyChallenges(
+            @RequestParam(defaultValue = "true") boolean includeInactive
+    ) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userId = extractUserIdFromAuthentication(authentication);
+        List<ChallengeDTO> challenges = challengeService.getMyChallenges(userId, includeInactive);
+        return ResponseEntity.ok(challenges);
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
@@ -113,7 +128,17 @@ public class ChallengeController {
     }
 
     private Long extractUserIdFromAuthentication(Authentication authentication) {
-
+        if (authentication == null) return null;
+        Object details = authentication.getDetails();
+        if (details instanceof Map<?, ?> map) {
+            Object userId = map.get("userId");
+            if (userId instanceof Number n) return n.longValue();
+            if (userId instanceof String s) {
+                try {
+                    return Long.parseLong(s);
+                } catch (NumberFormatException ignored) {}
+            }
+        }
         return null;
     }
 }

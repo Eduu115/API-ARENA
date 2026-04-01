@@ -106,7 +106,7 @@ export default function Dashboard() {
   }, [featured, challenges]);
 
   return (
-    <div className="challenges-page">
+    <div className="challenges-page dashboard-page">
       <CustomCursor />
       <div className="ch-grid-bg" />
 

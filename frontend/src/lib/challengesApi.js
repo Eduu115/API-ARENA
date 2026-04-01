@@ -64,3 +64,27 @@ export async function getFeaturedChallenges() {
 export async function getAllCategories() {
   return request("/api/challenges/categories");
 }
+
+export async function getCategories() {
+  return request("/api/categories");
+}
+
+export async function createChallenge(payload) {
+  return request("/api/challenges", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateChallenge(id, payload) {
+  return request(`/api/challenges/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getMyChallenges({ includeInactive = true } = {}) {
+  const qs = new URLSearchParams();
+  qs.set("includeInactive", includeInactive ? "true" : "false");
+  return request(`/api/challenges/mine?${qs.toString()}`);
+}

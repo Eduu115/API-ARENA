@@ -1,8 +1,10 @@
 package com.apiarena.challengeservice.config;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -47,29 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 
                 if (jwtService.isTokenValid(jwt)) {
                     Claims claims = jwtService.extractAllClaims(jwt);
-                    
-                    List<SimpleGrantedAuthority> authorities;
-                    
-                    try {
-                        @SuppressWarnings("unchecked")
-                        List<String> roles = (List<String>) claims.get("authorities");
-                        
-                        if (roles != null && !roles.isEmpty()) {
-                            authorities = roles.stream()
-                                    .map(SimpleGrantedAuthority::new)
-                                    .collect(Collectors.toList());
-                        } else {
-                            String role = claims.get("role", String.class);
-                            if (role != null) {
-                                authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                            } else {
-                                authorities = List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
-                            }
-                        }
-                    } catch (Exception e) {
-                        logger.warn("Could not extract roles from JWT, defaulting to STUDENT");
-                        authorities = List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
-                    }
+                    List<SimpleGrantedAuthority> authorities = extractAuthorities(claims);
 
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userEmail,
@@ -77,9 +57,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             authorities
                     );
 
-                    authToken.setDetails(
-                            new WebAuthenticationDetailsSource().buildDetails(request)
-                    );
+                    Map<String, Object> details = new HashMap<>();
+                    details.put("web", new WebAuthenticationDetailsSource().buildDetails(request));
+                    Object userId = claims.get("userId");
+                    if (userId != null) details.put("userId", userId);
+                    authToken.setDetails(details);
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
@@ -89,5 +71,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    /**
+     * El claim {@code authorities} puede llegar como {@code List<String>} u otros tipos según el deserializado JWT;
+     * si falla el parseo y se cae a STUDENT, {@code @PreAuthorize} devuelve 403 para profesores.
+     */
+    private List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
+        Object raw = claims.get("authorities");
+        if (raw instanceof List<?> list && !list.isEmpty()) {
+            List<SimpleGrantedAuthority> out = new ArrayList<>();
+            for (Object o : list) {
+                if (o == null) {
+                    continue;
+                }
+                String name = (o instanceof String s) ? s : String.valueOf(o);
+                if (!name.isBlank()) {
+                    out.add(new SimpleGrantedAuthority(name));
+                }
+            }
+            if (!out.isEmpty()) {
+                return out;
+            }
+        }
+        String role = claims.get("role", String.class);
+        if (role != null && !role.isBlank()) {
+            String r = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+            return List.of(new SimpleGrantedAuthority(r));
+        }
+        logger.warn("JWT sin authorities ni role reconocibles; usando ROLE_STUDENT");
+        return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
     }
 }
