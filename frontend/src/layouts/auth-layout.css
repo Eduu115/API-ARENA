@@ -1,0 +1,16 @@
+.auth-layout-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg0, #080b1e);
+  color: var(--muted, #8b92a8);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.auth-layout-loading-inner {
+  padding: 24px;
+}

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as challengesApi from '../../lib/challengesApi';
+import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
+import LoginPromptModal from '../../components/LoginPromptModal';
 import './challenges.css';
 import './ChallengeDetail.css';
 
@@ -54,9 +56,19 @@ function HintsBlock({ hints }) {
 export default function ChallengeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+
+  const handleStartChallenge = () => {
+    if (!isAuthenticated) {
+      setLoginModalOpen(true);
+      return;
+    }
+    navigate('/submissions');
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -125,7 +137,7 @@ export default function ChallengeDetail() {
             <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
               ← Volver a Challenges
             </button>
-            <button type="button" className="chd-btn-start" onClick={() => {}}>
+            <button type="button" className="chd-btn-start" onClick={handleStartChallenge}>
               Iniciar Challenge
             </button>
           </div>
@@ -194,6 +206,12 @@ export default function ChallengeDetail() {
         </div>
       </main>
       <BottomNav />
+      <LoginPromptModal
+        open={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        title="Inicia sesión para competir"
+        description="Para iniciar este challenge y enviar tu solución necesitas iniciar sesión. Si aún no tienes cuenta, puedes registrarte en un momento."
+      />
       <CustomCursor />
     </div>
   );

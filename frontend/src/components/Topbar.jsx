@@ -2,18 +2,25 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-const NAV_ITEMS = [
-  { label: 'Dashboard',   path: '/dashboard' },
-  { label: 'Challenges',  path: '/challenges' },
+const NAV_ITEMS_GUEST = [
+  { label: 'Challenges', path: '/challenges' },
+  { label: 'Leaderboard', path: '/leaderboard' },
+  { label: 'Replay', path: '/replay' },
+];
+
+const NAV_ITEMS_AUTH = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Challenges', path: '/challenges' },
   { label: 'Submissions', path: '/submissions' },
   { label: 'Leaderboard', path: '/leaderboard' },
-  { label: 'Replay',      path: '/replay' },
-  { label: 'Profile',     path: '/profile' },
+  { label: 'Replay', path: '/replay' },
+  { label: 'Profile', path: '/profile' },
 ];
 
 export default function Topbar({ onMenuToggle, sidebarOpen }) {
   const { pathname } = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const navItems = isAuthenticated ? NAV_ITEMS_AUTH : NAV_ITEMS_GUEST;
   const { isDark, toggleTheme } = useTheme();
   const initials = user?.username
     ? user.username.slice(0, 2).toUpperCase()
@@ -42,7 +49,7 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
       </button>
 
       <nav className="ch-topbar-nav">
-        {NAV_ITEMS.map(({ label, path }) => {
+        {navItems.map(({ label, path }) => {
           const isActive = pathname === path || pathname.startsWith(path + '/');
           return (
             <Link
@@ -65,12 +72,20 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
       </nav>
 
       <div className="ch-topbar-right">
-        <div className="ch-user-rank">
-          <span className="ch-rank-badge">ELO {rating}</span>
-        </div>
-        <Link to="/profile" className="ch-user-avatar" title="Ver perfil">
-          {initials}
-        </Link>
+        {isAuthenticated && (
+          <div className="ch-user-rank">
+            <span className="ch-rank-badge">ELO {rating}</span>
+          </div>
+        )}
+        {isAuthenticated ? (
+          <Link to="/profile" className="ch-user-avatar" title="Ver perfil">
+            {initials}
+          </Link>
+        ) : (
+          <Link to="/login" className="ch-nav-item ch-topbar-login" title="Iniciar sesión">
+            Log in
+          </Link>
+        )}
         <button
           type="button"
           className="ch-theme-toggle"

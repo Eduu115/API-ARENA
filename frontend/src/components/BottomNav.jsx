@@ -1,18 +1,26 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-const ITEMS = [
-  { path: '/dashboard',   icon: '◇', label: 'Home' },
-  { path: '/challenges',  icon: '⊞', label: 'Challenges' },
+const ITEMS_GUEST = [
+  { path: '/challenges', icon: '⊞', label: 'Challenges' },
   { path: '/leaderboard', icon: '≋', label: 'Rankings' },
-  { path: '/profile',     icon: '◉', label: 'Profile' },
+];
+
+const ITEMS_AUTH = [
+  { path: '/dashboard', icon: '◇', label: 'Home' },
+  { path: '/challenges', icon: '⊞', label: 'Challenges' },
+  { path: '/leaderboard', icon: '≋', label: 'Rankings' },
+  { path: '/profile', icon: '◉', label: 'Profile' },
 ];
 
 export default function BottomNav() {
   const { pathname } = useLocation();
+  const { isAuthenticated } = useAuth();
+  const items = isAuthenticated ? ITEMS_AUTH : ITEMS_GUEST;
 
   return (
     <nav className="ch-bottom-nav">
-      {ITEMS.map(({ path, icon, label }) => {
+      {items.map(({ path, icon, label }) => {
         const isActive = pathname === path || pathname.startsWith(path + '/');
         return (
           <Link

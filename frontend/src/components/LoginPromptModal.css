@@ -1,0 +1,89 @@
+.login-prompt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(8, 11, 30, 0.75);
+  backdrop-filter: blur(6px);
+}
+
+.login-prompt-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 28px 28px 24px;
+  background: var(--bg2, #0f1428);
+  border: 1px solid var(--dim, rgba(255, 255, 255, 0.08));
+  border-radius: 10px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.login-prompt-modal-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display, system-ui);
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--white, #fff);
+  text-transform: uppercase;
+}
+
+.login-prompt-modal-text {
+  margin: 0 0 22px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted, #8b92a8);
+}
+
+.login-prompt-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-prompt-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.login-prompt-modal-btn-primary {
+  background: var(--cyan, #00d9ff);
+  color: #080b1e;
+}
+
+.login-prompt-modal-btn-primary:hover {
+  opacity: 0.92;
+}
+
+.login-prompt-modal-btn-secondary {
+  background: transparent;
+  color: var(--cyan, #00d9ff);
+  border: 1px solid rgba(0, 217, 255, 0.45);
+}
+
+.login-prompt-modal-btn-secondary:hover {
+  background: rgba(0, 217, 255, 0.08);
+}
+
+.login-prompt-modal-btn-ghost {
+  background: transparent;
+  color: var(--muted, #8b92a8);
+  margin-top: 4px;
+}
+
+.login-prompt-modal-btn-ghost:hover {
+  color: var(--text, #e8eaef);
+}

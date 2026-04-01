@@ -168,6 +168,21 @@
   padding: 0 20px;
   flex-shrink: 0;
 }
+
+.ch-topbar-login {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-decoration: none;
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+
+.ch-topbar-login:hover {
+  opacity: 0.85;
+}
 .ch-user-rank {
   font-family: var(--font-mono);
   font-size: 13px;
