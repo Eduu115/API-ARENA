@@ -9,7 +9,7 @@ import './challenges/challenges.css';
 import './Profile.css';
 
 export default function Profile() {
-  const { user, isLoading, isAuthenticated, loadUser } = useAuth();
+  const { user, isLoading, isAuthenticated, loadUser, logout } = useAuth();
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -22,7 +22,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      navigate('/register', { replace: true });
+      navigate('/login', { replace: true, state: { from: { pathname: '/perfil' } } });
     }
   }, [isLoading, isAuthenticated, user, navigate]);
 
@@ -79,6 +79,16 @@ export default function Profile() {
     setError(null);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/', { replace: true });
+  };
+
+  const handleSwitchAccount = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <div className="challenges-page profile-page">
       <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
@@ -110,8 +120,22 @@ export default function Profile() {
                   <span className="profile-badge profile-badge-verified">Verificado</span>
                 )}
               </div>
+              <div className="profile-hero-actions">
+                <button type="button" className="profile-btn-switch" onClick={handleSwitchAccount}>
+                  Cambiar cuenta
+                </button>
+                <button type="button" className="profile-btn-logout-hero" onClick={handleLogout}>
+                  Cerrar sesión
+                </button>
+              </div>
             </div>
           </header>
+
+          <div className="profile-logout-standalone-wrap">
+            <button type="button" className="profile-logout-standalone" onClick={handleLogout}>
+              Cerrar sesión
+            </button>
+          </div>
 
           <section className="profile-section">
             <h2 className="profile-section-title">Información del perfil</h2>

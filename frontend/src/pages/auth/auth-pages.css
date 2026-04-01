@@ -1,0 +1,467 @@
+/**
+ * Auth pages — capas y utilidades sobre el MISMO sistema que `challenges.css`
+ * (importar ../challenges/challenges.css en Login/Register).
+ * Títulos: clases globales .ch-page-eyebrow, .ch-page-title, .ch-card-title, etc.
+ */
+
+/* Shell: mismo fondo de página que Challenges (grid + scanlines vienen de .challenges-page::before) */
+.auth-page-root.challenges-page {
+  cursor: auto;
+}
+
+.auth-page-root button {
+  cursor: pointer;
+}
+
+/* Ruido fino como landing (encima del grid, debajo del contenido) */
+.auth-page-root::after {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+}
+
+.auth-page__glow {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.5;
+  background:
+    radial-gradient(circle at 20% 10%, var(--arena-primary-20), transparent 45%),
+    radial-gradient(circle at 80% 30%, var(--arena-success-10), transparent 40%),
+    radial-gradient(circle at 50% 90%, var(--arena-primary-10), transparent 55%);
+}
+
+.auth-page__glow--register {
+  background:
+    radial-gradient(circle at 70% 20%, var(--arena-primary-20), transparent 45%),
+    radial-gradient(circle at 25% 35%, var(--arena-success-10), transparent 40%),
+    radial-gradient(circle at 50% 90%, var(--arena-primary-10), transparent 55%);
+}
+
+.auth-page__shell {
+  position: relative;
+  z-index: 10001;
+  min-height: 100vh;
+}
+
+.auth-page__toolbar {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.auth-page__inner {
+  position: relative;
+  margin: 0 auto;
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 72rem;
+  align-items: center;
+  padding: 72px 24px 48px;
+  box-sizing: border-box;
+}
+
+.auth-page__grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 48px;
+}
+
+@media (min-width: 1024px) {
+  .auth-page__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+
+  .auth-page__grid--register .auth-page__col-copy {
+    order: 2;
+  }
+
+  .auth-page__grid--register .auth-page__col-form {
+    order: 1;
+  }
+}
+
+/* Logo fila = hex + .ch-logo-text (definido en challenges.css) */
+.auth-brand-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.auth-brand-row .ch-logo-text {
+  font-size: 22px;
+}
+
+/* Copy hero: márgenes alrededor de títulos de producto */
+.auth-copy-block {
+  padding-right: 8px;
+}
+
+.auth-copy-block .ch-page-eyebrow:first-of-type {
+  margin-top: 40px;
+}
+
+/* Párrafo tipo tarjeta (reutiliza .ch-card-desc) */
+.auth-copy-lead {
+  max-width: 36rem;
+  margin-top: 20px;
+}
+
+.auth-copy-strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/*
+ * Efecto tele / CRT: líneas horizontales sobre el bloque del título (scanlines locales),
+ * coherente con el grano de la página (.challenges-page::before) pero solo en el texto.
+ */
+.auth-title-crt {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+}
+
+.auth-title-crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.14) 2px,
+    rgba(0, 0, 0, 0.14) 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.72;
+}
+
+[data-theme="light"] .auth-title-crt::after {
+  mix-blend-mode: soft-light;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 3px
+  );
+  opacity: 0.55;
+}
+
+.auth-title-crt--sm::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.12) 1px,
+    rgba(0, 0, 0, 0.12) 2px
+  );
+}
+
+[data-theme="light"] .auth-title-crt--sm::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 1px,
+    rgba(0, 0, 0, 0.05) 1px,
+    rgba(0, 0, 0, 0.05) 2px
+  );
+}
+
+.auth-title-crt .ch-page-title,
+.auth-title-crt .ch-card-title {
+  position: relative;
+  z-index: 0;
+}
+
+/* Tarjeta formulario: mismo lenguaje que .ch-card (borde + acento superior) */
+.auth-form-card {
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  padding: 28px 24px 24px;
+  overflow: hidden;
+}
+
+.auth-form-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  box-shadow: 0 0 12px rgba(0, 217, 255, 0.35);
+}
+
+.auth-form-card .ch-card-title {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+
+.auth-form-card .ch-page-eyebrow {
+  margin-bottom: 0;
+}
+
+/* Botones / enlaces (hex clip como resto de UI) */
+.auth-actions {
+  margin-top: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.auth-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  text-decoration: none;
+  color: var(--cyan);
+  background: rgba(0, 217, 255, 0.05);
+  border: 1px solid var(--cyan);
+  transition: background 0.2s;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.auth-btn-outline:hover {
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.auth-btn-outline svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.auth-link-quiet {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-link-quiet:hover {
+  color: var(--cyan);
+}
+
+.auth-form__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.auth-form__status {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.auth-alert {
+  margin-top: 24px;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--red);
+  border: 1px solid rgba(255, 77, 106, 0.35);
+  background: rgba(255, 77, 106, 0.08);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.auth-fields {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .auth-field-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.auth-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+}
+
+.auth-input {
+  margin-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--dim);
+  border-radius: 0;
+  transition: border-color 0.2s;
+}
+
+.auth-input::placeholder {
+  color: var(--muted);
+}
+
+.auth-input:focus {
+  outline: none;
+  border-bottom-color: var(--cyan);
+}
+
+.auth-link-inline {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.auth-link-inline:hover {
+  color: var(--cyan);
+}
+
+.auth-submit {
+  margin-top: 36px;
+  width: 100%;
+  padding: 16px 24px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.45em;
+  color: #080b1e;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--cyan), var(--purple));
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  transition: opacity 0.2s;
+}
+
+.auth-submit:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.auth-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.auth-footer-row {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--dim);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.auth-footer-row p {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+}
+
+.auth-footer-row a {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--cyan);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-footer-row a:hover {
+  color: var(--text);
+}
+
+.auth-forgot-wrap {
+  margin-top: 12px;
+  text-align: right;
+}
+
+/* Toolbar: botón atrás coherente con topbar */
+.auth-page__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--dim);
+  background: rgba(8, 11, 30, 0.85);
+  color: var(--cyan);
+  transition: border-color 0.2s, background 0.2s;
+  backdrop-filter: blur(12px);
+}
+
+.auth-page__back:hover {
+  border-color: var(--cyan);
+}
+
+.auth-page__back:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.auth-page__back svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+

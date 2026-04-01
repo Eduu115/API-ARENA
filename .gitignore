@@ -1,5 +1,3 @@
-# En la raíz del proyecto
-cat > .gitignore << 'EOF'
 # Environment
 .env
 .env.local
@@ -60,4 +58,8 @@ Thumbs.db
 # Backups
 **/backups/
 
-EOF
+#
+.cursor/
+
+#
+**/uploads/
