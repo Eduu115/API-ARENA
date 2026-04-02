@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TeacherLayout from "./TeacherLayout";
-import { MOCK_CORRECTIONS, MOCK_GROUPS, formatTeacherDate } from "./teacher.mock";
+import { MOCK_CORRECTIONS, formatTeacherDate } from "./teacher.mock";
+import * as groupsApi from "../../lib/groupsApi";
 
 const STATUS_COLOR = {
   PENDING: "var(--warn)",
@@ -9,9 +10,14 @@ const STATUS_COLOR = {
 };
 
 export default function Corrections() {
+  const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState("all");
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    groupsApi.getMyGroups().then((data) => setGroups(Array.isArray(data) ? data : [])).catch(() => {});
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -39,7 +45,7 @@ export default function Corrections() {
         <div className="ch-page-controls">
           <select className="ch-sort-select" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
             <option value="all">GRUPO: TODOS</option>
-            {MOCK_GROUPS.map((g) => (
+            {groups.map((g) => (
               <option key={g.id} value={g.id}>
                 GRUPO: {g.name.toUpperCase()}
               </option>
@@ -103,7 +109,7 @@ export default function Corrections() {
                     <div className="sub-row-challenge-meta">
                       <span style={{ color: "var(--muted)" }}>grupo</span>
                       <span style={{ color: "var(--dim)" }}>·</span>
-                      <span>{MOCK_GROUPS.find((g) => g.id === c.groupId)?.name ?? c.groupId}</span>
+                      <span>{groups.find((g) => String(g.id) === String(c.groupId))?.name ?? c.groupId}</span>
                     </div>
                   </div>
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color }}>

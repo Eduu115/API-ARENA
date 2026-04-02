@@ -95,6 +95,29 @@ CREATE TABLE IF NOT EXISTS challenges (
 );
 
 -- ===========================================
+-- Tabla: teacher_groups
+-- ===========================================
+CREATE TABLE IF NOT EXISTS teacher_groups (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    teacher_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- ===========================================
+-- Tabla: teacher_group_members
+-- ===========================================
+CREATE TABLE IF NOT EXISTS teacher_group_members (
+    id BIGSERIAL PRIMARY KEY,
+    group_id BIGINT NOT NULL REFERENCES teacher_groups(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE(group_id, user_id)
+);
+
+-- ===========================================
 -- Tabla: submissions
 -- ===========================================
 CREATE TABLE IF NOT EXISTS submissions (
@@ -129,6 +152,9 @@ CREATE INDEX IF NOT EXISTS idx_challenges_featured ON challenges(featured);
 CREATE INDEX IF NOT EXISTS idx_challenges_slug ON challenges(slug);
 CREATE INDEX IF NOT EXISTS idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_challenge_id ON submissions(challenge_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_groups_teacher_id ON teacher_groups(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_group_members_group_id ON teacher_group_members(group_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_group_members_user_id ON teacher_group_members(user_id);
 
 -- ===========================================
 -- Seed: categorias
@@ -351,6 +377,25 @@ INSERT INTO submissions (challenge_id, user_id, status, total_score, correctness
   E'[BUILD] Compiling project...\n[BUILD] Build successful in 3.6s',
   E'[TEST] POST /api/users (valid) => 201 Created (16ms)\n[TEST] POST /api/users (bad email) => 400 Bad Request (9ms)\n[TEST] PUT /api/users/1 (XSS) => 200 OK, sanitized (14ms)\n[TEST] 12/15 tests passed\n[TEST] Score: 720.0/1000',
   NOW() - interval '1 day', NOW() - interval '1 day' + interval '28 minutes')
+ON CONFLICT DO NOTHING;
+
+-- ===========================================
+-- Seed: teacher_groups  (profoak = id 3)
+-- ===========================================
+INSERT INTO teacher_groups (name, description, teacher_id) VALUES
+  ('DAW 2ºA',        'Desarrollo de Aplicaciones Web — segundo curso, grupo A', 3),
+  ('ASIR 1ºB',       'Administración de Sistemas — primer curso, grupo B',      3),
+  ('Bootcamp APIs',  'Taller intensivo de diseño de APIs REST',                 3)
+ON CONFLICT DO NOTHING;
+
+-- ===========================================
+-- Seed: teacher_group_members
+-- arclight=1, byterunner=2 assigned to groups
+-- ===========================================
+INSERT INTO teacher_group_members (group_id, user_id) VALUES
+  (1, 1),
+  (1, 2),
+  (2, 2)
 ON CONFLICT DO NOTHING;
 
 -- Verificacion

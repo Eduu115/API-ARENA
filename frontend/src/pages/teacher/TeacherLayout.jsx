@@ -8,6 +8,7 @@ import "../../pages/dashboard/dashboard.css";
 
 const TEACHER_NAV = [
   { label: "Dashboard", path: "/teacher" },
+  { label: "Grupos", path: "/teacher/groups" },
   { label: "Correcciones", path: "/teacher/corrections" },
   { label: "Challenges", path: "/teacher/challenges" },
   { label: "Crear challenge", path: "/teacher/challenges/new" },
@@ -20,6 +21,7 @@ export default function TeacherLayout({ children }) {
   const active = useMemo(() => {
     const exact = TEACHER_NAV.find((n) => n.path === pathname);
     if (exact) return exact.path;
+    if (pathname.startsWith("/teacher/groups")) return "/teacher/groups";
     if (pathname.startsWith("/teacher/challenges")) return "/teacher/challenges";
     if (pathname.startsWith("/teacher/corrections")) return "/teacher/corrections";
     return "/teacher";

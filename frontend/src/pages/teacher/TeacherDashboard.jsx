@@ -1,15 +1,22 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import TeacherLayout from "./TeacherLayout";
-import { MOCK_CORRECTIONS, MOCK_TEACHER_CHALLENGES, MOCK_GROUPS } from "./teacher.mock";
+import { MOCK_CORRECTIONS, MOCK_TEACHER_CHALLENGES } from "./teacher.mock";
+import * as groupsApi from "../../lib/groupsApi";
 
 export default function TeacherDashboard() {
+  const [groups, setGroups] = useState([]);
+  useEffect(() => {
+    groupsApi.getMyGroups().then((data) => setGroups(Array.isArray(data) ? data : [])).catch(() => {});
+  }, []);
+
   const pending = MOCK_CORRECTIONS.filter((c) => c.status !== "GRADED").length;
-  const groups = MOCK_GROUPS.length;
+  const groupCount = groups.length;
   const challenges = MOCK_TEACHER_CHALLENGES.length;
 
   const kpis = [
     { icon: "◎", label: "Correcciones pendientes", value: String(pending), color: "var(--warn)", barWidth: "70%" },
-    { icon: "◇", label: "Grupos", value: String(groups), color: "var(--cyan)", barWidth: "45%" },
+    { icon: "◇", label: "Grupos", value: String(groupCount), color: "var(--cyan)", barWidth: "45%" },
     { icon: "⊕", label: "Challenges creados", value: String(challenges), color: "var(--purple)", barWidth: "55%" },
     { icon: "✓", label: "Publicados", value: String(MOCK_TEACHER_CHALLENGES.filter((c) => c.published).length), color: "var(--green)", barWidth: "40%" },
   ];
@@ -83,12 +90,16 @@ export default function TeacherDashboard() {
           <div className="db-panel">
             <div className="db-panel-head">
               <div className="db-panel-title">Grupos</div>
-              <Link to="/teacher/corrections" className="db-panel-action">
-                Abrir →
+              <Link to="/teacher/groups" className="db-panel-action">
+                Gestionar →
               </Link>
             </div>
             <div style={{ padding: "12px 18px" }}>
-              {MOCK_GROUPS.map((g) => (
+              {groups.length === 0 ? (
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", textAlign: "center", padding: 10 }}>
+                  Sin grupos aún
+                </div>
+              ) : groups.map((g) => (
                 <div
                   key={g.id}
                   style={{
@@ -102,7 +113,7 @@ export default function TeacherDashboard() {
                   }}
                 >
                   <span>{g.name}</span>
-                  <span style={{ color: "var(--text)" }}>{g.students}</span>
+                  <span style={{ color: "var(--text)" }}>{g.studentCount}</span>
                 </div>
               ))}
             </div>
