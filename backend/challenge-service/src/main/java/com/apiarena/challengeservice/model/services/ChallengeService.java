@@ -62,6 +62,7 @@ public class ChallengeService implements IChallengeService {
         challenge.setHints(request.getHints());
         challenge.setSolutionExplanation(request.getSolutionExplanation());
         challenge.setLearningObjectives(request.getLearningObjectives());
+        challenge.setOrigin(Challenge.Origin.COMMUNITY);
         challenge.setCreatedBy(userId);
 
         if (request.getMaxScore() != null) {

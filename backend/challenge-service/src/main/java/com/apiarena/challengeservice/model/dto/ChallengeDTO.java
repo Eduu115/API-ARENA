@@ -32,6 +32,7 @@ public class ChallengeDTO {
     private Map<String, Object> testSuite;
     private Map<String, Object> performanceRequirements;
     private Map<String, Object> designCriteria;
+    private String origin;
     private Long createdBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -67,6 +68,7 @@ public class ChallengeDTO {
         dto.setTestSuite(challenge.getTestSuite());
         dto.setPerformanceRequirements(challenge.getPerformanceRequirements());
         dto.setDesignCriteria(challenge.getDesignCriteria());
+        dto.setOrigin(challenge.getOrigin() != null ? challenge.getOrigin().name() : "LEGACY");
         dto.setCreatedBy(challenge.getCreatedBy());
         dto.setCreatedAt(challenge.getCreatedAt());
         dto.setUpdatedAt(challenge.getUpdatedAt());

@@ -93,6 +93,11 @@ public class Challenge {
     @Column(name = "design_criteria", columnDefinition = "jsonb")
     private Map<String, Object> designCriteria;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private Origin origin = Origin.LEGACY;
+
     @Column(name = "created_by")
     private Long createdBy;
 
@@ -132,5 +137,9 @@ public class Challenge {
 
     public enum Difficulty {
         EASY, MEDIUM, HARD, EXPERT
+    }
+
+    public enum Origin {
+        LEGACY, COMMUNITY
     }
 }

@@ -146,6 +146,9 @@ export default function ChallengeDetail() {
             <div className="chd-hero-tags">
               <span className={`ch-badge ${diffBadgeClass}`}>{challenge.difficulty}</span>
               <span className="ch-badge ch-badge-cat">{challenge.category}</span>
+              <span className={`ch-badge ${(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'ch-badge-community' : 'ch-badge-legacy'}`}>
+                {(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'Community' : 'Legacy'}
+              </span>
               {challenge.featured && <span className="ch-badge ch-badge-new">Featured</span>}
               {challenge.isActive === false && <span className="ch-badge" style={{ background: 'var(--red)' }}>Inactivo</span>}
             </div>
