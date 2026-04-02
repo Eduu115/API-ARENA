@@ -118,6 +118,45 @@ CREATE TABLE IF NOT EXISTS teacher_group_members (
 );
 
 -- ===========================================
+-- Tabla: sandbox_executions
+-- ===========================================
+CREATE TABLE IF NOT EXISTS sandbox_executions (
+    id BIGSERIAL PRIMARY KEY,
+    submission_id BIGINT NOT NULL,
+    container_id VARCHAR(200),
+    image_name VARCHAR(200),
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    exposed_port INTEGER,
+    build_logs TEXT,
+    runtime_logs TEXT,
+    error_message TEXT,
+    cpu_limit DOUBLE PRECISION,
+    memory_limit VARCHAR(20),
+    timeout_seconds INTEGER,
+    execution_time_ms BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    started_at TIMESTAMP,
+    finished_at TIMESTAMP
+);
+
+-- ===========================================
+-- Tabla: leaderboard_entries
+-- ===========================================
+CREATE TABLE IF NOT EXISTS leaderboard_entries (
+    id BIGSERIAL PRIMARY KEY,
+    challenge_id BIGINT NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    submission_id BIGINT NOT NULL,
+    username VARCHAR(50) NOT NULL,
+    score INTEGER NOT NULL DEFAULT 0,
+    completion_time_seconds INTEGER,
+    rank INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
+    UNIQUE(challenge_id, user_id)
+);
+
+-- ===========================================
 -- Tabla: submissions
 -- ===========================================
 CREATE TABLE IF NOT EXISTS submissions (
@@ -152,6 +191,10 @@ CREATE INDEX IF NOT EXISTS idx_challenges_featured ON challenges(featured);
 CREATE INDEX IF NOT EXISTS idx_challenges_slug ON challenges(slug);
 CREATE INDEX IF NOT EXISTS idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_challenge_id ON submissions(challenge_id);
+CREATE INDEX IF NOT EXISTS idx_sandbox_submission_id ON sandbox_executions(submission_id);
+CREATE INDEX IF NOT EXISTS idx_sandbox_status ON sandbox_executions(status);
+CREATE INDEX IF NOT EXISTS idx_leaderboard_challenge_rank ON leaderboard_entries(challenge_id, rank);
+CREATE INDEX IF NOT EXISTS idx_leaderboard_user ON leaderboard_entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_teacher_groups_teacher_id ON teacher_groups(teacher_id);
 CREATE INDEX IF NOT EXISTS idx_teacher_group_members_group_id ON teacher_group_members(group_id);
 CREATE INDEX IF NOT EXISTS idx_teacher_group_members_user_id ON teacher_group_members(user_id);
@@ -378,6 +421,25 @@ INSERT INTO submissions (challenge_id, user_id, status, total_score, correctness
   E'[TEST] POST /api/users (valid) => 201 Created (16ms)\n[TEST] POST /api/users (bad email) => 400 Bad Request (9ms)\n[TEST] PUT /api/users/1 (XSS) => 200 OK, sanitized (14ms)\n[TEST] 12/15 tests passed\n[TEST] Score: 720.0/1000',
   NOW() - interval '1 day', NOW() - interval '1 day' + interval '28 minutes')
 ON CONFLICT DO NOTHING;
+
+-- ===========================================
+-- Seed: leaderboard_entries (best scores per user+challenge)
+-- arclight=1, byterunner=2
+-- ===========================================
+INSERT INTO leaderboard_entries (challenge_id, user_id, submission_id, username, score, completion_time_seconds, rank) VALUES
+  (1,  1, 1,  'arclight',   873, 1320, 1),
+  (2,  1, 2,  'arclight',   950, 1080, 1),
+  (3,  1, 3,  'arclight',   720, 2280, 1),
+  (5,  1, 4,  'arclight',   810, 1800, 1),
+  (7,  1, 6,  'arclight',   640, 3120, 1),
+  (8,  1, 7,  'arclight',   790, 1560, 1),
+  (11, 1, 8,  'arclight',   910,  900, 1),
+  (12, 1, 9,  'arclight',   780, 1200, 1),
+  (1,  2, 10, 'byterunner', 690, 2100, 2),
+  (2,  2, 11, 'byterunner', 880, 1500, 2),
+  (11, 2, 13, 'byterunner', 845, 1140, 2),
+  (12, 2, 14, 'byterunner', 720, 1680, 2)
+ON CONFLICT (challenge_id, user_id) DO NOTHING;
 
 -- ===========================================
 -- Seed: teacher_groups  (profoak = id 3)

@@ -1,0 +1,208 @@
+.upc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: upc-fade-in 0.15s ease;
+}
+
+@keyframes upc-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes upc-slide-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.upc-card {
+  position: relative;
+  background: var(--bg1);
+  border: 1px solid var(--dim);
+  width: 340px;
+  max-width: 92vw;
+  padding: 0;
+  overflow: hidden;
+  animation: upc-slide-up 0.2s ease;
+}
+
+.upc-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  font-size: 28px;
+  cursor: none;
+  z-index: 1;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.upc-close:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.upc-loading {
+  padding: 48px 24px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+
+.upc-header {
+  text-align: center;
+  padding: 28px 24px 18px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--dim);
+}
+
+.upc-avatar {
+  width: 64px;
+  height: 64px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--bg0);
+  margin: 0 auto 12px;
+}
+
+.upc-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.upc-role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 8px;
+}
+
+.upc-bio {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 6px;
+  max-height: 54px;
+  overflow: hidden;
+}
+
+.upc-since {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.upc-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--dim);
+  border-bottom: 1px solid var(--dim);
+}
+
+.upc-stat {
+  background: var(--bg1);
+  padding: 14px 8px;
+  text-align: center;
+}
+
+.upc-stat-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.upc-stat-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.upc-xp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--dim);
+}
+
+.upc-xp-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.upc-xp-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  overflow: hidden;
+}
+
+.upc-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  transition: width 0.4s ease;
+}
+
+.upc-xp-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--purple);
+  flex-shrink: 0;
+  min-width: 52px;
+  text-align: right;
+}
+
+.upc-github {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+.upc-github svg { opacity: 0.5; }
+
+@media (max-width: 480px) {
+  .upc-card { width: 100%; max-width: 100vw; margin: 12px; }
+  .upc-stat-val { font-size: 16px; }
+}

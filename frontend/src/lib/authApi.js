@@ -569,19 +569,16 @@ export function hasStoredSession() {
 
 
 
+export async function getUserPublicProfile(userId) {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/auth/users/${userId}/profile`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
 export {
-
-
     getStoredTokens,
-
-
     setStoredTokens,
-
-
     clearStoredTokens,
-
-
     getBaseUrl,
-
-
 };

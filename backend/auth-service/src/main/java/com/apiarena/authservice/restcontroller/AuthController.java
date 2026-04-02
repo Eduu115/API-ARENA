@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.LoginRequest;
+import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
@@ -62,6 +64,13 @@ public class AuthController {
     public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/{id}/profile")
+    @Operation(summary = "Get public profile", description = "Get a user's public profile by ID (no auth required)")
+    public ResponseEntity<PublicProfileDTO> getPublicProfile(@PathVariable Long id) {
+        PublicProfileDTO profile = userService.getPublicProfile(id);
+        return ResponseEntity.ok(profile);
     }
 
     @GetMapping("/me")
