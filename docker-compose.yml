@@ -140,6 +140,44 @@ services:
       - apiarena-network
     restart: unless-stopped
 
+  sandbox-service:
+    build:
+      context: ./backend/sandbox-service
+      dockerfile: Dockerfile
+    container_name: apiarena-sandbox
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8084:8084"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  leaderboard-service:
+    build:
+      context: ./backend/leaderboard-service
+      dockerfile: Dockerfile
+    container_name: apiarena-leaderboard
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8087:8087"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
