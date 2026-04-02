@@ -67,7 +67,7 @@ export default function ChallengeDetail() {
       setLoginModalOpen(true);
       return;
     }
-    navigate('/submissions');
+    navigate(`/challenges/${id}/submit`);
   };
 
   useEffect(() => {

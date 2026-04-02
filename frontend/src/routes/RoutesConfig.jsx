@@ -18,6 +18,7 @@ import Corrections from "../pages/teacher/Corrections";
 import TeacherChallenges from "../pages/teacher/TeacherChallenges";
 import CreateChallenge from "../pages/teacher/CreateChallenge";
 import TeacherGroups from "../pages/teacher/TeacherGroups";
+import ChallengeSubmit from "../pages/challenges/ChallengeSubmit";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import TeacherLayout from "../layouts/TeacherLayout";
 
@@ -41,6 +42,7 @@ export default function RoutesConfig() {
           <Route path="profile" element={<Navigate to="/perfil" replace />} />
           <Route path="submissions" element={<MySubmissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
+          <Route path="challenges/:id/submit" element={<ChallengeSubmit />} />
           <Route path="replay" element={<Replay />} />
         </Route>
 

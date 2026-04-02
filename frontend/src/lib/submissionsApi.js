@@ -53,3 +53,34 @@ export async function getSubmissionLogs(id) {
 export async function getSubmissionById(id) {
   return request(`/api/submissions/${id}`);
 }
+
+/** Sube un ZIP y crea una submission (multipart/form-data). */
+export async function createSubmission(challengeId, file) {
+  const base = getBaseUrl();
+  const tokens = getStoredTokens();
+  const form = new FormData();
+  form.append("challengeId", challengeId);
+  form.append("file", file);
+  const headers = {};
+  if (tokens?.accessToken) {
+    headers.Authorization = `Bearer ${tokens.accessToken}`;
+  }
+  const res = await fetch(`${base}/api/submissions?challengeId=${challengeId}`, {
+    method: "POST",
+    headers,
+    body: form,
+  });
+  const ct = res.headers.get("Content-Type") || "";
+  let body = null;
+  if (ct.includes("application/json")) {
+    try { body = await res.json(); } catch { /* */ }
+  }
+  if (!res.ok) {
+    const message = body?.message || res.statusText || "Submission failed";
+    const err = new Error(message);
+    err.status = res.status;
+    err.body = body;
+    throw err;
+  }
+  return body;
+}
