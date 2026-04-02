@@ -642,10 +642,20 @@ button.ch-nav-item-btn {
 .ch-badge-hard   { color: var(--red);    border-color: rgba(255,77,106,0.4); background: rgba(255,77,106,0.06); }
 .ch-badge-expert { color: var(--purple); border-color: rgba(178,75,243,0.4); background: rgba(178,75,243,0.06); }
 .ch-badge-cat    { color: var(--muted);  border-color: var(--dim); background: none; }
-.ch-badge-new    {
+.ch-badge-legacy {
   color: var(--cyan);
-  border-color: rgba(0,217,255,0.4);
+  border-color: rgba(0,217,255,0.35);
   background: rgba(0,217,255,0.06);
+}
+.ch-badge-community {
+  color: var(--green);
+  border-color: rgba(0,255,163,0.35);
+  background: rgba(0,255,163,0.06);
+}
+.ch-badge-new    {
+  color: #fff;
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
   animation: ch-pulse-badge 2s ease-in-out infinite;
 }
 @keyframes ch-pulse-badge {

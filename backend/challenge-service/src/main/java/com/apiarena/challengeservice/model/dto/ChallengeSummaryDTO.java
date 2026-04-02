@@ -24,6 +24,7 @@ public class ChallengeSummaryDTO {
     private String categoryColor;
     private Integer maxScore;
     private Integer timeLimitMinutes;
+    private String origin;
     private Boolean featured;
     private Integer timesAttempted;
     private Integer timesCompleted;
@@ -46,6 +47,7 @@ public class ChallengeSummaryDTO {
         
         dto.setMaxScore(challenge.getMaxScore());
         dto.setTimeLimitMinutes(challenge.getTimeLimitMinutes());
+        dto.setOrigin(challenge.getOrigin() != null ? challenge.getOrigin().name() : "LEGACY");
         dto.setFeatured(challenge.getFeatured());
         dto.setTimesAttempted(challenge.getTimesAttempted());
         dto.setTimesCompleted(challenge.getTimesCompleted());

@@ -23,6 +23,7 @@ function mapApiToCard(api) {
     points: api.maxScore ?? 1000,
     status: null,
     featured: api.featured ?? false,
+    origin: (api.origin || 'LEGACY').toUpperCase(),
     glow: glowMap[diff] ?? 'ch-glow-cyan',
     accentColor: accentMap[diff] ?? 'var(--cyan)',
   };
@@ -35,7 +36,7 @@ function ChallengeCard({ challenge }) {
     description, skills = [], submissions, solved, avgTime, points,
     status, bestScore, maxScore, scoreFill, scoreValColor,
     statusIcon, statusIconColor, statusTip, ptsColor,
-    glow, accentColor, featured,
+    glow, accentColor, featured, origin,
   } = challenge;
 
   const diffBadgeClass = {
@@ -60,6 +61,9 @@ function ChallengeCard({ challenge }) {
           <div className="ch-card-tags">
             <span className={`ch-badge ${diffBadgeClass}`}>{difficulty}</span>
             <span className="ch-badge ch-badge-cat">{category}</span>
+            <span className={`ch-badge ${origin === 'COMMUNITY' ? 'ch-badge-community' : 'ch-badge-legacy'}`}>
+              {origin === 'COMMUNITY' ? 'Community' : 'Legacy'}
+            </span>
             {featured && <span className="ch-badge ch-badge-new">Featured</span>}
             {isNew && <span className="ch-badge ch-badge-new">New</span>}
           </div>
