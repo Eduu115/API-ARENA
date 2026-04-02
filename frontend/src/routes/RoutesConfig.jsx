@@ -17,6 +17,7 @@ import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import Corrections from "../pages/teacher/Corrections";
 import TeacherChallenges from "../pages/teacher/TeacherChallenges";
 import CreateChallenge from "../pages/teacher/CreateChallenge";
+import TeacherGroups from "../pages/teacher/TeacherGroups";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import TeacherLayout from "../layouts/TeacherLayout";
 
@@ -46,6 +47,7 @@ export default function RoutesConfig() {
         <Route element={<TeacherLayout />}>
           <Route path="teacher" element={<TeacherDashboard />} />
           <Route path="teacher/corrections" element={<Corrections />} />
+          <Route path="teacher/groups" element={<TeacherGroups />} />
           <Route path="teacher/challenges" element={<TeacherChallenges />} />
           <Route path="teacher/challenges/new" element={<CreateChallenge />} />
         </Route>

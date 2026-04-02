@@ -1,9 +1,3 @@
-export const MOCK_GROUPS = [
-  { id: "g1", name: "DAW 2ºA", students: 24 },
-  { id: "g2", name: "ASIR 1ºB", students: 18 },
-  { id: "g3", name: "Bootcamp APIs", students: 12 },
-];
-
 export const MOCK_CORRECTIONS = [
   {
     id: "s-101",
