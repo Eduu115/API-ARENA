@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
+import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.entities.User;
@@ -86,5 +87,32 @@ public class UserService implements IUserService {
     public User getUserEntityByEmail(String email) {
         return userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
+    }
+
+    @Override
+    @Transactional
+    public void applyReward(Long userId, RewardRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        int xp = request.getXpEarned() != null ? request.getXpEarned() : 0;
+        int elo = request.getEloChange() != null ? request.getEloChange() : 0;
+
+        user.setExperiencePoints(user.getExperiencePoints() + xp);
+        user.setRating(user.getRating() + elo);
+
+        user.setLevel(calculateLevel(user.getExperiencePoints()));
+
+        if (Boolean.TRUE.equals(request.getIsFirstCompletion())) {
+            user.setTotalChallengesCompleted(user.getTotalChallengesCompleted() + 1);
+        }
+
+        userRepository.save(user);
+    }
+
+    private int calculateLevel(int totalXp) {
+        // level = floor((1 + sqrt(1 + 8*xp/300)) / 2)
+        // L1: 0, L2: 300, L3: 900, L4: 1800, L5: 3000, L6: 4500 ...
+        return (int) Math.floor((1.0 + Math.sqrt(1.0 + 8.0 * totalXp / 300.0)) / 2.0);
     }
 }

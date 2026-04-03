@@ -1,69 +1,11 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { getSubmissionById, getSubmissionLogs } from '../../lib/submissionsApi';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
 import '../challenges/challenges.css';
 import './submissions.css';
-
-const MOCK_DETAIL = {
-  1: {
-    id: 1, challengeId: 1, challengeTitle: 'REST API Design Basics', category: 'REST API Design', difficulty: 'EASY',
-    status: 'COMPLETED', totalScore: 872.50, maxScore: 1000,
-    correctnessScore: 340, performanceScore: 280, designScore: 252.50, aiReviewScore: null,
-    avgResponseMs: 45, p95ResponseMs: 120, p99ResponseMs: 230, rps: 1520, totalRequests: 4560, failedRequests: 12,
-    restComplianceScore: 92.5,
-    createdAt: '2025-06-10T14:32:00', completedAt: '2025-06-10T14:58:00',
-    buildLogs: '[INFO] Scanning for projects...\n[INFO] Building submission-1 1.0-SNAPSHOT\n[INFO] Compiling 12 source files\n[INFO] BUILD SUCCESS\n[INFO] Total time: 8.432 s',
-    testLogs: '[TEST] GET /api/items .............. PASS (23ms)\n[TEST] POST /api/items ............. PASS (31ms)\n[TEST] GET /api/items/:id .......... PASS (18ms)\n[TEST] PUT /api/items/:id .......... PASS (27ms)\n[TEST] DELETE /api/items/:id ....... PASS (15ms)\n[TEST] GET /api/items?filter=name .. PASS (42ms)\n[TEST] POST /api/items (invalid) ... PASS (12ms)\n[TEST] GET /api/items (pagination) . PASS (55ms)\n[WARN] GET /api/items/999 .......... FAIL (expected 404, got 500)\n[TEST] OPTIONS /api/items .......... PASS (8ms)\n\nResults: 9/10 passed',
-    tests: [
-      { name: 'GET /api/items', passed: true, time: 23 },
-      { name: 'POST /api/items', passed: true, time: 31 },
-      { name: 'GET /api/items/:id', passed: true, time: 18 },
-      { name: 'PUT /api/items/:id', passed: true, time: 27 },
-      { name: 'DELETE /api/items/:id', passed: true, time: 15 },
-      { name: 'GET /api/items?filter=name', passed: true, time: 42 },
-      { name: 'POST /api/items (invalid body)', passed: true, time: 12 },
-      { name: 'GET /api/items (pagination)', passed: true, time: 55 },
-      { name: 'GET /api/items/999 (not found)', passed: false, time: 35 },
-      { name: 'OPTIONS /api/items (CORS)', passed: true, time: 8 },
-    ],
-  },
-  2: {
-    id: 2, challengeId: 3, challengeTitle: 'JWT Authentication System', category: 'Authentication', difficulty: 'HARD',
-    status: 'COMPLETED', totalScore: 645.00, maxScore: 1000,
-    correctnessScore: 280, performanceScore: 195, designScore: 170, aiReviewScore: null,
-    avgResponseMs: 78, p95ResponseMs: 210, p99ResponseMs: 450, rps: 890, totalRequests: 2670, failedRequests: 85,
-    restComplianceScore: 76.0,
-    createdAt: '2025-06-09T10:15:00', completedAt: '2025-06-09T11:02:00',
-    buildLogs: '[INFO] BUILD SUCCESS\n[INFO] Total time: 12.1 s',
-    testLogs: '[TEST] POST /api/auth/register ..... PASS\n[TEST] POST /api/auth/login ........ PASS\n[TEST] GET /api/auth/me ............ PASS\n[TEST] POST /api/auth/refresh ...... FAIL\n[TEST] Token expiry ................ PASS\n\nResults: 4/5 passed',
-    tests: [
-      { name: 'POST /api/auth/register', passed: true, time: 45 },
-      { name: 'POST /api/auth/login', passed: true, time: 38 },
-      { name: 'GET /api/auth/me', passed: true, time: 22 },
-      { name: 'POST /api/auth/refresh', passed: false, time: 120 },
-      { name: 'Token expiry validation', passed: true, time: 55 },
-    ],
-  },
-};
-
-function fallbackDetail(id) {
-  return {
-    id: Number(id), challengeId: 0, challengeTitle: `Challenge Submission #${id}`, category: 'General', difficulty: 'MEDIUM',
-    status: 'COMPLETED', totalScore: 750, maxScore: 1000,
-    correctnessScore: 300, performanceScore: 230, designScore: 220, aiReviewScore: null,
-    avgResponseMs: 60, p95ResponseMs: 150, p99ResponseMs: 300, rps: 1100, totalRequests: 3300, failedRequests: 30,
-    restComplianceScore: 85.0,
-    createdAt: '2025-06-05T12:00:00', completedAt: '2025-06-05T12:30:00',
-    buildLogs: '[INFO] BUILD SUCCESS', testLogs: 'Results: 7/8 passed',
-    tests: [
-      { name: 'Test 1', passed: true, time: 20 },
-      { name: 'Test 2', passed: true, time: 30 },
-      { name: 'Test 3', passed: false, time: 45 },
-    ],
-  };
-}
 
 const TIMELINE_STEPS = ['PENDING', 'BUILDING', 'TESTING', 'COMPLETED'];
 
@@ -72,42 +14,147 @@ function formatDate(d) {
   return new Date(d).toLocaleString('es-ES');
 }
 
+function parseTestLines(testLogs) {
+  if (!testLogs) return [];
+  return testLogs.split('\n')
+    .filter(l => l.startsWith('[TEST]'))
+    .map(line => {
+      const pass = /PASS/i.test(line);
+      const fail = /FAIL/i.test(line);
+      const msMatch = line.match(/\((\d+)ms\)/);
+      return {
+        name: line.replace('[TEST] ', '').replace(/ PASS$| FAIL$/i, '').trim(),
+        passed: pass && !fail,
+        time: msMatch ? parseInt(msMatch[1]) : null,
+      };
+    });
+}
+
 export default function SubmissionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const sub = MOCK_DETAIL[id] || fallbackDetail(id);
+
+  const [sub, setSub] = useState(null);
+  const [logs, setLogs] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    let pollTimer = null;
+
+    async function load() {
+      try {
+        const [detail, logsData] = await Promise.all([
+          getSubmissionById(id),
+          getSubmissionLogs(id).catch(() => null),
+        ]);
+        if (cancelled) return;
+        setSub(detail);
+        setLogs(logsData);
+        setLoading(false);
+
+        if (detail.status !== 'COMPLETED' && detail.status !== 'FAILED') {
+          pollTimer = setTimeout(load, 2000);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setError(e?.message || 'Failed to load submission');
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => { cancelled = true; clearTimeout(pollTimer); };
+  }, [id]);
+
+  const tests = useMemo(() => parseTestLines(logs?.testLogs || sub?.testLogs), [logs, sub]);
+
+  const scoreBreakdown = useMemo(() => {
+    if (!sub) return [];
+    return [
+      { label: 'Correctness', value: Number(sub.correctnessScore) || 0, max: 500, color: 'var(--green)' },
+      { label: 'Performance', value: Number(sub.performanceScore) || 0, max: 300, color: 'var(--cyan)' },
+      { label: 'Design', value: Number(sub.designScore) || 0, max: 200, color: 'var(--purple)' },
+    ];
+  }, [sub]);
+
+  const perfMetrics = useMemo(() => {
+    if (!sub) return [];
+    return [
+      { label: 'Avg Response', value: sub.avgResponseMs != null ? `${sub.avgResponseMs}ms` : '—' },
+      { label: 'P95 Response', value: sub.p95ResponseMs != null ? `${sub.p95ResponseMs}ms` : '—' },
+      { label: 'P99 Response', value: sub.p99ResponseMs != null ? `${sub.p99ResponseMs}ms` : '—' },
+      { label: 'Requests/sec', value: sub.rps != null ? sub.rps.toLocaleString() : '—' },
+      { label: 'Total Requests', value: sub.totalRequests != null ? sub.totalRequests.toLocaleString() : '—' },
+      { label: 'Failed Requests', value: sub.failedRequests != null ? String(sub.failedRequests) : '—' },
+      { label: 'REST Compliance', value: sub.restComplianceScore != null ? `${Number(sub.restComplianceScore).toFixed(1)}%` : '—' },
+    ];
+  }, [sub]);
+
+  if (loading) {
+    return (
+      <div className="challenges-page">
+        <CustomCursor />
+        <div className="ch-grid-bg" />
+        <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+          <main className="ch-main">
+            <div className="sd-container" style={{ padding: '60px 0', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
+              Loading submission...
+            </div>
+          </main>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (error || !sub) {
+    return (
+      <div className="challenges-page">
+        <CustomCursor />
+        <div className="ch-grid-bg" />
+        <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+          <main className="ch-main">
+            <div className="sd-container">
+              <p style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{error || 'Submission not found'}</p>
+              <button className="sd-back-btn" onClick={() => navigate('/submissions')}>← BACK TO SUBMISSIONS</button>
+            </div>
+          </main>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   const stepIndex = TIMELINE_STEPS.indexOf(sub.status);
   const isFailed = sub.status === 'FAILED';
-
-  const scoreBreakdown = useMemo(() => [
-    { label: 'Correctness', value: sub.correctnessScore, max: 400, color: 'var(--green)' },
-    { label: 'Performance', value: sub.performanceScore, max: 300, color: 'var(--cyan)' },
-    { label: 'Design', value: sub.designScore, max: 300, color: 'var(--purple)' },
-  ], [sub]);
-
-  const perfMetrics = [
-    { label: 'Avg Response', value: `${sub.avgResponseMs}ms` },
-    { label: 'P95 Response', value: `${sub.p95ResponseMs}ms` },
-    { label: 'P99 Response', value: `${sub.p99ResponseMs}ms` },
-    { label: 'Requests/sec', value: sub.rps?.toLocaleString() },
-    { label: 'Total Requests', value: sub.totalRequests?.toLocaleString() },
-    { label: 'Failed Requests', value: sub.failedRequests },
-    { label: 'REST Compliance', value: `${sub.restComplianceScore}%` },
-  ];
+  const isProcessing = sub.status !== 'COMPLETED' && sub.status !== 'FAILED';
+  const totalScore = Number(sub.totalScore) || 0;
+  const buildLogs = logs?.buildLogs || '';
+  const testLogs = logs?.testLogs || '';
 
   return (
     <div className="challenges-page">
       <CustomCursor />
       <div className="ch-grid-bg" />
       <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-        <Topbar onMenuToggle={() => { }} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
         <main className="ch-main">
           <div className="sd-container">
+            <button className="sd-back-btn" onClick={() => navigate('/submissions')}>
+              ← BACK TO SUBMISSIONS
+            </button>
+
+            {/* Timeline */}
             <div className="sd-timeline">
               {TIMELINE_STEPS.map((step, i) => {
                 const isDone = i < stepIndex || (i === stepIndex && sub.status === 'COMPLETED');
-                const isActive = i === stepIndex && sub.status !== 'COMPLETED';
+                const isActive = i === stepIndex && !isDone && !isFailed;
                 const isFail = isFailed && i === stepIndex;
                 return (
                   <div key={step} style={{ display: 'contents' }}>
@@ -122,6 +169,152 @@ export default function SubmissionDetail() {
                 );
               })}
             </div>
+
+            {/* Hero */}
+            <div className="sd-hero">
+              <div className="sd-hero-top">
+                <div>
+                  <h1 className="sd-hero-title">Submission #{sub.id}</h1>
+                  <div className="sd-hero-meta">
+                    <span>Challenge #{sub.challengeId}</span>
+                    <span>·</span>
+                    <span>Created {formatDate(sub.createdAt)}</span>
+                    {sub.completedAt && <><span>·</span><span>Completed {formatDate(sub.completedAt)}</span></>}
+                  </div>
+                </div>
+                <div className="sd-total-score">
+                  <div className="sd-total-score-val">{isProcessing ? '...' : totalScore.toFixed(1)}</div>
+                  <div className="sd-total-score-label">/ 1000 POINTS</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Score breakdown */}
+            {!isProcessing && (
+              <div className="sd-score-grid" style={{ marginBottom: 20 }}>
+                {scoreBreakdown.map(s => {
+                  const pct = s.max > 0 ? (s.value / s.max) * 100 : 0;
+                  return (
+                    <div key={s.label} className="sd-score-cell">
+                      <div className="sd-score-cell-val" style={{ color: s.color }}>{s.value.toFixed(1)}</div>
+                      <div className="sd-score-cell-label">{s.label}</div>
+                      <div className="sd-score-cell-bar">
+                        <div className="sd-score-cell-fill" style={{ width: `${pct}%`, background: s.color }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="sd-score-cell">
+                  <div className="sd-score-cell-val" style={{ color: 'var(--warn)' }}>{totalScore.toFixed(1)}</div>
+                  <div className="sd-score-cell-label">Total</div>
+                  <div className="sd-score-cell-bar">
+                    <div className="sd-score-cell-fill" style={{ width: `${(totalScore / 1000) * 100}%`, background: 'linear-gradient(90deg, var(--cyan), var(--green))' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Panels */}
+            {!isProcessing && (
+              <div className="sd-panels-grid">
+                {/* Performance */}
+                <div className="sd-panel">
+                  <div className="sd-panel-head">
+                    <div className="sd-panel-title">⚡ Performance Metrics</div>
+                  </div>
+                  <div className="sd-panel-body">
+                    {perfMetrics.map(m => (
+                      <div key={m.label} className="sd-perf-row">
+                        <span className="sd-perf-label">{m.label}</span>
+                        <span className="sd-perf-val">{m.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Test results */}
+                <div className="sd-panel">
+                  <div className="sd-panel-head">
+                    <div className="sd-panel-title">✓ Test Results</div>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
+                      {tests.filter(t => t.passed).length}/{tests.length} passed
+                    </span>
+                  </div>
+                  <div className="sd-panel-body">
+                    {tests.length > 0 ? tests.map((t, i) => (
+                      <div key={i} className="sd-test-row">
+                        <span className="sd-test-icon" style={{ color: t.passed ? 'var(--green)' : 'var(--red)' }}>
+                          {t.passed ? '✓' : '✗'}
+                        </span>
+                        <span className="sd-test-name">{t.name}</span>
+                        {t.time != null && <span className="sd-test-time">{t.time}ms</span>}
+                      </div>
+                    )) : (
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>No test data available</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Logs */}
+            {(buildLogs || testLogs || sub.errorMessage) && (
+              <div className="sd-panels-grid" style={{ marginBottom: 20 }}>
+                {buildLogs && (
+                  <div className="sd-panel">
+                    <div className="sd-panel-head">
+                      <div className="sd-panel-title">🔨 Build Logs</div>
+                    </div>
+                    <div className="sd-panel-body">
+                      <div className="sd-logs">{buildLogs}</div>
+                    </div>
+                  </div>
+                )}
+                {testLogs && (
+                  <div className="sd-panel">
+                    <div className="sd-panel-head">
+                      <div className="sd-panel-title">🧪 Test Logs</div>
+                    </div>
+                    <div className="sd-panel-body">
+                      <div className="sd-logs">{testLogs}</div>
+                    </div>
+                  </div>
+                )}
+                {sub.errorMessage && (
+                  <div className="sd-panel sd-full-width">
+                    <div className="sd-panel-head">
+                      <div className="sd-panel-title" style={{ color: 'var(--red)' }}>⚠ Error</div>
+                    </div>
+                    <div className="sd-panel-body">
+                      <div className="sd-logs" style={{ color: 'var(--red)' }}>{sub.errorMessage}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Processing indicator */}
+            {isProcessing && (
+              <div style={{
+                textAlign: 'center', padding: '40px 0',
+                fontFamily: 'var(--font-mono)', fontSize: 14,
+                color: 'var(--cyan)', letterSpacing: 2
+              }}>
+                <div style={{ fontSize: 32, marginBottom: 12, animation: 'db-blink 1s ease-in-out infinite' }}>⚙</div>
+                {sub.status === 'PENDING' && 'Waiting in queue...'}
+                {sub.status === 'BUILDING' && 'Building your project...'}
+                {sub.status === 'TESTING' && 'Running tests against your API...'}
+              </div>
+            )}
+
+            {sub.status === 'COMPLETED' && (
+              <div className="sd-continue-wrap">
+                <button className="sd-continue-btn" onClick={() => navigate(`/submissions/${id}/results`)}>
+                  CONTINUE
+                  <span className="sd-continue-arrow">→</span>
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>

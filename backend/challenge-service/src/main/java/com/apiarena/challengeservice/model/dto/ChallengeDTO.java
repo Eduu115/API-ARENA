@@ -41,6 +41,7 @@ public class ChallengeDTO {
     private Integer timesAttempted;
     private Integer timesCompleted;
     private BigDecimal averageScore;
+    private Integer xpReward;
     private Map<String, Object> hints;
     private String solutionExplanation;
     private Map<String, Object> learningObjectives;
@@ -77,6 +78,7 @@ public class ChallengeDTO {
         dto.setTimesAttempted(challenge.getTimesAttempted());
         dto.setTimesCompleted(challenge.getTimesCompleted());
         dto.setAverageScore(challenge.getAverageScore());
+        dto.setXpReward(challenge.getXpReward());
         dto.setHints(challenge.getHints());
         dto.setSolutionExplanation(challenge.getSolutionExplanation());
         dto.setLearningObjectives(challenge.getLearningObjectives());

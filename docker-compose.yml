@@ -140,6 +140,31 @@ services:
       - apiarena-network
     restart: unless-stopped
 
+  submission-service:
+    build:
+      context: ./backend/submission-service
+      dockerfile: Dockerfile
+    container_name: apiarena-submission
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SERVICES_AUTH_URL: http://apiarena-auth:8081
+      SERVICES_CHALLENGE_URL: http://apiarena-challenge:8082
+    ports:
+      - "8083:8083"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
   sandbox-service:
     build:
       context: ./backend/sandbox-service
@@ -155,6 +180,25 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     ports:
       - "8084:8084"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  testing-service:
+    build:
+      context: ./backend/testing-service
+      dockerfile: Dockerfile
+    container_name: apiarena-testing
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8085:8085"
     networks:
       - apiarena-network
     restart: unless-stopped

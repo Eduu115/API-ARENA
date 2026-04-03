@@ -17,7 +17,7 @@ WORKDIR /app
 RUN addgroup -S spring && adduser -S spring -G spring
 
 COPY --from=build /app/target/*.jar app.jar
-RUN chown spring:spring app.jar
+RUN mkdir -p /app/uploads && chown -R spring:spring /app
 
 USER spring:spring
 

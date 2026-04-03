@@ -12,6 +12,7 @@ import NotFound from "../pages/NotFound";
 import Profile from "../pages/Profile";
 import Register from "../pages/auth/Register";
 import SubmissionDetail from "../pages/submissions/SubmissionDetail";
+import SubmissionResults from "../pages/submissions/SubmissionResults";
 import Replay from "../pages/Replay";
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import Corrections from "../pages/teacher/Corrections";
@@ -42,6 +43,7 @@ export default function RoutesConfig() {
           <Route path="profile" element={<Navigate to="/perfil" replace />} />
           <Route path="submissions" element={<MySubmissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
+          <Route path="submissions/:id/results" element={<SubmissionResults />} />
           <Route path="challenges/:id/submit" element={<ChallengeSubmit />} />
           <Route path="replay" element={<Replay />} />
         </Route>

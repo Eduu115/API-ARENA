@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS challenges (
     average_score DECIMAL(5,2) DEFAULT 0,
     
     origin VARCHAR(20) NOT NULL DEFAULT 'LEGACY',
+    xp_reward INTEGER NOT NULL DEFAULT 200,
     
     hints JSONB,
     solution_explanation TEXT,
@@ -164,15 +165,38 @@ CREATE TABLE IF NOT EXISTS submissions (
     challenge_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    repository_url VARCHAR(500),
     zip_file_path VARCHAR(500),
+    dockerfile TEXT,
+    docker_image_hash VARCHAR(256),
+    environment_vars JSONB,
     total_score DECIMAL(5,2),
     correctness_score DECIMAL(5,2),
     performance_score DECIMAL(5,2),
     design_score DECIMAL(5,2),
+    ai_review_score DECIMAL(5,2),
+    avg_response_ms INT,
+    p95_response_ms INT,
+    p99_response_ms INT,
+    rps INT,
+    total_requests INT,
+    failed_requests INT,
+    design_issues JSONB,
+    endpoints_discovered JSONB,
+    rest_compliance_score DECIMAL(5,2),
+    ai_suggestions JSONB,
     build_logs TEXT,
     test_logs TEXT,
     error_message TEXT,
+    replay_data JSONB,
+    container_id VARCHAR(100),
+    api_base_url VARCHAR(500),
+    xp_earned INT,
+    elo_change INT,
+    previous_best_score DECIMAL(5,2),
+    is_first_completion BOOLEAN,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
     completed_at TIMESTAMP
 );
 
@@ -232,12 +256,12 @@ ON CONFLICT (username) DO NOTHING;
 --   5=performance, 6=caching, 7=websockets, 8=database, 9=microservices, 10=testing
 -- created_by = 3 (profoak) for teacher-authored, NULL for system
 -- ===========================================
-INSERT INTO challenges (title, slug, description, difficulty, category_id, max_score, time_limit_minutes, created_by, origin, featured, times_attempted, times_completed, average_score, required_endpoints, hints, learning_objectives) VALUES
+INSERT INTO challenges (title, slug, description, difficulty, category_id, max_score, time_limit_minutes, created_by, origin, featured, times_attempted, times_completed, average_score, xp_reward, required_endpoints, hints, learning_objectives) VALUES
 (
   'Build a Bookstore API',
   'bookstore-api',
   'Design a RESTful API for a bookstore. Implement endpoints to list, create, update, and delete books. Each book has a title, author, ISBN, price, and stock count. Responses must use proper HTTP status codes and JSON payloads.',
-  'EASY', 1, 1000, 45, 3, 'COMMUNITY', TRUE, 38, 22, 745.30,
+  'EASY', 1, 1000, 45, 3, 'COMMUNITY', TRUE, 38, 22, 745.30, 150,
   '{"items":[{"method":"GET","path":"/api/books"},{"method":"GET","path":"/api/books/{id}"},{"method":"POST","path":"/api/books"},{"method":"PUT","path":"/api/books/{id}"},{"method":"DELETE","path":"/api/books/{id}"}]}',
   '{"items":["Start with the GET endpoints before moving to mutations","Use 201 Created for successful POST","Return 404 when a book is not found"]}',
   '{"items":["Understand RESTful resource naming","Use correct HTTP methods","Return appropriate status codes"]}'
@@ -246,7 +270,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Todo List CRUD',
   'todo-crud',
   'Implement a complete CRUD API for a todo list application. Support creating, reading, updating, and deleting tasks. Each task has a title, description, completed flag, and priority level (LOW, MEDIUM, HIGH).',
-  'EASY', 2, 1000, 40, NULL, 'LEGACY', FALSE, 65, 45, 812.50,
+  'EASY', 2, 1000, 40, NULL, 'LEGACY', FALSE, 65, 45, 812.50, 150,
   '{"items":[{"method":"GET","path":"/api/todos"},{"method":"POST","path":"/api/todos"},{"method":"PUT","path":"/api/todos/{id}"},{"method":"DELETE","path":"/api/todos/{id}"},{"method":"PATCH","path":"/api/todos/{id}/complete"}]}',
   '{"items":["PATCH is ideal for partial updates like toggling completion","Validate that priority is one of the allowed values","Return the created resource in POST responses"]}',
   '{"items":["Implement full CRUD lifecycle","Handle validation errors","Use PATCH for partial updates"]}'
@@ -255,7 +279,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'JWT Authentication Flow',
   'jwt-auth-flow',
   'Build an authentication API that supports user registration, login with JWT tokens, token refresh, and a protected /me endpoint. Passwords must be hashed. Access tokens expire in 15 minutes; refresh tokens in 7 days.',
-  'MEDIUM', 3, 1000, 60, 3, 'COMMUNITY', TRUE, 29, 14, 680.00,
+  'MEDIUM', 3, 1000, 60, 3, 'COMMUNITY', TRUE, 29, 14, 680.00, 200,
   '{"items":[{"method":"POST","path":"/api/auth/register"},{"method":"POST","path":"/api/auth/login"},{"method":"POST","path":"/api/auth/refresh"},{"method":"GET","path":"/api/auth/me"}]}',
   '{"items":["Never store plain-text passwords","Use short-lived access tokens and long-lived refresh tokens","The /me endpoint must require a valid Bearer token"]}',
   '{"items":["Implement JWT-based authentication","Handle token expiration and refresh","Secure password storage with hashing"]}'
@@ -264,7 +288,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Rate Limiter Middleware',
   'rate-limiter',
   'Create an API with a configurable rate limiter. The API exposes a simple /ping endpoint. Rate limit: 100 requests per minute per IP. Return 429 Too Many Requests with a Retry-After header when exceeded.',
-  'MEDIUM', 4, 1000, 50, NULL, 'LEGACY', FALSE, 18, 9, 620.75,
+  'MEDIUM', 4, 1000, 50, NULL, 'LEGACY', FALSE, 18, 9, 620.75, 200,
   '{"items":[{"method":"GET","path":"/ping"},{"method":"GET","path":"/api/config"}]}',
   '{"items":["Use a sliding window or token bucket algorithm","Include X-RateLimit-Remaining and X-RateLimit-Reset headers","Store counters in memory or Redis"]}',
   '{"items":["Understand rate limiting algorithms","Implement security middleware","Use proper HTTP 429 responses"]}'
@@ -273,7 +297,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Paginated Product Catalog',
   'paginated-catalog',
   'Build a product catalog API that supports cursor-based pagination, filtering by category and price range, and sorting by price or name. Return pagination metadata (next cursor, total count, has_more).',
-  'MEDIUM', 5, 1000, 55, 3, 'COMMUNITY', FALSE, 22, 11, 710.25,
+  'MEDIUM', 5, 1000, 55, 3, 'COMMUNITY', FALSE, 22, 11, 710.25, 200,
   '{"items":[{"method":"GET","path":"/api/products"},{"method":"GET","path":"/api/products/{id}"},{"method":"GET","path":"/api/categories"}]}',
   '{"items":["Cursor-based pagination scales better than offset-based","Include Link headers for HATEOAS","Allow combining multiple filters in query params"]}',
   '{"items":["Implement cursor-based pagination","Build composable query filters","Optimize response payloads for large datasets"]}'
@@ -282,7 +306,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Redis Cache Layer',
   'redis-cache-layer',
   'Add a Redis caching layer to an existing articles API. Cache GET responses with a 60-second TTL. Implement cache invalidation on POST/PUT/DELETE. Expose a /cache/stats endpoint showing hit/miss ratio.',
-  'HARD', 6, 1000, 60, NULL, 'LEGACY', FALSE, 15, 5, 580.00,
+  'HARD', 6, 1000, 60, NULL, 'LEGACY', FALSE, 15, 5, 580.00, 250,
   '{"items":[{"method":"GET","path":"/api/articles"},{"method":"GET","path":"/api/articles/{id}"},{"method":"POST","path":"/api/articles"},{"method":"GET","path":"/cache/stats"}]}',
   '{"items":["Use cache-aside pattern: check cache first, fallback to DB","Invalidate related keys on writes","Track hits and misses with atomic counters"]}',
   '{"items":["Implement cache-aside pattern with Redis","Handle cache invalidation correctly","Monitor cache effectiveness"]}'
@@ -291,7 +315,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Real-Time Chat Room',
   'realtime-chat',
   'Build a WebSocket-based chat room API. Support joining/leaving rooms, broadcasting messages, and listing active users. Provide a REST endpoint to fetch message history (last 50 messages per room).',
-  'HARD', 7, 1000, 75, 3, 'COMMUNITY', TRUE, 12, 4, 545.50,
+  'HARD', 7, 1000, 75, 3, 'COMMUNITY', TRUE, 12, 4, 545.50, 250,
   '{"items":[{"method":"GET","path":"/api/rooms"},{"method":"GET","path":"/api/rooms/{id}/messages"},{"method":"WS","path":"/ws/chat"}]}',
   '{"items":["Use a message broker or in-memory pub/sub for broadcasting","Handle disconnect cleanup gracefully","Limit message history to avoid memory issues"]}',
   '{"items":["Implement WebSocket communication","Manage real-time state (rooms, users)","Combine REST and WebSocket in one service"]}'
@@ -300,7 +324,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Multi-Table Join Queries',
   'multi-table-joins',
   'Design a school database API with students, courses, and enrollments. Implement endpoints that return joined data: a student with their courses, a course with enrolled students, and enrollment statistics.',
-  'MEDIUM', 8, 1000, 55, NULL, 'LEGACY', FALSE, 27, 16, 755.80,
+  'MEDIUM', 8, 1000, 55, NULL, 'LEGACY', FALSE, 27, 16, 755.80, 200,
   '{"items":[{"method":"GET","path":"/api/students"},{"method":"GET","path":"/api/students/{id}/courses"},{"method":"GET","path":"/api/courses/{id}/students"},{"method":"GET","path":"/api/stats"}]}',
   '{"items":["Avoid N+1 queries by using JOINs or batch fetching","The stats endpoint should use aggregate SQL functions","Return nested objects, not flat rows"]}',
   '{"items":["Design normalized relational schemas","Write efficient JOIN queries","Return structured nested JSON responses"]}'
@@ -309,7 +333,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'API Gateway Pattern',
   'api-gateway',
   'Implement a simple API gateway that routes requests to two downstream services (users-service and orders-service). Add request logging, timeout handling (3 s), and a /health endpoint that checks both services.',
-  'HARD', 9, 1000, 70, 3, 'COMMUNITY', FALSE, 10, 3, 490.00,
+  'HARD', 9, 1000, 70, 3, 'COMMUNITY', FALSE, 10, 3, 490.00, 250,
   '{"items":[{"method":"GET","path":"/api/users"},{"method":"GET","path":"/api/orders"},{"method":"GET","path":"/health"}]}',
   '{"items":["Use circuit breaker pattern for downstream failures","Log method, path, status, and latency for every request","The health endpoint must return degraded if one service is down"]}',
   '{"items":["Implement the API gateway pattern","Handle downstream timeouts and failures","Aggregate health checks from multiple services"]}'
@@ -318,7 +342,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Contract Testing with Pact',
   'contract-testing',
   'Write consumer-driven contract tests for a payments API. The API has endpoints to create a payment, get payment status, and list payments. Validate request/response schemas and status codes.',
-  'HARD', 10, 1000, 60, NULL, 'LEGACY', FALSE, 8, 2, 430.00,
+  'HARD', 10, 1000, 60, NULL, 'LEGACY', FALSE, 8, 2, 430.00, 250,
   '{"items":[{"method":"POST","path":"/api/payments"},{"method":"GET","path":"/api/payments/{id}"},{"method":"GET","path":"/api/payments"}]}',
   '{"items":["Define the expected request and response in the consumer test","Use matchers for dynamic fields like IDs and timestamps","Run the provider verification against the generated pact file"]}',
   '{"items":["Understand consumer-driven contract testing","Write Pact consumer tests","Verify provider compliance"]}'
@@ -327,7 +351,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'URL Shortener Service',
   'url-shortener',
   'Build a URL shortener API. POST a long URL to receive a short code. GET the short code to be redirected (301). Track click count and provide an analytics endpoint that returns total clicks and referrer breakdown.',
-  'EASY', 1, 1000, 40, 3, 'COMMUNITY', TRUE, 52, 38, 830.10,
+  'EASY', 1, 1000, 40, 3, 'COMMUNITY', TRUE, 52, 38, 830.10, 150,
   '{"items":[{"method":"POST","path":"/api/shorten"},{"method":"GET","path":"/{code}"},{"method":"GET","path":"/api/stats/{code}"}]}',
   '{"items":["Use 301 Moved Permanently for the redirect","Generate short codes with a hash or counter-based approach","Store click metadata for analytics"]}',
   '{"items":["Design a simple but complete microservice","Implement HTTP redirects correctly","Build basic analytics tracking"]}'
@@ -336,7 +360,7 @@ INSERT INTO challenges (title, slug, description, difficulty, category_id, max_s
   'Input Validation & Sanitization',
   'input-validation',
   'Create a user registration API with strict input validation: email format, password strength (min 8 chars, uppercase, number, special char), username (alphanumeric, 3-20 chars). Sanitize all text inputs against XSS.',
-  'MEDIUM', 4, 1000, 45, NULL, 'LEGACY', FALSE, 33, 20, 700.40,
+  'MEDIUM', 4, 1000, 45, NULL, 'LEGACY', FALSE, 33, 20, 700.40, 200,
   '{"items":[{"method":"POST","path":"/api/users"},{"method":"GET","path":"/api/users/{id}"},{"method":"PUT","path":"/api/users/{id}"}]}',
   '{"items":["Use regex for format validation but also check for common XSS patterns","Return detailed error messages with field-level granularity","Strip HTML tags from free-text fields before storage"]}',
   '{"items":["Implement thorough input validation","Prevent XSS through sanitization","Return developer-friendly validation errors"]}'
@@ -458,6 +482,70 @@ INSERT INTO teacher_group_members (group_id, user_id) VALUES
   (1, 1),
   (1, 2),
   (2, 2)
+ON CONFLICT DO NOTHING;
+
+-- ===========================================
+-- Table: test_results
+-- ===========================================
+CREATE TABLE IF NOT EXISTS test_results (
+    id BIGSERIAL PRIMARY KEY,
+    submission_id BIGINT REFERENCES submissions(id) ON DELETE CASCADE,
+    test_name VARCHAR(200) NOT NULL,
+    test_type VARCHAR(50),
+    status VARCHAR(20),
+    expected_result TEXT,
+    actual_result TEXT,
+    error_message TEXT,
+    execution_time_ms DECIMAL(10,2),
+    request_method VARCHAR(10),
+    request_path VARCHAR(500),
+    request_headers JSONB,
+    request_body TEXT,
+    response_status INT,
+    response_headers JSONB,
+    response_body TEXT,
+    score_awarded INT DEFAULT 0,
+    max_score INT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_test_results_submission ON test_results(submission_id);
+CREATE INDEX IF NOT EXISTS idx_test_results_status ON test_results(status);
+
+-- ===========================================
+-- Seed: test_results (for completed submissions)
+-- ===========================================
+INSERT INTO test_results (submission_id, test_name, test_type, status, expected_result, actual_result, execution_time_ms, request_method, request_path, response_status, score_awarded, max_score) VALUES
+  -- Submission 1 (arclight, challenge 1)
+  (1, 'Functional: GET /api/items',     'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 45.20,  'GET',    '/api/items',     200, 100, 100),
+  (1, 'Functional: POST /api/items',    'FUNCTIONAL',  'PASSED', 'HTTP 201', 'HTTP 201', 32.80,  'POST',   '/api/items',     201, 100, 100),
+  (1, 'Functional: GET /api/items/1',   'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 18.50,  'GET',    '/api/items/1',   200, 100, 100),
+  (1, 'Functional: PUT /api/items/1',   'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 28.30,  'PUT',    '/api/items/1',   200, 100, 100),
+  (1, 'Functional: DELETE /api/items/1','FUNCTIONAL',  'PASSED', 'HTTP 204', 'HTTP 204', 15.10,  'DELETE', '/api/items/1',   204, 100, 100),
+  (1, 'Functional: GET /api/items/999', 'FUNCTIONAL',  'FAILED', 'HTTP 404', 'HTTP 500', 12.90,  'GET',    '/api/items/999', 500,   0, 100),
+  (1, 'Performance: Throughput (RPS)',  'PERFORMANCE', 'PASSED', '>= 100 RPS',  '245 RPS',  15000.00, 'GET', '/api/items', NULL, 50, 50),
+  (1, 'Performance: Avg Response Time', 'PERFORMANCE', 'PASSED', '<= 100ms',    '42ms',     42.00,    'GET', '/api/items', NULL, 50, 50),
+  (1, 'Design: Proper HTTP status codes','DESIGN',     'PASSED', 'Compliant', 'Compliant',  2.10, NULL, NULL, NULL, 40, 40),
+  (1, 'Design: RESTful URL naming',     'DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.50, NULL, NULL, NULL, 40, 40),
+  (1, 'Design: Content-Type headers',   'DESIGN',     'FAILED', 'Compliant', 'Non-compliant', 1.80, NULL, NULL, NULL, 0, 40),
+
+  -- Submission 2 (arclight, challenge 2)
+  (2, 'Functional: GET /api/users',     'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 38.40,  'GET',  '/api/users',     200, 100, 100),
+  (2, 'Functional: POST /api/users',    'FUNCTIONAL',  'PASSED', 'HTTP 201', 'HTTP 201', 52.10,  'POST', '/api/users',     201, 100, 100),
+  (2, 'Functional: GET /api/users/1',   'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 22.70,  'GET',  '/api/users/1',   200, 100, 100),
+  (2, 'Performance: Throughput (RPS)',  'PERFORMANCE', 'PASSED', '>= 100 RPS',  '310 RPS',  15000.00, 'GET', '/api/users', NULL, 50, 50),
+  (2, 'Performance: Avg Response Time', 'PERFORMANCE', 'PASSED', '<= 100ms',    '28ms',     28.00,    'GET', '/api/users', NULL, 50, 50),
+  (2, 'Design: Proper HTTP status codes','DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.90, NULL, NULL, NULL, 40, 40),
+  (2, 'Design: Error response format',  'DESIGN',     'PASSED', 'Compliant', 'Compliant',  2.30, NULL, NULL, NULL, 40, 40),
+
+  -- Submission 10 (byterunner, challenge 1)
+  (10, 'Functional: GET /api/items',    'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 62.30,  'GET',    '/api/items',     200, 100, 100),
+  (10, 'Functional: POST /api/items',   'FUNCTIONAL',  'PASSED', 'HTTP 201', 'HTTP 201', 48.90,  'POST',   '/api/items',     201, 100, 100),
+  (10, 'Functional: DELETE /api/items/1','FUNCTIONAL', 'FAILED', 'HTTP 204', 'HTTP 405', 21.40,  'DELETE', '/api/items/1',   405,   0, 100),
+  (10, 'Performance: Throughput (RPS)', 'PERFORMANCE', 'FAILED', '>= 100 RPS',  '78 RPS',   15000.00, 'GET', '/api/items', NULL, 15, 50),
+  (10, 'Performance: Avg Response Time','PERFORMANCE', 'PASSED', '<= 100ms',    '85ms',     85.00,    'GET', '/api/items', NULL, 50, 50),
+  (10, 'Design: Proper HTTP status codes','DESIGN',    'FAILED', 'Compliant', 'Non-compliant', 1.70, NULL, NULL, NULL, 0, 40),
+  (10, 'Design: RESTful URL naming',    'DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.40, NULL, NULL, NULL, 40, 40)
 ON CONFLICT DO NOTHING;
 
 -- Verificacion
