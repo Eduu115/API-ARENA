@@ -135,6 +135,18 @@ public class Submission {
     @Column(name = "api_base_url", length = 500)
     private String apiBaseUrl;
 
+    @Column(name = "xp_earned")
+    private Integer xpEarned;
+
+    @Column(name = "elo_change")
+    private Integer eloChange;
+
+    @Column(name = "previous_best_score", precision = 5, scale = 2)
+    private BigDecimal previousBestScore;
+
+    @Column(name = "is_first_completion")
+    private Boolean isFirstCompletion;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -581,3 +581,37 @@
   .sd-hero-top { flex-direction: column; gap: 16px; }
   .sd-total-score { text-align: left; }
 }
+
+/* Continue button */
+.sd-continue-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0 20px;
+}
+.sd-continue-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 48px;
+  background: linear-gradient(135deg, var(--cyan), var(--green, #00FFA3));
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: #0a0a0f;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.sd-continue-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0, 217, 255, 0.35);
+}
+.sd-continue-arrow {
+  font-size: 22px;
+  transition: transform 0.15s;
+}
+.sd-continue-btn:hover .sd-continue-arrow {
+  transform: translateX(4px);
+}

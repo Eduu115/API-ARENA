@@ -32,6 +32,10 @@ public class SubmissionDTO {
     private Integer totalRequests;
     private Integer failedRequests;
     private BigDecimal restComplianceScore;
+    private Integer xpEarned;
+    private Integer eloChange;
+    private BigDecimal previousBestScore;
+    private Boolean isFirstCompletion;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime completedAt;
@@ -56,6 +60,10 @@ public class SubmissionDTO {
                 .totalRequests(entity.getTotalRequests())
                 .failedRequests(entity.getFailedRequests())
                 .restComplianceScore(entity.getRestComplianceScore())
+                .xpEarned(entity.getXpEarned())
+                .eloChange(entity.getEloChange())
+                .previousBestScore(entity.getPreviousBestScore())
+                .isFirstCompletion(entity.getIsFirstCompletion())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .completedAt(entity.getCompletedAt())

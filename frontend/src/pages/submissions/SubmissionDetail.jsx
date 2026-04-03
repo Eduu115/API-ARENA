@@ -306,6 +306,15 @@ export default function SubmissionDetail() {
                 {sub.status === 'TESTING' && 'Running tests against your API...'}
               </div>
             )}
+
+            {sub.status === 'COMPLETED' && (
+              <div className="sd-continue-wrap">
+                <button className="sd-continue-btn" onClick={() => navigate(`/submissions/${id}/results`)}>
+                  CONTINUE
+                  <span className="sd-continue-arrow">→</span>
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>

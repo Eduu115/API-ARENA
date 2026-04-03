@@ -3,6 +3,7 @@ package com.apiarena.authservice.model.services;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
+import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.entities.User;
@@ -20,4 +21,6 @@ public interface IUserService extends UserDetailsService {
     void updateLastLogin(String email);
 
     User getUserEntityByEmail(String email);
+
+    void applyReward(Long userId, RewardRequest request);
 }

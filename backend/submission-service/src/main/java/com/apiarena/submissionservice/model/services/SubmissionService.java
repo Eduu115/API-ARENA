@@ -4,13 +4,18 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+
 
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
@@ -23,6 +28,8 @@ import com.apiarena.submissionservice.repository.SubmissionRepository;
 @Service
 public class SubmissionService implements ISubmissionService {
 
+    private static final Logger log = LoggerFactory.getLogger(SubmissionService.class);
+
     @Autowired
     private SubmissionRepository submissionRepository;
 
@@ -34,6 +41,15 @@ public class SubmissionService implements ISubmissionService {
 
     @Autowired
     private SubmissionWebSocketService webSocketService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${services.auth-url:http://localhost:8081}")
+    private String authServiceUrl;
+
+    @Value("${services.challenge-url:http://localhost:8082}")
+    private String challengeServiceUrl;
 
     @Override
     @Transactional
@@ -137,12 +153,137 @@ public class SubmissionService implements ISubmissionService {
 
             updateScores(submissionId, total, correctness, performance, design);
 
+            calculateAndApplyRewards(submissionId);
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             updateStatus(submissionId, Submission.Status.FAILED, "Pipeline interrupted");
         } catch (Exception e) {
             updateStatus(submissionId, Submission.Status.FAILED, e.getMessage());
         }
+    }
+
+    private static final Map<String, Integer> DIFFICULTY_RATING = Map.of(
+            "EASY", 800, "MEDIUM", 1200, "HARD", 1600, "EXPERT", 2000);
+    private static final Map<String, Double> DIFFICULTY_ELO_MULTIPLIER = Map.of(
+            "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8);
+    private static final int MIN_RANKED_CHALLENGES = 3;
+
+    @SuppressWarnings("unchecked")
+    private void calculateAndApplyRewards(Long submissionId) {
+        try {
+            Submission sub = submissionRepository.findById(submissionId).orElse(null);
+            if (sub == null || sub.getStatus() != Submission.Status.COMPLETED) return;
+
+            Map<String, Object> challengeData = fetchChallengeData(sub.getChallengeId());
+            int xpReward = challengeData.get("xpReward") != null
+                    ? ((Number) challengeData.get("xpReward")).intValue() : 200;
+            String difficulty = (String) challengeData.getOrDefault("difficulty", "MEDIUM");
+
+            double totalScore = sub.getTotalScore() != null ? sub.getTotalScore().doubleValue() : 0;
+            double scoreRatio = totalScore / 1000.0;
+
+            List<Submission> previousBest = submissionRepository.findBestCompletedExcluding(
+                    sub.getUserId(), sub.getChallengeId(), sub.getId());
+
+            boolean isFirst = previousBest.isEmpty();
+            BigDecimal prevBest = isFirst ? null :
+                    (previousBest.get(0).getTotalScore() != null ? previousBest.get(0).getTotalScore() : BigDecimal.ZERO);
+            double prevBestVal = prevBest != null ? prevBest.doubleValue() : 0;
+            boolean improved = !isFirst && totalScore > prevBestVal;
+
+            // --- XP calculation (constant, slight difficulty variation) ---
+            int xpEarned;
+            if (isFirst) {
+                xpEarned = (int) Math.floor(xpReward * scoreRatio);
+            } else if (improved) {
+                double improvement = (totalScore - prevBestVal) / 1000.0;
+                xpEarned = (int) Math.floor(xpReward * improvement * 0.8);
+            } else {
+                xpEarned = Math.max(1, (int) Math.floor(xpReward * 0.02));
+            }
+
+            // --- ELO calculation (dynamic, competitive, can go negative) ---
+            // EASY challenges do NOT affect ELO; higher difficulty = bigger impact
+            double eloMultiplier = DIFFICULTY_ELO_MULTIPLIER.getOrDefault(difficulty, 1.0);
+            int eloChange = 0;
+
+            if (eloMultiplier > 0) {
+                int currentElo = fetchUserRating(sub.getUserId());
+                int challengeRating = DIFFICULTY_RATING.getOrDefault(difficulty, 1200);
+                int totalChallenges = fetchUserTotalChallenges(sub.getUserId());
+
+                int K = totalChallenges < 10 ? 48 : 32;
+                double expected = 1.0 / (1.0 + Math.pow(10.0, (challengeRating - currentElo) / 400.0));
+                eloChange = (int) Math.round(K * eloMultiplier * (scoreRatio - expected));
+            }
+
+            sub.setXpEarned(xpEarned);
+            sub.setEloChange(eloChange);
+            sub.setPreviousBestScore(prevBest);
+            sub.setIsFirstCompletion(isFirst);
+            submissionRepository.save(sub);
+
+            log.info("Rewards calculated for sub {}: xp={}, elo={}, difficulty={}, multiplier={}",
+                    submissionId, xpEarned, eloChange, difficulty, eloMultiplier);
+
+            try {
+                Map<String, Object> rewardBody = Map.of(
+                        "xpEarned", xpEarned,
+                        "eloChange", eloChange,
+                        "isFirstCompletion", isFirst
+                );
+                restTemplate.postForEntity(
+                        authServiceUrl + "/internal/users/" + sub.getUserId() + "/reward",
+                        rewardBody, Void.class);
+            } catch (Exception e) {
+                log.error("Failed to apply rewards to auth-service for submission {}: {}",
+                        submissionId, e.getMessage());
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to calculate rewards for submission {}: {}", submissionId, e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> fetchChallengeData(Long challengeId) {
+        try {
+            Map<String, Object> challenge = restTemplate.getForObject(
+                    challengeServiceUrl + "/api/challenges/" + challengeId, Map.class);
+            if (challenge != null) return challenge;
+        } catch (Exception e) {
+            log.warn("Could not fetch challenge {}: {}", challengeId, e.getMessage());
+        }
+        return Map.of("xpReward", 200, "difficulty", "MEDIUM");
+    }
+
+    @SuppressWarnings("unchecked")
+    private int fetchUserRating(Long userId) {
+        try {
+            Map<String, Object> profile = restTemplate.getForObject(
+                    authServiceUrl + "/api/auth/users/" + userId + "/profile", Map.class);
+            if (profile != null && profile.get("rating") != null) {
+                return ((Number) profile.get("rating")).intValue();
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch user {} rating, using 1000: {}", userId, e.getMessage());
+        }
+        return 1000;
+    }
+
+    @SuppressWarnings("unchecked")
+    private int fetchUserTotalChallenges(Long userId) {
+        try {
+            Map<String, Object> profile = restTemplate.getForObject(
+                    authServiceUrl + "/api/auth/users/" + userId + "/profile", Map.class);
+            if (profile != null && profile.get("totalChallengesCompleted") != null) {
+                return ((Number) profile.get("totalChallengesCompleted")).intValue();
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch user {} challenges count: {}", userId, e.getMessage());
+        }
+        return 0;
     }
 
     @Override

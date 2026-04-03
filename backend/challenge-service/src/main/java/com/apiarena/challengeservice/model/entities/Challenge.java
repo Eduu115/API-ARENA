@@ -124,6 +124,10 @@ public class Challenge {
     @Column(name = "average_score", precision = 5, scale = 2)
     private BigDecimal averageScore = BigDecimal.ZERO;
 
+    @Min(0)
+    @Column(name = "xp_reward", nullable = false)
+    private Integer xpReward = 200;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> hints;
