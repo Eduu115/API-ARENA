@@ -164,15 +164,34 @@ CREATE TABLE IF NOT EXISTS submissions (
     challenge_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    repository_url VARCHAR(500),
     zip_file_path VARCHAR(500),
+    dockerfile TEXT,
+    docker_image_hash VARCHAR(256),
+    environment_vars JSONB,
     total_score DECIMAL(5,2),
     correctness_score DECIMAL(5,2),
     performance_score DECIMAL(5,2),
     design_score DECIMAL(5,2),
+    ai_review_score DECIMAL(5,2),
+    avg_response_ms INT,
+    p95_response_ms INT,
+    p99_response_ms INT,
+    rps INT,
+    total_requests INT,
+    failed_requests INT,
+    design_issues JSONB,
+    endpoints_discovered JSONB,
+    rest_compliance_score DECIMAL(5,2),
+    ai_suggestions JSONB,
     build_logs TEXT,
     test_logs TEXT,
     error_message TEXT,
+    replay_data JSONB,
+    container_id VARCHAR(100),
+    api_base_url VARCHAR(500),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP,
     completed_at TIMESTAMP
 );
 
@@ -458,6 +477,70 @@ INSERT INTO teacher_group_members (group_id, user_id) VALUES
   (1, 1),
   (1, 2),
   (2, 2)
+ON CONFLICT DO NOTHING;
+
+-- ===========================================
+-- Table: test_results
+-- ===========================================
+CREATE TABLE IF NOT EXISTS test_results (
+    id BIGSERIAL PRIMARY KEY,
+    submission_id BIGINT REFERENCES submissions(id) ON DELETE CASCADE,
+    test_name VARCHAR(200) NOT NULL,
+    test_type VARCHAR(50),
+    status VARCHAR(20),
+    expected_result TEXT,
+    actual_result TEXT,
+    error_message TEXT,
+    execution_time_ms DECIMAL(10,2),
+    request_method VARCHAR(10),
+    request_path VARCHAR(500),
+    request_headers JSONB,
+    request_body TEXT,
+    response_status INT,
+    response_headers JSONB,
+    response_body TEXT,
+    score_awarded INT DEFAULT 0,
+    max_score INT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_test_results_submission ON test_results(submission_id);
+CREATE INDEX IF NOT EXISTS idx_test_results_status ON test_results(status);
+
+-- ===========================================
+-- Seed: test_results (for completed submissions)
+-- ===========================================
+INSERT INTO test_results (submission_id, test_name, test_type, status, expected_result, actual_result, execution_time_ms, request_method, request_path, response_status, score_awarded, max_score) VALUES
+  -- Submission 1 (arclight, challenge 1)
+  (1, 'Functional: GET /api/items',     'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 45.20,  'GET',    '/api/items',     200, 100, 100),
+  (1, 'Functional: POST /api/items',    'FUNCTIONAL',  'PASSED', 'HTTP 201', 'HTTP 201', 32.80,  'POST',   '/api/items',     201, 100, 100),
+  (1, 'Functional: GET /api/items/1',   'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 18.50,  'GET',    '/api/items/1',   200, 100, 100),
+  (1, 'Functional: PUT /api/items/1',   'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 28.30,  'PUT',    '/api/items/1',   200, 100, 100),
+  (1, 'Functional: DELETE /api/items/1','FUNCTIONAL',  'PASSED', 'HTTP 204', 'HTTP 204', 15.10,  'DELETE', '/api/items/1',   204, 100, 100),
+  (1, 'Functional: GET /api/items/999', 'FUNCTIONAL',  'FAILED', 'HTTP 404', 'HTTP 500', 12.90,  'GET',    '/api/items/999', 500,   0, 100),
+  (1, 'Performance: Throughput (RPS)',  'PERFORMANCE', 'PASSED', '>= 100 RPS',  '245 RPS',  15000.00, 'GET', '/api/items', NULL, 50, 50),
+  (1, 'Performance: Avg Response Time', 'PERFORMANCE', 'PASSED', '<= 100ms',    '42ms',     42.00,    'GET', '/api/items', NULL, 50, 50),
+  (1, 'Design: Proper HTTP status codes','DESIGN',     'PASSED', 'Compliant', 'Compliant',  2.10, NULL, NULL, NULL, 40, 40),
+  (1, 'Design: RESTful URL naming',     'DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.50, NULL, NULL, NULL, 40, 40),
+  (1, 'Design: Content-Type headers',   'DESIGN',     'FAILED', 'Compliant', 'Non-compliant', 1.80, NULL, NULL, NULL, 0, 40),
+
+  -- Submission 2 (arclight, challenge 2)
+  (2, 'Functional: GET /api/users',     'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 38.40,  'GET',  '/api/users',     200, 100, 100),
+  (2, 'Functional: POST /api/users',    'FUNCTIONAL',  'PASSED', 'HTTP 201', 'HTTP 201', 52.10,  'POST', '/api/users',     201, 100, 100),
+  (2, 'Functional: GET /api/users/1',   'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 22.70,  'GET',  '/api/users/1',   200, 100, 100),
+  (2, 'Performance: Throughput (RPS)',  'PERFORMANCE', 'PASSED', '>= 100 RPS',  '310 RPS',  15000.00, 'GET', '/api/users', NULL, 50, 50),
+  (2, 'Performance: Avg Response Time', 'PERFORMANCE', 'PASSED', '<= 100ms',    '28ms',     28.00,    'GET', '/api/users', NULL, 50, 50),
+  (2, 'Design: Proper HTTP status codes','DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.90, NULL, NULL, NULL, 40, 40),
+  (2, 'Design: Error response format',  'DESIGN',     'PASSED', 'Compliant', 'Compliant',  2.30, NULL, NULL, NULL, 40, 40),
+
+  -- Submission 10 (byterunner, challenge 1)
+  (10, 'Functional: GET /api/items',    'FUNCTIONAL',  'PASSED', 'HTTP 200', 'HTTP 200', 62.30,  'GET',    '/api/items',     200, 100, 100),
+  (10, 'Functional: POST /api/items',   'FUNCTIONAL',  'PASSED', 'HTTP 201', 'HTTP 201', 48.90,  'POST',   '/api/items',     201, 100, 100),
+  (10, 'Functional: DELETE /api/items/1','FUNCTIONAL', 'FAILED', 'HTTP 204', 'HTTP 405', 21.40,  'DELETE', '/api/items/1',   405,   0, 100),
+  (10, 'Performance: Throughput (RPS)', 'PERFORMANCE', 'FAILED', '>= 100 RPS',  '78 RPS',   15000.00, 'GET', '/api/items', NULL, 15, 50),
+  (10, 'Performance: Avg Response Time','PERFORMANCE', 'PASSED', '<= 100ms',    '85ms',     85.00,    'GET', '/api/items', NULL, 50, 50),
+  (10, 'Design: Proper HTTP status codes','DESIGN',    'FAILED', 'Compliant', 'Non-compliant', 1.70, NULL, NULL, NULL, 0, 40),
+  (10, 'Design: RESTful URL naming',    'DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.40, NULL, NULL, NULL, 40, 40)
 ON CONFLICT DO NOTHING;
 
 -- Verificacion

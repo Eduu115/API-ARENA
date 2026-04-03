@@ -1,10 +1,13 @@
 package com.apiarena.submissionservice.model.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,7 +66,83 @@ public class SubmissionService implements ISubmissionService {
 
         String wsTopic = webSocketService.getWsTopicForSubmission(saved.getId());
 
+        final Long subId = saved.getId();
+        new Thread(() -> simulatePipeline(subId)).start();
+
         return new CreateSubmissionResponse(saved.getId(), saved.getStatus().name(), wsTopic);
+    }
+
+    private void simulatePipeline(Long submissionId) {
+        try {
+            Thread.sleep(2000);
+
+            appendBuildLogs(submissionId,
+                "[BUILD] Scanning for projects...\n" +
+                "[BUILD] Resolving dependencies...\n");
+            updateStatus(submissionId, Submission.Status.BUILDING, null);
+
+            Thread.sleep(3000);
+
+            appendBuildLogs(submissionId,
+                "[BUILD] Compiling 14 source files...\n" +
+                "[BUILD] Running static analysis...\n" +
+                "[BUILD] Packaging application...\n" +
+                "[BUILD] BUILD SUCCESS (3.2s)\n");
+
+            Thread.sleep(1500);
+
+            updateStatus(submissionId, Submission.Status.TESTING, null);
+
+            Thread.sleep(2000);
+
+            ThreadLocalRandom rng = ThreadLocalRandom.current();
+            int totalTests = rng.nextInt(10, 18);
+            int passed = totalTests - rng.nextInt(0, 3);
+            StringBuilder testLog = new StringBuilder();
+            String[] methods = {"GET", "POST", "PUT", "DELETE", "PATCH"};
+            String[] paths = {"/api/items", "/api/items/1", "/api/items?page=1", "/api/items/search", "/api/items/1/status"};
+
+            for (int i = 0; i < totalTests; i++) {
+                String method = methods[rng.nextInt(methods.length)];
+                String path = paths[rng.nextInt(paths.length)];
+                int ms = rng.nextInt(5, 80);
+                boolean pass = i < passed;
+                int status = pass ? (method.equals("POST") ? 201 : method.equals("DELETE") ? 204 : 200) : 500;
+                testLog.append(String.format("[TEST] %s %s => %d (%dms) %s%n",
+                    method, path, status, ms, pass ? "PASS" : "FAIL"));
+            }
+            testLog.append(String.format("%n[RESULT] %d/%d tests passed%n", passed, totalTests));
+
+            appendTestLogs(submissionId, testLog.toString());
+
+            Thread.sleep(2000);
+
+            double passRate = (double) passed / totalTests;
+            BigDecimal correctness = BigDecimal.valueOf(passRate * 500).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal performance = BigDecimal.valueOf(rng.nextDouble(150, 280)).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal design = BigDecimal.valueOf(rng.nextDouble(120, 250)).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal total = correctness.add(performance).add(design);
+
+            Submission sub = submissionRepository.findById(submissionId).orElse(null);
+            if (sub == null) return;
+
+            sub.setAvgResponseMs(rng.nextInt(15, 90));
+            sub.setP95ResponseMs(rng.nextInt(90, 250));
+            sub.setP99ResponseMs(rng.nextInt(250, 500));
+            sub.setRps(rng.nextInt(600, 2000));
+            sub.setTotalRequests(totalTests * rng.nextInt(200, 400));
+            sub.setFailedRequests(totalTests - passed);
+            sub.setRestComplianceScore(BigDecimal.valueOf(rng.nextDouble(70, 98)).setScale(2, RoundingMode.HALF_UP));
+            submissionRepository.save(sub);
+
+            updateScores(submissionId, total, correctness, performance, design);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            updateStatus(submissionId, Submission.Status.FAILED, "Pipeline interrupted");
+        } catch (Exception e) {
+            updateStatus(submissionId, Submission.Status.FAILED, e.getMessage());
+        }
     }
 
     @Override

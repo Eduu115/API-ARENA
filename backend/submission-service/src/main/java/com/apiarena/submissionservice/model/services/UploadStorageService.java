@@ -36,7 +36,7 @@ public class UploadStorageService {
         }
 
         try {
-            Path basePath = Paths.get(uploadDir);
+            Path basePath = Paths.get(uploadDir).toAbsolutePath();
             Files.createDirectories(basePath);
 
             String safeName = submissionId + "_" + UUID.randomUUID().toString().substring(0, 8) + ".zip";
