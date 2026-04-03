@@ -240,14 +240,19 @@ INSERT INTO categories (name, slug, description, icon, color, display_order) VAL
 ON CONFLICT (slug) DO NOTHING;
 
 -- ===========================================
--- Seed: users
+-- Seed: users (8 users)
 -- All passwords = "Arena2025!" hashed with pgcrypto bf
+-- ELO: 1000 base. Unranked if total_challenges_completed < 3.
 -- ===========================================
 INSERT INTO users (username, email, password_hash, role, bio, github_username, rating, level, experience_points, total_challenges_completed, total_tests_passed, last_login, is_active, email_verified) VALUES
-  ('arclight',   'arclight@apiarena.dev',   crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Backend junkie. Rust by day, Java by night.', 'arclight-dev',   1420, 5, 3200, 8,  42, NOW() - interval '2 hours',  TRUE, TRUE),
-  ('byterunner', 'byterunner@apiarena.dev', crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Full-stack dev & competitive programmer.',     'byterunner99',   1185, 3, 1450, 4,  19, NOW() - interval '1 day',    TRUE, TRUE),
-  ('profoak',    'profoak@apiarena.dev',    crypt('Arena2025!', gen_salt('bf', 10)), 'TEACHER', 'CS Professor — API design & distributed systems.', 'prof-oak',  1000, 1, 0,    0,  0,  NOW() - interval '5 hours',  TRUE, TRUE),
-  ('sysop',      'sysop@apiarena.dev',      crypt('Arena2025!', gen_salt('bf', 10)), 'ADMIN',   'Platform administrator.',                       NULL,             1000, 1, 0,    0,  0,  NOW() - interval '30 minutes', TRUE, TRUE)
+  ('arclight',    'arclight@apiarena.dev',    crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Backend junkie. Rust by day, Java by night.',            'arclight-dev',   1380, 5, 3200, 8,  42, NOW() - interval '2 hours',   TRUE, TRUE),
+  ('byterunner',  'byterunner@apiarena.dev',  crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Full-stack dev & competitive programmer.',               'byterunner99',   1120, 3, 1450, 4,  19, NOW() - interval '1 day',     TRUE, TRUE),
+  ('profoak',     'profoak@apiarena.dev',     crypt('Arena2025!', gen_salt('bf', 10)), 'TEACHER', 'CS Professor — API design & distributed systems.',       'prof-oak',       1000, 1, 0,    0,  0,  NOW() - interval '5 hours',   TRUE, TRUE),
+  ('sysop',       'sysop@apiarena.dev',       crypt('Arena2025!', gen_salt('bf', 10)), 'ADMIN',   'Platform administrator.',                                NULL,             1000, 1, 0,    0,  0,  NOW() - interval '30 minutes', TRUE, TRUE),
+  ('nullpointer', 'nullpointer@apiarena.dev', crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Java enthusiast. Spring Boot is life.',                  'null-ptr',       1000, 1, 120,  1,  5,  NOW() - interval '3 days',    TRUE, TRUE),
+  ('devmaria',    'devmaria@apiarena.dev',    crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Frontend turned backend. Learning APIs the hard way.',   'devmaria-code',  1250, 4, 2100, 6,  31, NOW() - interval '8 hours',   TRUE, TRUE),
+  ('profsanchez', 'profsanchez@apiarena.dev', crypt('Arena2025!', gen_salt('bf', 10)), 'TEACHER', 'Software Engineering lecturer. Microservices & DevOps.', 'prof-sanchez',   1000, 1, 0,    0,  0,  NOW() - interval '2 days',    TRUE, TRUE),
+  ('kodekat',     'kodekat@apiarena.dev',     crypt('Arena2025!', gen_salt('bf', 10)), 'STUDENT', 'Competitive coder. Top 1% or bust.',                     'kodekat42',      1000, 2, 400,  2,  11, NOW() - interval '12 hours',  TRUE, TRUE)
 ON CONFLICT (username) DO NOTHING;
 
 -- ===========================================
@@ -443,45 +448,111 @@ INSERT INTO submissions (challenge_id, user_id, status, total_score, correctness
 (12, 2, 'COMPLETED', 720.00, 370.00, 180.00, 170.00,
   E'[BUILD] Compiling project...\n[BUILD] Build successful in 3.6s',
   E'[TEST] POST /api/users (valid) => 201 Created (16ms)\n[TEST] POST /api/users (bad email) => 400 Bad Request (9ms)\n[TEST] PUT /api/users/1 (XSS) => 200 OK, sanitized (14ms)\n[TEST] 12/15 tests passed\n[TEST] Score: 720.0/1000',
-  NOW() - interval '1 day', NOW() - interval '1 day' + interval '28 minutes')
+  NOW() - interval '1 day', NOW() - interval '1 day' + interval '28 minutes'),
+
+-- nullpointer submissions (user 5, 1 challenge completed = unranked)
+(2, 5, 'COMPLETED', 610.00, 310.00, 160.00, 140.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 5.8s',
+  E'[TEST] GET /api/todos => 200 OK (25ms)\n[TEST] POST /api/todos => 201 Created (30ms)\n[TEST] PUT /api/todos/1 => 200 OK (22ms)\n[TEST] 9/18 tests passed\n[TEST] Score: 610.0/1000',
+  NOW() - interval '3 days', NOW() - interval '3 days' + interval '32 minutes'),
+
+-- devmaria submissions (user 6, 6 challenges completed = ranked)
+(1,  6, 'COMPLETED', 920.00, 475.00, 235.00, 210.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 3.0s',
+  E'[TEST] GET /api/books => 200 OK (10ms)\n[TEST] POST /api/books => 201 Created (14ms)\n[TEST] DELETE /api/books/1 => 204 No Content (8ms)\n[TEST] 15/15 tests passed\n[TEST] Score: 920.0/1000',
+  NOW() - interval '10 days', NOW() - interval '10 days' + interval '20 minutes'),
+
+(2,  6, 'COMPLETED', 890.00, 460.00, 225.00, 205.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 3.2s',
+  E'[TEST] GET /api/todos => 200 OK (11ms)\n[TEST] POST /api/todos => 201 Created (16ms)\n[TEST] PATCH /api/todos/1/complete => 200 OK (10ms)\n[TEST] 17/18 tests passed\n[TEST] Score: 890.0/1000',
+  NOW() - interval '9 days', NOW() - interval '9 days' + interval '22 minutes'),
+
+(3,  6, 'COMPLETED', 780.00, 400.00, 195.00, 185.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 4.5s',
+  E'[TEST] POST /api/auth/register => 201 Created (38ms)\n[TEST] POST /api/auth/login => 200 OK (25ms)\n[TEST] GET /api/auth/me => 200 OK (10ms)\n[TEST] 12/14 tests passed\n[TEST] Score: 780.0/1000',
+  NOW() - interval '7 days', NOW() - interval '7 days' + interval '35 minutes'),
+
+(4,  6, 'COMPLETED', 830.00, 430.00, 210.00, 190.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 3.8s',
+  E'[TEST] GET /ping => 200 OK (3ms)\n[TEST] GET /ping (rate limited) => 429 Too Many Requests (2ms)\n[TEST] 13/14 tests passed\n[TEST] Score: 830.0/1000',
+  NOW() - interval '5 days', NOW() - interval '5 days' + interval '28 minutes'),
+
+(8,  6, 'COMPLETED', 860.00, 445.00, 220.00, 195.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 3.3s',
+  E'[TEST] GET /api/students => 200 OK (14ms)\n[TEST] GET /api/students/1/courses => 200 OK (22ms)\n[TEST] GET /api/stats => 200 OK (30ms)\n[TEST] 14/15 tests passed\n[TEST] Score: 860.0/1000',
+  NOW() - interval '3 days', NOW() - interval '3 days' + interval '24 minutes'),
+
+(11, 6, 'COMPLETED', 940.00, 480.00, 245.00, 215.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 2.5s',
+  E'[TEST] POST /api/shorten => 201 Created (9ms)\n[TEST] GET /abc456 => 301 Moved (4ms)\n[TEST] GET /api/stats/abc456 => 200 OK (8ms)\n[TEST] 17/17 tests passed\n[TEST] Score: 940.0/1000',
+  NOW() - interval '1 day', NOW() - interval '1 day' + interval '14 minutes'),
+
+-- kodekat submissions (user 8, 2 challenges completed = unranked)
+(1,  8, 'COMPLETED', 780.00, 400.00, 200.00, 180.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 4.2s',
+  E'[TEST] GET /api/books => 200 OK (15ms)\n[TEST] POST /api/books => 201 Created (20ms)\n[TEST] DELETE /api/books/1 => 204 No Content (11ms)\n[TEST] 12/15 tests passed\n[TEST] Score: 780.0/1000',
+  NOW() - interval '5 days', NOW() - interval '5 days' + interval '25 minutes'),
+
+(11, 8, 'COMPLETED', 870.00, 450.00, 220.00, 200.00,
+  E'[BUILD] Compiling project...\n[BUILD] Build successful in 2.7s',
+  E'[TEST] POST /api/shorten => 201 Created (10ms)\n[TEST] GET /qrs321 => 301 Moved (5ms)\n[TEST] GET /api/stats/qrs321 => 200 OK (9ms)\n[TEST] 16/17 tests passed\n[TEST] Score: 870.0/1000',
+  NOW() - interval '2 days', NOW() - interval '2 days' + interval '18 minutes')
 ON CONFLICT DO NOTHING;
 
 -- ===========================================
 -- Seed: leaderboard_entries (best scores per user+challenge)
--- arclight=1, byterunner=2
+-- arclight=1, byterunner=2, nullpointer=5, devmaria=6, kodekat=8
 -- ===========================================
 INSERT INTO leaderboard_entries (challenge_id, user_id, submission_id, username, score, completion_time_seconds, rank) VALUES
-  (1,  1, 1,  'arclight',   873, 1320, 1),
-  (2,  1, 2,  'arclight',   950, 1080, 1),
-  (3,  1, 3,  'arclight',   720, 2280, 1),
-  (5,  1, 4,  'arclight',   810, 1800, 1),
-  (7,  1, 6,  'arclight',   640, 3120, 1),
-  (8,  1, 7,  'arclight',   790, 1560, 1),
-  (11, 1, 8,  'arclight',   910,  900, 1),
-  (12, 1, 9,  'arclight',   780, 1200, 1),
-  (1,  2, 10, 'byterunner', 690, 2100, 2),
-  (2,  2, 11, 'byterunner', 880, 1500, 2),
-  (11, 2, 13, 'byterunner', 845, 1140, 2),
-  (12, 2, 14, 'byterunner', 720, 1680, 2)
+  (1,  1, 1,  'arclight',    873, 1320, 1),
+  (2,  1, 2,  'arclight',    950, 1080, 1),
+  (3,  1, 3,  'arclight',    720, 2280, 2),
+  (5,  1, 4,  'arclight',    810, 1800, 1),
+  (7,  1, 6,  'arclight',    640, 3120, 1),
+  (8,  1, 7,  'arclight',    790, 1560, 2),
+  (11, 1, 8,  'arclight',    910,  900, 2),
+  (12, 1, 9,  'arclight',    780, 1200, 1),
+  (1,  2, 10, 'byterunner',  690, 2100, 3),
+  (2,  2, 11, 'byterunner',  880, 1500, 2),
+  (11, 2, 13, 'byterunner',  845, 1140, 3),
+  (12, 2, 14, 'byterunner',  720, 1680, 2),
+  (2,  5, 15, 'nullpointer', 610, 1920, 4),
+  (1,  6, 16, 'devmaria',    920, 1200, 1),
+  (2,  6, 17, 'devmaria',    890, 1320, 1),
+  (3,  6, 18, 'devmaria',    780, 2100, 1),
+  (4,  6, 19, 'devmaria',    830, 1680, 1),
+  (8,  6, 20, 'devmaria',    860, 1440, 1),
+  (11, 6, 21, 'devmaria',    940,  840, 1),
+  (1,  8, 22, 'kodekat',     780, 1500, 2),
+  (11, 8, 23, 'kodekat',     870, 1080, 2)
 ON CONFLICT (challenge_id, user_id) DO NOTHING;
 
 -- ===========================================
--- Seed: teacher_groups  (profoak = id 3)
+-- Seed: teacher_groups  (profoak = id 3, profsanchez = id 7)
 -- ===========================================
 INSERT INTO teacher_groups (name, description, teacher_id) VALUES
-  ('DAW 2ºA',        'Desarrollo de Aplicaciones Web — segundo curso, grupo A', 3),
-  ('ASIR 1ºB',       'Administración de Sistemas — primer curso, grupo B',      3),
-  ('Bootcamp APIs',  'Taller intensivo de diseño de APIs REST',                 3)
+  ('DAW 2ºA',             'Desarrollo de Aplicaciones Web — segundo curso, grupo A',    3),
+  ('ASIR 1ºB',            'Administración de Sistemas — primer curso, grupo B',         3),
+  ('Bootcamp APIs',       'Taller intensivo de diseño de APIs REST',                    3),
+  ('Backend Avanzado',    'Microservicios, Docker y despliegue cloud',                  7),
+  ('Intro Programación',  'Fundamentos de programación y lógica computacional',         7)
 ON CONFLICT DO NOTHING;
 
 -- ===========================================
 -- Seed: teacher_group_members
--- arclight=1, byterunner=2 assigned to groups
+-- arclight=1, byterunner=2, nullpointer=5, devmaria=6, kodekat=8
 -- ===========================================
 INSERT INTO teacher_group_members (group_id, user_id) VALUES
   (1, 1),
   (1, 2),
-  (2, 2)
+  (1, 6),
+  (2, 2),
+  (2, 5),
+  (4, 1),
+  (4, 6),
+  (4, 8),
+  (5, 5),
+  (5, 8)
 ON CONFLICT DO NOTHING;
 
 -- ===========================================
