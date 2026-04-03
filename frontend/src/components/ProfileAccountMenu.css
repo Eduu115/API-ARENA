@@ -1,5 +1,21 @@
-/* Menú cuenta (offcanvas compacto desde la derecha, bajo el topbar) */
+/*
+  ProfileAccountMenu — offcanvas (referencia visual: panel perfil API Arena).
+  Scroll solo en .pam-scroll; acciones fijas en .pam-footer.
+*/
 
+.pam-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Backdrop ── */
 .pam-backdrop {
   position: fixed;
   inset: 0;
@@ -9,174 +25,314 @@
   border: none;
   background: rgba(4, 8, 22, 0.55);
   backdrop-filter: blur(4px);
-  cursor: none;
-  animation: pam-fade-in 0.2s ease;
+  cursor: default;
+  -webkit-appearance: none;
+  appearance: none;
+  animation: pamFadeIn 0.2s ease;
+}
+@keyframes pamFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@keyframes pam-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
+/* ── Panel ── */
 .pam-panel {
   position: fixed;
   top: 56px;
   right: 0;
+  bottom: 0;
   z-index: 200;
-  width: min(300px, 92vw);
-  height: calc(100vh - 56px);
-  margin: 0;
-  padding: 0;
+  width: min(340px, 100vw);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border: none;
-  border-left: 1px solid var(--dim, rgba(0, 217, 255, 0.15));
-  background: rgba(8, 11, 30, 0.97);
+  border-left: 1px solid rgba(0, 217, 255, 0.15);
+  background: #060814;
   backdrop-filter: blur(14px);
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
-  transform: translateX(0);
-  animation: pam-slide-in 0.22s ease;
+  box-shadow: -16px 0 48px rgba(0, 0, 0, 0.55);
+  animation: pamSlideIn 0.22s ease;
+}
+@keyframes pamSlideIn {
+  from { transform: translateX(100%); opacity: 0.92; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
-@keyframes pam-slide-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0.92;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.pam-panel::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+.pam-panel-accent {
+  flex-shrink: 0;
   height: 2px;
   background: linear-gradient(90deg, var(--cyan, #00d9ff), var(--purple, #b24bf3));
 }
 
-.pam-panel-inner {
+.pam-panel-body {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: 18px 18px 24px;
 }
 
-.pam-head {
+.pam-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 20px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Top bar: marca + cerrar ── */
+.pam-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 28px;
 }
 
-.pam-title {
-  margin: 0;
-  font-family: var(--font-mono, monospace);
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--cyan, #00d9ff);
+.pam-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
-.pam-close {
-  width: 32px;
-  height: 32px;
+.pam-brand-hex {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--dim, rgba(0, 217, 255, 0.12));
-  background: transparent;
-  color: var(--muted, #8892a8);
-  font-size: 22px;
-  line-height: 1;
-  cursor: none;
-  transition: border-color 0.2s, color 0.2s;
+}
+.pam-brand-hex img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
-.pam-close:hover {
-  border-color: rgba(0, 217, 255, 0.35);
+.pam-brand-text {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.pam-brand-api {
   color: var(--cyan, #00d9ff);
 }
-
-.pam-user-line {
-  margin: 0 0 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--dim, rgba(0, 217, 255, 0.1));
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.pam-brand-arena {
+  color: var(--white, #e8ecf4);
 }
 
-.pam-user-label {
-  font-family: var(--font-mono, monospace);
-  font-size: 10px;
-  letter-spacing: 1.5px;
+.pam-close {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  border-radius: 4px;
+  background: rgba(0, 217, 255, 0.06);
+  color: var(--cyan, #00d9ff);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+.pam-close:hover {
+  border-color: rgba(0, 217, 255, 0.55);
+  background: rgba(0, 217, 255, 0.12);
+}
+
+/* ── Hero: hex avatar + nombre + ELO ── */
+.pam-hero {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.pam-hex-outer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+/* Hexágono (clip-path) */
+.pam-hex {
+  width: 96px;
+  height: 96px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 28px rgba(0, 217, 255, 0.2);
+}
+
+.pam-hex-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.pam-hex-initials {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-weight: 800;
+  font-size: 28px;
+  color: #0a0d14;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.pam-display-name {
+  margin: 0 0 8px;
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-weight: 700;
+  font-size: 1.65rem;
+  letter-spacing: 0.12em;
+  color: var(--text, #e8ecf4);
+}
+
+.pam-status-line {
+  margin: 0 0 16px;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted, #8892a8);
 }
 
-.pam-user-name {
-  font-family: var(--font-display, sans-serif);
-  font-weight: 700;
-  font-size: 17px;
-  color: var(--text, #e8ecf4);
-  word-break: break-all;
+.pam-status-dot {
+  opacity: 0.85;
 }
 
-.pam-nav {
+.pam-elo-strip {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 160px;
+  padding: 8px 18px;
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  border-radius: 2px;
+  background: rgba(255, 184, 0, 0.04);
+}
+
+.pam-elo-text {
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--warn, #ffb800);
+}
+
+/* ── COMBAT STATS ── */
+.pam-combat-label {
+  margin: 0 0 12px;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--muted, #8892a8);
+  text-align: center;
+}
+
+.pam-combat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid rgba(30, 50, 90, 0.85);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pam-combat-cell {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 10px;
+  border-right: 1px solid rgba(30, 50, 90, 0.85);
+  border-bottom: 1px solid rgba(30, 50, 90, 0.85);
+  background: rgba(10, 14, 28, 0.65);
 }
 
-.pam-item {
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  letter-spacing: 1.2px;
+.pam-combat-cell:nth-child(2n) {
+  border-right: none;
+}
+
+.pam-combat-cell:nth-child(n + 3) {
+  border-bottom: none;
+}
+
+.pam-combat-val {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-weight: 800;
+  font-size: 1.85rem;
+  line-height: 1;
+}
+
+.pam-v-level  { color: var(--cyan, #00d9ff); }
+.pam-v-solved { color: var(--green, #00c853); }
+.pam-v-xp     { color: var(--purple, #b24bf3); }
+.pam-v-tests  { color: var(--warn, #ffb800); }
+
+.pam-combat-key {
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted, #8892a8);
+}
+
+/* ── Footer acciones ── */
+.pam-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px 22px;
+  border-top: 1px solid rgba(0, 217, 255, 0.15);
+  background: rgba(4, 6, 14, 0.98);
+}
+
+.pam-btn {
+  display: block;
+  width: 100%;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 11px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   text-align: left;
   text-decoration: none;
   padding: 12px 14px;
-  border: 1px solid var(--dim, rgba(0, 217, 255, 0.12));
-  background: var(--bg2, rgba(16, 22, 48, 0.9));
+  border: 1px solid rgba(0, 217, 255, 0.12);
+  border-radius: 4px;
+  background: rgba(16, 22, 48, 0.85);
   color: var(--text, #e8ecf4);
-  cursor: none;
+  cursor: pointer;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
-
-.pam-item:hover {
+.pam-btn:hover {
   border-color: rgba(0, 217, 255, 0.35);
   background: rgba(0, 217, 255, 0.06);
 }
 
-.pam-item-primary {
+.pam-btn-primary {
   border-color: rgba(0, 217, 255, 0.35);
   color: var(--cyan, #00d9ff);
 }
-
-.pam-item-primary:hover {
+.pam-btn-primary:hover {
   background: rgba(0, 217, 255, 0.1);
-  box-shadow: 0 0 16px rgba(0, 217, 255, 0.12);
+  box-shadow: 0 0 14px rgba(0, 217, 255, 0.1);
 }
 
-.pam-item-muted:hover {
+.pam-btn-muted:hover {
   color: var(--cyan, #00d9ff);
 }
 
-.pam-item-danger {
+.pam-btn-danger {
   border-color: rgba(255, 77, 106, 0.25);
   color: var(--red, #ff4d6a);
 }
-
-.pam-item-danger:hover {
+.pam-btn-danger:hover {
   border-color: rgba(255, 77, 106, 0.45);
   background: rgba(255, 77, 106, 0.08);
 }
@@ -184,6 +340,5 @@
 @media (max-width: 480px) {
   .pam-panel {
     width: 100%;
-    max-width: none;
   }
 }
