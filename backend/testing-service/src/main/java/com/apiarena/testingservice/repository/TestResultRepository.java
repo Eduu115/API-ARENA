@@ -10,6 +10,8 @@ import com.apiarena.testingservice.model.entities.TestResult;
 
 public interface TestResultRepository extends JpaRepository<TestResult, Long> {
 
+    void deleteBySubmissionId(Long submissionId);
+
     List<TestResult> findBySubmissionIdOrderByCreatedAtAsc(Long submissionId);
 
     List<TestResult> findBySubmissionIdAndTestType(Long submissionId, TestResult.TestType testType);

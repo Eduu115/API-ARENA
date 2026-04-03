@@ -66,23 +66,24 @@ public class Submission {
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
-    @Column(name = "total_score", precision = 5, scale = 2)
+    /** Max total is 1000 — needs precision 6 (DECIMAL(5,2) overflows at 1000). */
+    @Column(name = "total_score", precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal totalScore = BigDecimal.ZERO;
 
-    @Column(name = "correctness_score", precision = 5, scale = 2)
+    @Column(name = "correctness_score", precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal correctnessScore = BigDecimal.ZERO;
 
-    @Column(name = "performance_score", precision = 5, scale = 2)
+    @Column(name = "performance_score", precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal performanceScore = BigDecimal.ZERO;
 
-    @Column(name = "design_score", precision = 5, scale = 2)
+    @Column(name = "design_score", precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal designScore = BigDecimal.ZERO;
 
-    @Column(name = "ai_review_score", precision = 5, scale = 2)
+    @Column(name = "ai_review_score", precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal aiReviewScore = BigDecimal.ZERO;
 
@@ -112,7 +113,7 @@ public class Submission {
     @Column(name = "endpoints_discovered", columnDefinition = "jsonb")
     private Map<String, Object> endpointsDiscovered;
 
-    @Column(name = "rest_compliance_score", precision = 5, scale = 2)
+    @Column(name = "rest_compliance_score", precision = 6, scale = 2)
     private BigDecimal restComplianceScore;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -141,7 +142,7 @@ public class Submission {
     @Column(name = "elo_change")
     private Integer eloChange;
 
-    @Column(name = "previous_best_score", precision = 5, scale = 2)
+    @Column(name = "previous_best_score", precision = 6, scale = 2)
     private BigDecimal previousBestScore;
 
     @Column(name = "is_first_completion")

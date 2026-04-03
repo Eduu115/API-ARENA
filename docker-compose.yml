@@ -148,6 +148,8 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      sandbox-service: { condition: service_started }
+      testing-service: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -159,6 +161,11 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVICES_AUTH_URL: http://apiarena-auth:8081
       SERVICES_CHALLENGE_URL: http://apiarena-challenge:8082
+      SERVICES_SANDBOX_URL: http://apiarena-sandbox:8084
+      SERVICES_TESTING_URL: http://apiarena-testing:8085
+      SERVICES_CANDIDATE_HOST: apiarena-sandbox
+    volumes:
+      - submission_uploads:/app/uploads
     ports:
       - "8083:8083"
     networks:
@@ -180,6 +187,9 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     ports:
       - "8084:8084"
+      - "9100:9100"
+    volumes:
+      - submission_uploads:/app/uploads
     networks:
       - apiarena-network
     restart: unless-stopped
@@ -247,3 +257,4 @@ volumes:
   redis_data:
   mongo_data:
   influxdb_data:
+  submission_uploads:

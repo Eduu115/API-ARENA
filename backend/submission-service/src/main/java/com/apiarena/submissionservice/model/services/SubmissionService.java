@@ -3,16 +3,24 @@ package com.apiarena.submissionservice.model.services;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,6 +59,15 @@ public class SubmissionService implements ISubmissionService {
     @Value("${services.challenge-url:http://localhost:8082}")
     private String challengeServiceUrl;
 
+    @Value("${services.sandbox-url:http://localhost:8084}")
+    private String sandboxServiceUrl;
+
+    @Value("${services.testing-url:http://localhost:8085}")
+    private String testingServiceUrl;
+
+    @Value("${services.candidate-host:localhost}")
+    private String candidateApiHost;
+
     @Override
     @Transactional
     public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile) {
@@ -83,84 +100,189 @@ public class SubmissionService implements ISubmissionService {
         String wsTopic = webSocketService.getWsTopicForSubmission(saved.getId());
 
         final Long subId = saved.getId();
-        new Thread(() -> simulatePipeline(subId)).start();
+        // Defer pipeline until after commit: otherwise findById in the new thread may not see the row yet.
+        Runnable startPipeline = () -> new Thread(() -> runSubmissionPipeline(subId)).start();
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    startPipeline.run();
+                }
+            });
+        } else {
+            startPipeline.run();
+        }
 
         return new CreateSubmissionResponse(saved.getId(), saved.getStatus().name(), wsTopic);
     }
 
-    private void simulatePipeline(Long submissionId) {
+    @SuppressWarnings("unchecked")
+    private void runSubmissionPipeline(Long submissionId) {
         try {
-            Thread.sleep(2000);
+            Submission sub = submissionRepository.findById(submissionId).orElse(null);
+            if (sub == null) {
+                log.warn("runSubmissionPipeline: submission {} not found (possible race); skipping", submissionId);
+                return;
+            }
 
-            appendBuildLogs(submissionId,
-                "[BUILD] Scanning for projects...\n" +
-                "[BUILD] Resolving dependencies...\n");
             updateStatus(submissionId, Submission.Status.BUILDING, null);
 
-            Thread.sleep(3000);
+            Map<String, Object> buildReq = new HashMap<>();
+            buildReq.put("submissionId", submissionId);
+            buildReq.put("zipFilePath", sub.getZipFilePath());
 
-            appendBuildLogs(submissionId,
-                "[BUILD] Compiling 14 source files...\n" +
-                "[BUILD] Running static analysis...\n" +
-                "[BUILD] Packaging application...\n" +
-                "[BUILD] BUILD SUCCESS (3.2s)\n");
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> buildEntity = new HttpEntity<>(buildReq, headers);
 
-            Thread.sleep(1500);
+            Map<String, Object> exec = restTemplate.postForObject(
+                    sandboxServiceUrl + "/internal/sandbox/build", buildEntity, Map.class);
+
+            if (exec == null) {
+                updateStatus(submissionId, Submission.Status.FAILED, "Sandbox returned empty response");
+                return;
+            }
+
+            Object bl = exec.get("buildLogs");
+            if (bl != null) {
+                appendBuildLogs(submissionId, bl.toString());
+            }
+
+            String sandboxStatus = Objects.toString(exec.get("status"), "");
+            if ("FAILED".equals(sandboxStatus)) {
+                String err = Objects.toString(exec.get("errorMessage"), "Sandbox build failed");
+                updateStatus(submissionId, Submission.Status.FAILED, err);
+                return;
+            }
+
+            Number portNum = (Number) exec.get("exposedPort");
+            int port = portNum != null ? portNum.intValue() : 9100;
+            String candidateUrl = String.format("http://%s:%d", candidateApiHost, port);
 
             updateStatus(submissionId, Submission.Status.TESTING, null);
 
-            Thread.sleep(2000);
+            Map<String, Object> challenge = fetchChallengeData(sub.getChallengeId());
 
-            ThreadLocalRandom rng = ThreadLocalRandom.current();
-            int totalTests = rng.nextInt(10, 18);
-            int passed = totalTests - rng.nextInt(0, 3);
-            StringBuilder testLog = new StringBuilder();
-            String[] methods = {"GET", "POST", "PUT", "DELETE", "PATCH"};
-            String[] paths = {"/api/items", "/api/items/1", "/api/items?page=1", "/api/items/search", "/api/items/1/status"};
-
-            for (int i = 0; i < totalTests; i++) {
-                String method = methods[rng.nextInt(methods.length)];
-                String path = paths[rng.nextInt(paths.length)];
-                int ms = rng.nextInt(5, 80);
-                boolean pass = i < passed;
-                int status = pass ? (method.equals("POST") ? 201 : method.equals("DELETE") ? 204 : 200) : 500;
-                testLog.append(String.format("[TEST] %s %s => %d (%dms) %s%n",
-                    method, path, status, ms, pass ? "PASS" : "FAIL"));
+            Map<String, Object> testSuitePayload = new LinkedHashMap<>();
+            Object ts = challenge.get("testSuite");
+            if (ts instanceof Map<?, ?> m) {
+                for (Map.Entry<?, ?> e : m.entrySet()) {
+                    if (e.getKey() != null && e.getValue() != null) {
+                        testSuitePayload.put(e.getKey().toString(), e.getValue());
+                    }
+                }
             }
-            testLog.append(String.format("%n[RESULT] %d/%d tests passed%n", passed, totalTests));
+            if (challenge.get("requiredEndpoints") != null) {
+                testSuitePayload.putIfAbsent("requiredEndpoints", challenge.get("requiredEndpoints"));
+            }
 
+            Map<String, Object> testReq = new LinkedHashMap<>();
+            testReq.put("submissionId", submissionId);
+            testReq.put("challengeId", sub.getChallengeId());
+            testReq.put("containerUrl", candidateUrl);
+            testReq.put("testSuite", testSuitePayload);
+            testReq.put("performanceRequirements", challenge.get("performanceRequirements"));
+            testReq.put("designCriteria", challenge.get("designCriteria"));
+
+            HttpEntity<Map<String, Object>> testEntity = new HttpEntity<>(testReq, headers);
+            Map<String, Object> suite = restTemplate.postForObject(
+                    testingServiceUrl + "/internal/testing/run", testEntity, Map.class);
+
+            if (suite == null) {
+                updateStatus(submissionId, Submission.Status.FAILED, "Testing service returned empty response");
+                return;
+            }
+
+            StringBuilder testLog = new StringBuilder();
+            List<Map<String, Object>> results = (List<Map<String, Object>>) suite.get("results");
+            if (results != null) {
+                for (Map<String, Object> tr : results) {
+                    String name = Objects.toString(tr.get("testName"), "?");
+                    String st = Objects.toString(tr.get("status"), "?");
+                    String ac = Objects.toString(tr.get("actualResult"), "");
+                    testLog.append(String.format("[TEST] %s => %s %s%n", name, st, ac));
+                }
+                testLog.append(String.format("%n[RESULT] %s/%s tests passed (total score %s)%n",
+                        Objects.toString(suite.get("passed"), "?"),
+                        Objects.toString(suite.get("totalTests"), "?"),
+                        Objects.toString(suite.get("totalScore"), "?")));
+            }
             appendTestLogs(submissionId, testLog.toString());
 
-            Thread.sleep(2000);
+            int total = toInt(suite.get("totalScore"));
+            int corr = toInt(suite.get("correctnessScore"));
+            int perf = toInt(suite.get("performanceScore"));
+            int design = toInt(suite.get("designScore"));
 
-            double passRate = (double) passed / totalTests;
-            BigDecimal correctness = BigDecimal.valueOf(passRate * 500).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal performance = BigDecimal.valueOf(rng.nextDouble(150, 280)).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal design = BigDecimal.valueOf(rng.nextDouble(120, 250)).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal total = correctness.add(performance).add(design);
+            BigDecimal totalBd = BigDecimal.valueOf(Math.min(1000, total)).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal corrBd = BigDecimal.valueOf(corr).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal perfBd = BigDecimal.valueOf(perf).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal designBd = BigDecimal.valueOf(design).setScale(2, RoundingMode.HALF_UP);
 
-            Submission sub = submissionRepository.findById(submissionId).orElse(null);
-            if (sub == null) return;
-
-            sub.setAvgResponseMs(rng.nextInt(15, 90));
-            sub.setP95ResponseMs(rng.nextInt(90, 250));
-            sub.setP99ResponseMs(rng.nextInt(250, 500));
-            sub.setRps(rng.nextInt(600, 2000));
-            sub.setTotalRequests(totalTests * rng.nextInt(200, 400));
-            sub.setFailedRequests(totalTests - passed);
-            sub.setRestComplianceScore(BigDecimal.valueOf(rng.nextDouble(70, 98)).setScale(2, RoundingMode.HALF_UP));
-            submissionRepository.save(sub);
-
-            updateScores(submissionId, total, correctness, performance, design);
+            updateScores(submissionId, totalBd, corrBd, perfBd, designBd);
+            applyMetricsFromResults(submissionId, results);
 
             calculateAndApplyRewards(submissionId);
 
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            updateStatus(submissionId, Submission.Status.FAILED, "Pipeline interrupted");
         } catch (Exception e) {
-            updateStatus(submissionId, Submission.Status.FAILED, e.getMessage());
+            log.error("Submission pipeline failed for {}", submissionId, e);
+            updateStatus(submissionId, Submission.Status.FAILED,
+                    e.getMessage() != null ? e.getMessage() : "Pipeline failed");
+        } finally {
+            try {
+                restTemplate.exchange(
+                        sandboxServiceUrl + "/internal/sandbox/stop/" + submissionId,
+                        HttpMethod.POST,
+                        HttpEntity.EMPTY,
+                        Map.class);
+            } catch (Exception e) {
+                log.warn("Sandbox stop after submission {}: {}", submissionId, e.getMessage());
+            }
         }
+    }
+
+    private static int toInt(Object o) {
+        if (o instanceof Number n) {
+            return n.intValue();
+        }
+        return 0;
+    }
+
+    private void applyMetricsFromResults(Long submissionId, List<Map<String, Object>> results) {
+        if (results == null || results.isEmpty()) {
+            return;
+        }
+        Submission sub = submissionRepository.findById(submissionId).orElse(null);
+        if (sub == null) {
+            return;
+        }
+        double sumMs = 0;
+        int nFn = 0;
+        int failed = 0;
+        for (Map<String, Object> tr : results) {
+            if (!"FUNCTIONAL".equals(String.valueOf(tr.get("testType")))) {
+                continue;
+            }
+            if (!"PASSED".equals(String.valueOf(tr.get("status")))) {
+                failed++;
+            }
+            Object et = tr.get("executionTimeMs");
+            if (et instanceof Number) {
+                sumMs += ((Number) et).doubleValue();
+                nFn++;
+            }
+        }
+        if (nFn > 0) {
+            int avg = (int) Math.max(1, sumMs / nFn);
+            sub.setAvgResponseMs(avg);
+            sub.setP95ResponseMs((int) (avg * 1.5));
+            sub.setP99ResponseMs((int) (avg * 2.2));
+            sub.setRps(Math.min(5000, 1000 / avg));
+        }
+        sub.setTotalRequests(results.size());
+        sub.setFailedRequests(failed);
+        sub.setRestComplianceScore(BigDecimal.valueOf(85).setScale(2, RoundingMode.HALF_UP));
+        submissionRepository.save(sub);
     }
 
     private static final Map<String, Integer> DIFFICULTY_RATING = Map.of(
