@@ -20,4 +20,7 @@ public class DesignAnalysisRequest {
     private String containerUrl;
 
     private Map<String, Object> designCriteria;
+
+    /** GET path to probe for design checks (e.g. /api/books). Defaults to /api/items when null. */
+    private String probeGetPath;
 }
