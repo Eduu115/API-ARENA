@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { clearChallengeSession } from "../lib/challengeSessionStorage";
 import * as authApi from "../lib/authApi";
 
 const AuthContext = createContext(null);
@@ -77,9 +78,11 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     setError(null);
+    const uid = user?.id;
     await authApi.logout();
+    if (uid != null) clearChallengeSession(uid);
     setUser(null);
-  }, []);
+  }, [user?.id]);
 
   const value = {
     user,

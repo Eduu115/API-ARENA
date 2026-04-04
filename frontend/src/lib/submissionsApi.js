@@ -30,13 +30,23 @@ async function request(path, options = {}) {
     }
   }
   if (!res.ok) {
-    const message = body?.message || res.statusText || "Error en la petición";
+    const message =
+      body?.detail ||
+      body?.message ||
+      (typeof body?.error === "string" ? body.error : null) ||
+      res.statusText ||
+      "Error en la petición";
     const err = new Error(message);
     err.status = res.status;
     err.body = body;
     throw err;
   }
   return body;
+}
+
+/** Política de intentos (cooldown + máx. por día UTC) para un challenge. */
+export async function getChallengeAttemptStatus(challengeId) {
+  return request(`/api/submissions/challenge/${challengeId}/attempt-status`);
 }
 
 /** Lista de envíos del usuario actual (requiere JWT). */
@@ -76,7 +86,12 @@ export async function createSubmission(challengeId, file) {
     try { body = await res.json(); } catch { /* */ }
   }
   if (!res.ok) {
-    const message = body?.message || res.statusText || "Submission failed";
+    const message =
+      body?.detail ||
+      body?.message ||
+      (typeof body?.error === "string" ? body.error : null) ||
+      res.statusText ||
+      "Submission failed";
     const err = new Error(message);
     err.status = res.status;
     err.body = body;

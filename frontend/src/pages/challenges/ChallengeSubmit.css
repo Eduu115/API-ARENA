@@ -1,3 +1,127 @@
+/* ── Submission limits (hero, full width) ── */
+.cs-attempts-hero {
+  border: 1px solid var(--dim);
+  background: var(--bg2);
+  padding: 20px 22px 22px;
+  margin-bottom: 24px;
+}
+.cs-attempts-hero-head {
+  margin-bottom: 18px;
+}
+.cs-attempts-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 6px;
+}
+.cs-attempts-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--white);
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.cs-attempts-lead {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0;
+  max-width: 72ch;
+}
+.cs-attempts-staff {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--warn);
+  margin: 0;
+}
+.cs-attempts-loading {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+}
+.cs-attempts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--dim);
+  border: 1px solid var(--dim);
+}
+.cs-attempts-card {
+  background: var(--bg1);
+  padding: 16px 18px;
+  min-height: 120px;
+}
+.cs-attempts-card-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.cs-attempts-card-value {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.cs-attempts-nums { color: var(--cyan); }
+.cs-attempts-slash {
+  font-size: 28px;
+  color: var(--muted);
+  margin: 0 4px;
+  vertical-align: middle;
+}
+.cs-attempts-max { color: var(--muted); font-size: 32px; }
+.cs-attempts-cooldown-val {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.cs-attempts-unit {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.cs-attempts-card-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.cs-attempts-block {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  background: rgba(255, 184, 0, 0.08);
+  color: var(--text);
+}
+.cs-attempts-block strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--warn);
+  margin-bottom: 6px;
+}
+
 .cs-grid {
   display: grid;
   grid-template-columns: 1fr 380px;
@@ -257,6 +381,15 @@
   transition: width 1s linear, background 0.3s;
 }
 
+.cs-timer-realtime-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 10px 0 0;
+  line-height: 1.4;
+}
+
 /* Dropzone */
 .cs-drop-section {
   padding: 20px;
@@ -381,8 +514,37 @@
 .cs-submit-status.error { color: var(--red); }
 .cs-submit-status.ok { color: var(--green); }
 
+.cs-policy-line {
+  margin: 14px 0 4px;
+  min-height: 2.5em;
+}
+.cs-policy-muted {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1.45;
+  color: var(--muted);
+  display: block;
+}
+.cs-policy-banner {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+  color: var(--warn);
+  border: 1px solid rgba(255, 184, 0, 0.35);
+  background: rgba(255, 184, 0, 0.06);
+  padding: 10px 12px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1024px) {
+  .cs-attempts-grid {
+    grid-template-columns: 1fr;
+  }
+  .cs-attempts-card-value {
+    font-size: 36px;
+  }
   .cs-grid {
     grid-template-columns: 1fr;
   }

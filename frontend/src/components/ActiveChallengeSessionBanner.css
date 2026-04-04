@@ -1,0 +1,104 @@
+/* Usa tokens globales :root (index.css) para verse bien en cualquier ruta */
+.acs-banner {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9998;
+  width: min(560px, calc(100vw - 32px));
+  border: 1px solid var(--arena-primary-10);
+  background: var(--arena-bg-secondary);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  padding: 14px 16px;
+}
+
+.acs-banner-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.acs-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.acs-banner-title {
+  font-family: 'Barlow Condensed', 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--arena-primary);
+}
+
+.acs-banner-sub {
+  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--arena-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.acs-banner-time {
+  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--arena-text-muted);
+  letter-spacing: 0.04em;
+}
+
+.acs-banner-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.acs-btn {
+  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 0;
+  cursor: pointer;
+  border: 1px solid var(--arena-primary-10);
+  background: transparent;
+  color: var(--arena-text-muted);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.acs-btn-primary {
+  border-color: var(--arena-primary-40);
+  background: var(--arena-primary-10);
+  color: var(--arena-primary);
+}
+
+.acs-btn-primary:hover {
+  background: var(--arena-primary-15);
+}
+
+.acs-btn-ghost:hover {
+  border-color: var(--arena-text-muted);
+  color: var(--arena-text-primary);
+}
+
+@media (max-width: 768px) {
+  .acs-banner {
+    bottom: 80px;
+  }
+}
+
+@media (max-width: 520px) {
+  .acs-banner-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .acs-banner-actions {
+    justify-content: flex-end;
+  }
+}
