@@ -38,7 +38,7 @@
 /* ── Panel ── */
 .pam-panel {
   position: fixed;
-  top: 56px;
+  top: var(--ch-topbar-h, 72px);
   right: 0;
   bottom: 0;
   z-index: 200;
@@ -339,6 +339,7 @@
 
 @media (max-width: 480px) {
   .pam-panel {
+    top: var(--ch-topbar-h, 72px);
     width: 100%;
   }
 }

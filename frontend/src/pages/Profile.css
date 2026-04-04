@@ -1,7 +1,7 @@
 
 
 .profile-page .profile-main {
-  min-height: calc(100vh - 56px - 60px);
+  min-height: calc(100vh - var(--ch-topbar-h, 72px) - 60px);
   padding: 32px 24px 48px;
   overflow-y: auto;
   position: relative;

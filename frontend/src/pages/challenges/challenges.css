@@ -2,6 +2,7 @@
 
 .challenges-page {
   /* Theme-aware mapping: these variables drive ALL the dashboard UI */
+  --ch-topbar-h: 72px;
   --bg0: var(--arena-bg-primary);
   --bg1: var(--arena-bg-primary);
   --bg2: var(--arena-bg-secondary);
@@ -38,7 +39,7 @@
   border-radius: 50%;
   position: fixed;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10001;
   transform: translate(-50%, -50%);
   transition: background 0.2s;
   box-shadow: 0 0 10px var(--cyan);
@@ -49,7 +50,7 @@
   border-radius: 50%;
   position: fixed;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 10001;
   transform: translate(-50%, -50%);
   transition: width 0.2s, height 0.2s, border-color 0.2s;
 }
@@ -63,7 +64,7 @@
     rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
   );
   pointer-events: none;
-  z-index: 9990;
+  z-index: 0;
 }
 
 .ch-grid-bg {
@@ -74,22 +75,73 @@
     linear-gradient(90deg, rgba(0,217,255,0.03) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;
 }
 
 .ch-layout {
   display: grid;
-  /* minmax(0,1fr): evita que el contenido ancho del main expanda el grid y “empuje”
-     el topbar fuera del viewport (el icono de perfil quedaba recortado a la derecha). */
   grid-template-columns: 240px minmax(0, 1fr);
-  grid-template-rows: 56px 1fr;
+  grid-template-rows: var(--ch-topbar-h) 1fr;
+  grid-template-areas:
+    "nav nav"
+    "side main";
   min-height: 100vh;
   min-width: 0;
   position: relative;
   z-index: 1;
 }
 
-/* Topbar: estilos en components/Topbar.css (importado por Topbar.jsx) */
+.ch-layout > .arena-navbar {
+  grid-area: nav;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  justify-self: stretch;
+}
+
+.ch-layout > .ch-sidebar {
+  grid-area: side;
+}
+
+.ch-layout > .ch-main {
+  grid-area: main;
+}
+
+/*
+ * Single-column pages (Leaderboard, Friends, Replay, etc.) use inline
+ * gridTemplateColumns: 1fr — that overrides columns but NOT grid-template-areas,
+ * so the 2-column "side | main" template still applied and shoved .ch-main into
+ * the right half only. Reset areas to match one column.
+ */
+.ch-layout[style*="grid-template-columns: 1fr"],
+.ch-layout[style*="grid-template-columns:1fr"] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: var(--ch-topbar-h) 1fr;
+  grid-template-areas:
+    "nav"
+    "main";
+}
+
+/* No sidebar: main must span both columns (otherwise empty 240px gutter on the left). */
+.ch-layout:not(:has(> aside.ch-sidebar)) > .ch-main {
+  grid-column: 1 / -1;
+}
+
+/* Navbar: components/Topbar.css (arena-navbar) */
+
+/* Auth pages reuse .ch-logo-text + .ch-api / .ch-arena (Login, Register) */
+.ch-logo-text {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+}
+.ch-logo-text .ch-api { color: var(--cyan); }
+.ch-logo-text .ch-arena { color: var(--white); }
 
 .ch-user-avatar {
   width: 30px; height: 30px;
@@ -108,8 +160,8 @@
   padding: 24px 0 0;
   overflow-y: auto;
   position: sticky;
-  top: 56px;
-  height: calc(100vh - 56px);
+  top: var(--ch-topbar-h);
+  height: calc(100vh - var(--ch-topbar-h));
   background: rgba(10,14,39,0.6);
 }
 .ch-sidebar::-webkit-scrollbar { width: 4px; }
@@ -289,7 +341,7 @@
 
 .ch-main {
   padding: 28px 32px;
-  min-height: calc(100vh - 56px);
+  min-height: calc(100vh - var(--ch-topbar-h));
   min-width: 0;
 }
 
@@ -839,7 +891,7 @@
 .ch-sidebar-overlay {
   display: none;
   position: fixed;
-  top: 56px; left: 0; right: 0; bottom: 0;
+  top: var(--ch-topbar-h); left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.72);
   z-index: 150;
   backdrop-filter: blur(3px);
@@ -887,17 +939,35 @@
   text-transform: uppercase;
 }
 
-/* Sidebar en cajón: layout una columna (topbar: Topbar.css) */
+/* Sidebar en cajón: una columna bajo la barra */
 @media (max-width: 1024px) {
 
-  .ch-layout { grid-template-columns: minmax(0, 1fr); }
+  .ch-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--ch-topbar-h) 1fr;
+    grid-template-areas:
+      "nav"
+      "main";
+  }
+
+  .ch-layout > .arena-navbar {
+    grid-area: nav;
+  }
+
+  .ch-layout > .ch-main {
+    grid-area: main;
+  }
+
+  .ch-layout > .ch-sidebar {
+    grid-area: main;
+  }
 
   .ch-sidebar {
     position: fixed;
     left: -260px;
-    top: 56px;
+    top: var(--ch-topbar-h);
     width: 240px;
-    height: calc(100vh - 56px);
+    height: calc(100vh - var(--ch-topbar-h));
     z-index: 200;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;
@@ -909,6 +979,49 @@
 
   .ch-card-featured .ch-card-inner { grid-template-columns: 1fr; }
   .ch-card-right { display: none; }
+
+  .ch-layout .arena-navbar__menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 0 0 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .ch-layout .arena-navbar__menu:hover,
+  .ch-layout .arena-navbar__menu.is-open { color: var(--cyan); }
+  .ch-layout .arena-navbar__menu-icon {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .ch-layout .arena-navbar__menu-icon::before,
+  .ch-layout .arena-navbar__menu-icon::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    transition: transform 0.25s ease, top 0.25s ease;
+  }
+  .ch-layout .arena-navbar__menu-icon::before { top: -6px; }
+  .ch-layout .arena-navbar__menu-icon::after { top: 6px; }
+  .ch-layout .arena-navbar__menu.is-open .arena-navbar__menu-icon { background: transparent; }
+  .ch-layout .arena-navbar__menu.is-open .arena-navbar__menu-icon::before { top: 0; transform: rotate(45deg); }
+  .ch-layout .arena-navbar__menu.is-open .arena-navbar__menu-icon::after { top: 0; transform: rotate(-45deg); }
+}
+
+@media (min-width: 1025px) {
+  .ch-layout .arena-navbar__menu {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {
@@ -948,10 +1061,6 @@
 }
 
 @media (max-width: 480px) {
-
-  .ch-layout  { grid-template-rows: 48px 1fr; }
-  .ch-sidebar { top: 48px; height: calc(100vh - 48px); }
-  .ch-sidebar-overlay { top: 48px !important; }
   .ch-bottom-nav { height: 56px; }
 
   .ch-page-title  { font-size: 28px; }
