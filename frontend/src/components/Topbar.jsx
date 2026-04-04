@@ -6,6 +6,7 @@ import ProfileAccountMenu from "./ProfileAccountMenu";
 import { getUnreadNotificationCount } from "../lib/notificationsApi";
 import { connectNotificationsWs } from "../lib/notificationsWs";
 import { NavIcon, IconBell, IconSun, IconMoon } from "./topbar/TopbarIcons";
+import "./Topbar.css";
 
 const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
@@ -13,7 +14,6 @@ const NAV_ITEMS_GUEST = [
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
-/** Perfil va al bloque derecho (último); no en el nav central. */
 const NAV_ITEMS_AUTH = [
   { label: "Dashboard", path: "/dashboard", icon: "dashboard" },
   { label: "Challenges", path: "/challenges", icon: "challenges" },
@@ -23,7 +23,12 @@ const NAV_ITEMS_AUTH = [
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
-export default function Topbar({ onMenuToggle, sidebarOpen }) {
+/** showSidebarToggle: pages with a side panel (filters, etc.). No panel → no hamburger. */
+export default function Topbar({
+  onMenuToggle,
+  sidebarOpen,
+  showSidebarToggle = true,
+}) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
@@ -86,147 +91,147 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
   function renderNavLink({ label, path, icon }) {
     const isActive =
       pathname === path || pathname.startsWith(`${path}/`);
-    const inner = (
-      <>
-        <span className="ch-nav-ico" aria-hidden>
-          <NavIcon name={icon} />
-        </span>
-        <span className="ch-nav-ico-label">{label}</span>
-      </>
-    );
-
     return (
       <Link
         key={path}
         to={path}
-        className={`ch-nav-item ch-nav-item--iconrow${isActive ? " ch-active" : ""}`}
+        className={`arena-nav-link${isActive ? " arena-nav-link--active" : ""}`}
         title={label}
       >
-        {inner}
+        <span className="arena-nav-link__ico" aria-hidden>
+          <NavIcon name={icon} />
+        </span>
+        <span className="arena-nav-link__label">{label}</span>
       </Link>
     );
   }
 
   return (
     <>
-      <header className="ch-topbar">
-        <div className="ch-topbar-logo">
-          <div className="ch-logo-hex">
-            <img
-              src="/icons/logo-hex-sm.svg"
-              alt="API Arena logo"
-              width="28"
-              height="28"
-            />
+      <header className="arena-navbar" role="banner">
+        <nav className="arena-navbar__inner" aria-label="Main">
+          <div className="arena-navbar__brand">
+            <div className="arena-navbar__logo">
+              <div className="arena-navbar__hex">
+                <img
+                  src="/icons/logo-hex-sm.svg"
+                  alt="API Arena logo"
+                  width="28"
+                  height="28"
+                />
+              </div>
+              <Link to="/" className="arena-navbar__title">
+                <span className="arena-navbar__title-api">API</span>
+                <span className="arena-navbar__title-arena">Arena</span>
+              </Link>
+            </div>
+
+            {showSidebarToggle ? (
+              <button
+                type="button"
+                className={`arena-navbar__menu${sidebarOpen ? " is-open" : ""}`}
+                onClick={onMenuToggle}
+                aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+              >
+                <span className="arena-navbar__menu-icon" />
+              </button>
+            ) : null}
           </div>
-          <Link to="/" className="ch-logo-text">
-            <span className="ch-api">API</span>
-            <span className="ch-arena">Arena</span>
-          </Link>
-        </div>
 
-        <button
-          className={`ch-menu-btn${sidebarOpen ? " open" : ""}`}
-          onClick={onMenuToggle}
-          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-        >
-          <span className="ch-hamburger" />
-        </button>
-
-        <nav className="ch-topbar-nav" aria-label="Main">
-          <div className="ch-topbar-nav-inner">
+          <div className="arena-navbar__link-list">
             {navItems.map((item) => renderNavLink(item))}
             {isTeacher && (
               <Link
                 to="/teacher"
-                className={`ch-nav-item ch-nav-item--iconrow${
-                  pathname.startsWith("/teacher") ? " ch-active" : ""
+                className={`arena-nav-link${
+                  pathname.startsWith("/teacher") ? " arena-nav-link--active" : ""
                 }`}
                 title="Teacher"
               >
-                <span className="ch-nav-ico" aria-hidden>
+                <span className="arena-nav-link__ico" aria-hidden>
                   <NavIcon name="teacher" />
                 </span>
-                <span className="ch-nav-ico-label">Teacher</span>
+                <span className="arena-nav-link__label">Teacher</span>
               </Link>
             )}
           </div>
-        </nav>
 
-        <div className="ch-topbar-right">
           {isAuthenticated ? (
-            <>
-              <div className="ch-topbar-right-tools">
-                <div className="ch-user-rank">
-                  <span className="ch-rank-badge">ELO {rating}</span>
-                </div>
+          <div className="arena-navbar__actions">
+            <div className="arena-navbar__elo" title={`Rating ${rating}`}>
+              <span className="arena-navbar__elo-lbl">ELO</span>
+              <span className="arena-navbar__elo-val">{rating}</span>
+            </div>
 
-                <Link
-                  to="/notifications"
-                  className="ch-topbar-notif-link"
-                  aria-label="Notifications"
-                  title="Notifications"
-                >
-                  <span className="ch-topbar-notif-ico" aria-hidden>
-                    <IconBell />
-                  </span>
-                  <span className="ch-topbar-notif-text">Alerts</span>
-                  {unreadNotifications > 0 && (
-                    <span className="ch-notif-badge">
-                      {unreadNotifications > 99 ? "99+" : unreadNotifications}
-                    </span>
-                  )}
-                </Link>
+            <Link
+              to="/notifications"
+              className="arena-navbar__notif"
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <span className="arena-navbar__notif-ico" aria-hidden>
+                <IconBell />
+              </span>
+              <span className="arena-navbar__notif-txt">Alerts</span>
+              {unreadNotifications > 0 && (
+                <span className="arena-navbar__notif-badge">
+                  {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                </span>
+              )}
+            </Link>
 
-                <button
-                  type="button"
-                  className="ch-topbar-icon-btn ch-topbar-icon-btn--theme"
-                  onClick={toggleTheme}
-                  title={isDark ? "Light mode" : "Dark mode"}
-                  aria-label={isDark ? "Light mode" : "Dark mode"}
-                >
-                  {isDark ? <IconSun /> : <IconMoon />}
-                </button>
-              </div>
+            <button
+              type="button"
+              className="arena-navbar__theme"
+              onClick={toggleTheme}
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              <span className="arena-navbar__theme-ico" aria-hidden>
+                {isDark ? <IconSun /> : <IconMoon />}
+              </span>
+              <span className="arena-navbar__theme-txt">
+                {isDark ? "Light mode" : "Dark mode"}
+              </span>
+            </button>
 
-              <div className="ch-topbar-right-profile">
-                <button
-                  type="button"
-                  className={`ch-topbar-profile-btn${profileActive ? " ch-topbar-profile-btn--active" : ""}`}
-                  onClick={() => setAccountMenuOpen((o) => !o)}
-                  aria-expanded={accountMenuOpen}
-                  aria-haspopup="dialog"
-                  aria-controls="profile-account-menu"
-                  title="Profile"
-                >
-                  <span className="ch-topbar-profile-ico" aria-hidden>
-                    <NavIcon name="profile" />
-                  </span>
-                  <span className="ch-topbar-profile-text">Profile</span>
-                </button>
-              </div>
-            </>
+            <button
+              type="button"
+              className={`arena-navbar__profile${profileActive ? " arena-navbar__profile--on" : ""}`}
+              onClick={() => setAccountMenuOpen((o) => !o)}
+              aria-expanded={accountMenuOpen}
+              aria-haspopup="dialog"
+              aria-controls="profile-account-menu"
+              title="Profile menu"
+            >
+              <span className="arena-navbar__profile-ico" aria-hidden>
+                <NavIcon name="profile" />
+              </span>
+              <span className="arena-navbar__profile-txt">Profile</span>
+            </button>
+          </div>
           ) : (
-            <>
-              <Link
-                to="/login"
-                className="ch-nav-item ch-topbar-login"
-                title="Log in"
-              >
+            <div className="arena-navbar__actions">
+              <Link to="/login" className="arena-navbar__login" title="Log in">
                 Log in
               </Link>
               <button
                 type="button"
-                className="ch-topbar-icon-btn ch-topbar-icon-btn--theme"
+                className="arena-navbar__theme"
                 onClick={toggleTheme}
-                title={isDark ? "Light mode" : "Dark mode"}
-                aria-label={isDark ? "Light mode" : "Dark mode"}
+                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
-                {isDark ? <IconSun /> : <IconMoon />}
+                <span className="arena-navbar__theme-ico" aria-hidden>
+                  {isDark ? <IconSun /> : <IconMoon />}
+                </span>
+                <span className="arena-navbar__theme-txt">
+                  {isDark ? "Light mode" : "Dark mode"}
+                </span>
               </button>
-            </>
+            </div>
           )}
-        </div>
+        </nav>
       </header>
 
       {isAuthenticated && (

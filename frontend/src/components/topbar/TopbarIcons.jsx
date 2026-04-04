@@ -1,5 +1,5 @@
 /**
- * Iconos SVG del topbar (stroke, currentColor). Tamaño controlado por CSS (.ch-nav-ico svg).
+ * Topbar SVG icons (stroke, currentColor). Size from CSS (.arena-nav-link__ico svg).
  */
 
 const stroke = {

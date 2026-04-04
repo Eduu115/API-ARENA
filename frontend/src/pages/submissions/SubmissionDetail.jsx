@@ -100,7 +100,7 @@ export default function SubmissionDetail() {
         <CustomCursor />
         <div className="ch-grid-bg" />
         <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-          <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
           <main className="ch-main">
             <div className="sd-container" style={{ padding: '60px 0', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
               Loading submission...
@@ -118,7 +118,7 @@ export default function SubmissionDetail() {
         <CustomCursor />
         <div className="ch-grid-bg" />
         <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-          <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
           <main className="ch-main">
             <div className="sd-container">
               <p style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{error || 'Submission not found'}</p>
@@ -143,7 +143,7 @@ export default function SubmissionDetail() {
       <CustomCursor />
       <div className="ch-grid-bg" />
       <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="ch-main">
           <div className="sd-container">
             <button className="sd-back-btn" onClick={() => navigate('/submissions')}>

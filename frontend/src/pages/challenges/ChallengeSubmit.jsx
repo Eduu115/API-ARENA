@@ -378,7 +378,7 @@ export default function ChallengeSubmit() {
   if (loading) {
     return (
       <div className="challenges-page chd-page">
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main"><div className="chd-loading">Loading challenge...</div></main>
         <BottomNav /><CustomCursor />
       </div>
@@ -387,7 +387,7 @@ export default function ChallengeSubmit() {
   if (error || !challenge) {
     return (
       <div className="challenges-page chd-page">
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
           <p className="chd-error">{error || 'Challenge not found'}</p>
           <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
@@ -401,7 +401,7 @@ export default function ChallengeSubmit() {
 
   return (
     <div className="challenges-page chd-page">
-      <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+      <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
       <main className="chd-main">
         <div className="chd-container">
           <button type="button" className="cs-back" onClick={() => navigate(`/challenges/${id}`)}>

@@ -74,7 +74,7 @@ export default function SubmissionResults() {
         <CustomCursor />
         <div className="ch-grid-bg" />
         <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-          <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
           <main className="ch-main">
             <div className="sr-loading">Loading results...</div>
           </main>
@@ -90,7 +90,7 @@ export default function SubmissionResults() {
         <CustomCursor />
         <div className="ch-grid-bg" />
         <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-          <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
           <main className="ch-main">
             <div className="sr-error">
               <p>{error || 'Submission not found'}</p>
@@ -121,7 +121,7 @@ export default function SubmissionResults() {
       <CustomCursor />
       <div className="ch-grid-bg" />
       <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="ch-main">
           <div className={`sr-container ${revealed ? 'sr-revealed' : ''}`}>
 

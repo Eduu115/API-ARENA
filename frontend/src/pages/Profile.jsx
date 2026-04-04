@@ -29,7 +29,7 @@ export default function Profile() {
   if (isLoading) {
     return (
       <div className="challenges-page profile-page">
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="profile-main">
           <div className="profile-loading">Cargando perfil...</div>
         </main>
@@ -91,7 +91,7 @@ export default function Profile() {
 
   return (
     <div className="challenges-page profile-page">
-      <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+      <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
       <main className="profile-main">
         <div className="profile-container">
           <Link to="/dashboard" className="profile-back-link">
