@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -550,8 +552,20 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public List<SubmissionSummaryDTO> getMySubmissions(Long userId) {
-        return submissionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
-                .map(SubmissionSummaryDTO::fromEntity)
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        Set<Long> challengeIds = submissions.stream()
+                .map(Submission::getChallengeId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> titleByChallengeId = new HashMap<>();
+        for (Long cid : challengeIds) {
+            Map<String, Object> ch = fetchChallengeData(cid);
+            if (ch != null && ch.get("title") != null) {
+                titleByChallengeId.put(cid, Objects.toString(ch.get("title")));
+            }
+        }
+        return submissions.stream()
+                .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId())))
                 .toList();
     }
 

@@ -33,6 +33,10 @@ export default function Register() {
     setSubmitting(true);
     const result = await doRegister(username, email, password, null);
     setSubmitting(false);
+    if (result?.needsVerification) {
+      navigate("/verify-email", { replace: true, state: { email: email.trim() } });
+      return;
+    }
     if (result?.success) navigate(redirectTo, { replace: true });
   }
 

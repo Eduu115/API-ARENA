@@ -4,6 +4,7 @@ import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.LoginRequest;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
+import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 
 public interface IAuthService {
 
@@ -14,4 +15,8 @@ public interface IAuthService {
     AuthResponse refreshToken(RefreshTokenRequest request);
 
     void logout(String refreshToken);
+
+    VerifyEmailResponseDTO verifyEmail(String token);
+
+    void resendVerificationEmail(String email);
 }

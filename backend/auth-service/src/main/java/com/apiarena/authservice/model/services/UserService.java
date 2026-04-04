@@ -24,7 +24,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
         return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())
@@ -49,7 +49,7 @@ public class UserService implements IUserService {
 
     @Override
     public UserDTO getUserByEmail(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
         return UserDTO.fromEntity(user);
     }
@@ -77,7 +77,7 @@ public class UserService implements IUserService {
     @Override
     @Transactional
     public void updateLastLogin(String email) {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
@@ -85,7 +85,7 @@ public class UserService implements IUserService {
 
     @Override
     public User getUserEntityByEmail(String email) {
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
     }
 

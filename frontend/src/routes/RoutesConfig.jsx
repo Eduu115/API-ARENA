@@ -11,6 +11,7 @@ import MySubmissions from "../pages/submissions/MySubmissions";
 import NotFound from "../pages/NotFound";
 import Profile from "../pages/Profile";
 import Register from "../pages/auth/Register";
+import VerifyEmail from "../pages/auth/VerifyEmail";
 import SubmissionDetail from "../pages/submissions/SubmissionDetail";
 import SubmissionResults from "../pages/submissions/SubmissionResults";
 import Replay from "../pages/Replay";
@@ -34,6 +35,7 @@ export default function RoutesConfig() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:id" element={<ChallengeDetail />} />
