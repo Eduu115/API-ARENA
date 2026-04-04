@@ -124,6 +124,9 @@ export default function Login() {
                       <button type="button" className="auth-link-inline" onClick={() => {}}>
                         ¿Olvidaste tu contraseña?
                       </button>
+                      <Link to="/verify-email" className="auth-link-inline" style={{ marginLeft: 12 }}>
+                        Verify email
+                      </Link>
                     </div>
                   </div>
                 </div>

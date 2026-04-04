@@ -116,6 +116,9 @@ services:
       SPRING_DATA_REDIS_PORT: "6379"
       SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      APP_EMAIL_FRONTEND_BASE_URL: ${FRONTEND_URL:-http://localhost:3000}
+      APP_EMAIL_RESEND_API_KEY: ${RESEND_API_KEY:-}
+      APP_EMAIL_FROM: ${APP_EMAIL_FROM:-API Arena <onboarding@resend.dev>}
     ports:
       - "8081:8081"
     networks:

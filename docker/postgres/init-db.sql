@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     last_login TIMESTAMP,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    email_verified BOOLEAN NOT NULL DEFAULT FALSE
+    email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    email_verification_token VARCHAR(64) UNIQUE,
+    email_verification_expires_at TIMESTAMP
 );
 
 -- ===========================================

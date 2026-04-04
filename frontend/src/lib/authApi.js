@@ -140,6 +140,9 @@ function clearStoredTokens() {
 async function getErrorMessage(res, body) {
 
 
+    if (body?.detail) return body.detail;
+
+
     if (body?.message) return body.message;
 
 
@@ -363,6 +366,60 @@ export async function register(payload) {
 
 
     return data;
+
+
+}
+
+
+
+
+
+/**
+
+
+ * Confirm email using token from the verification link (no auth).
+
+
+ */
+
+
+export async function verifyEmailWithToken(token) {
+
+
+    const q = encodeURIComponent(token);
+
+
+    return request(`/api/auth/verify-email?token=${q}`, { method: "GET" });
+
+
+}
+
+
+
+
+
+/**
+
+
+ * Request a new verification email (no auth).
+
+
+ */
+
+
+export async function resendVerificationEmail(email) {
+
+
+    return request("/api/auth/resend-verification", {
+
+
+        method: "POST",
+
+
+        body: JSON.stringify({ email: email?.trim() }),
+
+
+    });
 
 
 }

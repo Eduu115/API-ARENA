@@ -225,6 +225,53 @@
   margin-bottom: 0;
 }
 
+/* Verify email: ancho y tipografía más legibles (pantalla de una sola columna) */
+.auth-verify-email {
+  width: 100%;
+  max-width: min(100%, 42rem);
+  margin: 0 auto;
+}
+
+.auth-verify-email__card {
+  width: 100%;
+  padding: 32px 28px 28px;
+}
+
+@media (min-width: 768px) {
+  .auth-verify-email {
+    max-width: min(100%, 48rem);
+  }
+
+  .auth-verify-email__card {
+    padding: 44px 40px 36px;
+  }
+}
+
+.auth-verify-email .auth-title-crt .ch-card-title {
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.85rem);
+  line-height: 1.2;
+}
+
+.auth-verify-email .ch-card-desc {
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 38rem;
+}
+
+.auth-verify-email .auth-form__head {
+  margin-bottom: 8px;
+}
+
+.auth-verify-email .auth-input {
+  font-size: 15px;
+  padding: 12px 14px;
+}
+
+.auth-verify-email .auth-submit {
+  font-size: 14px;
+  padding: 14px 20px;
+}
+
 /* Botones / enlaces (hex clip como resto de UI) */
 .auth-actions {
   margin-top: 32px;

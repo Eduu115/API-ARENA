@@ -88,6 +88,12 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
+    @Column(name = "email_verification_token", length = 64, unique = true)
+    private String emailVerificationToken;
+
+    @Column(name = "email_verification_expires_at")
+    private LocalDateTime emailVerificationExpiresAt;
+
     public User(String username, String email, String passwordHash, Role role) {
         this.username = username;
         this.email = email;

@@ -1,21 +1,27 @@
 package com.apiarena.authservice.model.services;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HexFormat;
+import java.security.SecureRandom;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.LoginRequest;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
+import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 import com.apiarena.authservice.model.entities.RefreshToken;
 import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.repository.UserRepository;
@@ -36,11 +42,24 @@ public class AuthService implements IAuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private EmailDispatchService emailDispatchService;
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    private static String newVerificationToken() {
+        byte[] bytes = new byte[32];
+        SECURE_RANDOM.nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
+    }
+
     @Override
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        String email = request.getEmail().trim().toLowerCase();
+
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("Email already registered");
         }
 
@@ -59,12 +78,22 @@ public class AuthService implements IAuthService {
 
         User u = new User(
             request.getUsername(),
-            request.getEmail(),
+            email,
             passwordEncoder.encode(request.getPassword()),
             role
         );
 
         User savedUser = userRepository.save(u);
+
+        String token = newVerificationToken();
+        savedUser.setEmailVerificationToken(token);
+        savedUser.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(48));
+        savedUser = userRepository.save(savedUser);
+
+        emailDispatchService.sendVerificationEmail(
+                savedUser.getEmail(),
+                savedUser.getUsername(),
+                token);
 
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }
@@ -72,19 +101,26 @@ public class AuthService implements IAuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        
+
+        String email = request.getEmail().trim().toLowerCase();
+
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
-                    request.getEmail(),
+                    email,
                     request.getPassword()
             )
         );
 
-        User user = userService.getUserEntityByEmail(request.getEmail());
+        User user = userService.getUserEntityByEmail(email);
 
-        userService.updateLastLogin(request.getEmail());
+        if (!Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Email not verified. Check your inbox or resend the verification link.");
+        }
 
-        UserDetails userDetails = userService.loadUserByUsername(request.getEmail());
+        userService.updateLastLogin(email);
+
+        UserDetails userDetails = userService.loadUserByUsername(email);
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId());
         String accessToken = jwtService.generateAccessToken(claims, userDetails);
@@ -119,5 +155,43 @@ public class AuthService implements IAuthService {
         if (refreshToken != null && !refreshToken.isEmpty()) {
             refreshTokenService.revokeRefreshToken(refreshToken);
         }
+    }
+
+    @Override
+    @Transactional
+    public VerifyEmailResponseDTO verifyEmail(String token) {
+        if (token == null || token.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Verification token is required");
+        }
+        User user = userRepository.findByEmailVerificationToken(token.trim())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification link."));
+        if (user.getEmailVerificationExpiresAt() == null
+                || user.getEmailVerificationExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Verification link expired. Request a new one from the login page.");
+        }
+        user.setEmailVerified(true);
+        user.setEmailVerificationToken(null);
+        user.setEmailVerificationExpiresAt(null);
+        userRepository.save(user);
+        return new VerifyEmailResponseDTO(true, "Email verified. You can log in.");
+    }
+
+    @Override
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return;
+        }
+        userRepository.findByEmailIgnoreCase(email.trim()).ifPresent(user -> {
+            if (Boolean.TRUE.equals(user.getEmailVerified())) {
+                return;
+            }
+            String token = newVerificationToken();
+            user.setEmailVerificationToken(token);
+            user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(48));
+            userRepository.save(user);
+            emailDispatchService.sendVerificationEmail(user.getEmail(), user.getUsername(), token);
+        });
     }
 }

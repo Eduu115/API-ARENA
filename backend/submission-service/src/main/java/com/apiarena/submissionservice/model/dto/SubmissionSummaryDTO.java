@@ -19,8 +19,14 @@ public class SubmissionSummaryDTO {
     private BigDecimal totalScore;
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;
+    /** Resolved from challenge-service when listing; may be null if unavailable. */
+    private String challengeTitle;
 
     public static SubmissionSummaryDTO fromEntity(Submission entity) {
+        return fromEntity(entity, null);
+    }
+
+    public static SubmissionSummaryDTO fromEntity(Submission entity, String challengeTitle) {
         return new SubmissionSummaryDTO(
                 entity.getId(),
                 entity.getChallengeId(),
@@ -28,7 +34,8 @@ public class SubmissionSummaryDTO {
                 entity.getStatus().name(),
                 entity.getTotalScore(),
                 entity.getCreatedAt(),
-                entity.getCompletedAt()
+                entity.getCompletedAt(),
+                challengeTitle
         );
     }
 }

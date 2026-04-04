@@ -5,12 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apiarena.authservice.model.dto.AuthResponse;
@@ -18,8 +21,10 @@ import com.apiarena.authservice.model.dto.LoginRequest;
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
+import com.apiarena.authservice.model.dto.ResendVerificationRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
+import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 import com.apiarena.authservice.model.services.IAuthService;
 import com.apiarena.authservice.model.services.IUserService;
 
@@ -64,6 +69,21 @@ public class AuthController {
     public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/verify-email")
+    @Operation(summary = "Verify email", description = "Confirm email address using the token from the verification link")
+    public ResponseEntity<VerifyEmailResponseDTO> verifyEmail(@RequestParam("token") String token) {
+        VerifyEmailResponseDTO body = authService.verifyEmail(token);
+        return ResponseEntity.ok(body);
+    }
+
+    @PostMapping("/resend-verification")
+    @Operation(summary = "Resend verification email", description = "Send a new verification link (always returns the same message for privacy)")
+    public ResponseEntity<Map<String, String>> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        authService.resendVerificationEmail(request.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "message", "If an account exists with this email, a verification link has been sent."));
     }
 
     @GetMapping("/users/{id}/profile")
