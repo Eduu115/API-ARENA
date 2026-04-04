@@ -1,13 +1,13 @@
-package com.apiarena.leaderboardservice.kafka;
+package com.apiarena.notificationservice.kafka;
 
 import java.time.Instant;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * Mismo contrato JSON que emite submission-service en {@code apiarena.submissions.completed}.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record SubmissionCompletedEvent(
         String eventType,
         Long submissionId,

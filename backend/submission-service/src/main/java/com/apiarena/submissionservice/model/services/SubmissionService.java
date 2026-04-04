@@ -435,11 +435,17 @@ public class SubmissionService implements ISubmissionService {
             }
             String username = fetchUsername(sub.getUserId());
             int scoreInt = sub.getTotalScore() != null ? sub.getTotalScore().intValue() : 0;
+            String challengeTitle = null;
+            Object titleObj = challengeData.get("title");
+            if (titleObj != null) {
+                challengeTitle = Objects.toString(titleObj, null);
+            }
             submissionKafkaPublisher.publishSubmissionCompleted(
                     SubmissionCompletedEvent.of(
                             sub.getId(),
                             sub.getUserId(),
                             sub.getChallengeId(),
+                            challengeTitle,
                             username,
                             scoreInt,
                             completionSeconds));

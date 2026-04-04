@@ -10,6 +10,7 @@ const ITEMS_AUTH = [
   { path: '/dashboard', icon: '◇', label: 'Home' },
   { path: '/challenges', icon: '⊞', label: 'Challenges' },
   { path: '/friends', icon: '✧', label: 'Friends' },
+  { path: '/notifications', icon: '⌁', label: 'Alerts' },
   { path: '/leaderboard', icon: '≋', label: 'Rankings' },
   { path: '/perfil', icon: '◉', label: 'Profile' },
 ];

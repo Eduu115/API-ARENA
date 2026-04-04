@@ -1,0 +1,130 @@
+/* Notifications page — tokens from challenges.css */
+
+.notif-page .notif-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 20px 100px;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.notif-mark-all {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: transparent;
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.notif-mark-all:hover {
+  border-color: var(--cyan);
+  opacity: 0.95;
+}
+
+.notif-error {
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.notif-muted {
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notif-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 16px 18px;
+  border-radius: 4px;
+}
+
+.notif-card.notif-read {
+  opacity: 0.72;
+}
+
+.notif-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.notif-card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.notif-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.notif-body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 12px;
+}
+
+.notif-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.notif-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--purple);
+  background: transparent;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.notif-btn:hover {
+  border-color: var(--purple);
+}
+
+.notif-link {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.notif-link:hover {
+  opacity: 0.9;
+}

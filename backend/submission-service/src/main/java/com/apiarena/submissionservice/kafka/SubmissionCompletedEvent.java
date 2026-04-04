@@ -14,6 +14,7 @@ public record SubmissionCompletedEvent(
         Long submissionId,
         Long userId,
         Long challengeId,
+        String challengeTitle,
         String username,
         Integer score,
         Integer completionTimeSeconds,
@@ -25,6 +26,7 @@ public record SubmissionCompletedEvent(
             Long submissionId,
             Long userId,
             Long challengeId,
+            String challengeTitle,
             String username,
             int score,
             Integer completionTimeSeconds
@@ -34,6 +36,7 @@ public record SubmissionCompletedEvent(
                 submissionId,
                 userId,
                 challengeId,
+                challengeTitle,
                 username,
                 score,
                 completionTimeSeconds,

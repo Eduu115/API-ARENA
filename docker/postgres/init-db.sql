@@ -638,5 +638,23 @@ INSERT INTO test_results (submission_id, test_name, test_type, status, expected_
   (10, 'Design: RESTful URL naming',    'DESIGN',     'PASSED', 'Compliant', 'Compliant',  1.40, NULL, NULL, NULL, 40, 40)
 ON CONFLICT DO NOTHING;
 
+-- ===========================================
+-- Table: notifications (in-app; notification-service)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS notifications (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(64) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    body TEXT,
+    metadata_json TEXT,
+    source_submission_id BIGINT,
+    read_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_notifications_user_submission UNIQUE (user_id, source_submission_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications(user_id, created_at DESC);
+
 -- Verificacion
 SELECT 'Database initialized successfully!' as status;
