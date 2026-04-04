@@ -148,6 +148,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      kafka: { condition: service_started }
       sandbox-service: { condition: service_started }
       testing-service: { condition: service_started }
     environment:
@@ -220,6 +221,7 @@ services:
     container_name: apiarena-leaderboard
     depends_on:
       postgres: { condition: service_healthy }
+      kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -228,6 +230,26 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     ports:
       - "8087:8087"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./backend/notification-service
+      dockerfile: Dockerfile
+    container_name: apiarena-notification
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_started }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports:
+      - "8090:8090"
     networks:
       - apiarena-network
     restart: unless-stopped

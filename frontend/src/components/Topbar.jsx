@@ -3,21 +3,24 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import ProfileAccountMenu from "./ProfileAccountMenu";
+import { getUnreadNotificationCount } from "../lib/notificationsApi";
+import { connectNotificationsWs } from "../lib/notificationsWs";
+import { NavIcon, IconBell, IconSun, IconMoon } from "./topbar/TopbarIcons";
 
 const NAV_ITEMS_GUEST = [
-  { label: "Challenges", path: "/challenges" },
-  { label: "Leaderboard", path: "/leaderboard" },
-  { label: "Replay", path: "/replay" },
+  { label: "Challenges", path: "/challenges", icon: "challenges" },
+  { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
+  { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
+/** Perfil va al bloque derecho (último); no en el nav central. */
 const NAV_ITEMS_AUTH = [
-  { label: "Dashboard", path: "/dashboard" },
-  { label: "Challenges", path: "/challenges" },
-  { label: "Submissions", path: "/submissions" },
-  { label: "Friends", path: "/friends" },
-  { label: "Leaderboard", path: "/leaderboard" },
-  { label: "Replay", path: "/replay" },
-  { label: "Profile", path: "/perfil", openAccountMenu: true },
+  { label: "Dashboard", path: "/dashboard", icon: "dashboard" },
+  { label: "Challenges", path: "/challenges", icon: "challenges" },
+  { label: "Submissions", path: "/submissions", icon: "submissions" },
+  { label: "Friends", path: "/friends", icon: "friends" },
+  { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
+  { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
 export default function Topbar({ onMenuToggle, sidebarOpen }) {
@@ -25,14 +28,50 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const navItems = isAuthenticated ? NAV_ITEMS_AUTH : NAV_ITEMS_GUEST;
   const { isDark, toggleTheme } = useTheme();
   const rating = user?.rating ?? 1000;
   const isTeacher = String(user?.role || "").toUpperCase() === "TEACHER";
+  const profileActive =
+    pathname === "/perfil" ||
+    pathname.startsWith("/perfil/") ||
+    accountMenuOpen;
 
   useEffect(() => {
     setAccountMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setUnreadNotifications(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const n = await getUnreadNotificationCount();
+        if (!cancelled) setUnreadNotifications(Number(n?.count) || 0);
+      } catch {
+        if (!cancelled) setUnreadNotifications(0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, pathname]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return () => {};
+    const disconnect = connectNotificationsWs({
+      onEvent: (msg) => {
+        if (msg?.unreadCount != null) {
+          setUnreadNotifications(Number(msg.unreadCount) || 0);
+        }
+      },
+    });
+    return () => disconnect();
+  }, [isAuthenticated]);
 
   async function handleLogoutFromMenu() {
     await logout();
@@ -42,6 +81,30 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
   async function handleSwitchAccount() {
     await logout();
     navigate("/login", { replace: true });
+  }
+
+  function renderNavLink({ label, path, icon }) {
+    const isActive =
+      pathname === path || pathname.startsWith(`${path}/`);
+    const inner = (
+      <>
+        <span className="ch-nav-ico" aria-hidden>
+          <NavIcon name={icon} />
+        </span>
+        <span className="ch-nav-ico-label">{label}</span>
+      </>
+    );
+
+    return (
+      <Link
+        key={path}
+        to={path}
+        className={`ch-nav-item ch-nav-item--iconrow${isActive ? " ch-active" : ""}`}
+        title={label}
+      >
+        {inner}
+      </Link>
+    );
   }
 
   return (
@@ -71,94 +134,98 @@ export default function Topbar({ onMenuToggle, sidebarOpen }) {
         </button>
 
         <nav className="ch-topbar-nav" aria-label="Main">
-          {navItems.map(({ label, path, openAccountMenu }) => {
-            const isActive =
-              pathname === path || pathname.startsWith(`${path}/`);
-            if (openAccountMenu) {
-              return (
+          <div className="ch-topbar-nav-inner">
+            {navItems.map((item) => renderNavLink(item))}
+            {isTeacher && (
+              <Link
+                to="/teacher"
+                className={`ch-nav-item ch-nav-item--iconrow${
+                  pathname.startsWith("/teacher") ? " ch-active" : ""
+                }`}
+                title="Teacher"
+              >
+                <span className="ch-nav-ico" aria-hidden>
+                  <NavIcon name="teacher" />
+                </span>
+                <span className="ch-nav-ico-label">Teacher</span>
+              </Link>
+            )}
+          </div>
+        </nav>
+
+        <div className="ch-topbar-right">
+          {isAuthenticated ? (
+            <>
+              <div className="ch-topbar-right-tools">
+                <div className="ch-user-rank">
+                  <span className="ch-rank-badge">ELO {rating}</span>
+                </div>
+
+                <Link
+                  to="/notifications"
+                  className="ch-topbar-notif-link"
+                  aria-label="Notifications"
+                  title="Notifications"
+                >
+                  <span className="ch-topbar-notif-ico" aria-hidden>
+                    <IconBell />
+                  </span>
+                  <span className="ch-topbar-notif-text">Alerts</span>
+                  {unreadNotifications > 0 && (
+                    <span className="ch-notif-badge">
+                      {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                    </span>
+                  )}
+                </Link>
+
                 <button
-                  key={path}
                   type="button"
-                  className={`ch-nav-item ch-nav-item-btn${
-                    isActive || accountMenuOpen ? " ch-active" : ""
-                  }`}
+                  className="ch-topbar-icon-btn ch-topbar-icon-btn--theme"
+                  onClick={toggleTheme}
+                  title={isDark ? "Light mode" : "Dark mode"}
+                  aria-label={isDark ? "Light mode" : "Dark mode"}
+                >
+                  {isDark ? <IconSun /> : <IconMoon />}
+                </button>
+              </div>
+
+              <div className="ch-topbar-right-profile">
+                <button
+                  type="button"
+                  className={`ch-topbar-profile-btn${profileActive ? " ch-topbar-profile-btn--active" : ""}`}
                   onClick={() => setAccountMenuOpen((o) => !o)}
                   aria-expanded={accountMenuOpen}
                   aria-haspopup="dialog"
                   aria-controls="profile-account-menu"
+                  title="Profile"
                 >
-                  {label}
+                  <span className="ch-topbar-profile-ico" aria-hidden>
+                    <NavIcon name="profile" />
+                  </span>
+                  <span className="ch-topbar-profile-text">Profile</span>
                 </button>
-              );
-            }
-            return (
+              </div>
+            </>
+          ) : (
+            <>
               <Link
-                key={path}
-                to={path}
-                className={`ch-nav-item${isActive ? " ch-active" : ""}`}
+                to="/login"
+                className="ch-nav-item ch-topbar-login"
+                title="Log in"
               >
-                {label}
+                Log in
               </Link>
-            );
-          })}
-          {isTeacher && (
-            <Link
-              to="/teacher"
-              className={`ch-nav-item${
-                pathname.startsWith("/teacher") ? " ch-active" : ""
-              }`}
-            >
-              Teacher
-            </Link>
-          )}
-        </nav>
-
-        <div className="ch-topbar-right">
-          {isAuthenticated && (
-            <div className="ch-user-rank">
-              <span className="ch-rank-badge">ELO {rating}</span>
-            </div>
-          )}
-          {!isAuthenticated ? (
-            <Link
-              to="/login"
-              className="ch-nav-item ch-topbar-login"
-              title="Iniciar sesión"
-            >
-              Log in
-            </Link>
-          ) : null}
-          <button
-            type="button"
-            className="ch-theme-toggle"
-            onClick={toggleTheme}
-            title={isDark ? "Modo claro" : "Modo oscuro"}
-            aria-label={isDark ? "Activar modo claro" : "Activar modo oscuro"}
-          >
-            {isDark ? (
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
+              <button
+                type="button"
+                className="ch-topbar-icon-btn ch-topbar-icon-btn--theme"
+                onClick={toggleTheme}
+                title={isDark ? "Light mode" : "Dark mode"}
+                aria-label={isDark ? "Light mode" : "Dark mode"}
               >
-                <circle cx="10" cy="10" r="4" />
-                <path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42" />
-              </svg>
-            ) : (
-              <svg
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-              </svg>
-            )}
-          </button>
+                {isDark ? <IconSun /> : <IconMoon />}
+              </button>
+            </>
+          )}
         </div>
       </header>
 

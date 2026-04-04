@@ -23,10 +23,13 @@ import ChallengeSubmit from "../pages/challenges/ChallengeSubmit";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import TeacherLayout from "../layouts/TeacherLayout";
 import Friends from "../pages/friends/Friends";
+import Notifications from "../pages/Notifications";
+import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
 
 export default function RoutesConfig() {
   return (
     <BrowserRouter>
+      <ActiveChallengeSessionBanner />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
@@ -48,6 +51,7 @@ export default function RoutesConfig() {
           <Route path="challenges/:id/submit" element={<ChallengeSubmit />} />
           <Route path="replay" element={<Replay />} />
           <Route path="friends" element={<Friends />} />
+          <Route path="notifications" element={<Notifications />} />
         </Route>
 
         <Route element={<TeacherLayout />}>

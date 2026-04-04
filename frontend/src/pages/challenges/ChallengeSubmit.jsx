@@ -1,7 +1,13 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as challengesApi from '../../lib/challengesApi';
-import { createSubmission } from '../../lib/submissionsApi';
+import { useAuth } from '../../context/AuthContext';
+import {
+  clearChallengeSession,
+  setChallengeSession,
+  challengeSessionKey,
+} from '../../lib/challengeSessionStorage';
+import { createSubmission, getChallengeAttemptStatus } from '../../lib/submissionsApi';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
@@ -12,6 +18,16 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function formatUtcHint(iso) {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return `${d.toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' })} UTC`;
+  } catch {
+    return iso;
+  }
 }
 
 function formatFileSize(bytes) {
@@ -177,19 +193,45 @@ export default function ChallengeSubmit() {
   const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const { user } = useAuth();
+  const staffBypass = user?.role === 'TEACHER' || user?.role === 'ADMIN';
 
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [secondsLeft, setSecondsLeft] = useState(null);
+  /** Fin del challenge en epoch ms — el tiempo sigue en marcha fuera de esta pantalla. */
+  const [deadlineAt, setDeadlineAt] = useState(null);
   const [totalSeconds, setTotalSeconds] = useState(null);
-  const [timerDone, setTimerDone] = useState(false);
+  const [tick, setTick] = useState(0);
 
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+
+  const [attemptPolicy, setAttemptPolicy] = useState(null);
+  const [policyLoading, setPolicyLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    setPolicyLoading(true);
+    setAttemptPolicy(null);
+    (async () => {
+      try {
+        const p = await getChallengeAttemptStatus(id);
+        if (!cancelled) setAttemptPolicy(p);
+      } catch {
+        if (!cancelled) {
+          setAttemptPolicy({ allowed: true, attemptsUsedToday: 0, maxAttemptsPerDay: 3 });
+        }
+      } finally {
+        if (!cancelled) setPolicyLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -201,9 +243,6 @@ export default function ChallengeSubmit() {
         const data = await challengesApi.getChallengeById(id);
         if (!cancelled) {
           setChallenge(data);
-          const total = (data.timeLimitMinutes ?? 60) * 60;
-          setTotalSeconds(total);
-          setSecondsLeft(total);
         }
       } catch (e) {
         if (!cancelled) setError(e?.message || 'Error loading challenge');
@@ -214,22 +253,62 @@ export default function ChallengeSubmit() {
     return () => { cancelled = true; };
   }, [id]);
 
+  /** Restaurar deadline desde localStorage o iniciar reloj. */
   useEffect(() => {
-    if (secondsLeft === null || timerDone) return;
-    if (secondsLeft <= 0) {
-      setTimerDone(true);
-      return;
+    if (!challenge || !id || !user?.id) return;
+    const totalDefault = (challenge.timeLimitMinutes ?? 60) * 60;
+    const raw = localStorage.getItem(challengeSessionKey(user.id));
+    let restored = false;
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        if (String(s.challengeId) === String(id)) {
+          setTotalSeconds(Number(s.totalSeconds) || totalDefault);
+          let d = s.deadlineAt != null ? Number(s.deadlineAt) : null;
+          if (d == null && s.secondsLeft != null) {
+            d = Date.now() + Math.max(0, Number(s.secondsLeft)) * 1000;
+          }
+          if (d == null) {
+            d = Date.now() + totalDefault * 1000;
+          }
+          setDeadlineAt(d);
+          restored = true;
+        }
+      } catch {
+        /* ignore */
+      }
     }
-    const t = setInterval(() => {
-      setSecondsLeft(prev => {
-        if (prev <= 1) { setTimerDone(true); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(t);
-  }, [secondsLeft, timerDone]);
+    if (!restored) {
+      setTotalSeconds(totalDefault);
+      setDeadlineAt(Date.now() + totalDefault * 1000);
+    }
+  }, [challenge, id, user?.id]);
 
-  const timerClass = timerDone
+  /** Persistir deadline (fija; no depende del tick). */
+  useEffect(() => {
+    if (!user?.id || !id || !challenge || deadlineAt == null || totalSeconds === null) return;
+    setChallengeSession(user.id, {
+      challengeId: id,
+      deadlineAt,
+      totalSeconds,
+      challengeTitle: challenge.title || '',
+      savedAt: Date.now(),
+    });
+  }, [user?.id, id, challenge?.id, challenge?.title, deadlineAt, totalSeconds]);
+
+  useEffect(() => {
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const secondsLeft = useMemo(() => {
+    if (deadlineAt == null) return null;
+    return Math.max(0, Math.floor((deadlineAt - Date.now()) / 1000));
+  }, [deadlineAt, tick]);
+
+  const timerExpired = secondsLeft !== null && secondsLeft <= 0;
+
+  const timerClass = timerExpired
     ? 'cs-timer-done'
     : secondsLeft <= 60
       ? 'cs-timer-danger'
@@ -238,7 +317,7 @@ export default function ChallengeSubmit() {
         : 'cs-timer-normal';
 
   const timerPercent = totalSeconds ? ((secondsLeft ?? 0) / totalSeconds) * 100 : 100;
-  const barColor = timerDone
+  const barColor = timerExpired
     ? 'var(--red)'
     : secondsLeft <= 60
       ? 'var(--red)'
@@ -269,12 +348,15 @@ export default function ChallengeSubmit() {
     }
   }, []);
 
+  const policyBlocks = !staffBypass && attemptPolicy && attemptPolicy.allowed === false;
+
   const handleSubmit = async () => {
-    if (!file || submitting || timerDone) return;
+    if (!file || submitting || timerExpired || (!staffBypass && policyLoading) || policyBlocks) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
       const result = await createSubmission(id, file);
+      if (user?.id) clearChallengeSession(user.id);
       const subId = result?.id || result?.submissionId;
       if (subId) {
         navigate(`/submissions/${subId}`);
@@ -325,6 +407,68 @@ export default function ChallengeSubmit() {
           <button type="button" className="cs-back" onClick={() => navigate(`/challenges/${id}`)}>
             ← BACK TO CHALLENGE
           </button>
+
+          {/* Límites de intentos — visibles de inmediato */}
+          <section className="cs-attempts-hero" aria-labelledby="cs-attempts-title">
+            <div className="cs-attempts-hero-head">
+              <span className="cs-attempts-eyebrow">Fair play</span>
+              <h2 id="cs-attempts-title" className="cs-attempts-title">
+                Submission limits
+              </h2>
+              <p className="cs-attempts-lead">
+                These rules apply to every student. They prevent XP farming and keep the leaderboard fair.
+              </p>
+            </div>
+            {staffBypass && (
+              <p className="cs-attempts-staff">Staff account: daily limits and cooldown are waived for your submissions.</p>
+            )}
+            {!staffBypass && policyLoading && (
+              <p className="cs-attempts-loading">Loading your submission limits…</p>
+            )}
+            {!staffBypass && !policyLoading && attemptPolicy?.allowed && (
+              <div className="cs-attempts-grid">
+                <div className="cs-attempts-card">
+                  <div className="cs-attempts-card-label">Daily submissions (UTC)</div>
+                  <div className="cs-attempts-card-value" aria-live="polite">
+                    <span className="cs-attempts-nums">{attemptPolicy.attemptsUsedToday}</span>
+                    <span className="cs-attempts-slash">/</span>
+                    <span className="cs-attempts-max">{attemptPolicy.maxAttemptsPerDay}</span>
+                  </div>
+                  <p className="cs-attempts-card-hint">
+                    You can start at most {attemptPolicy.maxAttemptsPerDay} runs per challenge per calendar day (UTC).
+                  </p>
+                </div>
+                <div className="cs-attempts-card">
+                  <div className="cs-attempts-card-label">Cooldown between attempts</div>
+                  <div className="cs-attempts-card-value cs-attempts-cooldown-val">
+                    {challenge.timeLimitMinutes ?? 60}
+                    <span className="cs-attempts-unit">min</span>
+                  </div>
+                  <p className="cs-attempts-card-hint">
+                    After you start a run, you must wait this long before you can submit again for this challenge.
+                  </p>
+                </div>
+              </div>
+            )}
+            {!staffBypass && !policyLoading && attemptPolicy && !attemptPolicy.allowed && attemptPolicy.blockReason === 'DAILY_LIMIT' && (
+              <div className="cs-attempts-block cs-attempts-block-warn" role="alert">
+                <strong>Daily limit reached</strong>
+                <span>
+                  You have used all {attemptPolicy.maxAttemptsPerDay} submissions for this challenge today (UTC).
+                  Resets at {formatUtcHint(attemptPolicy.dailyLimitResetsAtIso)}.
+                </span>
+              </div>
+            )}
+            {!staffBypass && !policyLoading && attemptPolicy && !attemptPolicy.allowed && attemptPolicy.blockReason === 'COOLDOWN' && (
+              <div className="cs-attempts-block cs-attempts-block-warn" role="alert">
+                <strong>Cooldown active</strong>
+                <span>
+                  Wait until the cooldown window ends before submitting again. Next allowed:{' '}
+                  {formatUtcHint(attemptPolicy.cooldownUntilIso)} (UTC).
+                </span>
+              </div>
+            )}
+          </section>
 
           <div className="cs-grid">
             {/* Left column — Challenge info */}
@@ -424,7 +568,7 @@ export default function ChallengeSubmit() {
                 <div className="cs-timer-section">
                   <div className="cs-timer-label">TIME REMAINING</div>
                   <div className={`cs-timer-display ${timerClass}`}>
-                    {timerDone ? "TIME'S UP" : formatTime(secondsLeft ?? 0)}
+                    {timerExpired ? "TIME'S UP" : formatTime(secondsLeft ?? 0)}
                   </div>
                   <div className="cs-timer-bar">
                     <div
@@ -432,6 +576,9 @@ export default function ChallengeSubmit() {
                       style={{ width: `${timerPercent}%`, background: barColor }}
                     />
                   </div>
+                  <p className="cs-timer-realtime-hint">
+                    Timer runs in real time — even if you leave this page or close the tab.
+                  </p>
                 </div>
 
                 {/* Dropzone */}
@@ -442,7 +589,6 @@ export default function ChallengeSubmit() {
                       onDragOver={handleDragOver}
                       onDragLeave={handleDragLeave}
                       onDrop={handleDrop}
-                      onClick={() => fileInputRef.current?.click()}
                     >
                       <div className="cs-dropzone-icon">📦</div>
                       <div className="cs-dropzone-text">Drop your .zip file here</div>
@@ -453,6 +599,7 @@ export default function ChallengeSubmit() {
                         accept=".zip"
                         onChange={handleFileChange}
                         tabIndex={-1}
+                        aria-label="Choose ZIP file"
                       />
                     </div>
                   ) : (
@@ -465,7 +612,11 @@ export default function ChallengeSubmit() {
                       <button
                         type="button"
                         className="cs-file-remove"
-                        onClick={() => { setFile(null); setSubmitError(null); }}
+                        onClick={() => {
+                          setFile(null);
+                          setSubmitError(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
                       >
                         ×
                       </button>
@@ -478,7 +629,7 @@ export default function ChallengeSubmit() {
                   <button
                     type="button"
                     className="cs-submit-btn"
-                    disabled={!file || submitting || timerDone}
+                    disabled={!file || submitting || timerExpired || (!staffBypass && policyLoading) || policyBlocks}
                     onClick={handleSubmit}
                   >
                     {submitting ? 'Submitting...' : 'Submit Solution'}

@@ -2,7 +2,12 @@ package com.apiarena.submissionservice.model.services;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,18 +22,23 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionStatusCacheDTO;
+import com.apiarena.submissionservice.kafka.SubmissionCompletedEvent;
+import com.apiarena.submissionservice.kafka.SubmissionKafkaPublisher;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
 import com.apiarena.submissionservice.model.entities.Submission;
 import com.apiarena.submissionservice.repository.SubmissionRepository;
@@ -53,6 +63,9 @@ public class SubmissionService implements ISubmissionService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private SubmissionKafkaPublisher submissionKafkaPublisher;
+
     @Value("${services.auth-url:http://localhost:8081}")
     private String authServiceUrl;
 
@@ -68,9 +81,73 @@ public class SubmissionService implements ISubmissionService {
     @Value("${services.candidate-host:localhost}")
     private String candidateApiHost;
 
+    @Value("${apiarena.submission.max-attempts-per-day-per-challenge:3}")
+    private int maxAttemptsPerDayPerChallenge;
+
+    @Override
+    public ChallengeAttemptStatusDTO getChallengeAttemptStatus(Long userId, Long challengeId) {
+        return computeChallengeAttemptStatus(userId, challengeId);
+    }
+
+    private ChallengeAttemptStatusDTO computeChallengeAttemptStatus(Long userId, Long challengeId) {
+        Map<String, Object> ch = fetchChallengeData(challengeId);
+        int timeLimitMin = ch.get("timeLimitMinutes") != null
+                ? ((Number) ch.get("timeLimitMinutes")).intValue()
+                : 60;
+
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime startOfDayUtc = LocalDate.now(ZoneOffset.UTC).atStartOfDay();
+        long usedToday = submissionRepository.countByUserIdAndChallengeIdAndCreatedAtGreaterThanEqual(
+                userId, challengeId, startOfDayUtc);
+
+        if (usedToday >= maxAttemptsPerDayPerChallenge) {
+            Instant nextUtcMidnight = LocalDate.now(ZoneOffset.UTC)
+                    .plusDays(1)
+                    .atStartOfDay(ZoneOffset.UTC)
+                    .toInstant();
+            return ChallengeAttemptStatusDTO.blockedDaily(
+                    (int) usedToday, maxAttemptsPerDayPerChallenge, nextUtcMidnight.toString());
+        }
+
+        Optional<Submission> lastOpt = submissionRepository.findFirstByUserIdAndChallengeIdOrderByCreatedAtDesc(
+                userId, challengeId);
+        if (lastOpt.isPresent()) {
+            LocalDateTime nextAllowed = lastOpt.get().getCreatedAt().plusMinutes(timeLimitMin);
+            if (now.isBefore(nextAllowed)) {
+                Instant cooldownEnd = nextAllowed.atZone(ZoneOffset.UTC).toInstant();
+                return ChallengeAttemptStatusDTO.blockedCooldown(
+                        (int) usedToday, maxAttemptsPerDayPerChallenge, cooldownEnd.toString());
+            }
+        }
+        return ChallengeAttemptStatusDTO.allowed((int) usedToday, maxAttemptsPerDayPerChallenge);
+    }
+
+    private void assertChallengeSubmissionAllowed(Long userId, Long challengeId, boolean rateLimitBypass) {
+        if (rateLimitBypass) {
+            return;
+        }
+        ChallengeAttemptStatusDTO status = computeChallengeAttemptStatus(userId, challengeId);
+        if (status.allowed()) {
+            return;
+        }
+        if (ChallengeAttemptStatusDTO.REASON_DAILY_LIMIT.equals(status.blockReason())) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Daily submission limit for this challenge reached ("
+                            + maxAttemptsPerDayPerChallenge + " per UTC day). Resets at "
+                            + status.dailyLimitResetsAtIso());
+        }
+        if (ChallengeAttemptStatusDTO.REASON_COOLDOWN.equals(status.blockReason())) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Challenge cooldown active. You can submit again after "
+                            + status.cooldownUntilIso() + " (UTC), based on this challenge's time limit.");
+        }
+        throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Cannot submit this challenge right now.");
+    }
+
     @Override
     @Transactional
-    public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile) {
+    public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile,
+            boolean rateLimitBypass) {
 
         if (challengeId == null) {
             throw new IllegalArgumentException("Challenge ID is required");
@@ -78,6 +155,8 @@ public class SubmissionService implements ISubmissionService {
         if (userId == null) {
             throw new IllegalArgumentException("User must be authenticated");
         }
+
+        assertChallengeSubmissionAllowed(userId, challengeId, rateLimitBypass);
 
         Submission submission = Submission.builder()
                 .challengeId(challengeId)
@@ -349,6 +428,28 @@ public class SubmissionService implements ISubmissionService {
             log.info("Rewards calculated for sub {}: xp={}, elo={}, difficulty={}, multiplier={}",
                     submissionId, xpEarned, eloChange, difficulty, eloMultiplier);
 
+            Integer completionSeconds = null;
+            if (sub.getCreatedAt() != null && sub.getCompletedAt() != null) {
+                completionSeconds = (int) Math.max(0L,
+                        Duration.between(sub.getCreatedAt(), sub.getCompletedAt()).getSeconds());
+            }
+            String username = fetchUsername(sub.getUserId());
+            int scoreInt = sub.getTotalScore() != null ? sub.getTotalScore().intValue() : 0;
+            String challengeTitle = null;
+            Object titleObj = challengeData.get("title");
+            if (titleObj != null) {
+                challengeTitle = Objects.toString(titleObj, null);
+            }
+            submissionKafkaPublisher.publishSubmissionCompleted(
+                    SubmissionCompletedEvent.of(
+                            sub.getId(),
+                            sub.getUserId(),
+                            sub.getChallengeId(),
+                            challengeTitle,
+                            username,
+                            scoreInt,
+                            completionSeconds));
+
             try {
                 Map<String, Object> rewardBody = Map.of(
                         "xpEarned", xpEarned,
@@ -369,6 +470,20 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @SuppressWarnings("unchecked")
+    private String fetchUsername(Long userId) {
+        try {
+            Map<String, Object> profile = restTemplate.getForObject(
+                    authServiceUrl + "/api/auth/users/" + userId + "/profile", Map.class);
+            if (profile != null && profile.get("username") != null) {
+                return Objects.toString(profile.get("username"), "user-" + userId);
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch username for user {}: {}", userId, e.getMessage());
+        }
+        return "user-" + userId;
+    }
+
+    @SuppressWarnings("unchecked")
     private Map<String, Object> fetchChallengeData(Long challengeId) {
         try {
             Map<String, Object> challenge = restTemplate.getForObject(
@@ -377,7 +492,7 @@ public class SubmissionService implements ISubmissionService {
         } catch (Exception e) {
             log.warn("Could not fetch challenge {}: {}", challengeId, e.getMessage());
         }
-        return Map.of("xpReward", 200, "difficulty", "MEDIUM");
+        return Map.of("xpReward", 200, "difficulty", "MEDIUM", "timeLimitMinutes", 60);
     }
 
     @SuppressWarnings("unchecked")

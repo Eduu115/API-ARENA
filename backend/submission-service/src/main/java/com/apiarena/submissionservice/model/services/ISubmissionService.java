@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
@@ -13,7 +14,10 @@ import com.apiarena.submissionservice.model.entities.Submission;
 
 public interface ISubmissionService {
 
-    CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile);
+    CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile,
+            boolean rateLimitBypass);
+
+    ChallengeAttemptStatusDTO getChallengeAttemptStatus(Long userId, Long challengeId);
 
     SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher);
 

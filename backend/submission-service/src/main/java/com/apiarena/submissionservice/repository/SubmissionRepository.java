@@ -1,5 +1,6 @@
 package com.apiarena.submissionservice.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,11 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     List<Submission> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     List<Submission> findByUserIdAndChallengeIdOrderByCreatedAtDesc(Long userId, Long challengeId);
+
+    long countByUserIdAndChallengeIdAndCreatedAtGreaterThanEqual(Long userId, Long challengeId,
+            LocalDateTime createdAtMin);
+
+    Optional<Submission> findFirstByUserIdAndChallengeIdOrderByCreatedAtDesc(Long userId, Long challengeId);
 
     @Query("SELECT s FROM Submission s WHERE s.userId = :userId AND s.challengeId = :challengeId " +
            "AND s.status = 'COMPLETED' AND s.id <> :excludeId ORDER BY s.totalScore DESC")

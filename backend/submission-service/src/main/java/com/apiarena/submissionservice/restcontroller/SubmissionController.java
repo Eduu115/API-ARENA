@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -50,8 +52,21 @@ public class SubmissionController {
             throw new IllegalArgumentException("User ID not found in token. Auth service must include userId in JWT claims.");
         }
 
-        CreateSubmissionResponse response = submissionService.createSubmission(challengeId, userId, file);
+        boolean bypassRateLimit = hasAdminOrTeacherRole();
+        CreateSubmissionResponse response = submissionService.createSubmission(challengeId, userId, file, bypassRateLimit);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/challenge/{challengeId}/attempt-status")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Challenge attempt policy", description = "Cooldown and daily attempt limits for the current user")
+    public ResponseEntity<ChallengeAttemptStatusDTO> getChallengeAttemptStatus(@PathVariable Long challengeId) {
+        Long userId = extractUserIdFromAuthentication();
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.getChallengeAttemptStatus(userId, challengeId));
     }
 
     @GetMapping("/{id}")
