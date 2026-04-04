@@ -2,6 +2,7 @@ package com.apiarena.notificationservice.model.services;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.apiarena.notificationservice.kafka.SubmissionCompletedEvent;
 import com.apiarena.notificationservice.model.dto.NotificationDTO;
 import com.apiarena.notificationservice.model.entities.Notification;
+import com.apiarena.notificationservice.model.entities.NotificationImportance;
 import com.apiarena.notificationservice.repository.NotificationRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class NotificationService {
 
     public static final String TYPE_SUBMISSION_COMPLETED = "SUBMISSION_COMPLETED";
+
+    public static final String TYPE_WELCOME = "WELCOME";
 
     private final NotificationRepository notificationRepository;
     private final ObjectMapper objectMapper;
@@ -64,6 +68,7 @@ public class NotificationService {
         Notification n = new Notification();
         n.setUserId(event.userId());
         n.setType(TYPE_SUBMISSION_COMPLETED);
+        n.setImportance(NotificationImportance.INFO);
         n.setTitle("Submission graded");
         String challengeLabel = (event.challengeTitle() != null && !event.challengeTitle().isBlank())
                 ? "\"" + event.challengeTitle() + "\""
@@ -81,15 +86,61 @@ public class NotificationService {
         notificationPushService.pushNewNotification(event.userId(), dto, unread);
     }
 
+    /**
+     * One in-app welcome per user (first registration). Importance IMPORTANT so it matches default “high” filters.
+     */
+    @Transactional
+    public void createWelcomeNotification(Long userId, String username) {
+        if (userId == null) {
+            return;
+        }
+        if (notificationRepository.existsByUserIdAndType(userId, TYPE_WELCOME)) {
+            return;
+        }
+        String display = username != null && !username.isBlank() ? username.trim() : "there";
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("username", display);
+
+        String metadataJson;
+        try {
+            metadataJson = objectMapper.writeValueAsString(meta);
+        } catch (Exception e) {
+            metadataJson = "{}";
+        }
+
+        Notification n = new Notification();
+        n.setUserId(userId);
+        n.setType(TYPE_WELCOME);
+        n.setImportance(NotificationImportance.IMPORTANT);
+        n.setTitle("Welcome to API Arena");
+        n.setBody(String.format(
+                "Thanks for joining, %s! Verify your email, then open Challenges or your Dashboard to get started.",
+                display));
+        n.setMetadataJson(metadataJson);
+        n.setSourceSubmissionId(null);
+
+        notificationRepository.save(n);
+        NotificationDTO dto = toDto(n);
+        long unread = notificationRepository.countByUserIdAndReadAtIsNull(userId);
+        notificationPushService.pushNewNotification(userId, dto, unread);
+    }
+
     @Transactional(readOnly = true)
-    public Page<NotificationDTO> listForUser(Long userId, Boolean unreadOnly, Pageable pageable) {
+    public Page<NotificationDTO> listForUser(Long userId, Boolean unreadOnly, NotificationImportance minImportance, Pageable pageable) {
+        List<NotificationImportance> band = NotificationImportance.fromMinimum(minImportance);
         Page<Notification> page;
         if (Boolean.TRUE.equals(unreadOnly)) {
-            page = notificationRepository.findByUserIdAndReadAtIsNullOrderByCreatedAtDesc(userId, pageable);
+            page = minImportance == null
+                    ? notificationRepository.findByUserIdAndReadAtIsNullOrderByCreatedAtDesc(userId, pageable)
+                    : notificationRepository.findByUserIdAndReadAtIsNullAndImportanceInOrderByCreatedAtDesc(userId, band, pageable);
         } else if (Boolean.FALSE.equals(unreadOnly)) {
-            page = notificationRepository.findByUserIdAndReadAtIsNotNullOrderByCreatedAtDesc(userId, pageable);
+            page = minImportance == null
+                    ? notificationRepository.findByUserIdAndReadAtIsNotNullOrderByCreatedAtDesc(userId, pageable)
+                    : notificationRepository.findByUserIdAndReadAtIsNotNullAndImportanceInOrderByCreatedAtDesc(userId, band, pageable);
         } else {
-            page = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+            page = minImportance == null
+                    ? notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+                    : notificationRepository.findByUserIdAndImportanceInOrderByCreatedAtDesc(userId, band, pageable);
         }
         return page.map(this::toDto);
     }
@@ -128,9 +179,11 @@ public class NotificationService {
             }
         }
         boolean read = n.getReadAt() != null;
+        NotificationImportance imp = n.getImportance() != null ? n.getImportance() : NotificationImportance.INFO;
         return new NotificationDTO(
                 n.getId(),
                 n.getType(),
+                imp.name(),
                 n.getTitle(),
                 n.getBody(),
                 metadata,

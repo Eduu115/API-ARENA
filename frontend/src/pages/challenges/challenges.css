@@ -55,40 +55,78 @@
   transition: width 0.2s, height 0.2s, border-color 0.2s;
 }
 
-.challenges-page::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
+/*
+ * Background stack (same language as landing: grid → film grain → scanlines → content).
+ * Previously .ch-grid-bg used z-index: -1, which painted UNDER the page background — invisible.
+ */
 .ch-grid-bg {
   position: fixed;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0,217,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,217,255,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 217, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.04) 1px, transparent 1px);
   background-size: 60px 60px;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
+}
+
+/* Film grain (matches landing-page::after) */
+.challenges-page::after {
+  content: "";
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.35;
+}
+
+.challenges-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  /* Scanlines — aligned with landing-page::before strength */
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+[data-theme="light"] .challenges-page::after {
+  opacity: 0.22;
+}
+
+[data-theme="light"] .challenges-page::before {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.04) 2px,
+    rgba(0, 0, 0, 0.04) 4px
+  );
 }
 
 .ch-layout {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
-  grid-template-rows: var(--ch-topbar-h) 1fr;
+  /* Second row: auto so height follows .ch-main content; sidebar column stretches to same row height. */
+  grid-template-rows: var(--ch-topbar-h) auto;
   grid-template-areas:
     "nav nav"
     "side main";
   min-height: 100vh;
+  min-height: 100dvh;
   min-width: 0;
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .ch-layout > .arena-navbar {
@@ -101,6 +139,9 @@
 
 .ch-layout > .ch-sidebar {
   grid-area: side;
+  align-self: stretch;
+  /* Let the sidebar column match main column height (do not use min-height: 0 here or the strip can clip). */
+  min-height: auto;
 }
 
 .ch-layout > .ch-main {
@@ -116,7 +157,7 @@
 .ch-layout[style*="grid-template-columns: 1fr"],
 .ch-layout[style*="grid-template-columns:1fr"] {
   grid-template-columns: minmax(0, 1fr) !important;
-  grid-template-rows: var(--ch-topbar-h) 1fr;
+  grid-template-rows: var(--ch-topbar-h) auto;
   grid-template-areas:
     "nav"
     "main";
@@ -155,19 +196,33 @@
   cursor: none;
 }
 
+/* Desktop: stretch with grid row (same height as .ch-main) so the panel background never ends mid-page. */
 .ch-sidebar {
   border-right: 1px solid var(--dim);
-  padding: 24px 0 0;
-  overflow-y: auto;
-  position: sticky;
-  top: var(--ch-topbar-h);
-  height: calc(100vh - var(--ch-topbar-h));
-  background: rgba(10,14,39,0.6);
+  box-sizing: border-box;
+  padding: 24px 0 max(24px, env(safe-area-inset-bottom, 0px));
+  align-self: stretch;
+  width: 100%;
+  min-height: calc(100vh - var(--ch-topbar-h));
+  min-height: calc(100dvh - var(--ch-topbar-h));
+  height: auto;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: visible;
+  background: rgba(10, 14, 39, 0.6);
 }
-.ch-sidebar::-webkit-scrollbar { width: 4px; }
-.ch-sidebar::-webkit-scrollbar-track { background: var(--bg1); }
-.ch-sidebar::-webkit-scrollbar-thumb { background: var(--dim); }
-.ch-sidebar::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+.ch-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.ch-sidebar::-webkit-scrollbar-track {
+  background: var(--bg1);
+}
+.ch-sidebar::-webkit-scrollbar-thumb {
+  background: var(--dim);
+}
+.ch-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
 
 .ch-sidebar-section {
   padding: 0 20px 16px;
@@ -944,7 +999,7 @@
 
   .ch-layout {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--ch-topbar-h) 1fr;
+    grid-template-rows: var(--ch-topbar-h) auto;
     grid-template-areas:
       "nav"
       "main";
@@ -966,8 +1021,12 @@
     position: fixed;
     left: -260px;
     top: var(--ch-topbar-h);
+    bottom: 0;
     width: 240px;
-    height: calc(100vh - var(--ch-topbar-h));
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
     z-index: 200;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: none;

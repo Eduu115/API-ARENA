@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.apiarena.notificationservice.model.dto.NotificationDTO;
 import com.apiarena.notificationservice.model.dto.UnreadCountDTO;
+import com.apiarena.notificationservice.model.entities.NotificationImportance;
 import com.apiarena.notificationservice.model.services.NotificationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -43,14 +44,28 @@ public class NotificationController {
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) Boolean unreadOnly
+            @RequestParam(required = false) Boolean unreadOnly,
+            @RequestParam(required = false) String minImportance
     ) {
         Long userId = extractUserId(authentication);
         if (userId == null) {
             throw new IllegalArgumentException("User ID not found in token");
         }
+        NotificationImportance min = parseMinImportance(minImportance);
         var pageable = PageRequest.of(page, Math.min(Math.max(size, 1), 100), Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(notificationService.listForUser(userId, unreadOnly, pageable));
+        return ResponseEntity.ok(notificationService.listForUser(userId, unreadOnly, min, pageable));
+    }
+
+    private static NotificationImportance parseMinImportance(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return NotificationImportance.valueOf(raw.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "minImportance must be one of: INFO, REMINDER, ALERTS, IMPORTANT");
+        }
     }
 
     @GetMapping("/unread-count")

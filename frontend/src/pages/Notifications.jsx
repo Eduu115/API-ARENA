@@ -5,12 +5,35 @@ import BottomNav from "../components/BottomNav";
 import CustomCursor from "../components/CustomCursor";
 import {
   getMyNotifications,
+  getUnreadNotificationCount,
   markNotificationRead,
   markAllNotificationsRead,
 } from "../lib/notificationsApi";
 import { connectNotificationsWs } from "../lib/notificationsWs";
 import "./challenges/challenges.css";
 import "./notifications.css";
+
+const IMPORTANCE_ORDER = ["INFO", "REMINDER", "ALERTS", "IMPORTANT"];
+
+const IMPORTANCE_FILTERS = [
+  { id: "ALL", label: "All levels" },
+  { id: "INFO", label: "Info" },
+  { id: "REMINDER", label: "Reminder" },
+  { id: "ALERTS", label: "Alerts" },
+  { id: "IMPORTANT", label: "Important" },
+];
+
+const READ_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "unread", label: "Unread" },
+  { id: "read", label: "Read" },
+];
+
+function importanceClass(imp) {
+  const key = typeof imp === "string" ? imp.toUpperCase() : "INFO";
+  if (!IMPORTANCE_ORDER.includes(key)) return "notif-importance--info";
+  return `notif-importance--${key.toLowerCase()}`;
+}
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -28,20 +51,34 @@ export default function Notifications() {
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [unreadTotal, setUnreadTotal] = useState(0);
+  const [importanceFilter, setImportanceFilter] = useState("ALL");
+  const [readFilter, setReadFilter] = useState("all");
   const cancelledRef = useRef(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const params = { page: 0, size: 50 };
+    if (readFilter === "unread") params.unreadOnly = true;
+    else if (readFilter === "read") params.unreadOnly = false;
+    if (importanceFilter !== "ALL") params.minImportance = importanceFilter;
+
     try {
-      const data = await getMyNotifications({ page: 0, size: 50 });
-      if (!cancelledRef.current) setPage(data);
+      const [data, unreadRes] = await Promise.all([
+        getMyNotifications(params),
+        getUnreadNotificationCount().catch(() => ({ count: 0 })),
+      ]);
+      if (!cancelledRef.current) {
+        setPage(data);
+        setUnreadTotal(Number(unreadRes?.count) || 0);
+      }
     } catch (e) {
       if (!cancelledRef.current) setError(e?.message || "Failed to load notifications");
     } finally {
       if (!cancelledRef.current) setLoading(false);
     }
-  }, []);
+  }, [importanceFilter, readFilter]);
 
   useEffect(() => {
     cancelledRef.current = false;
@@ -78,60 +115,125 @@ export default function Notifications() {
   }
 
   const items = page?.content ?? [];
-  const unread = items.filter((n) => !n.read).length;
+  const hasFilters = importanceFilter !== "ALL" || readFilter !== "all";
 
   return (
     <div className="challenges-page notif-page">
       <CustomCursor />
-      <Topbar onMenuToggle={() => setSidebarOpen((o) => !o)} sidebarOpen={sidebarOpen} />
+      <div className="ch-grid-bg" aria-hidden />
+      <div className="ch-layout" style={{ gridTemplateColumns: "1fr" }}>
+        <Topbar onMenuToggle={() => setSidebarOpen((o) => !o)} sidebarOpen={sidebarOpen} />
+        <main className="ch-main notif-main">
+          <div className="ch-page-header notif-page-header">
+            <div>
+              <div className="ch-page-eyebrow">// Inbox</div>
+              <h1 className="ch-page-title">
+                My<em>Notifications</em>
+              </h1>
+              <p className="notif-page-lead">
+                Submission results and system messages. Filter by priority or read status.
+              </p>
+            </div>
+            {unreadTotal > 0 && (
+              <button type="button" className="notif-mark-all" onClick={handleMarkAll}>
+                Mark all read
+              </button>
+            )}
+          </div>
 
-      <main className="challenges-main notif-main">
-        <header className="notif-header">
-          <h1 className="challenges-title">Notifications</h1>
-          {items.length > 0 && unread > 0 && (
-            <button type="button" className="notif-mark-all" onClick={handleMarkAll}>
-              Mark all read
-            </button>
+          <div className="notif-filter-panel">
+            <div className="notif-filter-row">
+              <span className="notif-filter-heading" aria-hidden>
+                Priority
+              </span>
+              <div className="notif-filter-chips" role="group" aria-label="Filter by priority">
+                {IMPORTANCE_FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`notif-filter-chip${importanceFilter === f.id ? " is-active" : ""}`}
+                    onClick={() => setImportanceFilter(f.id)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="notif-filter-row">
+              <span className="notif-filter-heading" aria-hidden>
+                Status
+              </span>
+              <div className="notif-filter-chips" role="group" aria-label="Filter by read status">
+                {READ_FILTERS.map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    className={`notif-filter-chip${readFilter === f.id ? " is-active" : ""}`}
+                    onClick={() => setReadFilter(f.id)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {error && <p className="notif-error">{error}</p>}
+
+          {loading && (
+            <p className="notif-loading" role="status">
+              Loading…
+            </p>
           )}
-        </header>
 
-        {error && <p className="notif-error">{error}</p>}
+          {!loading && items.length === 0 && (
+            <p className="notif-muted">
+              {hasFilters
+                ? "No notifications match these filters. Try changing priority or status."
+                : "No notifications yet. Complete a submission to see results here."}
+            </p>
+          )}
 
-        {loading && <p className="notif-muted">Loading…</p>}
-
-        {!loading && items.length === 0 && (
-          <p className="notif-muted">No notifications yet. Complete a submission to see results here.</p>
-        )}
-
-        <ul className="notif-list">
-          {items.map((n) => {
-            const sid = n.metadata?.submissionId;
-            return (
-              <li key={n.id} className={`notif-card${n.read ? " notif-read" : ""}`}>
-                <div className="notif-card-head">
-                  <span className="notif-card-title">{n.title}</span>
-                  <time className="notif-time" dateTime={n.createdAt}>
-                    {formatDate(n.createdAt)}
-                  </time>
-                </div>
-                <p className="notif-body">{n.body}</p>
-                <div className="notif-actions">
-                  {!n.read && (
-                    <button type="button" className="notif-btn" onClick={() => handleMarkRead(n.id)}>
-                      Mark read
-                    </button>
-                  )}
-                  {sid != null && (
-                    <Link className="notif-link" to={`/submissions/${sid}`}>
-                      View submission →
-                    </Link>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </main>
+          {!loading && items.length > 0 && (
+            <ul className="notif-list">
+              {items.map((n) => {
+                const sid = n.metadata?.submissionId;
+                return (
+                  <li key={n.id} className={`notif-card${n.read ? " notif-read" : ""}`}>
+                    <div className="notif-card-head">
+                      <div className="notif-card-title-row">
+                        <span
+                          className={`notif-importance ${importanceClass(n.importance)}`}
+                          title="Priority (low → high): Info, Reminder, Alerts, Important"
+                        >
+                          {n.importance || "INFO"}
+                        </span>
+                        <span className="notif-card-title">{n.title}</span>
+                      </div>
+                      <time className="notif-time" dateTime={n.createdAt}>
+                        {formatDate(n.createdAt)}
+                      </time>
+                    </div>
+                    <p className="notif-body">{n.body}</p>
+                    <div className="notif-actions">
+                      {!n.read && (
+                        <button type="button" className="notif-btn" onClick={() => handleMarkRead(n.id)}>
+                          Mark read
+                        </button>
+                      )}
+                      {sid != null && (
+                        <Link className="notif-link" to={`/submissions/${sid}`}>
+                          View submission →
+                        </Link>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </main>
+      </div>
 
       <BottomNav />
     </div>
