@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 public record NotificationDTO(
         Long id,
         String type,
+        String importance,
         String title,
         String body,
         Map<String, Object> metadata,

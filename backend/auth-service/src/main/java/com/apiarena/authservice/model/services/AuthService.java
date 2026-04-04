@@ -45,6 +45,9 @@ public class AuthService implements IAuthService {
     @Autowired
     private EmailDispatchService emailDispatchService;
 
+    @Autowired
+    private WelcomeNotificationDispatchService welcomeNotificationDispatchService;
+
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private static String newVerificationToken() {
@@ -94,6 +97,8 @@ public class AuthService implements IAuthService {
                 savedUser.getEmail(),
                 savedUser.getUsername(),
                 token);
+
+        welcomeNotificationDispatchService.sendWelcome(savedUser.getId(), savedUser.getUsername());
 
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }

@@ -27,13 +27,14 @@ async function request(path, options = {}) {
   return null;
 }
 
-/** @param {{ page?: number, size?: number, unreadOnly?: boolean }} [params] */
+/** @param {{ page?: number, size?: number, unreadOnly?: boolean, minImportance?: 'INFO'|'REMINDER'|'ALERTS'|'IMPORTANT' }} [params] */
 export function getMyNotifications(params = {}) {
   const sp = new URLSearchParams();
   if (params.page != null) sp.set("page", String(params.page));
   if (params.size != null) sp.set("size", String(params.size));
   if (params.unreadOnly === true) sp.set("unreadOnly", "true");
   if (params.unreadOnly === false) sp.set("unreadOnly", "false");
+  if (params.minImportance) sp.set("minImportance", params.minImportance);
   const q = sp.toString();
   return request(`/api/notifications/me${q ? `?${q}` : ""}`);
 }

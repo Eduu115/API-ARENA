@@ -119,6 +119,7 @@ services:
       APP_EMAIL_FRONTEND_BASE_URL: ${FRONTEND_URL:-http://localhost:3000}
       APP_EMAIL_RESEND_API_KEY: ${RESEND_API_KEY:-}
       APP_EMAIL_FROM: ${APP_EMAIL_FROM:-API Arena <onboarding@resend.dev>}
+      SERVICES_NOTIFICATION_URL: http://apiarena-notification:8090
     ports:
       - "8081:8081"
     networks:

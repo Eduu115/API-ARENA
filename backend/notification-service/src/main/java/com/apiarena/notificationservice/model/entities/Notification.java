@@ -6,6 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,6 +34,10 @@ public class Notification {
 
     @Column(name = "type", nullable = false, length = 64)
     private String type;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "importance", nullable = false, length = 32)
+    private NotificationImportance importance = NotificationImportance.INFO;
 
     @Column(name = "title", nullable = false)
     private String title;
