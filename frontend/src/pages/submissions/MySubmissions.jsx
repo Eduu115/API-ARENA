@@ -130,11 +130,12 @@ export default function MySubmissions() {
                   const maxScore = 1000;
                   const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
                   const sc = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--warn)' : pct > 0 ? 'var(--red)' : 'var(--muted)';
+                  const challengeTitle = (sub.challengeTitle && String(sub.challengeTitle).trim()) || `Challenge #${sub.challengeId}`;
                   return (
                     <div key={sub.id} className="sub-row" style={{ animationDelay: `${i * 0.04}s` }} onClick={() => navigate(`/submissions/${sub.id}`)}>
                       <div className="sub-row-id">#{sub.id}</div>
                       <div>
-                        <div className="sub-row-challenge-title">Challenge #{sub.challengeId}</div>
+                        <div className="sub-row-challenge-title">{challengeTitle}</div>
                         <div className="sub-row-challenge-meta">
                           <span>ID {sub.challengeId}</span>
                         </div>
