@@ -1,0 +1,175 @@
+/* Friends — layout desktop-first, mismo lenguaje que Leaderboard / challenges (sin cajas redondeadas genéricas) */
+
+.fr-page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  gap: 28px 40px;
+  align-items: start;
+  padding-bottom: 100px;
+}
+
+@media (max-width: 960px) {
+  .fr-page-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.fr-lead {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+.fr-block-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dim);
+}
+
+.fr-subhead {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 20px 0 10px;
+}
+
+.fr-subhead:first-child {
+  margin-top: 0;
+}
+
+.fr-table {
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+}
+
+.fr-table-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--dim);
+  transition: background 0.15s;
+}
+
+.fr-table-row:last-child {
+  border-bottom: none;
+}
+
+.fr-table-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.fr-cell-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fr-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -0.3px;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1.15;
+}
+
+.fr-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.fr-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fr-muted {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  padding: 14px 18px;
+}
+
+.fr-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 8px;
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  background: rgba(0, 217, 255, 0.06);
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fr-badge-warn {
+  border-color: rgba(255, 184, 0, 0.35);
+  background: rgba(255, 184, 0, 0.06);
+  color: var(--warn);
+}
+
+.fr-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 0;
+  border: 1px solid var(--dim);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.fr-btn:hover:not(:disabled) {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.fr-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.fr-btn-primary {
+  border-color: rgba(0, 217, 255, 0.45);
+  background: rgba(0, 217, 255, 0.08);
+  color: var(--cyan);
+}
+
+.fr-btn-primary:hover:not(:disabled) {
+  background: rgba(0, 217, 255, 0.14);
+}
+
+.fr-btn-ghost {
+  border-color: var(--dim);
+  color: var(--muted);
+}
+
+.fr-search-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
