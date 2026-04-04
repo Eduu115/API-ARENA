@@ -14,6 +14,7 @@ const NAV_ITEMS_AUTH = [
   { label: "Dashboard", path: "/dashboard" },
   { label: "Challenges", path: "/challenges" },
   { label: "Submissions", path: "/submissions" },
+  { label: "Friends", path: "/friends" },
   { label: "Leaderboard", path: "/leaderboard" },
   { label: "Replay", path: "/replay" },
   { label: "Profile", path: "/perfil", openAccountMenu: true },

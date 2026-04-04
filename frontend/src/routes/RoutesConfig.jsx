@@ -22,6 +22,7 @@ import TeacherGroups from "../pages/teacher/TeacherGroups";
 import ChallengeSubmit from "../pages/challenges/ChallengeSubmit";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import TeacherLayout from "../layouts/TeacherLayout";
+import Friends from "../pages/friends/Friends";
 
 export default function RoutesConfig() {
   return (
@@ -46,6 +47,7 @@ export default function RoutesConfig() {
           <Route path="submissions/:id/results" element={<SubmissionResults />} />
           <Route path="challenges/:id/submit" element={<ChallengeSubmit />} />
           <Route path="replay" element={<Replay />} />
+          <Route path="friends" element={<Friends />} />
         </Route>
 
         <Route element={<TeacherLayout />}>
