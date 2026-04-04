@@ -100,7 +100,7 @@ export default function ChallengeDetail() {
   if (loading) {
     return (
       <div className="challenges-page chd-page">
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
           <div className="chd-loading">Cargando challenge...</div>
         </main>
@@ -113,7 +113,7 @@ export default function ChallengeDetail() {
   if (error || !challenge) {
     return (
       <div className="challenges-page chd-page">
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
           <p className="chd-error">{error || 'Challenge no encontrado'}</p>
           <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
@@ -130,7 +130,7 @@ export default function ChallengeDetail() {
 
   return (
     <div className="challenges-page chd-page">
-      <Topbar onMenuToggle={() => {}} sidebarOpen={false} />
+      <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
       <main className="chd-main">
         <div className="chd-container">
           <div className="chd-top-actions">

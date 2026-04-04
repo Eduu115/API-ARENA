@@ -1,0 +1,516 @@
+/**
+ * Topbar — layout en flex: [ marca + menú sidebar ] | [ nav principal scroll ] | [ acciones → borde derecho ]
+ * Importar solo desde Topbar.jsx. Usa variables de .challenges-page (--cyan, --dim, etc.).
+ */
+
+.ch-topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  height: 56px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--dim);
+  background: rgba(8, 11, 30, 0.92);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* —— Marca + hamburguesa (sidebar) —— */
+.ch-topbar-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.ch-topbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  width: 240px;
+  height: 100%;
+  border-right: 1px solid var(--dim);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.ch-logo-hex {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.ch-logo-hex svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ch-logo-text {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+}
+.ch-logo-text .ch-api {
+  color: var(--cyan);
+}
+.ch-logo-text .ch-arena {
+  color: var(--white);
+}
+
+.ch-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 18px;
+  height: 100%;
+  color: var(--muted);
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.ch-menu-btn:hover {
+  color: var(--cyan);
+}
+.ch-menu-btn.open {
+  color: var(--cyan);
+}
+
+.ch-hamburger {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  position: relative;
+  transition: background 0.2s;
+}
+.ch-hamburger::before,
+.ch-hamburger::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  transition: transform 0.25s ease, top 0.25s ease;
+}
+.ch-hamburger::before {
+  top: -6px;
+}
+.ch-hamburger::after {
+  top: 6px;
+}
+.ch-menu-btn.open .ch-hamburger {
+  background: transparent;
+}
+.ch-menu-btn.open .ch-hamburger::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+.ch-menu-btn.open .ch-hamburger::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+/* —— Enlaces principales (scroll horizontal si no cabe) —— */
+.ch-topbar-nav {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  padding: 0 8px 0 12px;
+  overflow: hidden;
+}
+
+.ch-topbar-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  height: 100%;
+}
+.ch-topbar-nav-inner::-webkit-scrollbar {
+  display: none;
+}
+
+.ch-nav-item {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 10px;
+  text-decoration: none;
+  transition: color 0.2s;
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.ch-nav-item--iconrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ch-nav-ico {
+  display: flex;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.92;
+}
+.ch-nav-ico svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ch-nav-ico-label {
+  white-space: nowrap;
+}
+
+.ch-nav-item:hover {
+  color: var(--text);
+}
+.ch-nav-item:hover .ch-nav-ico {
+  opacity: 1;
+}
+.ch-nav-item.ch-active {
+  color: var(--cyan);
+}
+.ch-nav-item.ch-active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+button.ch-nav-item-btn {
+  background: none;
+  border: none;
+  margin: 0;
+  cursor: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* —— Bloque derecho: ELO, Alerts, tema, Profile (offcanvas) —— */
+.ch-topbar-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 10px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0 16px 0 12px;
+  min-width: max-content;
+  position: relative;
+  z-index: 2;
+}
+
+.ch-topbar-elo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px 0 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 184, 0, 0.38);
+  background: rgba(255, 184, 0, 0.1);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.ch-topbar-elo-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+.ch-topbar-elo-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  color: var(--warn);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ch-topbar-notif-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 229, 255, 0.38);
+  background: rgba(0, 229, 255, 0.08);
+  color: var(--cyan);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+  box-sizing: border-box;
+}
+.ch-topbar-notif-link:hover {
+  background: rgba(0, 229, 255, 0.14);
+  border-color: rgba(0, 229, 255, 0.55);
+}
+.ch-topbar-notif-ico {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.ch-topbar-notif-ico svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ch-topbar-notif-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ch-notif-badge {
+  position: absolute;
+  top: -5px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--purple);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+}
+
+.ch-topbar-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 229, 255, 0.32);
+  background: rgba(0, 229, 255, 0.08);
+  color: var(--cyan);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.ch-topbar-theme-btn:hover {
+  background: rgba(0, 229, 255, 0.14);
+  border-color: rgba(0, 229, 255, 0.5);
+}
+.ch-topbar-theme-ico {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.ch-topbar-theme-ico svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ch-topbar-theme-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Profile: abre offcanvas; separador respecto a tema/alerts */
+.ch-topbar-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  margin-left: 8px;
+  padding-left: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--dim);
+  border-left: 1px solid var(--dim);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+.ch-topbar-profile-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.ch-topbar-profile-btn--active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.ch-topbar-profile-ico {
+  display: flex;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: inherit;
+  opacity: 0.95;
+}
+.ch-topbar-profile-ico svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ch-topbar-profile-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+button.ch-topbar-profile-btn {
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.ch-topbar-login {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-decoration: none;
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+.ch-topbar-login:hover {
+  opacity: 0.85;
+}
+
+/* —— Compactación muy estrecha —— */
+@media (max-width: 520px) {
+  .ch-topbar-notif-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .ch-topbar-notif-link {
+    padding: 0 10px;
+    min-width: 42px;
+    justify-content: center;
+  }
+  .ch-topbar-profile-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .ch-topbar-profile-btn {
+    padding: 0 10px;
+    min-width: 42px;
+    justify-content: center;
+    margin-left: 4px;
+    padding-left: 10px;
+  }
+  .ch-topbar-theme-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .ch-topbar-theme-btn {
+    padding: 0 10px;
+    min-width: 42px;
+    justify-content: center;
+  }
+}
+
+/* Sidebar drawer: mostrar hamburguesa */
+@media (max-width: 1024px) {
+  .ch-menu-btn {
+    display: flex;
+  }
+  .ch-topbar-logo {
+    width: auto;
+    border-right: none;
+    flex-shrink: 0;
+  }
+}
+
+/* Móvil: nav superior oculto (bottom nav); acciones compactas */
+@media (max-width: 768px) {
+  .ch-topbar-nav {
+    display: none;
+  }
+  .ch-topbar-actions {
+    margin-left: auto;
+    padding-left: 8px;
+    padding-right: 12px;
+  }
+  .ch-topbar-elo {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .ch-topbar {
+    height: 48px;
+  }
+  .ch-logo-text {
+    font-size: 17px;
+  }
+}
