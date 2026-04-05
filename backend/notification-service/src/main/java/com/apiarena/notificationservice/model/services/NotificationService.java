@@ -28,15 +28,18 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final ObjectMapper objectMapper;
     private final NotificationPushService notificationPushService;
+    private final NotificationEmailDispatchService notificationEmailDispatchService;
 
     public NotificationService(
             NotificationRepository notificationRepository,
             ObjectMapper objectMapper,
-            NotificationPushService notificationPushService
+            NotificationPushService notificationPushService,
+            NotificationEmailDispatchService notificationEmailDispatchService
     ) {
         this.notificationRepository = notificationRepository;
         this.objectMapper = objectMapper;
         this.notificationPushService = notificationPushService;
+        this.notificationEmailDispatchService = notificationEmailDispatchService;
     }
 
     @Transactional
@@ -84,6 +87,7 @@ public class NotificationService {
         NotificationDTO dto = toDto(n);
         long unread = notificationRepository.countByUserIdAndReadAtIsNull(event.userId());
         notificationPushService.pushNewNotification(event.userId(), dto, unread);
+        notificationEmailDispatchService.sendEmailIfAlertOrImportant(n);
     }
 
     /**
@@ -123,6 +127,7 @@ public class NotificationService {
         NotificationDTO dto = toDto(n);
         long unread = notificationRepository.countByUserIdAndReadAtIsNull(userId);
         notificationPushService.pushNewNotification(userId, dto, unread);
+        notificationEmailDispatchService.sendEmailIfAlertOrImportant(n);
     }
 
     @Transactional(readOnly = true)

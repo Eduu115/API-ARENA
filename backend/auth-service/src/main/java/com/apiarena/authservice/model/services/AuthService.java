@@ -63,11 +63,11 @@ public class AuthService implements IAuthService {
         String email = request.getEmail().trim().toLowerCase();
 
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email already registered");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username already taken");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
         }
 
         User.Role role = User.Role.STUDENT;
@@ -75,7 +75,7 @@ public class AuthService implements IAuthService {
             try {
                 role = User.Role.valueOf(request.getRole().toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid role: " + request.getRole());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role: " + request.getRole());
             }
         }
 
@@ -97,6 +97,10 @@ public class AuthService implements IAuthService {
                 savedUser.getEmail(),
                 savedUser.getUsername(),
                 token);
+
+        emailDispatchService.sendWelcomeBetaLegacyEmail(savedUser.getEmail(), savedUser.getUsername());
+
+        emailDispatchService.sendFirstStepsBetaEmail(savedUser.getEmail(), savedUser.getUsername());
 
         welcomeNotificationDispatchService.sendWelcome(savedUser.getId(), savedUser.getUsername());
 

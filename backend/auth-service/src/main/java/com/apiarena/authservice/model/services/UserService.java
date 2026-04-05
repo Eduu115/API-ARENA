@@ -3,9 +3,11 @@ package com.apiarena.authservice.model.services;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RewardRequest;
@@ -21,6 +23,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailDispatchService emailDispatchService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -114,5 +119,18 @@ public class UserService implements IUserService {
         // level = floor((1 + sqrt(1 + 8*xp/300)) / 2)
         // L1: 0, L2: 300, L3: 900, L4: 1800, L5: 3000, L6: 4500 ...
         return (int) Math.floor((1.0 + Math.sqrt(1.0 + 8.0 * totalXp / 300.0)) / 2.0);
+    }
+
+    @Override
+    @Transactional
+    public void sendNotificationEmail(Long userId, String title, String body, String importanceLabel) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        emailDispatchService.sendNotificationAlertEmail(
+                user.getEmail(),
+                user.getUsername(),
+                title,
+                body,
+                importanceLabel);
     }
 }

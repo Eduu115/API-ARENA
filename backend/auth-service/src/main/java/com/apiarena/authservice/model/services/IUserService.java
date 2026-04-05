@@ -23,4 +23,6 @@ public interface IUserService extends UserDetailsService {
     User getUserEntityByEmail(String email);
 
     void applyReward(Long userId, RewardRequest request);
+
+    void sendNotificationEmail(Long userId, String title, String body, String importanceLabel);
 }

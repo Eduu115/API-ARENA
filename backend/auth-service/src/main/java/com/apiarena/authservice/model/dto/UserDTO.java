@@ -30,6 +30,7 @@ public class UserDTO {
     private LocalDateTime lastLogin;
     private Boolean isActive;
     private Boolean emailVerified;
+    private Boolean betaLegacy;
 
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -48,7 +49,8 @@ public class UserDTO {
             user.getCreatedAt(),
             user.getLastLogin(),
             user.getIsActive(),
-            user.getEmailVerified()
+            user.getEmailVerified(),
+            Boolean.TRUE.equals(user.getBetaLegacy())
         );
     }
 }
