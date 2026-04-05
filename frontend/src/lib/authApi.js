@@ -31,6 +31,20 @@ function getBaseUrl() {
 
 }
 
+/**
+ * Do not attach a stored Bearer token — avoids 403 on login/register when an old JWT is expired or invalid.
+ */
+function isPublicAuthPath(path) {
+    const p = (path.split("?")[0] || "").replace(/\/$/, "") || "/";
+    return (
+        p === "/api/auth/register" ||
+        p === "/api/auth/login" ||
+        p === "/api/auth/refresh" ||
+        p === "/api/auth/verify-email" ||
+        p === "/api/auth/resend-verification"
+    );
+}
+
 
 
 
@@ -197,7 +211,13 @@ async function request(path, options = {}) {
     };
 
 
-    if (tokens?.accessToken && !headers.Authorization) {
+    if (isPublicAuthPath(path)) {
+
+
+        delete headers.Authorization;
+
+
+    } else if (tokens?.accessToken && !headers.Authorization) {
 
 
         headers.Authorization = `Bearer ${tokens.accessToken}`;

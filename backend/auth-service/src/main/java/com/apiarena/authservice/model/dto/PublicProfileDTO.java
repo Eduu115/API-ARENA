@@ -26,6 +26,7 @@ public class PublicProfileDTO {
     private Integer totalChallengesCompleted;
     private Integer totalTestsPassed;
     private LocalDateTime createdAt;
+    private Boolean betaLegacy;
 
     public static PublicProfileDTO fromEntity(User user) {
         return PublicProfileDTO.builder()
@@ -41,6 +42,7 @@ public class PublicProfileDTO {
                 .totalChallengesCompleted(user.getTotalChallengesCompleted())
                 .totalTestsPassed(user.getTotalTestsPassed())
                 .createdAt(user.getCreatedAt())
+                .betaLegacy(Boolean.TRUE.equals(user.getBetaLegacy()))
                 .build();
     }
 }

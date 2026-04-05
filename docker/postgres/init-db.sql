@@ -32,6 +32,8 @@ CREATE TABLE IF NOT EXISTS users (
     email_verification_expires_at TIMESTAMP
 );
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_legacy BOOLEAN NOT NULL DEFAULT TRUE;
+
 -- ===========================================
 -- Tabla: refresh_tokens
 -- ===========================================

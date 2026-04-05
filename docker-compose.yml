@@ -252,6 +252,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SERVICES_AUTH_URL: http://apiarena-auth:8081
     ports:
       - "8090:8090"
     networks:

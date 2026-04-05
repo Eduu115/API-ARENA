@@ -94,6 +94,10 @@ public class User {
     @Column(name = "email_verification_expires_at")
     private LocalDateTime emailVerificationExpiresAt;
 
+    /** Beta-phase signups: marked as legacy (early supporter) for product recognition. */
+    @Column(name = "beta_legacy", nullable = false)
+    private Boolean betaLegacy = true;
+
     public User(String username, String email, String passwordHash, Role role) {
         this.username = username;
         this.email = email;
@@ -106,6 +110,7 @@ public class User {
         this.totalTestsPassed = 0;
         this.isActive = true;
         this.emailVerified = false;
+        this.betaLegacy = true;
     }
 
     public enum Role {

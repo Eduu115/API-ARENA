@@ -21,7 +21,8 @@ export function AuthProvider({ children }) {
       const me = await authApi.getMe();
       setUser(me ?? null);
     } catch (e) {
-      if (e?.status === 401) {
+      /* Spring used to return 403 for unauthenticated /me; treat like 401 for refresh */
+      if (e?.status === 401 || e?.status === 403) {
         const refreshed = await authApi.refreshToken();
         if (refreshed?.user) {
           setUser(refreshed.user);

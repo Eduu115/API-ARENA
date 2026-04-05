@@ -15,11 +15,11 @@ public enum NotificationImportance {
     IMPORTANT;
 
     /**
-     * Whether this level should trigger email delivery when email notifications are enabled.
-     * Today only IMPORTANT; adjust policy here as product rules evolve.
+     * Whether this level should trigger email delivery when mirroring in-app notifications to email.
+     * ALERTS and IMPORTANT are sent via Resend (auth-service); INFO and REMINDER are in-app only.
      */
     public boolean shouldSendEmailByDefault() {
-        return this == IMPORTANT;
+        return this == ALERTS || this == IMPORTANT;
     }
 
     /**
