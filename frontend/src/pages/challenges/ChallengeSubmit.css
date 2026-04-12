@@ -656,3 +656,68 @@
 .cs-onboard-btn-primary:hover {
   background: rgba(0, 217, 255, 0.08);
 }
+
+/* ── Submission in progress modal ── */
+.cs-submit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 11800;
+  background: rgba(2, 6, 17, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.cs-submit-modal {
+  width: min(680px, 94vw);
+  border: 1px solid var(--dim);
+  background: linear-gradient(180deg, rgba(8, 12, 31, 0.98) 0%, rgba(4, 7, 20, 0.98) 100%);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  padding: 20px;
+}
+
+.cs-submit-modal-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--warn);
+  margin-bottom: 8px;
+}
+
+.cs-submit-modal-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--cyan);
+}
+
+.cs-submit-modal-copy {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text);
+}
+
+.cs-submit-modal-spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 2px solid rgba(0, 217, 255, 0.22);
+  border-top-color: var(--cyan);
+  margin: 14px 0 10px;
+  animation: cs-spin 0.8s linear infinite;
+}
+
+.cs-submit-modal-hint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  color: var(--muted);
+}
+
+@keyframes cs-spin {
+  to { transform: rotate(360deg); }
+}

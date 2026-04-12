@@ -8,6 +8,8 @@ import { connectNotificationsWs } from "../lib/notificationsWs";
 import { NavIcon, IconBell, IconSun, IconMoon } from "./topbar/TopbarIcons";
 import "./Topbar.css";
 
+const MIN_RANKED_CHALLENGES = 3;
+
 const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
@@ -39,6 +41,9 @@ export default function Topbar({
   const navItems = isAuthenticated ? NAV_ITEMS_AUTH : NAV_ITEMS_GUEST;
   const { isDark, toggleTheme } = useTheme();
   const rating = user?.rating ?? 1000;
+  const completedChallenges = Number(user?.totalChallengesCompleted ?? 0);
+  const isUnranked = Number.isFinite(completedChallenges) && completedChallenges < MIN_RANKED_CHALLENGES;
+  const remainingForRank = Math.max(0, MIN_RANKED_CHALLENGES - completedChallenges);
   const isTeacher = String(user?.role || "").toUpperCase() === "TEACHER";
   const profileActive =
     pathname === "/perfil" ||
@@ -160,9 +165,26 @@ export default function Topbar({
 
           {isAuthenticated ? (
           <div className="arena-navbar__actions">
-            <div className="arena-navbar__elo" title={`Rating ${rating}`}>
+            <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? undefined : `Rating ${rating}`}>
               <span className="arena-navbar__elo-lbl">ELO</span>
-              <span className="arena-navbar__elo-val">{rating}</span>
+              <span className={`arena-navbar__elo-val${isUnranked ? " arena-navbar__elo-val--unranked" : ""}`}>
+                {isUnranked ? "UNRANKED" : rating}
+              </span>
+              {isUnranked && (
+                <span className="arena-navbar__elo-help-wrap">
+                  <Link
+                    to="/docs/sistema-xp-elo"
+                    className="arena-navbar__elo-help"
+                    aria-label="Open ELO System documentation"
+                  >
+                    ?
+                  </Link>
+                  <span className="arena-navbar__elo-tooltip">
+                    You are unranked until you complete {MIN_RANKED_CHALLENGES} challenges.
+                    {remainingForRank > 0 ? ` ${remainingForRank} left to classify.` : ""}
+                  </span>
+                </span>
+              )}
             </div>
 
             <Link
