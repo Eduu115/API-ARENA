@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSubmissionById } from '../../lib/submissionsApi';
+import { getMySubmissions, getSubmissionById } from '../../lib/submissionsApi';
 import { useAuth } from '../../context/AuthContext';
 import { getUserPublicProfile } from '../../lib/authApi';
 import Topbar from '../../components/Topbar';
@@ -39,12 +39,22 @@ function useCountUp(target, duration = 1400, delay = 400) {
   return value;
 }
 
+function normalizeAiReview(rawSuggestions, aiScoreRaw) {
+  const aiScore = Number(aiScoreRaw) || 0;
+  const source = rawSuggestions && typeof rawSuggestions === 'object' ? rawSuggestions : {};
+  const summary = typeof source.summary === 'string' ? source.summary : 'AI feedback is not available for this submission yet.';
+  const provider = typeof source.provider === 'string' ? source.provider : 'heuristic';
+  const suggestions = Array.isArray(source.suggestions) ? source.suggestions.filter(Boolean) : [];
+  return { aiScore, summary, provider, suggestions };
+}
+
 export default function SubmissionResults() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const [sub, setSub] = useState(null);
+  const [submissionLabel, setSubmissionLabel] = useState('');
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,6 +70,21 @@ export default function SubmissionResults() {
         if (data.userId) {
           getUserPublicProfile(data.userId).then(setProfile).catch(() => {});
         }
+        getMySubmissions()
+          .then(items => {
+            const list = Array.isArray(items) ? items : [];
+            const sameChallenge = list
+              .filter(s => Number(s.challengeId) === Number(data.challengeId))
+              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const idx = sameChallenge.findIndex(s => Number(s.id) === Number(data.id));
+            const attempt = idx >= 0 ? idx + 1 : null;
+            const challengeName = (
+              sameChallenge.find(s => Number(s.id) === Number(data.id))?.challengeTitle ||
+              `Challenge #${data.challengeId}`
+            );
+            setSubmissionLabel(attempt ? `${challengeName} · Attempt ${attempt}` : challengeName);
+          })
+          .catch(() => setSubmissionLabel(`Challenge #${data.challengeId}`));
       })
       .catch(e => { setError(e?.message || 'Failed to load'); setLoading(false); });
   }, [id]);
@@ -67,6 +92,7 @@ export default function SubmissionResults() {
   const xpDisplay = useCountUp(sub?.xpEarned, 1400, 800);
   const eloAbsDisplay = useCountUp(sub?.eloChange, 1200, 1200);
   const scoreDisplay = useCountUp(sub ? Math.round(Number(sub.totalScore) || 0) : 0, 1000, 400);
+  const aiDisplay = useCountUp(sub ? Math.round(Number(sub.aiReviewScore) || 0) : 0, 1000, 700);
 
   if (loading) {
     return (
@@ -108,6 +134,8 @@ export default function SubmissionResults() {
     Number(sub.totalScore) > Number(sub.previousBestScore);
   const notImproved = !isFirst && !improved;
   const prevBest = sub.previousBestScore != null ? Number(sub.previousBestScore).toFixed(1) : null;
+  const aiReview = normalizeAiReview(sub.aiSuggestions, sub.aiReviewScore);
+  const headerLabel = submissionLabel || `Challenge #${sub.challengeId}`;
 
   const eloVal = sub.eloChange || 0;
   const eloPositive = eloVal > 0;
@@ -127,6 +155,7 @@ export default function SubmissionResults() {
 
             <div className="sr-header">
               <div className="sr-header-label">CHALLENGE COMPLETE</div>
+              <div className="sr-submission-name">{headerLabel}</div>
               <div className="sr-score-big">{scoreDisplay}</div>
               <div className="sr-score-sub">/ 1000 POINTS</div>
             </div>
@@ -185,6 +214,22 @@ export default function SubmissionResults() {
                 Current ELO: <span className="sr-rating-val">{profile.rating}</span>
               </div>
             )}
+
+            <div className="sr-ai-review">
+              <div className="sr-ai-head">
+                <span className="sr-ai-title">AI REVIEW</span>
+                <span className="sr-ai-provider">{aiReview.provider}</span>
+              </div>
+              <div className="sr-ai-score">{aiDisplay} <span>/ 200</span></div>
+              <p className="sr-ai-summary">{aiReview.summary}</p>
+              {aiReview.suggestions.length > 0 && (
+                <ul className="sr-ai-list">
+                  {aiReview.suggestions.slice(0, 3).map((item, idx) => (
+                    <li key={`ai-sug-${idx}`}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
 
             <div className="sr-actions">
               <button className="sr-btn-primary" onClick={() => navigate('/challenges')}>

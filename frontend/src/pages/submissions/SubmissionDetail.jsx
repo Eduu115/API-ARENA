@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getSubmissionById, getSubmissionLogs } from '../../lib/submissionsApi';
+import { getMySubmissions, getSubmissionById, getSubmissionLogs } from '../../lib/submissionsApi';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
@@ -30,11 +30,22 @@ function parseTestLines(testLogs) {
     });
 }
 
+function normalizeAiReview(rawSuggestions, aiScoreRaw) {
+  const aiScore = Number(aiScoreRaw) || 0;
+  const source = rawSuggestions && typeof rawSuggestions === 'object' ? rawSuggestions : {};
+  const summary = typeof source.summary === 'string' ? source.summary : 'No AI summary available for this submission.';
+  const provider = typeof source.provider === 'string' ? source.provider : 'heuristic';
+  const strengths = Array.isArray(source.strengths) ? source.strengths.filter(Boolean) : [];
+  const suggestions = Array.isArray(source.suggestions) ? source.suggestions.filter(Boolean) : [];
+  return { aiScore, summary, provider, strengths, suggestions };
+}
+
 export default function SubmissionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [sub, setSub] = useState(null);
+  const [submissionLabel, setSubmissionLabel] = useState('');
   const [logs, setLogs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,6 +65,26 @@ export default function SubmissionDetail() {
         setSub(detail);
         setLogs(logsData);
         setLoading(false);
+        getMySubmissions()
+          .then(items => {
+            if (cancelled) return;
+            const list = Array.isArray(items) ? items : [];
+            const sameChallenge = list
+              .filter(s => Number(s.challengeId) === Number(detail.challengeId))
+              .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+            const idx = sameChallenge.findIndex(s => Number(s.id) === Number(detail.id));
+            const attempt = idx >= 0 ? idx + 1 : null;
+            const challengeName = (
+              sameChallenge.find(s => Number(s.id) === Number(detail.id))?.challengeTitle ||
+              `Challenge #${detail.challengeId}`
+            );
+            setSubmissionLabel(attempt ? `${challengeName} · Attempt ${attempt}` : challengeName);
+          })
+          .catch(() => {
+            if (!cancelled) {
+              setSubmissionLabel(`Challenge #${detail.challengeId}`);
+            }
+          });
 
         if (detail.status !== 'COMPLETED' && detail.status !== 'FAILED') {
           pollTimer = setTimeout(load, 2000);
@@ -71,15 +102,20 @@ export default function SubmissionDetail() {
   }, [id]);
 
   const tests = useMemo(() => parseTestLines(logs?.testLogs || sub?.testLogs), [logs, sub]);
+  const aiReview = useMemo(
+    () => normalizeAiReview(sub?.aiSuggestions, sub?.aiReviewScore),
+    [sub]
+  );
 
   const scoreBreakdown = useMemo(() => {
     if (!sub) return [];
     return [
-      { label: 'Correctness', value: Number(sub.correctnessScore) || 0, max: 500, color: 'var(--green)' },
+      { label: 'Correctness', value: Number(sub.correctnessScore) || 0, max: 300, color: 'var(--green)' },
       { label: 'Performance', value: Number(sub.performanceScore) || 0, max: 300, color: 'var(--cyan)' },
       { label: 'Design', value: Number(sub.designScore) || 0, max: 200, color: 'var(--purple)' },
+      { label: 'AI Review', value: aiReview.aiScore, max: 200, color: 'var(--warn)' },
     ];
-  }, [sub]);
+  }, [sub, aiReview.aiScore]);
 
   const perfMetrics = useMemo(() => {
     if (!sub) return [];
@@ -137,6 +173,7 @@ export default function SubmissionDetail() {
   const totalScore = Number(sub.totalScore) || 0;
   const buildLogs = logs?.buildLogs || '';
   const testLogs = logs?.testLogs || '';
+  const headerLabel = submissionLabel || `Challenge #${sub.challengeId}`;
 
   return (
     <div className="challenges-page">
@@ -174,9 +211,9 @@ export default function SubmissionDetail() {
             <div className="sd-hero">
               <div className="sd-hero-top">
                 <div>
-                  <h1 className="sd-hero-title">Submission #{sub.id}</h1>
+                  <h1 className="sd-hero-title">{headerLabel}</h1>
                   <div className="sd-hero-meta">
-                    <span>Challenge #{sub.challengeId}</span>
+                    <span>Submission #{sub.id}</span>
                     <span>·</span>
                     <span>Created {formatDate(sub.createdAt)}</span>
                     {sub.completedAt && <><span>·</span><span>Completed {formatDate(sub.completedAt)}</span></>}
@@ -204,11 +241,42 @@ export default function SubmissionDetail() {
                     </div>
                   );
                 })}
-                <div className="sd-score-cell">
-                  <div className="sd-score-cell-val" style={{ color: 'var(--warn)' }}>{totalScore.toFixed(1)}</div>
-                  <div className="sd-score-cell-label">Total</div>
-                  <div className="sd-score-cell-bar">
-                    <div className="sd-score-cell-fill" style={{ width: `${(totalScore / 1000) * 100}%`, background: 'linear-gradient(90deg, var(--cyan), var(--green))' }} />
+              </div>
+            )}
+
+            {!isProcessing && (
+              <div className="sd-panel sd-ai-panel">
+                <div className="sd-panel-head">
+                  <div className="sd-panel-title">AI Review</div>
+                  <span className="sd-ai-provider">Provider: {aiReview.provider}</span>
+                </div>
+                <div className="sd-panel-body">
+                  <div className="sd-ai-score-wrap">
+                    <div className="sd-ai-score-label">AI SCORE</div>
+                    <div className="sd-ai-score-value">{aiReview.aiScore.toFixed(1)} / 200</div>
+                  </div>
+                  <p className="sd-ai-summary">{aiReview.summary}</p>
+                  <div className="sd-ai-columns">
+                    <div>
+                      <div className="sd-ai-col-title">Strengths</div>
+                      {aiReview.strengths.length ? (
+                        <ul className="sd-ai-list">
+                          {aiReview.strengths.map((item, idx) => <li key={`str-${idx}`}>{item}</li>)}
+                        </ul>
+                      ) : (
+                        <div className="sd-ai-empty">No strengths provided.</div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="sd-ai-col-title">Suggestions</div>
+                      {aiReview.suggestions.length ? (
+                        <ul className="sd-ai-list">
+                          {aiReview.suggestions.map((item, idx) => <li key={`sug-${idx}`}>{item}</li>)}
+                        </ul>
+                      ) : (
+                        <div className="sd-ai-empty">No suggestions provided.</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
