@@ -1,139 +1,196 @@
-# API-ARENA - Plataforma de Desafíos de APIs
+# API Arena
 
-Plataforma educativa para aprender desarrollo de APIs a través de desafíos prácticos.
+Plataforma educativa para aprender desarrollo de APIs REST mediante retos prácticos, evaluación automática y progresión competitiva (XP/ELO, leaderboard, notificaciones y replay técnico de submissions).
 
-## Stack Tecnológico
+## Qué es API Arena
 
-### Backend
-- **Auth Service:** Java 21 + Spring Boot 3.5 (Puerto 8081)
-- **Challenge Service:** Java 21 + Spring Boot 3.5 (Puerto 8082)
-- **Base de datos:** PostgreSQL 16
-- **Cache:** Redis 7
-- **Documentación:** Swagger/OpenAPI
+API Arena está pensada para que una persona pueda:
+
+- elegir un challenge,
+- implementar su API,
+- enviar su solución en ZIP,
+- obtener evaluación automática real contra HTTP,
+- revisar resultados, ranking y trazabilidad del pipeline.
+
+No es solo un CRUD de ejercicios: incluye pipeline de build/testing, mensajería con Kafka, notificaciones en tiempo real y observabilidad técnica.
+
+## Estado actual del proyecto
+
+- Núcleo funcional end-to-end en Docker.
+- Arquitectura de microservicios desplegada.
+- Sandbox con runner DinD por submission (con fallback).
+- Replay estructurado persistido y consumido por frontend.
+- Stack de métricas con Prometheus + Grafana.
+
+Resumen operativo detallado en:
+
+- `docs/TECHNICAL-OVERVIEW.md`
+- `docs/P1-HARDENING-IMPLEMENTATION.md`
+- `docs/E2E-DEBUG-GUIDE.md`
+- `.cursor/rules/api-arena-project-progress.mdc`
+
+## Stack tecnológico
 
 ### Frontend
-- **Framework:** React 19 + Vite
-- **Estilos:** TailwindCSS
-- **Routing:** React Router v7
-- **Puerto:** 3000
 
----
+- React 19 + Vite
+- React Router
+- CSS del producto (tokens de marca)
+- Nginx para serving de build
 
-## Inicio Rápido
+### Backend
 
-### Pre-requisitos
-- Docker Desktop instalado
-- Tener los puertos 3000, 8081, 8082, 5432 y 6379 disponibles
+- Java 21 + Spring Boot 3.5.x
+- Spring Security (JWT)
+- Spring Data JPA
+- Kafka
+- Actuator + Prometheus
+- Swagger/OpenAPI
 
-### 1. Clonar el repositorio
+### Infra y datos
+
+- PostgreSQL 16
+- Redis 7
+- Kafka + Zookeeper
+- MongoDB (disponible, integración limitada)
+- InfluxDB (disponible, integración opcional)
+- Prometheus + Grafana
+- Docker Compose
+
+## Microservicios
+
+| Servicio | Puerto | Estado | Rol principal |
+|---|---:|---|---|
+| `auth-service` | 8081 | Activo | Registro/login, JWT, verificación email, perfiles, recompensas |
+| `challenge-service` | 8082 | Activo | CRUD de challenges y metadatos de evaluación |
+| `submission-service` | 8083 | Activo | Orquestación pipeline, estado/logs, replay timeline |
+| `sandbox-service` | 8084 | Activo | Build/ejecución aislada (runner `process`/`dind`) |
+| `testing-service` | 8085 | Activo | Evaluación funcional/performance/diseño contra API candidata |
+| `leaderboard-service` | 8087 | Activo | Rankings globales y por challenge |
+| `metrics-service` | 8089 | Activo | KPIs agregados y métricas de producto/pipeline |
+| `notification-service` | 8090 | Activo | Notificaciones in-app + WebSocket + mirror email (IMPORTANT) |
+
+Servicios reservados/futuros:
+
+- `ai-review-service` (8086)
+- `multiplayer-service` (8088)
+
+## Arquitectura (alto nivel)
+
+```mermaid
+flowchart LR
+  User[Frontend User] --> FE[frontend]
+  FE --> AUTH[auth-service]
+  FE --> CH[challenge-service]
+  FE --> SUB[submission-service]
+  FE --> LB[leaderboard-service]
+  FE --> NOTIF[notification-service]
+  FE --> MET[metrics-service]
+
+  SUB --> SBX[sandbox-service]
+  SUB --> TST[testing-service]
+  SUB --> K[(Kafka)]
+  K --> LB
+  K --> NOTIF
+```
+
+## Puertos y accesos
+
+| Componente | Puerto | URL |
+|---|---:|---|
+| Frontend | 3000 | [http://localhost:3000](http://localhost:3000) |
+| Grafana | 3001 | [http://localhost:3001](http://localhost:3001) |
+| Auth | 8081 | [http://localhost:8081](http://localhost:8081) |
+| Challenge | 8082 | [http://localhost:8082](http://localhost:8082) |
+| Submission | 8083 | [http://localhost:8083](http://localhost:8083) |
+| Sandbox | 8084 | [http://localhost:8084](http://localhost:8084) |
+| Testing | 8085 | [http://localhost:8085](http://localhost:8085) |
+| Leaderboard | 8087 | [http://localhost:8087](http://localhost:8087) |
+| Metrics | 8089 | [http://localhost:8089](http://localhost:8089) |
+| Notification | 8090 | [http://localhost:8090](http://localhost:8090) |
+| Prometheus | 9090 | [http://localhost:9090](http://localhost:9090) |
+| PostgreSQL | 5432 | `localhost:5432` |
+| Redis | 6379 | `localhost:6379` |
+| Kafka | 9092 | `localhost:9092` |
+
+## Inicio rápido (Docker)
+
+### Requisitos
+
+- Docker Desktop (o Docker Engine + Compose v2).
+- Recomendado: 6+ GB RAM disponibles para contenedores.
+- Puertos anteriores libres en local.
+
+### 1) Clonar
 
 ```bash
-git clone <url-del-repo>
+git clone <repo-url>
 cd API-ARENA
 ```
 
-### 2. Configurar variables de entorno
-
-El archivo `.env` ya está configurado con valores por defecto. Verifica que esté presente en la raíz del proyecto.
-
-### 3. Levantar toda la aplicación
+### 2) Configurar entorno
 
 ```bash
-# Levantar todo (Frontend + Backend + Bases de datos)
-docker-compose up -d
+cp .env.example .env
 ```
 
-Esto levantará:
-- PostgreSQL (puerto 5432)
-- Redis (puerto 6379)
-- Auth Service (puerto 8081)
-- Challenge Service (puerto 8082)
-- Frontend React (puerto 3000)
+Si ya tienes `.env`, revisa valores y secretos antes de levantar.
 
-### 4. Verificar que todo está funcionando
+### 3) Levantar stack completo
 
 ```bash
-# Ver estado de los contenedores
-docker-compose ps
-
-# Ver logs
-docker-compose logs -f
+docker compose up -d --build
 ```
 
-Accede a:
-- **Aplicación:** http://localhost:3000
-- **Swagger Auth:** http://localhost:8081/swagger-ui.html
-- **Swagger Challenge:** http://localhost:8082/swagger-ui.html
+### 4) Verificar salud
 
----
+```bash
+docker compose ps
+```
+
+Todos los servicios principales deben quedar en `healthy` o `up`.
 
 ## Comandos útiles
 
-### Ver logs de un servicio específico
+### Logs
 
 ```bash
-docker-compose logs -f frontend
-docker-compose logs -f auth-service
-docker-compose logs -f challenge-service
+docker compose logs -f
+docker compose logs -f submission-service
+docker compose logs -f sandbox-service
 ```
 
-### Reiniciar un servicio
+### Rebuild selectivo (según cambios)
 
 ```bash
-docker-compose restart frontend
-docker-compose restart auth-service
+# Frontend
+docker compose up -d --build frontend
+
+# Servicios de pipeline
+docker compose up -d --build sandbox-service submission-service testing-service
+
+# Todo el stack
+docker compose up -d --build
 ```
 
-### Reconstruir después de cambios en el código
+### Parar / limpiar
 
 ```bash
-# Reconstruir todo
-docker-compose up -d --build
-
-# Reconstruir solo frontend
-docker-compose up -d --build frontend
-
-# Reconstruir solo backend
-docker-compose up -d --build auth-service challenge-service
+docker compose down
+docker compose down -v
 ```
 
-### Detener todo
+## Desarrollo local (sin Docker completo)
+
+Puedes trabajar levantando solo dependencias:
 
 ```bash
-docker-compose down
+docker compose up -d postgres redis kafka zookeeper
 ```
 
-### Limpiar todo (incluyendo datos)
+Y correr servicios desde IDE/terminal con `mvn spring-boot:run`.
 
-```bash
-docker-compose down -v
-```
-
----
-
-## Desarrollo Local (sin Docker)
-
-Si prefieres desarrollar sin Docker:
-
-### 1. Levantar solo las bases de datos
-
-```bash
-docker-compose up -d postgres redis
-```
-
-### 2. Backend
-
-```bash
-# Auth Service
-cd backend/auth-service
-mvn spring-boot:run
-
-# Challenge Service (en otra terminal)
-cd backend/challenge-service
-mvn spring-boot:run
-```
-
-### 3. Frontend
+Frontend:
 
 ```bash
 cd frontend
@@ -141,169 +198,99 @@ npm install
 npm run dev
 ```
 
-El frontend en modo desarrollo estará en http://localhost:5173
+## API docs y testing
 
----
+- Swagger UI por servicio (`/swagger-ui.html`).
+- Colección Postman: `backend/API-ARENA_Postman_Collection.json`.
 
-## Testing con Postman
+## Transparencia de despliegue y límites actuales
 
-Importa la colección de Postman ubicada en:
-```
-backend/API-ARENA_Postman_Collection.json
-```
+Este repositorio está optimizado para entorno local/dev y demos técnicas, no como despliegue productivo cerrado.
 
-Esta colección incluye:
-- Endpoints de autenticación (registro, login, logout)
-- Endpoints de desafíos (crear, listar, actualizar, eliminar)
-- Tests automáticos
-- Variables de entorno automáticas
+Aspectos importantes:
 
----
+- El despliegue oficial aquí es vía `docker-compose.yml`.
+- El runner DinD está operativo, pero endurecimiento de aislamiento para producción estricta sigue en roadmap.
+- Existen contenedores opcionales (Mongo/Influx) con integración parcial.
+- Persistencia local y seeds pueden desalinearse en entornos que arrastran volúmenes antiguos.
 
-## Estructura del Proyecto
+Para detalles operativos reales:
 
-```
+- `docs/P1-HARDENING-IMPLEMENTATION.md`
+- `docs/E2E-DEBUG-GUIDE.md`
+
+## Estructura del repo
+
+```text
 API-ARENA/
 ├── backend/
-│   ├── auth-service/           # Servicio de autenticación
-│   │   ├── src/
-│   │   ├── Dockerfile
-│   │   └── pom.xml
-│   ├── challenge-service/      # Servicio de desafíos
-│   │   ├── src/
-│   │   ├── Dockerfile
-│   │   └── pom.xml
+│   ├── auth-service/
+│   ├── challenge-service/
+│   ├── submission-service/
+│   ├── sandbox-service/
+│   ├── testing-service/
+│   ├── leaderboard-service/
+│   ├── notification-service/
+│   ├── metrics-service/
 │   ├── API-ARENA_Postman_Collection.json
-│   └── README_INICIO.md        # Documentación detallada del backend
+│   └── README_INICIO.md
 ├── frontend/
-│   ├── src/
-│   ├── public/
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── package.json
 ├── docker/
-│   └── postgres/
-│       └── init-db.sql         # Script de inicialización de BD
-├── docker-compose.yml          # Configuración de Docker Compose
-├── .env                        # Variables de entorno
-└── README.md                   # Este archivo
+│   ├── postgres/
+│   ├── prometheus/
+│   └── grafana/
+├── docs/
+├── docker-compose.yml
+└── README.md
 ```
 
----
+## Credenciales seed (entorno local)
 
-## Puertos utilizados
+Definidas en `docker/postgres/init-db.sql` y en el documento de progreso:
 
-| Servicio | Puerto | URL |
-|----------|--------|-----|
-| Frontend | 3000 | http://localhost:3000 |
-| Auth Service | 8081 | http://localhost:8081 |
-| Challenge Service | 8082 | http://localhost:8082 |
-| PostgreSQL | 5432 | localhost:5432 |
-| Redis | 6379 | localhost:6379 |
+- `arclight@apiarena.dev` / `Arena2025!`
+- `byterunner@apiarena.dev` / `Arena2025!`
+- `profoak@apiarena.dev` / `Arena2025!`
+- `sysop@apiarena.dev` / `Arena2025!`
 
----
+Si no funcionan en tu entorno actual, revisa `docs/E2E-DEBUG-GUIDE.md`.
 
-## Arquitectura
+## Troubleshooting rápido
 
-### Microservicios
-
-1. **Auth Service**
-   - Registro y autenticación de usuarios
-   - Gestión de perfiles
-   - JWT tokens + Refresh tokens
-   - Roles: STUDENT, TEACHER, ADMIN
-
-2. **Challenge Service**
-   - CRUD de desafíos
-   - Categorización y filtrado
-   - Test suites y validación
-   - Sistema de puntuación
-
-### Frontend
-
-- SPA React con enrutamiento
-- Interfaz moderna con TailwindCSS
-- Comunicación con APIs backend
-- Gestión de estado y autenticación
-
-### Base de Datos
-
-- PostgreSQL con 3 tablas principales:
-  - `users` - Usuarios y autenticación
-  - `refresh_tokens` - Tokens de actualización
-  - `challenges` - Desafíos de la plataforma
-
----
-
-## Troubleshooting
-
-### Error: Puerto ya en uso
+### Puerto ocupado
 
 ```bash
-# Windows
-netstat -ano | findstr :3000
-taskkill /F /PID <PID>
-
-# Linux/Mac
 lsof -ti:3000 | xargs kill -9
 ```
 
-### Error: No se puede conectar a PostgreSQL
+### Servicio no healthy
 
 ```bash
-# Verificar que PostgreSQL está corriendo
-docker-compose ps postgres
-
-# Reiniciar PostgreSQL
-docker-compose restart postgres
-
-# Ver logs
-docker-compose logs postgres
+docker compose logs -f <service>
+docker compose restart <service>
 ```
 
-### Frontend no carga
+### Reset completo local
 
 ```bash
-# Verificar logs
-docker-compose logs frontend
-
-# Reconstruir
-docker-compose up -d --build frontend
+docker compose down -v
+docker compose up -d --build
 ```
 
-### Limpiar y empezar de cero
+## Roadmap corto
 
-```bash
-# Parar todo
-docker-compose down -v
-
-# Limpiar imágenes
-docker system prune -a
-
-# Levantar de nuevo
-docker-compose up -d --build
-```
-
----
-
-## Documentación adicional
-
-- **Backend completo:** Ver `backend/README_INICIO.md`
-- **API Reference:** Swagger disponible en los puertos 8081 y 8082
-- **Postman Collection:** `backend/API-ARENA_Postman_Collection.json`
-
----
+- Hardening adicional de sandbox DinD.
+- Replay avanzado (retención, compresión, timeline enriquecido).
+- Dashboards de negocio más completos.
+- Automatización E2E continua.
 
 ## Contribuir
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Añadir nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+1. Crea rama: `feature/<topic>` o `fix/<topic>`.
+2. Haz commits claros en inglés.
+3. Abre PR con resumen y plan de pruebas.
 
----
+## Licencia / contexto
 
-## Licencia
-
-Este proyecto es parte de un Trabajo Final de Grado (TFG).
+Proyecto en contexto académico (TFG) con evolución hacia producto demostrable/publicable.  
+Antes de redistribuir o desplegar públicamente, revisa políticas/licencia vigentes del repositorio.
