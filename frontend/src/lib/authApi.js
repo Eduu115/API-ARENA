@@ -592,6 +592,12 @@ export async function getMe() {
 }
 
 
+/** Achievements for current user (unlocked + locked definitions). */
+export async function getMyAchievements() {
+    return request("/api/auth/me/achievements", { method: "GET" });
+}
+
+
 
 
 

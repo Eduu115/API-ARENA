@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+import com.apiarena.authservice.model.dto.AchievementDTO;
 import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.LoginRequest;
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
@@ -25,6 +28,7 @@ import com.apiarena.authservice.model.dto.ResendVerificationRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
+import com.apiarena.authservice.model.services.AchievementService;
 import com.apiarena.authservice.model.services.IAuthService;
 import com.apiarena.authservice.model.services.IUserService;
 
@@ -42,6 +46,8 @@ public class AuthController {
     private IAuthService authService;
     @Autowired
     private IUserService userService;
+    @Autowired
+    private AchievementService achievementService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account. No tokens are returned; use /login to get access and refresh tokens.")
@@ -91,6 +97,14 @@ public class AuthController {
     public ResponseEntity<PublicProfileDTO> getPublicProfile(@PathVariable Long id) {
         PublicProfileDTO profile = userService.getPublicProfile(id);
         return ResponseEntity.ok(profile);
+    }
+
+    @GetMapping("/me/achievements")
+    @Operation(summary = "List achievements for current user", description = "All definitions with unlock status; syncs grants from profile stats.")
+    public ResponseEntity<List<AchievementDTO>> getMyAchievements() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return ResponseEntity.ok(achievementService.listForCurrentUserEmail(email));
     }
 
     @GetMapping("/me")
