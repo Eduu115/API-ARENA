@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -14,6 +15,22 @@ import lombok.RequiredArgsConstructor;
 public class MetricsAggregationService {
 
     private final JdbcTemplate jdbcTemplate;
+
+    @PostConstruct
+    public void ensureDocsFeedbackSchema() {
+        jdbcTemplate.execute("""
+                CREATE TABLE IF NOT EXISTS docs_feedback (
+                    id BIGSERIAL PRIMARY KEY,
+                    section_key VARCHAR(80) NOT NULL,
+                    helpful BOOLEAN NOT NULL,
+                    source_path VARCHAR(200) NOT NULL DEFAULT '/docs',
+                    user_id BIGINT,
+                    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+                )
+                """);
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_docs_feedback_section ON docs_feedback(section_key)");
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_docs_feedback_created_at ON docs_feedback(created_at)");
+    }
 
     public Map<String, Object> getOverview() {
         Map<String, Object> out = new LinkedHashMap<>();
@@ -47,6 +64,44 @@ public class MetricsAggregationService {
                 GROUP BY 1
                 ORDER BY 1 ASC
                 """, days);
+    }
+
+    public Map<String, Object> recordDocsFeedback(String sectionKey, boolean helpful, String sourcePath, Long userId) {
+        if (sectionKey == null || sectionKey.isBlank()) {
+            throw new IllegalArgumentException("sectionKey is required");
+        }
+        String normalizedSection = sectionKey.trim().toLowerCase();
+        String normalizedPath = (sourcePath == null || sourcePath.isBlank()) ? "/docs" : sourcePath.trim();
+
+        jdbcTemplate.update("""
+                INSERT INTO docs_feedback (section_key, helpful, source_path, user_id)
+                VALUES (?, ?, ?, ?)
+                """,
+                normalizedSection,
+                helpful,
+                normalizedPath,
+                userId);
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("sectionKey", normalizedSection);
+        out.put("helpful", helpful);
+        out.put("stored", true);
+        return out;
+    }
+
+    public Map<String, Object> getDocsFeedbackSummary() {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("totalFeedback", queryLong("SELECT COUNT(*) FROM docs_feedback"));
+        out.put("helpfulCount", queryLong("SELECT COUNT(*) FROM docs_feedback WHERE helpful = true"));
+        out.put("sections", jdbcTemplate.queryForList("""
+                SELECT section_key AS "sectionKey",
+                       COUNT(*) AS "totalVotes",
+                       COUNT(*) FILTER (WHERE helpful = true) AS "helpfulVotes"
+                FROM docs_feedback
+                GROUP BY section_key
+                ORDER BY "totalVotes" DESC, section_key ASC
+                """));
+        return out;
     }
 
     private long queryLong(String sql) {

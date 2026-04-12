@@ -11,6 +11,7 @@ import "./Topbar.css";
 const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
+  { label: "Docs", path: "/docs", icon: "docs" },
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
@@ -20,6 +21,7 @@ const NAV_ITEMS_AUTH = [
   { label: "Submissions", path: "/submissions", icon: "submissions" },
   { label: "Friends", path: "/friends", icon: "friends" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
+  { label: "Docs", path: "/docs", icon: "docs" },
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 

@@ -678,6 +678,21 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications(user_id, created_at DESC);
 
 -- ===========================================
+-- Table: docs_feedback (student docs usefulness votes)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS docs_feedback (
+    id BIGSERIAL PRIMARY KEY,
+    section_key VARCHAR(80) NOT NULL,
+    helpful BOOLEAN NOT NULL,
+    source_path VARCHAR(200) NOT NULL DEFAULT '/docs',
+    user_id BIGINT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_docs_feedback_section ON docs_feedback(section_key);
+CREATE INDEX IF NOT EXISTS idx_docs_feedback_created_at ON docs_feedback(created_at);
+
+-- ===========================================
 -- Achievements (auth-service; seeded at runtime if empty)
 -- ===========================================
 CREATE TABLE IF NOT EXISTS achievement_definitions (

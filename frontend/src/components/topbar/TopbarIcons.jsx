@@ -103,6 +103,16 @@ export function IconReplay({ className }) {
   );
 }
 
+export function IconDocs({ className }) {
+  return (
+    <SvgFrame className={className}>
+      <path d="M6 4h10a2 2 0 012 2v12H8a2 2 0 00-2 2V4z" stroke="currentColor" strokeWidth={stroke.width} strokeLinejoin={stroke.join} />
+      <path d="M8 20V8a2 2 0 012-2h10" stroke="currentColor" strokeWidth={stroke.width} strokeLinecap={stroke.cap} />
+      <path d="M11 9h6M11 12h6M11 15h4" stroke="currentColor" strokeWidth={stroke.width} strokeLinecap={stroke.cap} />
+    </SvgFrame>
+  );
+}
+
 export function IconProfile({ className }) {
   return (
     <SvgFrame className={className}>
@@ -175,6 +185,7 @@ const ICON_MAP = {
   submissions: IconSubmissions,
   friends: IconFriends,
   leaderboard: IconLeaderboard,
+  docs: IconDocs,
   replay: IconReplay,
   profile: IconProfile,
   teacher: IconTeacher,
