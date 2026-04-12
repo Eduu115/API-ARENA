@@ -32,6 +32,7 @@ public class SubmissionDTO {
     private Integer totalRequests;
     private Integer failedRequests;
     private BigDecimal restComplianceScore;
+    private Map<String, Object> aiSuggestions;
     private Integer xpEarned;
     private Integer eloChange;
     private BigDecimal previousBestScore;
@@ -61,6 +62,7 @@ public class SubmissionDTO {
                 .totalRequests(entity.getTotalRequests())
                 .failedRequests(entity.getFailedRequests())
                 .restComplianceScore(entity.getRestComplianceScore())
+                .aiSuggestions(entity.getAiSuggestions())
                 .xpEarned(entity.getXpEarned())
                 .eloChange(entity.getEloChange())
                 .previousBestScore(entity.getPreviousBestScore())

@@ -14,4 +14,8 @@ public class AiReviewRequest {
     private String buildLogs;
     private String testLogs;
     private List<String> endpoints;
+    private Integer technicalScore;
+    private Integer correctnessScore;
+    private Integer performanceScore;
+    private Integer designScore;
 }

@@ -67,7 +67,7 @@ Resumen operativo detallado en:
 | `sandbox-service` | 8084 | Activo | Build/ejecución aislada (runner `process`/`dind`) |
 | `testing-service` | 8085 | Activo | Evaluación funcional/performance/diseño contra API candidata |
 | `leaderboard-service` | 8087 | Activo | Rankings globales y por challenge |
-| `ai-review-service` | 8086 (8186 host) | Activo (v1) | Revisión heurística de calidad, score AI y sugerencias |
+| `ai-review-service` | 8086 (8186 host) | Activo (v2 ready) | AI review configurable (`heuristic`/`gemini`), `aiScore` 0-200, sugerencias estructuradas |
 | `metrics-service` | 8089 | Activo | KPIs agregados y métricas de producto/pipeline |
 | `notification-service` | 8090 | Activo | Notificaciones in-app + WebSocket + mirror email (IMPORTANT) |
 
@@ -137,6 +137,17 @@ cp .env.example .env
 ```
 
 Si ya tienes `.env`, revisa valores y secretos antes de levantar.
+
+Variables recomendadas para AI review (opcionales):
+
+```env
+AI_REVIEW_PROVIDER=heuristic   # heuristic | gemini
+AI_REVIEW_MODEL=gemini-2.0-flash
+AI_REVIEW_GOOGLE_API_KEY=
+AI_REVIEW_TIMEOUT_MS=12000
+```
+
+Si no defines `AI_REVIEW_GOOGLE_API_KEY`, el sistema usa modo heurístico (sin coste externo).
 
 ### 3) Levantar stack completo
 

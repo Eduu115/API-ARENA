@@ -13,8 +13,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class AiReviewResponse {
+    private int aiScore;
     private int score;
+    private int overallScore;
+    private int performanceScore;
+    private int aestheticsScore;
+    private int cleanlinessScore;
+    private int structureScore;
+    private String provider;
     private String summary;
+    private List<String> strengths;
     private List<String> suggestions;
     private Map<String, Object> diagnostics;
 }

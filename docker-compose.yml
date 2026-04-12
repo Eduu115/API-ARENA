@@ -219,6 +219,10 @@ services:
     container_name: apiarena-ai-review
     environment:
       AI_REVIEW_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      AI_REVIEW_PROVIDER: ${AI_REVIEW_PROVIDER:-heuristic}
+      AI_REVIEW_MODEL: ${AI_REVIEW_MODEL:-gemini-2.0-flash}
+      AI_REVIEW_GOOGLE_API_KEY: ${AI_REVIEW_GOOGLE_API_KEY:-}
+      AI_REVIEW_TIMEOUT_MS: ${AI_REVIEW_TIMEOUT_MS:-12000}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8186:8086"
