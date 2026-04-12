@@ -25,7 +25,7 @@
       "id": 1,
       "options": { "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true } },
       "targets": [
-        { "expr": "rate(http_server_requests_seconds_count{uri!~\"/actuator.*\"}[5m])", "legendFormat": "{{application}}", "refId": "A" }
+        { "expr": "sum by (job) (rate(http_server_requests_seconds_count[5m]))", "legendFormat": "{{job}}", "refId": "A" }
       ],
       "title": "HTTP Throughput by Service",
       "type": "timeseries"
@@ -37,9 +37,9 @@
       "id": 2,
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true } },
       "targets": [
-        { "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))", "legendFormat": "{{application}}", "refId": "A" }
+        { "expr": "sum by (job) (rate(http_server_requests_seconds_sum[5m])) / sum by (job) (rate(http_server_requests_seconds_count[5m]))", "legendFormat": "{{job}} avg latency", "refId": "A" }
       ],
-      "title": "p95 HTTP Latency",
+      "title": "HTTP avg latency (s) by service",
       "type": "timeseries"
     },
     {

@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -76,6 +77,13 @@ public class SandboxService {
 
     @Value("${sandbox.dind.pids-limit:256}")
     private int dindPidsLimit;
+
+    @Value("${sandbox.dind.use-init:true}")
+    private boolean dindUseInit;
+
+    /** Docker --ulimit nofile=soft:hard; empty disables. */
+    @Value("${sandbox.dind.nofile-ulimit:8192:8192}")
+    private String dindNofileUlimit;
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
@@ -277,22 +285,37 @@ public class SandboxService {
                 return failExecution(execution, buildLog.toString(), "Docker build failed");
             }
 
-            CommandResult runResult = runDockerCommand(
-                    List.of("docker", "run", "-d",
-                            "--name", containerName,
-                            "--network", dindNetwork,
-                            "--cpus", String.valueOf(cpuLimit),
-                            "--memory", memoryLimit,
-                            "--pids-limit", String.valueOf(Math.max(64, dindPidsLimit)),
-                            "--cap-drop=ALL",
-                            "--security-opt=no-new-privileges:true",
-                            "--read-only",
-                            "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m",
-                            "-e", "SERVER_PORT=" + dindContainerPort,
-                            imageName),
-                    workDir,
-                    20,
-                    true);
+            List<String> runCmd = new ArrayList<>();
+            runCmd.add("docker");
+            runCmd.add("run");
+            runCmd.add("-d");
+            if (dindUseInit) {
+                runCmd.add("--init");
+            }
+            runCmd.add("--name");
+            runCmd.add(containerName);
+            runCmd.add("--network");
+            runCmd.add(dindNetwork);
+            runCmd.add("--cpus");
+            runCmd.add(String.valueOf(cpuLimit));
+            runCmd.add("--memory");
+            runCmd.add(memoryLimit);
+            runCmd.add("--pids-limit");
+            runCmd.add(String.valueOf(Math.max(64, dindPidsLimit)));
+            if (dindNofileUlimit != null && !dindNofileUlimit.isBlank()) {
+                runCmd.add("--ulimit");
+                runCmd.add("nofile=" + dindNofileUlimit.trim());
+            }
+            runCmd.add("--cap-drop=ALL");
+            runCmd.add("--security-opt=no-new-privileges:true");
+            runCmd.add("--read-only");
+            runCmd.add("--tmpfs");
+            runCmd.add("/tmp:rw,nosuid,nodev,size=64m");
+            runCmd.add("-e");
+            runCmd.add("SERVER_PORT=" + dindContainerPort);
+            runCmd.add(imageName);
+
+            CommandResult runResult = runDockerCommand(runCmd, workDir, 20, true);
             buildLog.append(runResult.output());
             if (runResult.exitCode() != 0) {
                 runDockerCommand(List.of("docker", "rmi", "-f", imageName), workDir, 10, false);

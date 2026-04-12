@@ -1,0 +1,44 @@
+# API Arena — Prometheus alerting rules (pipeline + JVM)
+groups:
+  - name: apiarena-http
+    interval: 30s
+    rules:
+      - alert: ApiArenaHttp5xxBurst
+        annotations:
+          summary: "Elevated HTTP 5xx rate ({{ $labels.job }})"
+          description: "More than 0.2 req/s with 5xx on {{ $labels.job }} (excluding actuator)."
+        expr: |
+          sum by (job) (
+            rate(http_server_requests_seconds_count{status=~"5..",uri!~"/actuator.*"}[5m])
+          ) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+
+      - alert: ApiArenaHttp5xxSustained
+        annotations:
+          summary: "Sustained HTTP 5xx on {{ $labels.job }}"
+        expr: |
+          sum by (job) (
+            rate(http_server_requests_seconds_count{status=~"5..",uri!~"/actuator.*"}[5m])
+          ) > 0.05
+        for: 15m
+        labels:
+          severity: critical
+
+  - name: apiarena-jvm
+    interval: 30s
+    rules:
+      - alert: ApiArenaJvmHeapHigh
+        annotations:
+          summary: "JVM heap usage high ({{ $labels.job }})"
+          description: "Heap used / max > 0.88 for 10m."
+        expr: |
+          (
+            sum by (job) (jvm_memory_used_bytes{area="heap"})
+            /
+            clamp_min(sum by (job) (jvm_memory_max_bytes{area="heap"}), 1)
+          ) > 0.88
+        for: 10m
+        labels:
+          severity: warning

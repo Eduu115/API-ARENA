@@ -68,16 +68,24 @@ function toPlayerEvents(raw) {
     const path = metadata.requestPath || null;
     const status = metadata.responseStatus ?? null;
     const time = metadata.executionTimeMs ?? null;
+    const eventType = e.eventType || "";
+    const isHttpLike = !!(method || path || status != null);
+    const eventId = e.id != null ? e.id : null;
     return {
+      eventId,
       ts: formatElapsed(elapsed),
       stage: e.stage || "UNKNOWN",
       tag: stageToTag(e.stage, e.severity),
-      content: e.message || e.eventType || "event",
+      content: e.message || eventType || "event",
       method,
       path,
       status,
       time,
       severity: e.severity || "info",
+      eventType,
+      metadata,
+      testIndex: metadata.testIndex,
+      isHttpLike,
     };
   });
 }
@@ -91,13 +99,17 @@ export default function Replay() {
   const [challengeTitle, setChallengeTitle] = useState("");
   const [replayLoading, setReplayLoading] = useState(false);
   const [replayError, setReplayError] = useState(null);
-  const [events, setEvents] = useState([]);
+  const [rawEvents, setRawEvents] = useState([]);
   const [selectedStage, setSelectedStage] = useState("ALL");
+  const [filterMode, setFilterMode] = useState("ALL");
   const [playing, setPlaying] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [speed, setSpeed] = useState(1);
+  const [detailEvent, setDetailEvent] = useState(null);
   const termRef = useRef(null);
   const timerRef = useRef(null);
+
+  const playerEvents = useMemo(() => toPlayerEvents(rawEvents), [rawEvents]);
 
   const completedSubs = useMemo(
     () => (allSubs || []).filter((s) => s.status === "COMPLETED"),
@@ -109,14 +121,20 @@ export default function Replay() {
   );
 
   const stages = useMemo(() => {
-    const uniq = new Set(events.map((e) => e.stage));
+    const uniq = new Set(playerEvents.map((e) => e.stage));
     return ["ALL", ...uniq];
-  }, [events]);
+  }, [playerEvents]);
 
   const filteredEvents = useMemo(() => {
-    if (selectedStage === "ALL") return events;
-    return events.filter((e) => e.stage === selectedStage);
-  }, [events, selectedStage]);
+    let list = playerEvents;
+    if (selectedStage !== "ALL") list = list.filter((e) => e.stage === selectedStage);
+    if (filterMode === "HTTP") {
+      list = list.filter((e) => e.isHttpLike || e.eventType === "TEST_CASE_RESULT");
+    } else if (filterMode === "TESTS") {
+      list = list.filter((e) => e.eventType === "TEST_CASE_RESULT");
+    }
+    return list;
+  }, [playerEvents, selectedStage, filterMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,6 +173,8 @@ export default function Replay() {
     setReplayError(null);
     setPlaying(false);
     setCurrentIdx(0);
+    setDetailEvent(null);
+    setFilterMode("ALL");
 
     getChallengeById(sub.challengeId)
       .then((c) => {
@@ -167,14 +187,14 @@ export default function Replay() {
     getSubmissionReplay(selectedId)
       .then((timeline) => {
         if (!cancelled) {
-          setEvents(toPlayerEvents(timeline?.events || []));
+          setRawEvents(timeline?.events || []);
           setSelectedStage("ALL");
         }
       })
       .catch((e) => {
         if (!cancelled) {
           setReplayError(e.message || "Could not load replay timeline");
-          setEvents([]);
+          setRawEvents([]);
         }
       })
       .finally(() => {
@@ -202,7 +222,38 @@ export default function Replay() {
 
   useEffect(() => {
     if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
-  }, [currentIdx, selectedStage]);
+  }, [currentIdx, selectedStage, filterMode]);
+
+  useEffect(() => {
+    const onKey = (ev) => {
+      if (replayLoading || replayError || filteredEvents.length === 0) return;
+      if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA" || ev.target.isContentEditable)) return;
+      if (ev.key === "ArrowRight") {
+        ev.preventDefault();
+        setPlaying(false);
+        setCurrentIdx((i) => Math.min(filteredEvents.length, i + 1));
+      } else if (ev.key === "ArrowLeft") {
+        ev.preventDefault();
+        setPlaying(false);
+        setCurrentIdx((i) => Math.max(0, i - 1));
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [replayLoading, replayError, filteredEvents.length]);
+
+  const jumpToFailedTest = () => {
+    const idx = filteredEvents.findIndex(
+      (e) =>
+        e.eventType === "TEST_CASE_RESULT" &&
+        (e.severity === "warn" || e.severity === "error" || (e.metadata?.status && String(e.metadata.status).toUpperCase() !== "PASSED")),
+    );
+    if (idx >= 0) {
+      setPlaying(false);
+      setCurrentIdx(idx + 1);
+      setDetailEvent(filteredEvents[idx]);
+    }
+  };
 
   const togglePlay = () => {
     if (filteredEvents.length === 0) return;
@@ -224,7 +275,9 @@ export default function Replay() {
                 <h1 className="ch-page-title">
                   Battle<em>Replay</em>
                 </h1>
-                <p className="rp-page-desc">Timeline real de build, test, score y cleanup por submission.</p>
+                <p className="rp-page-desc">
+                  Real timeline for build, testing, scoring, and cleanup. HTTP/test filters, jump to first failure, arrow keys to step through events, and raw metadata for any line.
+                </p>
               </div>
             </div>
 
@@ -272,7 +325,7 @@ export default function Replay() {
                     </div>
                   </div>
 
-                  <div className="rp-controls" style={{ borderBottom: "1px solid var(--dim)" }}>
+                  <div className="rp-controls rp-controls-wrap" style={{ borderBottom: "1px solid var(--dim)" }}>
                     {stages.map((stage) => (
                       <button
                         key={stage}
@@ -287,6 +340,28 @@ export default function Replay() {
                         {stage}
                       </button>
                     ))}
+                    <span className="rp-control-sep" aria-hidden />
+                    {[
+                      { id: "ALL", label: "All events" },
+                      { id: "HTTP", label: "HTTP + tests" },
+                      { id: "TESTS", label: "Tests only" },
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        className={`rp-speed-btn${filterMode === f.id ? " active" : ""}`}
+                        onClick={() => {
+                          setFilterMode(f.id);
+                          setCurrentIdx(0);
+                          setPlaying(false);
+                        }}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                    <button type="button" className="rp-speed-btn" onClick={jumpToFailedTest} disabled={filteredEvents.length === 0}>
+                      Jump to failed
+                    </button>
                   </div>
 
                   <div className="rp-terminal" ref={termRef}>
@@ -296,10 +371,26 @@ export default function Replay() {
                       <div style={{ color: "var(--muted)", fontStyle: "italic" }}>No replay events for this submission.</div>
                     )}
                     {!replayLoading && visibleEvents.map((ev, i) => (
-                      <div key={`${ev.ts}-${i}`} className="rp-line" style={{ animationDelay: `${(i % 5) * 0.03}s` }}>
+                      <button
+                        key={`${ev.ts}-${i}-${ev.eventType}`}
+                        type="button"
+                        className={`rp-line rp-line-click${
+                          detailEvent &&
+                          detailEvent.eventId != null &&
+                          ev.eventId != null &&
+                          detailEvent.eventId === ev.eventId
+                            ? " is-selected"
+                            : ""
+                        }`}
+                        style={{ animationDelay: `${(i % 5) * 0.03}s` }}
+                        onClick={() => setDetailEvent(ev)}
+                      >
                         <span className="rp-ts">{ev.ts}</span>
                         <span className={`rp-tag rp-tag-${ev.tag}`}>{ev.tag}</span>
                         <span className="rp-content">
+                          {ev.testIndex != null && (
+                            <span className="rp-test-idx">#{ev.testIndex}</span>
+                          )}
                           {ev.method && (
                             <>
                               <span className={`rp-method ${METHOD_CLASS[ev.method] || ""}`}>{ev.method}</span>
@@ -314,9 +405,33 @@ export default function Replay() {
                           )}
                           <span style={{ marginLeft: 6 }}>{ev.content}</span>
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
+
+                  {detailEvent && (
+                    <div className="rp-detail" aria-live="polite">
+                      <div className="rp-detail-head">
+                        <span className="rp-detail-title">Event metadata</span>
+                        <button type="button" className="rp-speed-btn" onClick={() => setDetailEvent(null)}>
+                          Close
+                        </button>
+                      </div>
+                      <pre className="rp-detail-pre">
+                        {JSON.stringify(
+                          {
+                            stage: detailEvent.stage,
+                            eventType: detailEvent.eventType,
+                            severity: detailEvent.severity,
+                            message: detailEvent.content,
+                            metadata: detailEvent.metadata || {},
+                          },
+                          null,
+                          2,
+                        )}
+                      </pre>
+                    </div>
+                  )}
 
                   <div className="rp-controls">
                     <button type="button" className="rp-play-btn" onClick={togglePlay}
@@ -329,7 +444,7 @@ export default function Replay() {
                       <div className="rp-progress-bar"><div className="rp-progress-fill" style={{ width: `${progress}%` }} /></div>
                       <div className="rp-progress-labels">
                         <span>{currentTs}</span>
-                        <span>{currentIdx} / {filteredEvents.length} events</span>
+                        <span>{currentIdx} / {filteredEvents.length} events · ← →</span>
                         <span>{durationEnd}</span>
                       </div>
                     </div>

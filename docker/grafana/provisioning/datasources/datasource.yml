@@ -1,7 +1,14 @@
+# On each startup, remove any old "Prometheus" row so uid/name match provisioned dashboards (uid: prometheus).
 apiVersion: 1
+
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
 
 datasources:
   - name: Prometheus
+    uid: prometheus
+    orgId: 1
     type: prometheus
     access: proxy
     url: http://prometheus:9090
