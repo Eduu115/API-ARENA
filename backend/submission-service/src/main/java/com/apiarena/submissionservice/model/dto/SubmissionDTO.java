@@ -36,6 +36,7 @@ public class SubmissionDTO {
     private Integer eloChange;
     private BigDecimal previousBestScore;
     private Boolean isFirstCompletion;
+    private Integer developmentTimeSeconds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime completedAt;
@@ -64,6 +65,7 @@ public class SubmissionDTO {
                 .eloChange(entity.getEloChange())
                 .previousBestScore(entity.getPreviousBestScore())
                 .isFirstCompletion(entity.getIsFirstCompletion())
+                .developmentTimeSeconds(entity.getDevelopmentTimeSeconds())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .completedAt(entity.getCompletedAt())

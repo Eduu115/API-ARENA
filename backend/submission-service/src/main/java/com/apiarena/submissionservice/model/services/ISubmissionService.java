@@ -15,7 +15,7 @@ import com.apiarena.submissionservice.model.entities.Submission;
 public interface ISubmissionService {
 
     CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile,
-            boolean rateLimitBypass);
+            boolean rateLimitBypass, Integer developmentTimeSeconds);
 
     ChallengeAttemptStatusDTO getChallengeAttemptStatus(Long userId, Long challengeId);
 

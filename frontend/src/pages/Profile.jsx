@@ -30,6 +30,13 @@ const ACH_ICON = {
   crown: '♔',
 };
 
+function formatTimeStat(seconds) {
+  const s = Number(seconds) || 0;
+  if (s < 3600) return `${Math.max(0, Math.round(s / 60))} min`;
+  const h = s / 3600;
+  return `${h.toFixed(1)} h`;
+}
+
 function achievementIcon(iconKey) {
   if (iconKey && ACH_ICON[iconKey]) return ACH_ICON[iconKey];
   return '◆';
@@ -93,7 +100,24 @@ export default function Profile() {
   const testsPassed = user?.totalTestsPassed ?? 0;
 
   const kpiCards = useMemo(
-    () => [
+    () => {
+      const devSeconds = user?.totalDevelopmentSeconds ?? 0;
+      const browseSeconds = user?.totalBrowsingSeconds ?? 0;
+      return [
+      {
+        icon: '⏱',
+        label: 'Time coding',
+        value: formatTimeStat(devSeconds),
+        color: 'var(--green)',
+        barWidth: `${Math.min((devSeconds / 36000) * 100, 100)}%`,
+      },
+      {
+        icon: '⌂',
+        label: 'Time on site',
+        value: formatTimeStat(browseSeconds),
+        color: 'var(--purple)',
+        barWidth: `${Math.min((browseSeconds / 36000) * 100, 100)}%`,
+      },
       {
         icon: '★',
         label: 'Rating (ELO)',
@@ -129,8 +153,9 @@ export default function Profile() {
         color: 'var(--cyan)',
         barWidth: `${Math.min((testsPassed / 100) * 100, 100)}%`,
       },
-    ],
-    [elo, level, xp, solved, testsPassed]
+    ];
+    },
+    [user, elo, level, xp, solved, testsPassed]
   );
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;

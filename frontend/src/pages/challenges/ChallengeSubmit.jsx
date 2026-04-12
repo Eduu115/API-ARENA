@@ -355,7 +355,11 @@ export default function ChallengeSubmit() {
     setSubmitting(true);
     setSubmitError(null);
     try {
-      const result = await createSubmission(id, file);
+      const developmentTimeSeconds =
+        secondsLeft != null && totalSeconds != null
+          ? Math.max(0, Math.min(totalSeconds, totalSeconds - secondsLeft))
+          : undefined;
+      const result = await createSubmission(id, file, developmentTimeSeconds);
       if (user?.id) clearChallengeSession(user.id);
       const subId = result?.id || result?.submissionId;
       if (subId) {

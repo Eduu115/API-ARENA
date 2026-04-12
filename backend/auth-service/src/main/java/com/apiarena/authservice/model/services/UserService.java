@@ -133,4 +133,32 @@ public class UserService implements IUserService {
                 body,
                 importanceLabel);
     }
+
+    @Override
+    @Transactional
+    public void addDevelopmentTimeSeconds(Long userId, int seconds) {
+        if (seconds <= 0) {
+            return;
+        }
+        int capped = Math.min(seconds, 604800);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        long cur = user.getTotalDevelopmentSeconds() != null ? user.getTotalDevelopmentSeconds() : 0L;
+        user.setTotalDevelopmentSeconds(cur + capped);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void addBrowsingTimeSeconds(Long userId, int seconds) {
+        if (seconds <= 0) {
+            return;
+        }
+        int capped = Math.min(seconds, 120);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        long cur = user.getTotalBrowsingSeconds() != null ? user.getTotalBrowsingSeconds() : 0L;
+        user.setTotalBrowsingSeconds(cur + capped);
+        userRepository.save(user);
+    }
 }

@@ -26,10 +26,12 @@ import TeacherLayout from "../layouts/TeacherLayout";
 import Friends from "../pages/friends/Friends";
 import Notifications from "../pages/Notifications";
 import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
+import BrowsingTimeTracker from "../components/BrowsingTimeTracker";
 
 export default function RoutesConfig() {
   return (
     <BrowserRouter>
+      <BrowsingTimeTracker />
       <ActiveChallengeSessionBanner />
       <Routes>
         <Route path="/" element={<Landing />} />

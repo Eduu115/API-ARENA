@@ -146,10 +146,33 @@ public class SubmissionService implements ISubmissionService {
         throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Cannot submit this challenge right now.");
     }
 
+    private static Integer sanitizeDevelopmentSeconds(Integer raw, int timeLimitMinutes) {
+        if (raw == null || raw <= 0) {
+            return null;
+        }
+        int max = timeLimitMinutes * 60 + 300;
+        return Math.min(raw, max);
+    }
+
+    private void notifyAuthDevelopmentTime(Long userId, int seconds) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            Map<String, Integer> body = Map.of("seconds", seconds);
+            HttpEntity<Map<String, Integer>> entity = new HttpEntity<>(body, headers);
+            restTemplate.postForEntity(
+                    authServiceUrl + "/internal/users/" + userId + "/development-time",
+                    entity,
+                    Void.class);
+        } catch (Exception e) {
+            log.warn("Failed to sync development time to auth for user {}: {}", userId, e.getMessage());
+        }
+    }
+
     @Override
     @Transactional
     public CreateSubmissionResponse createSubmission(Long challengeId, Long userId, MultipartFile zipFile,
-            boolean rateLimitBypass) {
+            boolean rateLimitBypass, Integer developmentTimeSeconds) {
 
         if (challengeId == null) {
             throw new IllegalArgumentException("Challenge ID is required");
@@ -160,10 +183,17 @@ public class SubmissionService implements ISubmissionService {
 
         assertChallengeSubmissionAllowed(userId, challengeId, rateLimitBypass);
 
+        Map<String, Object> ch = fetchChallengeData(challengeId);
+        int timeLimitMin = ch.get("timeLimitMinutes") != null
+                ? ((Number) ch.get("timeLimitMinutes")).intValue()
+                : 60;
+        Integer devSec = sanitizeDevelopmentSeconds(developmentTimeSeconds, timeLimitMin);
+
         Submission submission = Submission.builder()
                 .challengeId(challengeId)
                 .userId(userId)
                 .status(Submission.Status.PENDING)
+                .developmentTimeSeconds(devSec)
                 .build();
 
         Submission saved = submissionRepository.save(submission);
@@ -172,6 +202,10 @@ public class SubmissionService implements ISubmissionService {
         saved.setZipFilePath(zipFilePath);
         saved.setStatus(Submission.Status.PENDING);
         saved = submissionRepository.save(saved);
+
+        if (devSec != null && devSec > 0) {
+            notifyAuthDevelopmentTime(userId, devSec);
+        }
 
         statusCacheService.cacheStatus(saved);
 

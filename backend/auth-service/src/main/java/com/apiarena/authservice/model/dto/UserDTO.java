@@ -26,6 +26,8 @@ public class UserDTO {
     private Integer experiencePoints;
     private Integer totalChallengesCompleted;
     private Integer totalTestsPassed;
+    private Long totalDevelopmentSeconds;
+    private Long totalBrowsingSeconds;
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
     private Boolean isActive;
@@ -46,6 +48,8 @@ public class UserDTO {
             user.getExperiencePoints(),
             user.getTotalChallengesCompleted(),
             user.getTotalTestsPassed(),
+            user.getTotalDevelopmentSeconds() != null ? user.getTotalDevelopmentSeconds() : 0L,
+            user.getTotalBrowsingSeconds() != null ? user.getTotalBrowsingSeconds() : 0L,
             user.getCreatedAt(),
             user.getLastLogin(),
             user.getIsActive(),

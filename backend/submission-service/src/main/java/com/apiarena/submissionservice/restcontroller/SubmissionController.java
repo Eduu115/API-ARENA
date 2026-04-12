@@ -44,7 +44,8 @@ public class SubmissionController {
     @Operation(summary = "Create submission", description = "Upload ZIP and create a new submission")
     public ResponseEntity<CreateSubmissionResponse> createSubmission(
             @RequestParam Long challengeId,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false) Integer developmentTimeSeconds
     ) {
 
         Long userId = extractUserIdFromAuthentication();
@@ -53,7 +54,8 @@ public class SubmissionController {
         }
 
         boolean bypassRateLimit = hasAdminOrTeacherRole();
-        CreateSubmissionResponse response = submissionService.createSubmission(challengeId, userId, file, bypassRateLimit);
+        CreateSubmissionResponse response = submissionService.createSubmission(challengeId, userId, file, bypassRateLimit,
+                developmentTimeSeconds);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

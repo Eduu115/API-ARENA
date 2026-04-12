@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_legacy BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS total_development_seconds BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS total_browsing_seconds BIGINT NOT NULL DEFAULT 0;
 
 -- ===========================================
 -- Tabla: refresh_tokens
@@ -222,6 +224,8 @@ CREATE TABLE IF NOT EXISTS submissions (
     updated_at TIMESTAMP,
     completed_at TIMESTAMP
 );
+
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS development_time_seconds INTEGER;
 
 -- ===========================================
 -- Indices

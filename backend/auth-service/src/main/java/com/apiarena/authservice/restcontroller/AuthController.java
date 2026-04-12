@@ -26,6 +26,7 @@ import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
 import com.apiarena.authservice.model.dto.ResendVerificationRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
+import com.apiarena.authservice.model.dto.UsageDeltaRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 import com.apiarena.authservice.model.services.AchievementService;
@@ -105,6 +106,16 @@ public class AuthController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         return ResponseEntity.ok(achievementService.listForCurrentUserEmail(email));
+    }
+
+    @PostMapping("/me/usage")
+    @Operation(summary = "Report browsing time", description = "Adds active browsing seconds for the current user (visible tab, not idle).")
+    public ResponseEntity<Void> postBrowsingUsage(@Valid @RequestBody UsageDeltaRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserDTO user = userService.getUserByEmail(email);
+        userService.addBrowsingTimeSeconds(user.getId(), request.getBrowsingSecondsDelta());
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/me")

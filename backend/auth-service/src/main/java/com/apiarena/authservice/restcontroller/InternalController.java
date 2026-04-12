@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apiarena.authservice.model.dto.DevelopmentTimeDeltaRequest;
 import com.apiarena.authservice.model.dto.InternalNotificationEmailRequest;
 import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.services.IUserService;
@@ -24,6 +25,14 @@ public class InternalController {
     @PostMapping("/users/{id}/reward")
     public ResponseEntity<Void> applyReward(@PathVariable Long id, @RequestBody RewardRequest request) {
         userService.applyReward(id, request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/users/{id}/development-time")
+    public ResponseEntity<Void> addDevelopmentTime(
+            @PathVariable Long id,
+            @Valid @RequestBody DevelopmentTimeDeltaRequest request) {
+        userService.addDevelopmentTimeSeconds(id, request.getSeconds());
         return ResponseEntity.ok().build();
     }
 
