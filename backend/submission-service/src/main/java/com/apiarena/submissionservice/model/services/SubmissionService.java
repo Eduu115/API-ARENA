@@ -49,6 +49,8 @@ import com.apiarena.submissionservice.model.entities.ReplayEvent;
 import com.apiarena.submissionservice.model.entities.Submission;
 import com.apiarena.submissionservice.repository.ReplayEventRepository;
 import com.apiarena.submissionservice.repository.SubmissionRepository;
+import com.apiarena.submissionservice.integration.influx.InfluxSubmissionMetricsService;
+import com.apiarena.submissionservice.integration.mongo.ReplayMongoArchiveService;
 
 @Service
 public class SubmissionService implements ISubmissionService {
@@ -75,6 +77,12 @@ public class SubmissionService implements ISubmissionService {
 
     @Autowired
     private ReplayEventRepository replayEventRepository;
+
+    @Autowired(required = false)
+    private ReplayMongoArchiveService replayMongoArchiveService;
+
+    @Autowired(required = false)
+    private InfluxSubmissionMetricsService influxSubmissionMetricsService;
 
     @Value("${services.auth-url:http://localhost:8081}")
     private String authServiceUrl;
@@ -257,6 +265,7 @@ public class SubmissionService implements ISubmissionService {
 
     @SuppressWarnings("unchecked")
     private void runSubmissionPipeline(Long submissionId) {
+        final long pipelineT0 = System.currentTimeMillis();
         try {
             Submission sub = submissionRepository.findById(submissionId).orElse(null);
             if (sub == null) {
@@ -282,6 +291,7 @@ public class SubmissionService implements ISubmissionService {
             if (exec == null) {
                 recordReplay(submissionId, "BUILD", "BUILD_FAILED", "error", "Sandbox returned empty response", null);
                 updateStatus(submissionId, Submission.Status.FAILED, "Sandbox returned empty response");
+                recordInfluxIfEnabled(submissionId, "FAILED", pipelineT0);
                 return;
             }
 
@@ -295,6 +305,7 @@ public class SubmissionService implements ISubmissionService {
                 String err = Objects.toString(exec.get("errorMessage"), "Sandbox build failed");
                 recordReplay(submissionId, "BUILD", "BUILD_FAILED", "error", err, null);
                 updateStatus(submissionId, Submission.Status.FAILED, err);
+                recordInfluxIfEnabled(submissionId, "FAILED", pipelineT0);
                 return;
             }
 
@@ -340,18 +351,21 @@ public class SubmissionService implements ISubmissionService {
                 recordReplay(submissionId, "TESTING", "TESTING_FAILED", "error",
                         "Testing service returned empty response", null);
                 updateStatus(submissionId, Submission.Status.FAILED, "Testing service returned empty response");
+                recordInfluxIfEnabled(submissionId, "FAILED", pipelineT0);
                 return;
             }
 
             StringBuilder testLog = new StringBuilder();
             List<Map<String, Object>> results = (List<Map<String, Object>>) suite.get("results");
             if (results != null) {
+                int testIndex = 0;
                 for (Map<String, Object> tr : results) {
                     String name = Objects.toString(tr.get("testName"), "?");
                     String st = Objects.toString(tr.get("status"), "?");
                     String ac = Objects.toString(tr.get("actualResult"), "");
                     testLog.append(String.format("[TEST] %s => %s %s%n", name, st, ac));
                     Map<String, Object> meta = new LinkedHashMap<>();
+                    meta.put("testIndex", testIndex++);
                     meta.put("testName", name);
                     meta.put("status", st);
                     meta.put("actualResult", ac);
@@ -400,6 +414,7 @@ public class SubmissionService implements ISubmissionService {
             applyMetricsFromResults(submissionId, results);
 
             calculateAndApplyRewards(submissionId);
+            recordInfluxIfEnabled(submissionId, "COMPLETED", pipelineT0);
 
         } catch (Exception e) {
             log.error("Submission pipeline failed for {}", submissionId, e);
@@ -407,6 +422,7 @@ public class SubmissionService implements ISubmissionService {
                     e.getMessage() != null ? e.getMessage() : "Pipeline failed", null);
             updateStatus(submissionId, Submission.Status.FAILED,
                     e.getMessage() != null ? e.getMessage() : "Pipeline failed");
+            recordInfluxIfEnabled(submissionId, "FAILED", pipelineT0);
         } finally {
             try {
                 restTemplate.exchange(
@@ -437,10 +453,22 @@ public class SubmissionService implements ISubmissionService {
                     .message(message)
                     .metadata(metadata)
                     .build();
-            replayEventRepository.save(ev);
+            ReplayEvent saved = replayEventRepository.save(ev);
+            if (replayMongoArchiveService != null) {
+                replayMongoArchiveService.appendEvent(saved);
+            }
         } catch (Exception e) {
             log.warn("Could not persist replay event {} for submission {}: {}", eventType, submissionId, e.getMessage());
         }
+    }
+
+    private void recordInfluxIfEnabled(Long submissionId, String status, long pipelineStartedAtMs) {
+        if (influxSubmissionMetricsService == null || submissionId == null) {
+            return;
+        }
+        long elapsed = System.currentTimeMillis() - pipelineStartedAtMs;
+        submissionRepository.findById(submissionId).ifPresent(sub ->
+                influxSubmissionMetricsService.recordPipelineCompletion(sub, status, elapsed));
     }
 
     private HttpHeaders buildInternalHeaders() {
@@ -814,14 +842,23 @@ public class SubmissionService implements ISubmissionService {
             throw new SecurityException("You are not allowed to access this submission");
         }
         List<ReplayEvent> events = replayEventRepository.findBySubmissionIdOrderByOccurredAtAscIdAsc(id);
-        if (events.isEmpty() && "logs".equalsIgnoreCase(replaySource)) {
+        if (!events.isEmpty()) {
+            return new ReplayTimelineResponse("structured",
+                    events.stream().map(ReplayEventDTO::fromEntity).toList());
+        }
+        if (replayMongoArchiveService != null) {
+            Optional<List<ReplayEventDTO>> fromMongo = replayMongoArchiveService.findTimeline(id);
+            if (fromMongo.isPresent() && !fromMongo.get().isEmpty()) {
+                return new ReplayTimelineResponse("structured+mongo", fromMongo.get());
+            }
+        }
+        if ("logs".equalsIgnoreCase(replaySource)) {
             List<ReplayEventDTO> synthetic = new ArrayList<>();
             synthetic.add(new ReplayEventDTO(null, "FALLBACK", "LOG_ONLY", "warn",
                     "Structured replay not available; using logs fallback", null, LocalDateTime.now()));
             return new ReplayTimelineResponse("logs", synthetic);
         }
-        return new ReplayTimelineResponse("structured",
-                events.stream().map(ReplayEventDTO::fromEntity).toList());
+        return new ReplayTimelineResponse("structured", List.of());
     }
 
     @Override
@@ -854,6 +891,9 @@ public class SubmissionService implements ISubmissionService {
         }
 
         statusCacheService.evictStatus(id);
+        if (replayMongoArchiveService != null) {
+            replayMongoArchiveService.deleteBySubmissionId(id);
+        }
         submissionRepository.delete(submission);
     }
 

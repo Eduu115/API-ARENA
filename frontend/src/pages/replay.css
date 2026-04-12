@@ -222,6 +222,83 @@
   align-items: flex-start;
   animation: ch-card-in 0.2s ease both;
 }
+
+button.rp-line-click {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  appearance: none;
+  padding: 2px 0;
+  margin: 0;
+  cursor: none;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.9;
+  border-radius: 2px;
+}
+button.rp-line-click:hover {
+  background: rgba(0, 217, 255, 0.06);
+}
+button.rp-line-click.is-selected {
+  background: rgba(178, 75, 243, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(178, 75, 243, 0.35);
+}
+
+.rp-test-idx {
+  font-size: 11px;
+  color: var(--purple);
+  margin-right: 6px;
+  font-family: var(--font-mono);
+}
+
+.rp-controls-wrap {
+  flex-wrap: wrap;
+}
+.rp-control-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--dim);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.rp-detail {
+  border-top: 1px solid var(--dim);
+  background: var(--bg1);
+  padding: 12px 20px 16px;
+}
+.rp-detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.rp-detail-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+.rp-detail-pre {
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.rp-detail-pre::-webkit-scrollbar {
+  width: 4px;
+}
+.rp-detail-pre::-webkit-scrollbar-thumb {
+  background: var(--dim);
+}
 .rp-ts {
   color: var(--muted);
   font-size: 12px;

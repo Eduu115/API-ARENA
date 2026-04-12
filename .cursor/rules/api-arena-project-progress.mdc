@@ -11,23 +11,23 @@ alwaysApply: true
 |----------|--------|--------|-------|
 | **auth-service** | 8081 | ✅ Completo | JWT, registro, login, refresh, **verificación de email** (Resend + token 48h; **solo** email de verificación en registro); **tras verificar**: email bienvenida beta/legacy + “First steps” + creación notificación in-app vía notification-service; **mirror** a email solo notificaciones **IMPORTANT** (`POST /internal/users/{id}/notification-email`), flag `beta_legacy`, perfiles públicos, grupos de profesor, amistades, `/internal/users/{id}/reward`, logros, tiempo desarrollo/navegación |
 | **challenge-service** | 8082 | ✅ Completo | CRUD challenges, categorías, featured, legacy/community, slug, `xpReward`, `timeLimitMinutes` |
-| **submission-service** | 8083 | ✅ Completo | Upload ZIP, pipeline async (sandbox build → testing HTTP → COMPLETED), scores, logs, métricas, WebSocket, XP+ELO (HTTP a auth/challenge), **Kafka producer** `apiarena.submissions.completed`, **anti-farm**: cooldown + máx. 3 envíos/día UTC por challenge, **opcional** `developmentTimeSeconds` en `POST /api/submissions`, **replay timeline real** en `replay_events` + `GET /api/submissions/{id}/replay`, token interno `X-Internal-Token`, **retención replay programada** (`replay.retention.*`) |
-| **sandbox-service** | 8084 | ✅ Operativo | Runner dual por flag `sandbox.runner.mode=process|dind`. En `dind`: **contenedor por submission** (`apiarena-candidate-{id}`), cleanup de contenedor+imagen en stop, readiness probe HTTP, token interno y hardening runtime (`--cap-drop=ALL`, `--read-only`, `no-new-privileges`, `pids-limit`) |
+| **submission-service** | 8083 | ✅ Completo | Upload ZIP, pipeline async (sandbox build → testing HTTP → COMPLETED), scores, logs, métricas, WebSocket, XP+ELO (HTTP a auth/challenge), **Kafka producer** `apiarena.submissions.completed`, **anti-farm**, **replay** en Postgres + **espejo MongoDB** (`replay_archives`, opt-in `REPLAY_MONGODB_ENABLED`), **InfluxDB 2** medición `submission_pipeline` (opt-in `INFLUX_ENABLED`), `GET /api/submissions/{id}/replay`, retención programada |
+| **sandbox-service** | 8084 | ✅ Operativo | Runner dual por flag `sandbox.runner.mode=process|dind`. En `dind`: **contenedor por submission** en red **interna** `apiarena-candidate` (sin salida a Internet ni a DB), cleanup contenedor+imagen, readiness HTTP, token interno, hardening (`--init`, `--ulimit nofile`, caps, read-only, tmpfs `/tmp`) |
 | **testing-service** | 8085 | ✅ Operativo | **Tests HTTP reales** (`RestTemplate`) contra la URL del candidato: funcionales (según `testSuite` del challenge), rendimiento y diseño; puntuación agregada. No sustituye tests unitarios dentro del ZIP del alumno — es caja negra contra la API levantada |
 | **leaderboard-service** | 8087 | ✅ Completo | Rankings globales y por challenge; **consumer Kafka** actualiza entradas al completar submission |
 | **ai-review-service** | 8086 | ✅ Operativo (v2 ready) | Endpoint interno `POST /internal/ai-review/analyze`, provider configurable (`heuristic|gemini`), fallback automático a heurístico, `aiScore` 0-200 + feedback estructurado; listo para API key por entorno |
 | **multiplayer-service** | 8088 | ❌ No creado | |
-| **metrics-service** | 8089 | ✅ Operativo | Agregados (`/api/metrics/overview`, `/api/metrics/submissions/daily`), feedback docs, **eventos de producto** (`POST /api/metrics/events`), **BI summary/export** (`/api/metrics/bi/summary`, `/api/metrics/bi/export?format=json|csv`), Prometheus; lectura de negocio restringida a ADMIN |
+| **metrics-service** | 8089 | ✅ Operativo | Agregados (`/api/metrics/overview`, `/api/metrics/submissions/daily`), feedback docs, **eventos de producto** (`POST /api/metrics/events`), **BI summary/export** (`/api/metrics/bi/summary`, `/api/metrics/bi/export?format=json|csv`), **export CSV programado (opt-in)** `METRICS_BI_EXPORT_ENABLED` + volumen `/app/bi-exports`, Prometheus; lectura de negocio restringida a ADMIN |
 | **notification-service** | 8090 | ✅ Completo | In-app + **WebSocket** `/ws/notifications` (JWT query); Kafka incl. **challengeTitle**; REST JWT; **importancia** `INFO|REMINDER|ALERTS|IMPORTANT`; **solo** `IMPORTANT` → email vía auth (mismo título/cuerpo); bienvenida in-app tras verificar email (auth → `POST /internal/notifications/welcome`); query `minImportance`; frontend: `/notifications` |
 
 ## Infraestructura Docker
 
 - **PostgreSQL**: ✅ `init-db.sql` (seed, friendships, etc.)
 - **Redis**: ✅ (auth + submission cache)
-- **MongoDB**: ✅ contenedor, sin integración real
-- **InfluxDB**: ✅ contenedor, sin integración real
+- **MongoDB**: ✅ **integrado** en submission-service (archivo de replay `replay_archives`; lectura si Postgres vacío tras retención)
+- **InfluxDB**: ✅ **integrado** en submission-service (serie `submission_pipeline`: duración, score, estado)
 - **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`)
-- **Prometheus + Grafana**: ✅ stack base operativo en Compose (`9090`, `3001`) con provisioning y dashboard inicial
+- **Prometheus + Grafana + Alertmanager**: ✅ `9090` / `3001` / `9093`; reglas `docker/prometheus/alerts.yml` (HTTP 5xx, heap JVM); datasource **InfluxDB** en Grafana (UID `influx-apiarena`; token alineado con `.env`); dashboards Operational Overview + Submission Pipeline Health
 - **Frontend (Nginx)**: ✅ puerto 3000
 
 ## Sistema de XP y ELO
@@ -54,7 +54,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/friends` | Friends | ✅ |
 | `/notifications` | Notifications | ✅ Campana en topbar + WebSocket + lista |
 | `/docs` + `/docs/:docId` | DocsHub | ✅ Mini-routing de documentos (sidebar), guías extensas (incl. preconfiguración), feedback por sección/documento y resumen global |
-| `/replay` | Replay | ✅ Timeline real (filtros por etapa, player, eventos estructurados) |
+| `/replay` | Replay | ✅ Timeline real; filtros etapa + HTTP/tests; salto a fallo; flechas; metadata JSON por evento; índice `testIndex` |
 | `/multiplayer` | MultiplayerHub | ⚠️ Parcial / mock |
 | `/teacher/*` | Teacher area | ✅ |
 
@@ -68,7 +68,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 ### Límites conocidos (sandbox / testing)
 
-- **Aislamiento DinD**: hay contenedor por submission y cleanup en stop; pendiente endurecer límites de red/sistema (rootless DinD/policies) para entorno de producción estricto.  
+- **Aislamiento DinD**: runtime del candidato en red **internal** (`apiarena-candidate`); build Maven sigue usando red de BuildKit. Pendiente: rootless DinD / políticas extra en prod.  
 - **Testing**: acoplado a contratos HTTP del challenge (`testSuite`, endpoints por defecto si faltan datos).  
 
 ## Credenciales de prueba (seed)
@@ -94,6 +94,8 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Onboarding primer challenge: modal de confirmación en submit para primeros envíos con acceso directo a la guía de preconfiguración.
 - Métricas de negocio no públicas: endpoints de consulta en metrics-service protegidos para rol ADMIN; usuarios estándar solo pueden emitir feedback.
 - BI-ready baseline: tabla `product_events` + endpoint de ingestión y export CSV/JSON por ventana temporal para conectar con BI apps/GA pipelines.
+- Backlog priorizado (local): `docs/BACKLOG-NEXT-ITERATION.md`; Grafana pipeline dashboard; export BI programado; DinD `--init` + ulimit.
+- Operativa: **Alertmanager** + reglas Prometheus; red candidato **internal**; **Mongo replay** + **Influx pipeline** + Grafana Influx datasource; replay UI mejorada.
 
 ## Lo que falta (priorizado) y orden de magnitud
 
@@ -106,8 +108,8 @@ Estimaciones **muy orientativas** (1 dev familiarizado con el repo; dependen de 
 | **metrics-service** + dashboards básicos | ✅ Entregado en v1, faltan dashboards de negocio avanzados | **2–4 días** |
 | **Notificaciones** | Push nativo / email / WebSocket tiempo real (v1 = in-app + Kafka ya hecho) | **1–2 semanas** |
 | **Replay funcional** | ✅ Timeline real entregado; faltan features avanzadas (diff payload/seek por testcase) | **3–7 días** |
-| **Grafana + InfluxDB** | Monitoring reutilizando métricas | **~1 semana** añadida a métricas |
-| **MongoDB** logs / replay storage | Tras definir modelo de datos | **1–2 semanas** |
+| **Grafana + InfluxDB** | ✅ Escritura pipeline + datasource Grafana; paneles avanzados opcionales | **2–4 días** |
+| **MongoDB** logs / replay storage | ✅ Archivo `replay_archives` + retención alineada; ampliar índices/TTL según carga | **0.5–1 semana** |
 | **ai-review-service** (LLM) | ✅ Base v2 lista (falta calibración fina de prompts/rúbrica por challenge y control de costes) | **2–6 días** |
 | **multiplayer-service** | BONUS, WebSocket + salas | **3–6 semanas** |
 | **Achievements (ampliar)** | Más reglas, iconos asset, notificación al desbloquear | **0.5–2 semanas** |
