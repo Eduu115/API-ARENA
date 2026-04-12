@@ -88,6 +88,9 @@ public class SubmissionService implements ISubmissionService {
     @Value("${services.testing-url:http://localhost:8085}")
     private String testingServiceUrl;
 
+    @Value("${services.ai-review-url:http://localhost:8086}")
+    private String aiReviewServiceUrl;
+
     @Value("${services.candidate-host:localhost}")
     private String candidateApiHost;
 
@@ -96,6 +99,9 @@ public class SubmissionService implements ISubmissionService {
 
     @Value("${services.internal-token:}")
     private String internalToken;
+
+    @Value("${ai.review.enabled:false}")
+    private boolean aiReviewEnabled;
 
     @Value("${replay.source:structured}")
     private String replaySource;
@@ -371,16 +377,26 @@ public class SubmissionService implements ISubmissionService {
             int perf = toInt(suite.get("performanceScore"));
             int design = toInt(suite.get("designScore"));
 
-            BigDecimal totalBd = BigDecimal.valueOf(Math.min(1000, total)).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal corrBd = BigDecimal.valueOf(corr).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal perfBd = BigDecimal.valueOf(perf).setScale(2, RoundingMode.HALF_UP);
-            BigDecimal designBd = BigDecimal.valueOf(design).setScale(2, RoundingMode.HALF_UP);
+            ScoreBreakdown technical = buildTechnicalBreakdown(total, corr, perf, design);
+            AiReviewOutcome aiOutcome = runAiReview(submissionId, sub.getChallengeId(), results, technical);
+            BigDecimal aiScoreBd = BigDecimal.valueOf(aiOutcome.aiScore()).setScale(2, RoundingMode.HALF_UP);
+            persistAiReview(submissionId, aiOutcome, aiScoreBd);
+
+            int finalTotal = Math.min(1000, technical.technicalTotal() + aiOutcome.aiScore());
+            BigDecimal totalBd = BigDecimal.valueOf(finalTotal).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal corrBd = BigDecimal.valueOf(technical.correctness()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal perfBd = BigDecimal.valueOf(technical.performance()).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal designBd = BigDecimal.valueOf(technical.design()).setScale(2, RoundingMode.HALF_UP);
 
             updateScores(submissionId, totalBd, corrBd, perfBd, designBd);
             recordReplay(submissionId, "RESULT", "SCORE_FINALIZED", "info",
-                    "Scores finalized",
-                    Map.of("totalScore", totalBd, "correctnessScore", corrBd, "performanceScore", perfBd,
-                            "designScore", designBd));
+                    "Scores finalized with AI review",
+                    Map.of("totalScore", totalBd,
+                            "technicalScore", technical.technicalTotal(),
+                            "correctnessScore", corrBd,
+                            "performanceScore", perfBd,
+                            "designScore", designBd,
+                            "aiReviewScore", aiScoreBd));
             applyMetricsFromResults(submissionId, results);
 
             calculateAndApplyRewards(submissionId);
@@ -481,6 +497,129 @@ public class SubmissionService implements ISubmissionService {
         sub.setFailedRequests(failed);
         sub.setRestComplianceScore(BigDecimal.valueOf(85).setScale(2, RoundingMode.HALF_UP));
         submissionRepository.save(sub);
+    }
+
+    private AiReviewOutcome runAiReview(Long submissionId, Long challengeId, List<Map<String, Object>> results,
+            ScoreBreakdown technical) {
+        if (!aiReviewEnabled) {
+            return AiReviewOutcome.disabled();
+        }
+        try {
+            Submission sub = submissionRepository.findById(submissionId).orElse(null);
+            if (sub == null) {
+                return AiReviewOutcome.failed("submission_not_found");
+            }
+            HttpHeaders headers = buildInternalHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            List<String> endpoints = List.of();
+            if (results != null) {
+                endpoints = results.stream()
+                        .map(r -> Objects.toString(r.get("requestPath"), null))
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList();
+            }
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("submissionId", submissionId);
+            body.put("challengeId", challengeId);
+            body.put("buildLogs", sub.getBuildLogs());
+            body.put("testLogs", sub.getTestLogs());
+            body.put("endpoints", endpoints);
+            body.put("technicalScore", technical.technicalTotal());
+            body.put("correctnessScore", technical.correctness());
+            body.put("performanceScore", technical.performance());
+            body.put("designScore", technical.design());
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> review = restTemplate.postForObject(
+                    aiReviewServiceUrl + "/internal/ai-review/analyze",
+                    entity,
+                    Map.class);
+            if (review == null) {
+                return AiReviewOutcome.failed("empty_response");
+            }
+            int aiScore = toInt(review.get("aiScore"));
+            if (aiScore <= 0) {
+                aiScore = toInt(review.get("score"));
+            }
+            aiScore = Math.max(0, Math.min(200, aiScore));
+            Object providerObj = review.get("provider");
+            String provider = providerObj != null ? providerObj.toString() : "heuristic";
+
+            Map<String, Object> aiDetails = new LinkedHashMap<>();
+            aiDetails.put("provider", provider);
+            aiDetails.put("summary", Objects.toString(review.get("summary"), ""));
+            aiDetails.put("overallScore", toInt(review.get("overallScore")));
+            aiDetails.put("performanceScore", toInt(review.get("performanceScore")));
+            aiDetails.put("aestheticsScore", toInt(review.get("aestheticsScore")));
+            aiDetails.put("cleanlinessScore", toInt(review.get("cleanlinessScore")));
+            aiDetails.put("structureScore", toInt(review.get("structureScore")));
+            aiDetails.put("strengths", review.get("strengths"));
+            aiDetails.put("suggestions", review.get("suggestions"));
+            aiDetails.put("diagnostics", review.get("diagnostics"));
+
+            recordReplay(submissionId, "RESULT", "AI_REVIEW_COMPLETED", "info",
+                    "AI review completed", Map.of("aiReviewScore", aiScore, "provider", provider));
+            return new AiReviewOutcome(aiScore, provider, aiDetails);
+        } catch (Exception e) {
+            log.warn("AI review skipped for submission {}: {}", submissionId, e.getMessage());
+            recordReplay(submissionId, "RESULT", "AI_REVIEW_FAILED", "warn", e.getMessage(), null);
+            return AiReviewOutcome.failed(e.getMessage());
+        }
+    }
+
+    private void persistAiReview(Long submissionId, AiReviewOutcome aiOutcome, BigDecimal aiScore) {
+        Submission submission = submissionRepository.findById(submissionId).orElse(null);
+        if (submission == null) {
+            return;
+        }
+        submission.setAiReviewScore(aiScore);
+        submission.setAiSuggestions(aiOutcome.details());
+        submissionRepository.save(submission);
+    }
+
+    private ScoreBreakdown buildTechnicalBreakdown(int total, int correctness, int performance, int design) {
+        int sum = Math.max(0, correctness) + Math.max(0, performance) + Math.max(0, design);
+        if (sum > 0) {
+            int corrWeighted = (int) Math.round(300.0 * Math.max(0, correctness) / sum);
+            int perfWeighted = (int) Math.round(300.0 * Math.max(0, performance) / sum);
+            int designWeighted = (int) Math.round(200.0 * Math.max(0, design) / sum);
+
+            int technicalTotal = corrWeighted + perfWeighted + designWeighted;
+            int delta = 800 - technicalTotal;
+            if (delta != 0) {
+                designWeighted = Math.max(0, designWeighted + delta);
+                technicalTotal = corrWeighted + perfWeighted + designWeighted;
+            }
+            return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, Math.max(0, technicalTotal));
+        }
+        int technicalTotal = Math.max(0, Math.min(800, (int) Math.round(Math.max(0, total) * 0.8)));
+        int corrWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
+        int perfWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
+        int designWeighted = Math.max(0, technicalTotal - corrWeighted - perfWeighted); // 200/800
+        return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, technicalTotal);
+    }
+
+    private record ScoreBreakdown(int correctness, int performance, int design, int technicalTotal) {}
+
+    private record AiReviewOutcome(int aiScore, String provider, Map<String, Object> details) {
+        private static AiReviewOutcome disabled() {
+            return new AiReviewOutcome(0, "disabled", Map.of(
+                    "provider", "disabled",
+                    "summary", "AI review disabled",
+                    "suggestions", List.of(),
+                    "strengths", List.of()));
+        }
+
+        private static AiReviewOutcome failed(String reason) {
+            return new AiReviewOutcome(0, "fallback", Map.of(
+                    "provider", "fallback",
+                    "summary", "AI review unavailable, score defaults to 0.",
+                    "suggestions", List.of("Retry submission review after AI service stabilizes."),
+                    "diagnostics", Map.of("reason", reason)));
+        }
     }
 
     private static final Map<String, Integer> DIFFICULTY_RATING = Map.of(

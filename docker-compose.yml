@@ -157,6 +157,7 @@ services:
       kafka: { condition: service_started }
       sandbox-service: { condition: service_started }
       testing-service: { condition: service_started }
+      ai-review-service: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -170,8 +171,10 @@ services:
       SERVICES_CHALLENGE_URL: http://apiarena-challenge:8082
       SERVICES_SANDBOX_URL: http://apiarena-sandbox:8084
       SERVICES_TESTING_URL: http://apiarena-testing:8085
+      SERVICES_AI_REVIEW_URL: http://apiarena-ai-review:8086
       SERVICES_CANDIDATE_HOST: apiarena-sandbox
       SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      AI_REVIEW_ENABLED: ${AI_REVIEW_ENABLED:-true}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     volumes:
       - submission_uploads:/app/uploads
@@ -197,6 +200,7 @@ services:
       SANDBOX_RUNNER_MODE: ${SANDBOX_RUNNER_MODE:-dind}
       SANDBOX_DIND_NETWORK: ${COMPOSE_PROJECT_NAME:-api-arena}_apiarena-network
       SANDBOX_DIND_CONTAINER_PORT: "8080"
+      SANDBOX_DIND_PIDS_LIMIT: "256"
       SANDBOX_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
@@ -204,6 +208,24 @@ services:
     volumes:
       - submission_uploads:/app/uploads
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  ai-review-service:
+    build:
+      context: ./backend/ai-review-service
+      dockerfile: Dockerfile
+    container_name: apiarena-ai-review
+    environment:
+      AI_REVIEW_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      AI_REVIEW_PROVIDER: ${AI_REVIEW_PROVIDER:-heuristic}
+      AI_REVIEW_MODEL: ${AI_REVIEW_MODEL:-gemini-2.0-flash}
+      AI_REVIEW_GOOGLE_API_KEY: ${AI_REVIEW_GOOGLE_API_KEY:-}
+      AI_REVIEW_TIMEOUT_MS: ${AI_REVIEW_TIMEOUT_MS:-12000}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
+    ports:
+      - "8186:8086"
     networks:
       - apiarena-network
     restart: unless-stopped
