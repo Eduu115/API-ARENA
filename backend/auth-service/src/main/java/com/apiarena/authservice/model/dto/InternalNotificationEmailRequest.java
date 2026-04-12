@@ -3,10 +3,10 @@ package com.apiarena.authservice.model.dto;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * Service-to-service: send a notification email for ALERTS / IMPORTANT in-app messages.
+ * Service-to-service: mirror an in-app notification to email (same title/body).
  */
 public record InternalNotificationEmailRequest(
         @NotBlank String title,
-        @NotBlank String body,
+        String body,
         @NotBlank String importance
 ) {}

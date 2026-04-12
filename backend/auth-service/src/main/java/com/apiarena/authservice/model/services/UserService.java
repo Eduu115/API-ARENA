@@ -130,7 +130,7 @@ public class UserService implements IUserService {
                 user.getEmail(),
                 user.getUsername(),
                 title,
-                body,
+                body != null ? body : "",
                 importanceLabel);
     }
 

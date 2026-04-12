@@ -87,7 +87,7 @@ public class EmailDispatchService {
                   <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
                   <p style="line-height:1.5;margin:0 0 16px;">Thank you for trusting us and creating an account.</p>
                   <p style="line-height:1.5;margin:0 0 16px;">We are currently in <strong style="color:#a78bfa;">beta</strong>. Your account is automatically marked as a <strong style="color:#22d3ee;">legacy</strong> account as an early supporter of this phase.</p>
-                  <p style="line-height:1.5;margin:0 0 24px;">Please verify your email (separate message) to unlock the full experience. See you in the Arena.</p>
+                  <p style="line-height:1.5;margin:0 0 24px;">Your email is verified — you're ready to use the full app. See you in the Arena.</p>
                   <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
                 </div>
                 """.formatted(safeName);
@@ -114,8 +114,7 @@ public class EmailDispatchService {
                   <p style="line-height:1.5;margin:0 0 20px;">Hi %s,</p>
                   <p style="line-height:1.5;margin:0 0 16px;">Here is a short path to get value from <strong style="color:#a78bfa;">API Arena</strong> while we are in <strong>beta</strong>:</p>
                   <ol style="line-height:1.6;margin:0 0 20px;padding-left:20px;color:#e8e8f0;">
-                    <li style="margin-bottom:10px;"><strong>Verify your email</strong> — unlock login and the full app. <a href="%s" style="color:#22d3ee;">Open verification</a> (or use the dedicated email we sent).</li>
-                    <li style="margin-bottom:10px;"><strong>Browse challenges</strong> — filter by difficulty, category, and status. <a href="%s/challenges" style="color:#22d3ee;">Go to Challenges</a></li>
+                    <li style="margin-bottom:10px;"><strong>You're all set</strong> — your email is verified. <a href="%s/login" style="color:#22d3ee;">Sign in</a>, then explore <a href="%s/challenges" style="color:#22d3ee;">Challenges</a> or your <a href="%s/dashboard" style="color:#22d3ee;">Dashboard</a>.</li>
                     <li style="margin-bottom:10px;"><strong>Submit your API</strong> — upload a ZIP, run the sandbox pipeline, and get scored. From a challenge page, use Submit.</li>
                     <li style="margin-bottom:10px;"><strong>Track progress</strong> — <a href="%s/dashboard" style="color:#22d3ee;">Dashboard</a>, <a href="%s/submissions" style="color:#22d3ee;">My submissions</a>, and <a href="%s/leaderboard" style="color:#22d3ee;">Leaderboard</a>.</li>
                     <li style="margin-bottom:0;"><strong>Stay in the loop</strong> — <a href="%s/notifications" style="color:#22d3ee;">Notifications</a> (bell in the top bar) and <a href="%s/friends" style="color:#22d3ee;">Friends</a>.</li>
@@ -125,20 +124,20 @@ public class EmailDispatchService {
                     <li>Challenge catalog, filters, and featured challenges</li>
                     <li>ZIP submission, sandbox build, automated HTTP testing, scores &amp; logs</li>
                     <li>XP, ELO, daily attempt limits, and submission completion events</li>
-                    <li>In-app notifications (including important alerts by email when applicable)</li>
+                    <li>In-app notifications marked <strong>Important</strong> are also sent to your email</li>
                     <li>Global and challenge leaderboards</li>
                     <li>Public profiles and friends</li>
                   </ul>
                   <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">Things may change during beta—thank you for helping us shape the product. Questions? Reply to this email if your provider allows it, or use in-app notifications.</p>
                   <p style="line-height:1.5;margin:16px 0 0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
                 </div>
-                """.formatted(safeName, base + "/verify-email", base, base, base, base, base, base);
+                """.formatted(safeName, base, base, base, base, base, base, base, base);
 
         postResend(toEmail, "Your first steps in API Arena (beta)", html);
     }
 
     /**
-     * Mirrors in-app ALERTS / IMPORTANT notifications to email.
+     * Mirrors in-app notifications to email (same title and body as the bell).
      */
     public void sendNotificationAlertEmail(
             String toEmail,
@@ -164,7 +163,7 @@ public class EmailDispatchService {
                   <h1 style="font-size:18px;margin:0 0 16px;color:#22d3ee;">%s</h1>
                   <p style="line-height:1.5;margin:0 0 12px;">Hi %s,</p>
                   <p style="line-height:1.5;margin:0 0 24px;white-space:pre-wrap;">%s</p>
-                  <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">This was sent because your in-app notification is classified as Alerts or Important.</p>
+                  <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">This email mirrors your in-app notification (bell in the top bar).</p>
                 </div>
                 """.formatted(imp, safeTitle, safeName, safeBody);
 
