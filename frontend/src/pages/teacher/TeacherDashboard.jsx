@@ -15,10 +15,10 @@ export default function TeacherDashboard() {
   const challenges = MOCK_TEACHER_CHALLENGES.length;
 
   const kpis = [
-    { icon: "◎", label: "Correcciones pendientes", value: String(pending), color: "var(--warn)", barWidth: "70%" },
-    { icon: "◇", label: "Grupos", value: String(groupCount), color: "var(--cyan)", barWidth: "45%" },
-    { icon: "⊕", label: "Challenges creados", value: String(challenges), color: "var(--purple)", barWidth: "55%" },
-    { icon: "✓", label: "Publicados", value: String(MOCK_TEACHER_CHALLENGES.filter((c) => c.published).length), color: "var(--green)", barWidth: "40%" },
+    { icon: "◎", label: "Pending corrections", value: String(pending), color: "var(--warn)", barWidth: "70%" },
+    { icon: "◇", label: "Groups", value: String(groupCount), color: "var(--cyan)", barWidth: "45%" },
+    { icon: "⊕", label: "Challenges created", value: String(challenges), color: "var(--purple)", barWidth: "55%" },
+    { icon: "✓", label: "Published", value: String(MOCK_TEACHER_CHALLENGES.filter((c) => c.published).length), color: "var(--green)", barWidth: "40%" },
   ];
 
   return (
@@ -27,18 +27,18 @@ export default function TeacherDashboard() {
         <div>
           <div className="db-page-eyebrow">// Teacher Command Center</div>
           <h1 className="db-page-title">
-            Panel<em>Profesor</em>
+            Teacher<em>Panel</em>
           </h1>
           <div className="db-page-sub">
-            Acceso rápido a correcciones, grupos y creación de challenges.
+            Quick access to corrections, groups, and challenge creation.
           </div>
         </div>
         <div className="db-header-actions">
           <Link to="/teacher/corrections" className="db-btn db-btn-primary">
-            Ir a correcciones
+            Go to corrections
           </Link>
           <Link to="/teacher/challenges/new" className="db-btn">
-            Crear challenge
+            Create challenge
           </Link>
         </div>
       </div>
@@ -61,10 +61,10 @@ export default function TeacherDashboard() {
           <div className="db-panel-head">
             <div className="db-panel-title">
               <span className="db-live-dot" />
-              Correcciones recientes
+              Recent corrections
             </div>
             <Link to="/teacher/corrections" className="db-panel-action">
-              Ver todo →
+              View all →
             </Link>
           </div>
 
@@ -89,15 +89,15 @@ export default function TeacherDashboard() {
         <div className="db-right-stack">
           <div className="db-panel">
             <div className="db-panel-head">
-              <div className="db-panel-title">Grupos</div>
+              <div className="db-panel-title">Groups</div>
               <Link to="/teacher/groups" className="db-panel-action">
-                Gestionar →
+                Manage →
               </Link>
             </div>
             <div style={{ padding: "12px 18px" }}>
               {groups.length === 0 ? (
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", textAlign: "center", padding: 10 }}>
-                  Sin grupos aún
+                  No groups yet
                 </div>
               ) : groups.map((g) => (
                 <div
@@ -123,7 +123,7 @@ export default function TeacherDashboard() {
             <div className="db-panel-head">
               <div className="db-panel-title">Challenges</div>
               <Link to="/teacher/challenges" className="db-panel-action">
-                Gestionar →
+                Manage →
               </Link>
             </div>
             <div style={{ padding: "12px 18px" }}>

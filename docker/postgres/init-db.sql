@@ -693,6 +693,24 @@ CREATE INDEX IF NOT EXISTS idx_docs_feedback_section ON docs_feedback(section_ke
 CREATE INDEX IF NOT EXISTS idx_docs_feedback_created_at ON docs_feedback(created_at);
 
 -- ===========================================
+-- Table: product_events (analytics-ready BI events)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS product_events (
+    id BIGSERIAL PRIMARY KEY,
+    event_name VARCHAR(120) NOT NULL,
+    event_type VARCHAR(64) NOT NULL DEFAULT 'PRODUCT',
+    source VARCHAR(80) NOT NULL DEFAULT 'frontend',
+    user_id BIGINT,
+    session_id VARCHAR(120),
+    properties_json TEXT,
+    occurred_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_product_events_time ON product_events(occurred_at);
+CREATE INDEX IF NOT EXISTS idx_product_events_name ON product_events(event_name);
+CREATE INDEX IF NOT EXISTS idx_product_events_source ON product_events(source);
+
+-- ===========================================
 -- Achievements (auth-service; seeded at runtime if empty)
 -- ===========================================
 CREATE TABLE IF NOT EXISTS achievement_definitions (

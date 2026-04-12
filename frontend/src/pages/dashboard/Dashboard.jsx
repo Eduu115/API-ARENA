@@ -44,7 +44,7 @@ export default function Dashboard() {
   }, []);
 
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? '??';
-  const userName = user?.username ?? 'Usuario';
+  const userName = user?.username ?? 'User';
   const userRole = `${user?.role ?? 'STUDENT'} · ${user?.isActive !== false ? 'Active' : 'Inactive'}`;
   const elo = user?.rating ?? 1000;
   const level = user?.level ?? 1;
@@ -178,7 +178,7 @@ export default function Dashboard() {
               ))
             ) : (
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
-                {loadingChallenges ? 'Cargando...' : 'Sin categorias'}
+                {loadingChallenges ? 'Loading...' : 'No categories'}
               </div>
             )}
           </div>
@@ -256,7 +256,7 @@ export default function Dashboard() {
 
               {loadingChallenges ? (
                 <div style={{ padding: 24, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
-                  Cargando challenges...
+                  Loading challenges...
                 </div>
               ) : latestChallenges.length > 0 ? (
                 latestChallenges.map(ch => {
@@ -301,7 +301,7 @@ export default function Dashboard() {
                 })
               ) : (
                 <div style={{ padding: 24, textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--muted)' }}>
-                  No hay challenges disponibles
+                  No challenges available
                 </div>
               )}
             </div>
@@ -356,8 +356,8 @@ export default function Dashboard() {
                 <div style={{ padding: '12px 18px' }}>
                   {[
                     { label: 'Role', value: user?.role ?? 'STUDENT' },
-                    { label: 'Member since', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('es-ES') : '—' },
-                    { label: 'Last login', value: user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString('es-ES') : '—' },
+                    { label: 'Member since', value: user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US') : '—' },
+                    { label: 'Last login', value: user?.lastLogin ? new Date(user.lastLogin).toLocaleDateString('en-US') : '—' },
                     { label: 'Status', value: user?.isActive !== false ? 'Active' : 'Inactive' },
                     { label: 'Email verified', value: user?.emailVerified ? 'Yes' : 'No' },
                   ].map(item => (
@@ -430,7 +430,7 @@ export default function Dashboard() {
                   gridColumn: '1 / -1', padding: 24, textAlign: 'center',
                   fontFamily: 'var(--font-mono)', fontSize: 15, color: 'var(--muted)',
                 }}>
-                  {loadingChallenges ? 'Cargando...' : 'No hay challenges destacados'}
+                  {loadingChallenges ? 'Loading...' : 'No featured challenges'}
                 </div>
               )}
             </div>

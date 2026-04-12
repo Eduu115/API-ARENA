@@ -2,9 +2,9 @@ import { Link, useLocation } from "react-router-dom";
 import "./LoginPromptModal.css";
 
 /**
- * Modal para invitar a iniciar sesión (p. ej. al pulsar "Iniciar challenge" sin sesión).
+ * Modal to prompt sign-in when authentication is required.
  */
-export default function LoginPromptModal({ open, onClose, title = "Inicia sesión", description }) {
+export default function LoginPromptModal({ open, onClose, title = "Sign in", description }) {
   const location = useLocation();
   const state = { from: location };
 
@@ -24,17 +24,17 @@ export default function LoginPromptModal({ open, onClose, title = "Inicia sesió
         </h2>
         <p className="login-prompt-modal-text">
           {description ||
-            "Para iniciar este challenge necesitas iniciar sesión. Si aún no tienes cuenta, puedes registrarte."}
+            "You need to sign in to start this challenge. If you do not have an account yet, you can register."}
         </p>
         <div className="login-prompt-modal-actions">
           <Link to="/login" state={state} className="login-prompt-modal-btn login-prompt-modal-btn-primary" onClick={onClose}>
-            Iniciar sesión
+            Sign in
           </Link>
           <Link to="/register" state={state} className="login-prompt-modal-btn login-prompt-modal-btn-secondary" onClick={onClose}>
-            Crear cuenta
+            Create account
           </Link>
           <button type="button" className="login-prompt-modal-btn login-prompt-modal-btn-ghost" onClick={onClose}>
-            Cancelar
+            Cancel
           </button>
         </div>
       </div>

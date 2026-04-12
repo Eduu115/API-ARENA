@@ -190,6 +190,68 @@
   font-variant-numeric: tabular-nums;
 }
 
+.arena-navbar__elo--unranked {
+  border-color: rgba(178, 75, 243, 0.4);
+  background: rgba(178, 75, 243, 0.12);
+}
+
+.arena-navbar__elo-val--unranked {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--purple);
+}
+
+.arena-navbar__elo-help-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.arena-navbar__elo-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(178, 75, 243, 0.65);
+  color: var(--purple);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.arena-navbar__elo-help:hover {
+  color: var(--white);
+  border-color: var(--white);
+}
+
+.arena-navbar__elo-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: -6px;
+  width: 250px;
+  background: #0a1026;
+  border: 1px solid var(--dim);
+  color: var(--text);
+  padding: 8px 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.45;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(4px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.arena-navbar__elo-help-wrap:hover .arena-navbar__elo-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 .arena-navbar__notif {
   position: relative;
   display: inline-flex;

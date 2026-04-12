@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import "./auth-layout.css";
 
 /**
- * Rutas solo para usuarios autenticados. Redirige a /login guardando la URL de destino.
+ * Routes only for authenticated users. Redirects to /login and preserves destination URL.
  */
 export default function ProtectedLayout() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -12,7 +12,7 @@ export default function ProtectedLayout() {
   if (isLoading) {
     return (
       <div className="auth-layout-loading" aria-busy="true" aria-live="polite">
-        <div className="auth-layout-loading-inner">Cargando…</div>
+        <div className="auth-layout-loading-inner">Loading…</div>
       </div>
     );
   }

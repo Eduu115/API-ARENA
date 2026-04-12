@@ -48,14 +48,14 @@ export function AuthProvider({ children }) {
         setUser(data?.user ?? null);
         return { success: true, data };
       } catch (e) {
-        let message = e?.message ?? "Error al iniciar sesión";
+        let message = e?.message ?? "Sign-in error";
         if (
           e?.status === 403 &&
           typeof message === "string" &&
           message.toLowerCase().includes("email not verified")
         ) {
           message =
-            "Correo no verificado. Revisa tu bandeja o solicita un nuevo enlace en la página de verificación de email.";
+            "Email not verified. Check your inbox or request a new link on the email verification page.";
         }
         setError(message);
         return { success: false, error: message };
@@ -75,7 +75,7 @@ export function AuthProvider({ children }) {
         setUser(data?.user ?? null);
         return { success: true, data };
       } catch (e) {
-        const message = e?.message ?? "Error al registrarse";
+        const message = e?.message ?? "Registration error";
         setError(message);
         return { success: false, error: message };
       }
@@ -109,7 +109,7 @@ export function AuthProvider({ children }) {
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error("useAuth debe usarse dentro de AuthProvider");
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return ctx;
 };

@@ -32,7 +32,7 @@ export default function FeaturesSection() {
       <div className="features-header">
         <div>
           <div className="section-label">Arsenal</div>
-          <h2 className="section-title">Features que<br />importan.</h2>
+          <h2 className="section-title">Features that<br />matter.</h2>
         </div>
         <p style={{
           fontFamily: "'Share Tech Mono',monospace",
@@ -42,8 +42,8 @@ export default function FeaturesSection() {
           lineHeight: '1.8',
           letterSpacing: '0.5px',
         }}>
-          Evaluación multidimensional. No es solo si tu API funciona —
-          es qué tan bien funciona.
+          Multidimensional evaluation. It is not only whether your API works -
+          it is how well it works.
         </p>
       </div>
 

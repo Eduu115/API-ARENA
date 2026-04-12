@@ -17,7 +17,7 @@ function getBaseUrl() {
     if (!url) {
 
 
-        console.warn("VITE_AUTH_API_URL no definida, usando http://localhost:8081");
+        console.warn("VITE_AUTH_API_URL is not defined, using http://localhost:8081");
 
 
         return "http://localhost:8081";
@@ -106,7 +106,7 @@ function setStoredTokens(accessToken, refreshToken = null) {
     } catch (e) {
 
 
-        console.error("Error guardando tokens:", e);
+        console.error("Error saving tokens:", e);
 
 
     }
@@ -139,13 +139,13 @@ function clearStoredTokens() {
 /**
 
 
- * Extrae mensaje de error del cuerpo de respuesta del backend.
+ * Extract backend error message from response body.
 
 
  * - ErrorResponse: { status, message, timestamp }
 
 
- * - Validación: { fieldName: "mensaje", ... }
+ * - Validation: { fieldName: "message", ... }
 
 
  */
@@ -178,7 +178,7 @@ async function getErrorMessage(res, body) {
     }
 
 
-    return res.statusText || "Error en la petición";
+    return res.statusText || "Request error";
 
 
 }
@@ -337,7 +337,7 @@ export async function login(credentials) {
 /**
 
 
- * Registro. Body: { username, email, password, role? }.
+ * Register. Body: { username, email, password, role? }.
 
 
  * Devuelve { user, accessToken, refreshToken }.
@@ -451,7 +451,7 @@ export async function resendVerificationEmail(email) {
 /**
 
 
- * Refresca el access token usando el refresh token guardado.
+ * Refresh access token using stored refresh token.
 
 
  */
@@ -523,7 +523,7 @@ export async function refreshToken() {
 /**
 
 
- * Logout. Revoca el refresh token en el backend y borra tokens locales.
+ * Logout. Revoke refresh token in backend and clear local tokens.
 
 
  */
@@ -556,7 +556,7 @@ export async function logout() {
         } catch (_) {
 
 
-            // Ignorar error de red; igualmente limpiamos local
+            // Ignore network error; still clear local session.
 
 
         }
@@ -577,7 +577,7 @@ export async function logout() {
 /**
 
 
- * Obtiene el usuario actual (requiere access token válido).
+ * Get current user (requires a valid access token).
 
 
  */
@@ -615,7 +615,7 @@ export async function postBrowsingUsage(browsingSecondsDelta) {
 /**
 
 
- * Actualiza el perfil del usuario actual. Body según UpdateProfileRequest del backend.
+ * Update current user profile. Body follows backend UpdateProfileRequest.
 
 
  */
@@ -645,7 +645,7 @@ export async function updateProfile(profileData) {
 /**
 
 
- * Comprueba si hay tokens guardados (sin validar en servidor).
+ * Check whether there are stored tokens (without server validation).
 
 
  */

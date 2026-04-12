@@ -19,7 +19,7 @@ export default function TeacherChallenges() {
         const data = await challengesApi.getMyChallenges({ includeInactive: true });
         if (!cancelled) setItems(Array.isArray(data) ? data : []);
       } catch (e) {
-        if (!cancelled) setError(e?.message || "Error cargando challenges");
+        if (!cancelled) setError(e?.message || "Error loading challenges");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -40,14 +40,14 @@ export default function TeacherChallenges() {
     <TeacherLayout>
       <div className="ch-page-header" style={{ marginBottom: 20 }}>
         <div>
-          <div className="ch-page-eyebrow">// Gestión</div>
+          <div className="ch-page-eyebrow">// Management</div>
           <h1 className="ch-page-title">
-            Mis<em>Challenges</em>
+            My<em>Challenges</em>
           </h1>
         </div>
         <div className="ch-page-controls">
           <Link to="/teacher/challenges/new" className="db-btn db-btn-primary">
-            Crear challenge
+            Create challenge
           </Link>
         </div>
       </div>
@@ -73,24 +73,24 @@ export default function TeacherChallenges() {
 
       <div className="db-panel">
         <div className="db-panel-head">
-          <div className="db-panel-title">Listado</div>
+          <div className="db-panel-title">List</div>
           <Link to="/teacher/challenges/new" className="db-panel-action">
-            Nuevo →
+            New →
           </Link>
         </div>
 
         <div className="sub-table" style={{ border: "none" }}>
           <div className="sub-table-head">
-            <div className="sub-th">Título</div>
-            <div className="sub-th">Categoría</div>
-            <div className="sub-th">Dificultad</div>
-            <div className="sub-th sub-th-right">Estado</div>
-            <div className="sub-th sub-th-right">Creado</div>
+            <div className="sub-th">Title</div>
+            <div className="sub-th">Category</div>
+            <div className="sub-th">Difficulty</div>
+            <div className="sub-th sub-th-right">Status</div>
+            <div className="sub-th sub-th-right">Created</div>
           </div>
 
           {loading ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-              Cargando...
+              Loading...
             </div>
           ) : error ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--red)" }}>
@@ -98,7 +98,7 @@ export default function TeacherChallenges() {
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-              No hay challenges para este filtro
+              No challenges for this filter
             </div>
           ) : (
             filtered.map((c) => (

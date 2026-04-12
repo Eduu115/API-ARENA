@@ -59,7 +59,9 @@ Thumbs.db
 **/backups/
 
 #
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 
 #
 **/uploads/

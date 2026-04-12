@@ -1,0 +1,22 @@
+---
+description: Commits, PRs y mensajes técnicos del repo en inglés.
+alwaysApply: true
+---
+
+# Language: commits and technical messages
+
+## Prohibited in Git commits (non-negotiable)
+
+- **Never** add `--trailer "Made-with: Cursor"` or **any** Git trailer that names **Cursor**, **AI**, **LLM**, **Copilot**, or similar tooling as author/source.
+- **Never** put Cursor/AI attribution in commit **subject**, **body**, **trailers**, or **footers** unless the human maintainer explicitly asks for a specific line for their own reasons.
+- Commits must read like normal engineering history: what changed and why, period.
+
+## Required style
+
+- **Git commits**: subject and body in **English** (imperative mood, conventional style when useful: `feat:`, `fix:`, `chore:`, etc.).
+- **Pull requests**: title and description in **English**.
+- **Branch names**: English (`feature/kafka-leaderboard`, `fix/submit-timer`).
+- **Code comments** in new code: **English** unless the codebase already uses another language in that file (stay consistent per file).
+- **User-facing UI copy** for API Arena: follow existing product language (nav/chrome in English per brand rules); Spanish only when explicitly requested for a specific screen.
+
+This does not require translating existing Spanish-only docs unless someone is editing them for other reasons.

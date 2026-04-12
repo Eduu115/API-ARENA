@@ -13,11 +13,11 @@ export default function CtaSection() {
         </div>
 
         <h2 className="cta-title">
-          <span className="white">¿Listo para</span>
-          <span className="outlined">entrar?</span>
+          <span className="white">Ready to</span>
+          <span className="outlined">join?</span>
         </h2>
 
-        <p className="cta-sub">Early access abierto · Sin tarjeta de crédito</p>
+        <p className="cta-sub">Early access open · No credit card required</p>
 
         <div className="cta-input-row">
           <input
@@ -28,7 +28,7 @@ export default function CtaSection() {
           <button className="cta-btn">Join Arena</button>
         </div>
 
-        <p className="cta-fine">312 developers ya en la arena · Gratis durante beta</p>
+        <p className="cta-fine">312 developers already in the arena · Free during beta</p>
       </div>
     </section>
   );

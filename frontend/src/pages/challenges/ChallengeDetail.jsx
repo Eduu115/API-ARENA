@@ -40,7 +40,7 @@ function HintsBlock({ hints }) {
   const entries = typeof hints === 'object' ? Object.entries(hints) : [];
   return (
     <section className="chd-section">
-      <h2 className="chd-section-title">Pistas</h2>
+      <h2 className="chd-section-title">Hints</h2>
       <ul className="chd-hints-list">
         {entries.map(([key, val]) => (
           <li key={key}>
@@ -80,7 +80,7 @@ export default function ChallengeDetail() {
         const data = await challengesApi.getChallengeById(id);
         if (!cancelled) setChallenge(data);
       } catch (e) {
-        if (!cancelled) setError(e?.message || 'Error al cargar el challenge');
+        if (!cancelled) setError(e?.message || 'Error loading challenge');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -102,7 +102,7 @@ export default function ChallengeDetail() {
       <div className="challenges-page chd-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
-          <div className="chd-loading">Cargando challenge...</div>
+          <div className="chd-loading">Loading challenge...</div>
         </main>
         <BottomNav />
         <CustomCursor />
@@ -115,9 +115,9 @@ export default function ChallengeDetail() {
       <div className="challenges-page chd-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
-          <p className="chd-error">{error || 'Challenge no encontrado'}</p>
+          <p className="chd-error">{error || 'Challenge not found'}</p>
           <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
-            Volver a Challenges
+            Back to Challenges
           </button>
         </main>
         <BottomNav />
@@ -126,7 +126,7 @@ export default function ChallengeDetail() {
     );
   }
 
-  const formatDate = (d) => (d ? new Date(d).toLocaleString('es-ES') : '—');
+  const formatDate = (d) => (d ? new Date(d).toLocaleString('en-US') : '—');
 
   return (
     <div className="challenges-page chd-page">
@@ -135,10 +135,10 @@ export default function ChallengeDetail() {
         <div className="chd-container">
           <div className="chd-top-actions">
             <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
-              ← Volver a Challenges
+              ← Back to Challenges
             </button>
             <button type="button" className="chd-btn-start" onClick={handleStartChallenge}>
-              Iniciar Challenge
+              Start Challenge
             </button>
           </div>
 
@@ -150,7 +150,7 @@ export default function ChallengeDetail() {
                 {(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'Community' : 'Legacy'}
               </span>
               {challenge.featured && <span className="ch-badge ch-badge-new">Featured</span>}
-              {challenge.isActive === false && <span className="ch-badge" style={{ background: 'var(--red)' }}>Inactivo</span>}
+              {challenge.isActive === false && <span className="ch-badge" style={{ background: 'var(--red)' }}>Inactive</span>}
             </div>
             <h1 className="chd-hero-title">{challenge.title}</h1>
             <p className="chd-hero-slug">/{challenge.slug}</p>
@@ -158,50 +158,50 @@ export default function ChallengeDetail() {
             <div className="chd-hero-stats">
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.maxScore ?? 1000}</span>
-                <span className="chd-stat-label">Puntos máx</span>
+                <span className="chd-stat-label">Max points</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timeLimitMinutes ?? 60}</span>
-                <span className="chd-stat-label">Minutos</span>
+                <span className="chd-stat-label">Minutes</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timesAttempted ?? 0}</span>
-                <span className="chd-stat-label">Intentos</span>
+                <span className="chd-stat-label">Attempts</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timesCompleted ?? 0}</span>
-                <span className="chd-stat-label">Completados</span>
+                <span className="chd-stat-label">Completed</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{Number(challenge.averageScore ?? 0).toFixed(1)}</span>
-                <span className="chd-stat-label">Puntuación media</span>
+                <span className="chd-stat-label">Average score</span>
               </div>
             </div>
 
             <div className="chd-hero-meta">
               <span>ID: {challenge.id}</span>
-              {challenge.createdBy != null && <span>Creado por: {challenge.createdBy}</span>}
-              <span>Creado: {formatDate(challenge.createdAt)}</span>
-              <span>Actualizado: {formatDate(challenge.updatedAt)}</span>
+              {challenge.createdBy != null && <span>Created by: {challenge.createdBy}</span>}
+              <span>Created: {formatDate(challenge.createdAt)}</span>
+              <span>Updated: {formatDate(challenge.updatedAt)}</span>
             </div>
           </header>
 
           <section className="chd-section chd-description">
-            <h2 className="chd-section-title">Descripción</h2>
-            <p className="chd-description-text">{challenge.description || 'Sin descripción.'}</p>
+            <h2 className="chd-section-title">Description</h2>
+            <p className="chd-description-text">{challenge.description || 'No description.'}</p>
           </section>
 
-          <JsonBlock title="Endpoints requeridos" data={challenge.requiredEndpoints} />
-          <JsonBlock title="Códigos de estado requeridos" data={challenge.requiredStatusCodes} />
-          <JsonBlock title="Headers requeridos" data={challenge.requiredHeaders} />
+          <JsonBlock title="Required endpoints" data={challenge.requiredEndpoints} />
+          <JsonBlock title="Required status codes" data={challenge.requiredStatusCodes} />
+          <JsonBlock title="Required headers" data={challenge.requiredHeaders} />
           <JsonBlock title="Test suite" data={challenge.testSuite} />
-          <JsonBlock title="Requisitos de rendimiento" data={challenge.performanceRequirements} />
-          <JsonBlock title="Criterios de diseño" data={challenge.designCriteria} />
+          <JsonBlock title="Performance requirements" data={challenge.performanceRequirements} />
+          <JsonBlock title="Design criteria" data={challenge.designCriteria} />
           <HintsBlock hints={challenge.hints} />
-          <ListBlock title="Objetivos de aprendizaje" items={challenge.learningObjectives} />
+          <ListBlock title="Learning objectives" items={challenge.learningObjectives} />
           {challenge.solutionExplanation && (
             <section className="chd-section">
-              <h2 className="chd-section-title">Explicación de la solución</h2>
+              <h2 className="chd-section-title">Solution explanation</h2>
               <p className="chd-solution-text">{challenge.solutionExplanation}</p>
             </section>
           )}
@@ -212,8 +212,8 @@ export default function ChallengeDetail() {
       <LoginPromptModal
         open={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
-        title="Inicia sesión para competir"
-        description="Para iniciar este challenge y enviar tu solución necesitas iniciar sesión. Si aún no tienes cuenta, puedes registrarte en un momento."
+        title="Sign in to compete"
+        description="You need to sign in to start this challenge and submit your solution. If you do not have an account yet, you can register in a moment."
       />
       <CustomCursor />
     </div>

@@ -16,8 +16,8 @@ export default function HowItWorksSection() {
   return (
     <section className="how-section">
       <div className="how-header">
-        <div className="section-label">Protocolo</div>
-        <h2 className="section-title">Cómo <em>funciona</em></h2>
+        <div className="section-label">Protocol</div>
+        <h2 className="section-title">How it <em>works</em></h2>
       </div>
       <div className="steps-row">
         {STEPS.map((step) => (

@@ -97,7 +97,7 @@ export default function TeacherGroups() {
       setDetail(updated);
       setGroups((prev) => prev.map((g) => (g.id === selected ? { ...g, studentCount: updated.studentCount } : g)));
     } catch (err) {
-      alert(err.message || "Error al añadir alumno");
+      alert(err.message || "Error adding student");
     }
   }
 
@@ -108,18 +108,18 @@ export default function TeacherGroups() {
       setDetail(updated);
       setGroups((prev) => prev.map((g) => (g.id === selected ? { ...g, studentCount: updated.studentCount } : g)));
     } catch (err) {
-      alert(err.message || "Error al eliminar alumno");
+      alert(err.message || "Error removing student");
     }
   }
 
   async function handleDelete(id) {
-    if (!window.confirm("¿Eliminar este grupo y quitar todos los alumnos?")) return;
+    if (!window.confirm("Delete this group and remove all students?")) return;
     try {
       await groupsApi.deleteGroup(id);
       if (selected === id) { setSelected(null); setDetail(null); }
       await loadGroups();
     } catch (err) {
-      alert(err.message || "Error al eliminar grupo");
+      alert(err.message || "Error deleting group");
     }
   }
 
@@ -129,15 +129,15 @@ export default function TeacherGroups() {
         <div>
           <div className="db-page-eyebrow">// Group Manager</div>
           <h1 className="db-page-title">
-            Mis<em>Grupos</em>
+            My<em>Groups</em>
           </h1>
           <div className="db-page-sub">
-            Crea grupos de alumnos y gestiona miembros.
+            Create student groups and manage members.
           </div>
         </div>
         <div className="db-header-actions">
           <button type="button" className="db-btn db-btn-primary" onClick={() => setShowCreate((s) => !s)}>
-            {showCreate ? "Cancelar" : "+ Crear grupo"}
+            {showCreate ? "Cancel" : "+ Create group"}
           </button>
         </div>
       </div>
@@ -145,12 +145,12 @@ export default function TeacherGroups() {
       {showCreate && (
         <div className="db-panel" style={{ marginBottom: 18 }}>
           <div className="db-panel-head">
-            <div className="db-panel-title">Nuevo grupo</div>
+            <div className="db-panel-title">New group</div>
           </div>
           <form onSubmit={handleCreate} style={{ padding: "14px 18px", display: "grid", gap: 10 }}>
             <input
               className="ch-search-input"
-              placeholder="Nombre del grupo (ej: DAW 2ºA)"
+              placeholder="Group name (e.g. DAW 2A)"
               value={createName}
               onChange={(e) => setCreateName(e.target.value)}
               required
@@ -158,13 +158,13 @@ export default function TeacherGroups() {
             />
             <input
               className="ch-search-input"
-              placeholder="Descripción (opcional)"
+              placeholder="Description (optional)"
               value={createDesc}
               onChange={(e) => setCreateDesc(e.target.value)}
               style={{ width: "100%", boxSizing: "border-box" }}
             />
             <button type="submit" className="db-btn db-btn-primary" disabled={creating} style={{ justifySelf: "start" }}>
-              {creating ? "Creando..." : "Crear grupo"}
+              {creating ? "Creating..." : "Create group"}
             </button>
           </form>
         </div>
@@ -174,16 +174,16 @@ export default function TeacherGroups() {
         {/* --- groups list --- */}
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">Grupos ({groups.length})</div>
+            <div className="db-panel-title">Groups ({groups.length})</div>
           </div>
           <div style={{ padding: "6px 0" }}>
             {loading ? (
               <div style={{ padding: 30, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                Cargando...
+                Loading...
               </div>
             ) : groups.length === 0 ? (
               <div style={{ padding: 30, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                No tienes grupos aún
+                You do not have groups yet
               </div>
             ) : (
               groups.map((g) => (
@@ -204,7 +204,7 @@ export default function TeacherGroups() {
                   <div>
                     <div style={{ fontFamily: "var(--font-heading)", fontSize: 14, color: "var(--text)" }}>{g.name}</div>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
-                      {g.studentCount} alumno{g.studentCount !== 1 ? "s" : ""}
+                      {g.studentCount} student{g.studentCount !== 1 ? "s" : ""}
                     </div>
                   </div>
                   <button
@@ -230,7 +230,7 @@ export default function TeacherGroups() {
             {/* search */}
             <div className="db-panel">
               <div className="db-panel-head">
-                <div className="db-panel-title">Añadir alumno</div>
+                <div className="db-panel-title">Add student</div>
               </div>
               <div style={{ padding: "12px 18px" }}>
                 <div className="ch-search-wrap" style={{ marginBottom: 8 }}>
@@ -238,14 +238,14 @@ export default function TeacherGroups() {
                   <input
                     type="text"
                     className="ch-search-input"
-                    placeholder="Buscar por username o email..."
+                    placeholder="Search by username or email..."
                     value={searchQ}
                     onChange={(e) => setSearchQ(e.target.value)}
                   />
                 </div>
                 {searching && (
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", padding: "4px 0" }}>
-                    Buscando...
+                    Searching...
                   </div>
                 )}
                 {searchResults.length > 0 && (
@@ -273,7 +273,7 @@ export default function TeacherGroups() {
                           </div>
                           {already ? (
                             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--green)" }}>
-                              YA MIEMBRO
+                              ALREADY A MEMBER
                             </span>
                           ) : (
                             <button
@@ -290,7 +290,7 @@ export default function TeacherGroups() {
                                 cursor: "pointer",
                               }}
                             >
-                              + Añadir
+                              + Add
                             </button>
                           )}
                         </div>
@@ -305,17 +305,17 @@ export default function TeacherGroups() {
             <div className="db-panel">
               <div className="db-panel-head">
                 <div className="db-panel-title">
-                  {detail?.name ?? "Grupo"} — Miembros ({detail?.members?.length ?? 0})
+                  {detail?.name ?? "Group"} — Members ({detail?.members?.length ?? 0})
                 </div>
               </div>
               <div style={{ padding: "6px 18px" }}>
                 {detailLoading ? (
                   <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                    Cargando miembros...
+                    Loading members...
                   </div>
                 ) : !detail?.members?.length ? (
                   <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                    Sin miembros todavía. Usa el buscador de arriba.
+                    No members yet. Use the search above.
                   </div>
                 ) : (
                   detail.members.map((m) => (
@@ -351,7 +351,7 @@ export default function TeacherGroups() {
                           cursor: "pointer",
                         }}
                       >
-                        Quitar
+                        Remove
                       </button>
                     </div>
                   ))

@@ -1,7 +1,6 @@
 import { getStoredTokens } from "./authApi.js";
 
-// esta lib es oara abstraer el backend pero sobre todo, no tener que repetir las llamadas a la API en cada componente
-// y asi tener un solo lugar para las llamadas a la API y el auth centralizado
+// This client centralizes challenge API calls and auth headers.
 
 function getBaseUrl() {
   const url = import.meta.env.VITE_CHALLENGES_API_URL;
@@ -31,7 +30,7 @@ async function request(path, options = {}) {
     } catch {}
   }
   if (!res.ok) {
-    const message = body?.message || res.statusText || "Error en la petición";
+    const message = body?.message || res.statusText || "Request error";
     const err = new Error(message);
     err.status = res.status;
     err.body = body;

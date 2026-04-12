@@ -26,7 +26,7 @@ async function request(path, options = {}) {
     try {
       body = await res.json();
     } catch {
-      /* vacío */
+      /* empty */
     }
   }
   if (!res.ok) {
@@ -35,7 +35,7 @@ async function request(path, options = {}) {
       body?.message ||
       (typeof body?.error === "string" ? body.error : null) ||
       res.statusText ||
-      "Error en la petición";
+      "Request error";
     const err = new Error(message);
     err.status = res.status;
     err.body = body;
@@ -44,32 +44,32 @@ async function request(path, options = {}) {
   return body;
 }
 
-/** Política de intentos (cooldown + máx. por día UTC) para un challenge. */
+/** Attempt policy (cooldown + max per UTC day) for a challenge. */
 export async function getChallengeAttemptStatus(challengeId) {
   return request(`/api/submissions/challenge/${challengeId}/attempt-status`);
 }
 
-/** Lista de envíos del usuario actual (requiere JWT). */
+/** Current user submission list (requires JWT). */
 export async function getMySubmissions() {
   return request("/api/submissions/my");
 }
 
-/** Logs de build y tests de un envío. */
+/** Build and test logs for a submission. */
 export async function getSubmissionLogs(id) {
   return request(`/api/submissions/${id}/logs`);
 }
 
-/** Timeline estructurado de replay para un envío. */
+/** Structured replay timeline for a submission. */
 export async function getSubmissionReplay(id) {
   return request(`/api/submissions/${id}/replay`);
 }
 
-/** Detalle de un envío (puntuación, estado, etc.). */
+/** Submission detail (score, status, etc.). */
 export async function getSubmissionById(id) {
   return request(`/api/submissions/${id}`);
 }
 
-/** Sube un ZIP y crea una submission (multipart/form-data). */
+/** Upload ZIP and create submission (multipart/form-data). */
 export async function createSubmission(challengeId, file, developmentTimeSeconds) {
   const base = getBaseUrl();
   const tokens = getStoredTokens();

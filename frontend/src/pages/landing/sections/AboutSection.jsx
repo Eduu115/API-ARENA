@@ -7,20 +7,20 @@ export default function AboutSection() {
       <div className="about-grid">
 
         <div className="about-left">
-          <div className="section-label">¿Qué es APIArena?</div>
+          <div className="section-label">What is API Arena?</div>
           <h2 className="section-title">
-            No es un<br />
-            curso.<br />
-            <em>Es una guerra.</em>
+            Not a<br />
+            course.<br />
+            <em>It is a battle.</em>
           </h2>
           <p className="about-desc">
-            Crea una API que resuelva el reto. Envía tu código.<br />
-            Nuestro sistema la ejecuta en un sandbox aislado y la{' '}
-            <strong>destroza con tests automáticos</strong>,
-            análisis de rendimiento, validación REST y una revisión de IA.<br /><br />
-            Tu puntuación entra al leaderboard.{' '}
-            <strong>En tiempo real.</strong><br />
-            Mejora, reenvía, escala posiciones.
+            Build an API that solves the challenge. Submit your code.<br />
+            Our system runs it in an isolated sandbox and{' '}
+            <strong>stress-tests it with automated checks</strong>,
+            performance analysis, REST validation, and AI review.<br /><br />
+            Your score enters the leaderboard.{' '}
+            <strong>In real time.</strong><br />
+            Improve, resubmit, and climb positions.
           </p>
           <div className="about-tags">
             {ABOUT_TAGS.map(({ label, active }) => (

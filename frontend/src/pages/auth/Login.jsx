@@ -31,7 +31,7 @@ export default function Login() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/" className="auth-page__back" title="Volver a la landing" aria-label="Volver a la landing">
+          <Link to="/" className="auth-page__back" title="Back to home" aria-label="Back to home">
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
           </Link>
           <ThemeToggle />
@@ -51,22 +51,22 @@ export default function Login() {
               <div className="ch-page-eyebrow">// Login</div>
               <div className="auth-title-crt">
                 <h1 className="ch-page-title">
-                  Vuelve a la
+                  Back to the
                   <em>Arena</em>
                 </h1>
               </div>
               <p className="ch-card-desc auth-copy-lead">
-                Compite en retos de APIs, escala el leaderboard y mejora tu ELO.{" "}
-                <span className="auth-copy-strong">Sin ruido, directo al combate.</span>
+                Compete in API challenges, climb the leaderboard, and improve your ELO.{" "}
+                <span className="auth-copy-strong">No noise, straight to the arena.</span>
               </p>
 
               <div className="auth-actions">
                 <Link to="/register" className="auth-btn-outline">
-                  Crear cuenta
+                  Create account
                   <ArrowRightIcon width={16} height={16} />
                 </Link>
                 <Link to="/challenges" className="auth-link-quiet">
-                  Ver challenges →
+                  View challenges →
                 </Link>
               </div>
             </div>
@@ -75,12 +75,12 @@ export default function Login() {
               <form className="auth-form" onSubmit={handleSubmit}>
                 <div className="auth-form__head">
                   <div>
-                    <div className="ch-page-eyebrow">// Credenciales</div>
+                    <div className="ch-page-eyebrow">// Credentials</div>
                     <div className="auth-title-crt auth-title-crt--sm">
-                      <h2 className="ch-card-title">Iniciar sesión</h2>
+                      <h2 className="ch-card-title">Sign in</h2>
                     </div>
                   </div>
-                  <div className="auth-form__status">{submitting ? "// autenticando…" : "// listo"}</div>
+                  <div className="auth-form__status">{submitting ? "// authenticating…" : "// ready"}</div>
                 </div>
 
                 {error && (
@@ -98,7 +98,7 @@ export default function Login() {
                       id="login-email"
                       type="email"
                       className="auth-input"
-                      placeholder="tu@email.com"
+                      placeholder="you@email.com"
                       autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -108,7 +108,7 @@ export default function Login() {
 
                   <div>
                     <label htmlFor="login-password" className="auth-label">
-                      Contraseña
+                      Password
                     </label>
                     <input
                       id="login-password"
@@ -122,7 +122,7 @@ export default function Login() {
                     />
                     <div className="auth-forgot-wrap">
                       <button type="button" className="auth-link-inline" onClick={() => {}}>
-                        ¿Olvidaste tu contraseña?
+                        Forgot your password?
                       </button>
                       <Link to="/verify-email" className="auth-link-inline" style={{ marginLeft: 12 }}>
                         Verify email
@@ -132,12 +132,12 @@ export default function Login() {
                 </div>
 
                 <button type="submit" className="auth-submit" disabled={submitting}>
-                  {submitting ? "Entrando…" : "Entrar"}
+                  {submitting ? "Signing in…" : "Sign in"}
                 </button>
 
                 <div className="auth-footer-row">
-                  <p>¿Eres profesor?</p>
-                  <Link to="/login?mode=edu">Inicia sesión (cuenta educativa) →</Link>
+                  <p>Are you a teacher?</p>
+                  <Link to="/login?mode=edu">Sign in (education account) →</Link>
                 </div>
               </form>
             </div>
