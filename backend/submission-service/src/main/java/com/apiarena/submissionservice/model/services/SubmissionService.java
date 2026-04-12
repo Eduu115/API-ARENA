@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,12 +38,16 @@ import org.springframework.web.multipart.MultipartFile;
 import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
+import com.apiarena.submissionservice.model.dto.ReplayEventDTO;
+import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionStatusCacheDTO;
 import com.apiarena.submissionservice.kafka.SubmissionCompletedEvent;
 import com.apiarena.submissionservice.kafka.SubmissionKafkaPublisher;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
+import com.apiarena.submissionservice.model.entities.ReplayEvent;
 import com.apiarena.submissionservice.model.entities.Submission;
+import com.apiarena.submissionservice.repository.ReplayEventRepository;
 import com.apiarena.submissionservice.repository.SubmissionRepository;
 
 @Service
@@ -68,6 +73,9 @@ public class SubmissionService implements ISubmissionService {
     @Autowired
     private SubmissionKafkaPublisher submissionKafkaPublisher;
 
+    @Autowired
+    private ReplayEventRepository replayEventRepository;
+
     @Value("${services.auth-url:http://localhost:8081}")
     private String authServiceUrl;
 
@@ -85,6 +93,12 @@ public class SubmissionService implements ISubmissionService {
 
     @Value("${apiarena.submission.max-attempts-per-day-per-challenge:3}")
     private int maxAttemptsPerDayPerChallenge;
+
+    @Value("${services.internal-token:}")
+    private String internalToken;
+
+    @Value("${replay.source:structured}")
+    private String replaySource;
 
     @Override
     public ChallengeAttemptStatusDTO getChallengeAttemptStatus(Long userId, Long challengeId) {
@@ -197,6 +211,8 @@ public class SubmissionService implements ISubmissionService {
                 .build();
 
         Submission saved = submissionRepository.save(submission);
+        recordReplay(saved.getId(), "SUBMISSION", "SUBMISSION_CREATED", "info",
+                "Submission created and queued", Map.of("challengeId", challengeId, "userId", userId));
 
         String zipFilePath = uploadStorageService.storeZip(zipFile, saved.getId());
         saved.setZipFilePath(zipFilePath);
@@ -205,6 +221,8 @@ public class SubmissionService implements ISubmissionService {
 
         if (devSec != null && devSec > 0) {
             notifyAuthDevelopmentTime(userId, devSec);
+            recordReplay(saved.getId(), "SUBMISSION", "DEVELOPMENT_TIME_REPORTED", "info",
+                    "Development time synced", Map.of("developmentTimeSeconds", devSec));
         }
 
         statusCacheService.cacheStatus(saved);
@@ -240,6 +258,7 @@ public class SubmissionService implements ISubmissionService {
                 return;
             }
 
+            recordReplay(submissionId, "BUILD", "BUILD_STARTED", "info", "Starting sandbox build", null);
             updateStatus(submissionId, Submission.Status.BUILDING, null);
 
             Map<String, Object> buildReq = new HashMap<>();
@@ -248,12 +267,14 @@ public class SubmissionService implements ISubmissionService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            applyInternalToken(headers);
             HttpEntity<Map<String, Object>> buildEntity = new HttpEntity<>(buildReq, headers);
 
             Map<String, Object> exec = restTemplate.postForObject(
                     sandboxServiceUrl + "/internal/sandbox/build", buildEntity, Map.class);
 
             if (exec == null) {
+                recordReplay(submissionId, "BUILD", "BUILD_FAILED", "error", "Sandbox returned empty response", null);
                 updateStatus(submissionId, Submission.Status.FAILED, "Sandbox returned empty response");
                 return;
             }
@@ -266,14 +287,20 @@ public class SubmissionService implements ISubmissionService {
             String sandboxStatus = Objects.toString(exec.get("status"), "");
             if ("FAILED".equals(sandboxStatus)) {
                 String err = Objects.toString(exec.get("errorMessage"), "Sandbox build failed");
+                recordReplay(submissionId, "BUILD", "BUILD_FAILED", "error", err, null);
                 updateStatus(submissionId, Submission.Status.FAILED, err);
                 return;
             }
 
             Number portNum = (Number) exec.get("exposedPort");
             int port = portNum != null ? portNum.intValue() : 9100;
-            String candidateUrl = String.format("http://%s:%d", candidateApiHost, port);
+            String candidateHost = Objects.toString(exec.get("candidateHost"), candidateApiHost);
+            String candidateUrl = String.format("http://%s:%d", candidateHost, port);
+            recordReplay(submissionId, "BUILD", "CONTAINER_READY", "info",
+                    "Candidate API is ready",
+                    Map.of("candidateHost", candidateHost, "port", port, "candidateUrl", candidateUrl));
 
+            recordReplay(submissionId, "TESTING", "TESTING_STARTED", "info", "Dispatching tests", null);
             updateStatus(submissionId, Submission.Status.TESTING, null);
 
             Map<String, Object> challenge = fetchChallengeData(sub.getChallengeId());
@@ -304,6 +331,8 @@ public class SubmissionService implements ISubmissionService {
                     testingServiceUrl + "/internal/testing/run", testEntity, Map.class);
 
             if (suite == null) {
+                recordReplay(submissionId, "TESTING", "TESTING_FAILED", "error",
+                        "Testing service returned empty response", null);
                 updateStatus(submissionId, Submission.Status.FAILED, "Testing service returned empty response");
                 return;
             }
@@ -316,6 +345,19 @@ public class SubmissionService implements ISubmissionService {
                     String st = Objects.toString(tr.get("status"), "?");
                     String ac = Objects.toString(tr.get("actualResult"), "");
                     testLog.append(String.format("[TEST] %s => %s %s%n", name, st, ac));
+                    Map<String, Object> meta = new LinkedHashMap<>();
+                    meta.put("testName", name);
+                    meta.put("status", st);
+                    meta.put("actualResult", ac);
+                    meta.put("testType", Objects.toString(tr.get("testType"), "UNKNOWN"));
+                    if (tr.get("executionTimeMs") != null) meta.put("executionTimeMs", tr.get("executionTimeMs"));
+                    if (tr.get("requestMethod") != null) meta.put("requestMethod", tr.get("requestMethod"));
+                    if (tr.get("requestPath") != null) meta.put("requestPath", tr.get("requestPath"));
+                    if (tr.get("responseStatus") != null) meta.put("responseStatus", tr.get("responseStatus"));
+                    recordReplay(submissionId, "TESTING", "TEST_CASE_RESULT",
+                            "PASSED".equalsIgnoreCase(st) ? "info" : "warn",
+                            name + " => " + st,
+                            meta);
                 }
                 testLog.append(String.format("%n[RESULT] %s/%s tests passed (total score %s)%n",
                         Objects.toString(suite.get("passed"), "?"),
@@ -335,12 +377,18 @@ public class SubmissionService implements ISubmissionService {
             BigDecimal designBd = BigDecimal.valueOf(design).setScale(2, RoundingMode.HALF_UP);
 
             updateScores(submissionId, totalBd, corrBd, perfBd, designBd);
+            recordReplay(submissionId, "RESULT", "SCORE_FINALIZED", "info",
+                    "Scores finalized",
+                    Map.of("totalScore", totalBd, "correctnessScore", corrBd, "performanceScore", perfBd,
+                            "designScore", designBd));
             applyMetricsFromResults(submissionId, results);
 
             calculateAndApplyRewards(submissionId);
 
         } catch (Exception e) {
             log.error("Submission pipeline failed for {}", submissionId, e);
+            recordReplay(submissionId, "PIPELINE", "PIPELINE_FAILED", "error",
+                    e.getMessage() != null ? e.getMessage() : "Pipeline failed", null);
             updateStatus(submissionId, Submission.Status.FAILED,
                     e.getMessage() != null ? e.getMessage() : "Pipeline failed");
         } finally {
@@ -348,11 +396,46 @@ public class SubmissionService implements ISubmissionService {
                 restTemplate.exchange(
                         sandboxServiceUrl + "/internal/sandbox/stop/" + submissionId,
                         HttpMethod.POST,
-                        HttpEntity.EMPTY,
+                        new HttpEntity<>(buildInternalHeaders()),
                         Map.class);
+                recordReplay(submissionId, "CLEANUP", "SANDBOX_STOP_REQUESTED", "info",
+                        "Sandbox stop requested", null);
             } catch (Exception e) {
                 log.warn("Sandbox stop after submission {}: {}", submissionId, e.getMessage());
+                recordReplay(submissionId, "CLEANUP", "SANDBOX_STOP_FAILED", "warn", e.getMessage(), null);
             }
+        }
+    }
+
+    private void recordReplay(Long submissionId, String stage, String eventType, String severity, String message,
+            Map<String, Object> metadata) {
+        if (submissionId == null) {
+            return;
+        }
+        try {
+            ReplayEvent ev = ReplayEvent.builder()
+                    .submissionId(submissionId)
+                    .stage(stage)
+                    .eventType(eventType)
+                    .severity(severity != null ? severity : "info")
+                    .message(message)
+                    .metadata(metadata)
+                    .build();
+            replayEventRepository.save(ev);
+        } catch (Exception e) {
+            log.warn("Could not persist replay event {} for submission {}: {}", eventType, submissionId, e.getMessage());
+        }
+    }
+
+    private HttpHeaders buildInternalHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        applyInternalToken(headers);
+        return headers;
+    }
+
+    private void applyInternalToken(HttpHeaders headers) {
+        if (internalToken != null && !internalToken.isBlank()) {
+            headers.set("X-Internal-Token", internalToken);
         }
     }
 
@@ -582,6 +665,24 @@ public class SubmissionService implements ISubmissionService {
         }
 
         return new LogsResponse(submission.getBuildLogs(), submission.getTestLogs());
+    }
+
+    @Override
+    public ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdminOrTeacher) {
+        Submission submission = submissionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
+        if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
+            throw new SecurityException("You are not allowed to access this submission");
+        }
+        List<ReplayEvent> events = replayEventRepository.findBySubmissionIdOrderByOccurredAtAscIdAsc(id);
+        if (events.isEmpty() && "logs".equalsIgnoreCase(replaySource)) {
+            List<ReplayEventDTO> synthetic = new ArrayList<>();
+            synthetic.add(new ReplayEventDTO(null, "FALLBACK", "LOG_ONLY", "warn",
+                    "Structured replay not available; using logs fallback", null, LocalDateTime.now()));
+            return new ReplayTimelineResponse("logs", synthetic);
+        }
+        return new ReplayTimelineResponse("structured",
+                events.stream().map(ReplayEventDTO::fromEntity).toList());
     }
 
     @Override

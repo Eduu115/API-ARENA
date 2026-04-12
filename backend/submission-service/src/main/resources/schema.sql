@@ -38,7 +38,19 @@ CREATE TABLE IF NOT EXISTS submissions (
     completed_at TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS replay_events (
+    id BIGSERIAL PRIMARY KEY,
+    submission_id BIGINT NOT NULL,
+    stage VARCHAR(40) NOT NULL,
+    event_type VARCHAR(80) NOT NULL,
+    severity VARCHAR(20) NOT NULL DEFAULT 'info',
+    message TEXT,
+    metadata JSONB,
+    occurred_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_challenge_id ON submissions(challenge_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_status ON submissions(status);
 CREATE INDEX IF NOT EXISTS idx_submissions_created_at ON submissions(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_replay_events_submission_time ON replay_events(submission_id, occurred_at, id);

@@ -37,6 +37,7 @@ public class SecurityConfig {
                             "/swagger-ui.html",
                             "/actuator/health",
                             "/actuator/info",
+                            "/actuator/prometheus",
                             "/ws/**",
                             "/error"
                     ).permitAll()

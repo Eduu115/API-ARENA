@@ -227,6 +227,17 @@ CREATE TABLE IF NOT EXISTS submissions (
 
 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS development_time_seconds INTEGER;
 
+CREATE TABLE IF NOT EXISTS replay_events (
+    id BIGSERIAL PRIMARY KEY,
+    submission_id BIGINT NOT NULL REFERENCES submissions(id) ON DELETE CASCADE,
+    stage VARCHAR(40) NOT NULL,
+    event_type VARCHAR(80) NOT NULL,
+    severity VARCHAR(20) NOT NULL DEFAULT 'info',
+    message TEXT,
+    metadata JSONB,
+    occurred_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 -- ===========================================
 -- Indices
 -- ===========================================
@@ -242,6 +253,7 @@ CREATE INDEX IF NOT EXISTS idx_challenges_featured ON challenges(featured);
 CREATE INDEX IF NOT EXISTS idx_challenges_slug ON challenges(slug);
 CREATE INDEX IF NOT EXISTS idx_submissions_user_id ON submissions(user_id);
 CREATE INDEX IF NOT EXISTS idx_submissions_challenge_id ON submissions(challenge_id);
+CREATE INDEX IF NOT EXISTS idx_replay_events_submission_time ON replay_events(submission_id, occurred_at, id);
 CREATE INDEX IF NOT EXISTS idx_sandbox_submission_id ON sandbox_executions(submission_id);
 CREATE INDEX IF NOT EXISTS idx_sandbox_status ON sandbox_executions(status);
 CREATE INDEX IF NOT EXISTS idx_leaderboard_challenge_rank ON leaderboard_entries(challenge_id, rank);

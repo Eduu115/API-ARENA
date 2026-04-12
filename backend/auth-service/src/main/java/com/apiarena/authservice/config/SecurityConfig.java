@@ -67,6 +67,9 @@ public class SecurityConfig {
                                 "/api/auth/resend-verification",
                                 "/api/auth/users/*/profile",
                                 "/internal/**",
+                                "/actuator/health",
+                                "/actuator/info",
+                                "/actuator/prometheus",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html"

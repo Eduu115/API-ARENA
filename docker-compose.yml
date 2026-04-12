@@ -120,6 +120,7 @@ services:
       APP_EMAIL_RESEND_API_KEY: ${RESEND_API_KEY:-}
       APP_EMAIL_FROM: ${APP_EMAIL_FROM:-API Arena <onboarding@resend.dev>}
       SERVICES_NOTIFICATION_URL: http://apiarena-notification:8090
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8081:8081"
     networks:
@@ -138,6 +139,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8082:8082"
     networks:
@@ -169,6 +171,8 @@ services:
       SERVICES_SANDBOX_URL: http://apiarena-sandbox:8084
       SERVICES_TESTING_URL: http://apiarena-testing:8085
       SERVICES_CANDIDATE_HOST: apiarena-sandbox
+      SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     volumes:
       - submission_uploads:/app/uploads
     ports:
@@ -190,11 +194,16 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SANDBOX_RUNNER_MODE: ${SANDBOX_RUNNER_MODE:-dind}
+      SANDBOX_DIND_NETWORK: apiarena-network
+      SANDBOX_DIND_CONTAINER_PORT: "8080"
+      SANDBOX_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8084:8084"
-      - "9100:9100"
     volumes:
       - submission_uploads:/app/uploads
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - apiarena-network
     restart: unless-stopped
@@ -212,6 +221,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      TESTING_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8085:8085"
     networks:
@@ -232,6 +243,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8087:8087"
     networks:
@@ -253,8 +265,63 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVICES_AUTH_URL: http://apiarena-auth:8081
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "8090:8090"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  metrics-service:
+    build:
+      context: ./backend/metrics-service
+      dockerfile: Dockerfile
+    container_name: apiarena-metrics
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_started }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
+    ports:
+      - "8089:8089"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: apiarena-prometheus
+    depends_on:
+      - metrics-service
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: apiarena-grafana
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/realtime-overview.json:/var/lib/grafana/dashboards/realtime-overview.json:ro
+    ports:
+      - "3001:3000"
     networks:
       - apiarena-network
     restart: unless-stopped
@@ -285,3 +352,4 @@ volumes:
   mongo_data:
   influxdb_data:
   submission_uploads:
+  grafana_data:
