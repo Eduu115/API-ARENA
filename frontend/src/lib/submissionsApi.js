@@ -65,7 +65,7 @@ export async function getSubmissionById(id) {
 }
 
 /** Sube un ZIP y crea una submission (multipart/form-data). */
-export async function createSubmission(challengeId, file) {
+export async function createSubmission(challengeId, file, developmentTimeSeconds) {
   const base = getBaseUrl();
   const tokens = getStoredTokens();
   const form = new FormData();
@@ -75,7 +75,12 @@ export async function createSubmission(challengeId, file) {
   if (tokens?.accessToken) {
     headers.Authorization = `Bearer ${tokens.accessToken}`;
   }
-  const res = await fetch(`${base}/api/submissions?challengeId=${challengeId}`, {
+  const params = new URLSearchParams();
+  params.set("challengeId", String(challengeId));
+  if (developmentTimeSeconds != null && developmentTimeSeconds > 0) {
+    params.set("developmentTimeSeconds", String(Math.floor(developmentTimeSeconds)));
+  }
+  const res = await fetch(`${base}/api/submissions?${params.toString()}`, {
     method: "POST",
     headers,
     body: form,

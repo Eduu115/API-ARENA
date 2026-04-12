@@ -25,4 +25,8 @@ public interface IUserService extends UserDetailsService {
     void applyReward(Long userId, RewardRequest request);
 
     void sendNotificationEmail(Long userId, String title, String body, String importanceLabel);
+
+    void addDevelopmentTimeSeconds(Long userId, int seconds);
+
+    void addBrowsingTimeSeconds(Long userId, int seconds);
 }

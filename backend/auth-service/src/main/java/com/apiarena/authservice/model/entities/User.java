@@ -71,6 +71,14 @@ public class User {
     @Column(name = "total_tests_passed", nullable = false)
     private Integer totalTestsPassed = 0;
 
+    /** Cumulative seconds reported while working on challenges (start → submit), summed from submissions. */
+    @Column(name = "total_development_seconds", nullable = false)
+    private Long totalDevelopmentSeconds = 0L;
+
+    /** Cumulative active browsing seconds (SPA, visible tab, not idle). */
+    @Column(name = "total_browsing_seconds", nullable = false)
+    private Long totalBrowsingSeconds = 0L;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -108,6 +116,8 @@ public class User {
         this.experiencePoints = 0;
         this.totalChallengesCompleted = 0;
         this.totalTestsPassed = 0;
+        this.totalDevelopmentSeconds = 0L;
+        this.totalBrowsingSeconds = 0L;
         this.isActive = true;
         this.emailVerified = false;
         this.betaLegacy = true;

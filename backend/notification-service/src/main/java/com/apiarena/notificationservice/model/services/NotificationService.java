@@ -87,7 +87,7 @@ public class NotificationService {
         NotificationDTO dto = toDto(n);
         long unread = notificationRepository.countByUserIdAndReadAtIsNull(event.userId());
         notificationPushService.pushNewNotification(event.userId(), dto, unread);
-        notificationEmailDispatchService.sendEmailIfAlertOrImportant(n);
+        notificationEmailDispatchService.mirrorNotificationToEmail(n);
     }
 
     /**
@@ -118,7 +118,7 @@ public class NotificationService {
         n.setImportance(NotificationImportance.IMPORTANT);
         n.setTitle("Welcome to API Arena");
         n.setBody(String.format(
-                "Thanks for joining, %s! Verify your email, then open Challenges or your Dashboard to get started.",
+                "Thanks for joining, %s! Your email is verified — open Challenges or your Dashboard to get started.",
                 display));
         n.setMetadataJson(metadataJson);
         n.setSourceSubmissionId(null);
@@ -127,7 +127,7 @@ public class NotificationService {
         NotificationDTO dto = toDto(n);
         long unread = notificationRepository.countByUserIdAndReadAtIsNull(userId);
         notificationPushService.pushNewNotification(userId, dto, unread);
-        notificationEmailDispatchService.sendEmailIfAlertOrImportant(n);
+        notificationEmailDispatchService.mirrorNotificationToEmail(n);
     }
 
     @Transactional(readOnly = true)

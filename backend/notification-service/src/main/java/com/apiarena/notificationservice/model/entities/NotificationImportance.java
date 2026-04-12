@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Priority for in-app notifications (ascending: INFO is lowest, IMPORTANT highest).
- * Future outbound email can target only {@link #IMPORTANT} (or {@link #shouldSendEmailByDefault()}).
+ * Only {@link #IMPORTANT} is mirrored to email (same title/body) via auth-service → Resend.
  */
 public enum NotificationImportance {
 
@@ -14,12 +14,9 @@ public enum NotificationImportance {
     ALERTS,
     IMPORTANT;
 
-    /**
-     * Whether this level should trigger email delivery when mirroring in-app notifications to email.
-     * ALERTS and IMPORTANT are sent via Resend (auth-service); INFO and REMINDER are in-app only.
-     */
+    /** Whether this level triggers an outbound email when the notification is created. */
     public boolean shouldSendEmailByDefault() {
-        return this == ALERTS || this == IMPORTANT;
+        return this == IMPORTANT;
     }
 
     /**

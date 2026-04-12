@@ -30,18 +30,15 @@ public class NotificationEmailDispatchService {
     }
 
     /**
-     * ALERTS and IMPORTANT in-app notifications are mirrored to email via auth-service (Resend).
-     * Skips {@link NotificationService#TYPE_WELCOME}: welcome uses a dedicated beta/legacy email from auth.
+     * Sends the same title/body as the in-app notification to the user's email (via auth → Resend)
+     * only when importance is {@link NotificationImportance#IMPORTANT}.
      */
-    public void sendEmailIfAlertOrImportant(Notification n) {
+    public void mirrorNotificationToEmail(Notification n) {
         if (n == null || n.getUserId() == null) {
             return;
         }
         NotificationImportance imp = n.getImportance() != null ? n.getImportance() : NotificationImportance.INFO;
-        if (imp != NotificationImportance.ALERTS && imp != NotificationImportance.IMPORTANT) {
-            return;
-        }
-        if (NotificationService.TYPE_WELCOME.equals(n.getType())) {
+        if (imp != NotificationImportance.IMPORTANT) {
             return;
         }
 

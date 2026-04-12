@@ -598,6 +598,17 @@ export async function getMyAchievements() {
 }
 
 
+/** Report active browsing seconds (visible tab, not idle). Server caps per request (120s). */
+export async function postBrowsingUsage(browsingSecondsDelta) {
+    const n = Math.min(120, Math.max(0, Math.floor(Number(browsingSecondsDelta))));
+    if (!n) return null;
+    return request("/api/auth/me/usage", {
+        method: "POST",
+        body: JSON.stringify({ browsingSecondsDelta: n }),
+    });
+}
+
+
 
 
 

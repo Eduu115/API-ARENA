@@ -148,6 +148,10 @@ public class Submission {
     @Column(name = "is_first_completion")
     private Boolean isFirstCompletion;
 
+    /** Seconds from challenge session start to submit (client-reported, capped). */
+    @Column(name = "development_time_seconds")
+    private Integer developmentTimeSeconds;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -98,12 +98,6 @@ public class AuthService implements IAuthService {
                 savedUser.getUsername(),
                 token);
 
-        emailDispatchService.sendWelcomeBetaLegacyEmail(savedUser.getEmail(), savedUser.getUsername());
-
-        emailDispatchService.sendFirstStepsBetaEmail(savedUser.getEmail(), savedUser.getUsername());
-
-        welcomeNotificationDispatchService.sendWelcome(savedUser.getId(), savedUser.getUsername());
-
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }
 
@@ -183,6 +177,11 @@ public class AuthService implements IAuthService {
         user.setEmailVerificationToken(null);
         user.setEmailVerificationExpiresAt(null);
         userRepository.save(user);
+
+        emailDispatchService.sendWelcomeBetaLegacyEmail(user.getEmail(), user.getUsername());
+        emailDispatchService.sendFirstStepsBetaEmail(user.getEmail(), user.getUsername());
+        welcomeNotificationDispatchService.sendWelcome(user.getId(), user.getUsername());
+
         return new VerifyEmailResponseDTO(true, "Email verified. You can log in.");
     }
 
