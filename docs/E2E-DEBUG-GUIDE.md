@@ -11,9 +11,14 @@ Síntoma observado:
 - `POST /api/auth/login` devuelve `401` para usuarios seed esperados.
 - Consecuencia: no se puede obtener JWT para probar `/api/submissions/{id}/replay`.
 
-## 2) Causa más probable
+## 2) Causas típicas (confirmadas en entorno local)
 
-Desalineación de datos locales respecto al seed esperado (DB persistida previa, cambios históricos de schema/constraints, contraseñas no coincidentes o usuarios seed no presentes como se asume).
+- **Datos persistidos desalineados** respecto al schema actual:
+  - columnas de `users` ausentes o con `NULL` (`total_development_seconds`, `total_browsing_seconds`).
+- **ZIP de submission no válido para Maven en raíz**:
+  - error `there is no POM in this directory (/src)`.
+- **Red DinD mal configurada**:
+  - `docker run` del candidato falla con `network ... not found` si `sandbox.dind.network` no coincide con la red real de Compose.
 
 ## 3) Cómo me puedes ayudar (rápido)
 
@@ -90,6 +95,15 @@ curl -fsS http://localhost:8089/api/metrics/overview
 curl -fsS http://localhost:9090/-/healthy
 open http://localhost:3001
 ```
+
+### 4.7 Verifica red DinD efectiva
+
+```bash
+docker network ls | awk '{print $2}' | grep apiarena-network
+docker exec apiarena-sandbox printenv | grep SANDBOX_DIND_NETWORK
+```
+
+Si no coincide, ajustar `SANDBOX_DIND_NETWORK` en `docker-compose.yml` y recrear `sandbox-service` + `submission-service`.
 
 ## 5) Flujo E2E mínimo reproducible
 
