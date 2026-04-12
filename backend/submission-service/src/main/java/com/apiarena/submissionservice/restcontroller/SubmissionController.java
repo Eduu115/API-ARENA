@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.apiarena.submissionservice.config.SubmissionPrincipal;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
+import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
 import com.apiarena.submissionservice.model.services.ISubmissionService;
@@ -91,6 +92,17 @@ public class SubmissionController {
         boolean isAdminOrTeacher = hasAdminOrTeacherRole();
         LogsResponse logs = submissionService.getLogs(id, userId, isAdminOrTeacher);
         return ResponseEntity.ok(logs);
+    }
+
+    @GetMapping("/{id}/replay")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get replay timeline", description = "Get structured replay events for a submission")
+    public ResponseEntity<ReplayTimelineResponse> getReplay(@PathVariable Long id) {
+        Long userId = extractUserIdFromAuthentication();
+        boolean isAdminOrTeacher = hasAdminOrTeacherRole();
+        ReplayTimelineResponse replay = submissionService.getReplayTimeline(id, userId, isAdminOrTeacher);
+        return ResponseEntity.ok(replay);
     }
 
     @GetMapping("/my")

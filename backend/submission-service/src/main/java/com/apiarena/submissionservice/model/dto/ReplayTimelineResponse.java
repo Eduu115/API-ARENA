@@ -1,0 +1,15 @@
+package com.apiarena.submissionservice.model.dto;
+
+import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReplayTimelineResponse {
+    private String source;
+    private List<ReplayEventDTO> events;
+}

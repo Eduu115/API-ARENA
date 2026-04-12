@@ -59,6 +59,11 @@ export async function getSubmissionLogs(id) {
   return request(`/api/submissions/${id}/logs`);
 }
 
+/** Timeline estructurado de replay para un envío. */
+export async function getSubmissionReplay(id) {
+  return request(`/api/submissions/${id}/replay`);
+}
+
 /** Detalle de un envío (puntuación, estado, etc.). */
 export async function getSubmissionById(id) {
   return request(`/api/submissions/${id}`);

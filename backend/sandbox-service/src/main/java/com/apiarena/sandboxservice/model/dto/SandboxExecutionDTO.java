@@ -18,6 +18,7 @@ public class SandboxExecutionDTO {
     private Long id;
     private Long submissionId;
     private String containerId;
+    private String candidateHost;
     private String status;
     private Integer exposedPort;
     private String buildLogs;
@@ -33,6 +34,7 @@ public class SandboxExecutionDTO {
                 .id(entity.getId())
                 .submissionId(entity.getSubmissionId())
                 .containerId(entity.getContainerId())
+                .candidateHost(entity.getContainerId())
                 .status(entity.getStatus().name())
                 .exposedPort(entity.getExposedPort())
                 .buildLogs(entity.getBuildLogs())

@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
+import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
 import com.apiarena.submissionservice.model.entities.Submission;
@@ -22,6 +23,8 @@ public interface ISubmissionService {
     SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher);
 
     LogsResponse getLogs(Long id, Long userId, boolean isAdminOrTeacher);
+
+    ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdminOrTeacher);
 
     List<SubmissionSummaryDTO> getMySubmissions(Long userId);
 
