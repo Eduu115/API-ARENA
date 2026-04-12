@@ -53,6 +53,24 @@ export default function MySubmissions() {
     return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [filter, submissions]);
 
+  const attemptBySubmissionId = useMemo(() => {
+    const byChallenge = new Map();
+    const sorted = [...submissions].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    for (const s of sorted) {
+      const challengeId = Number(s.challengeId);
+      const current = byChallenge.get(challengeId) || 0;
+      byChallenge.set(challengeId, current + 1);
+      byChallenge.set(`sub-${s.id}`, current + 1);
+    }
+    const map = new Map();
+    for (const [key, val] of byChallenge.entries()) {
+      if (typeof key === 'string' && key.startsWith('sub-')) {
+        map.set(Number(key.replace('sub-', '')), val);
+      }
+    }
+    return map;
+  }, [submissions]);
+
   const completed = submissions.filter(s => s.status === 'COMPLETED');
   const avgScore = completed.length > 0
     ? (completed.reduce((acc, s) => acc + (Number(s.totalScore) || 0), 0) / completed.length).toFixed(1) : '0';
@@ -114,7 +132,7 @@ export default function MySubmissions() {
 
               <div className="sub-table">
                 <div className="sub-table-head">
-                  <div className="sub-th">ID</div>
+                  <div className="sub-th">Attempt</div>
                   <div className="sub-th">Challenge</div>
                   <div className="sub-th">Score</div>
                   <div className="sub-th">Status</div>
@@ -131,13 +149,16 @@ export default function MySubmissions() {
                   const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
                   const sc = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--warn)' : pct > 0 ? 'var(--red)' : 'var(--muted)';
                   const challengeTitle = (sub.challengeTitle && String(sub.challengeTitle).trim()) || `Challenge #${sub.challengeId}`;
+                  const attempt = attemptBySubmissionId.get(Number(sub.id));
                   return (
                     <div key={sub.id} className="sub-row" style={{ animationDelay: `${i * 0.04}s` }} onClick={() => navigate(`/submissions/${sub.id}`)}>
-                      <div className="sub-row-id">#{sub.id}</div>
+                      <div className="sub-row-id">{attempt ? `A${attempt}` : '—'}</div>
                       <div>
                         <div className="sub-row-challenge-title">{challengeTitle}</div>
                         <div className="sub-row-challenge-meta">
                           <span>ID {sub.challengeId}</span>
+                          <span>·</span>
+                          <span>Submission #{sub.id}</span>
                         </div>
                       </div>
                       <div className="sub-row-score">
