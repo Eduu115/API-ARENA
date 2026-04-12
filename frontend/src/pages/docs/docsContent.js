@@ -1,190 +1,190 @@
 export const DOC_DOCUMENTS = [
   {
     id: "guia-para-empezar",
-    title: "Guia para empezar",
-    summary: "Mentalidad, estrategia de trabajo y ritmo de entregas para progresar rapido sin quemarte.",
+    title: "Getting Started Guide",
+    summary: "Mindset, work strategy, and delivery rhythm to progress fast without burning out.",
     readTime: "9 min",
     sections: [
       {
         id: "enfoque",
-        heading: "Enfoque recomendado para avanzar con consistencia",
+        heading: "Recommended approach to improve consistently",
         paragraphs: [
-          "API Arena no premia solo el resultado final: premia la progresion constante y la capacidad de iterar con criterio tecnico. Si empiezas intentando un challenge complejo sin dominar el flujo completo de build, test y entrega, lo normal es frustrarse pronto.",
-          "La estrategia mas efectiva para la mayoria de estudiantes es simple: encadenar varias victorias pequenas en retos EASY y MEDIUM, interiorizar el pipeline, y luego escalar dificultad con una base estable. Esto acelera mucho mas que intentar 'saltos heroicos' con una unica submission gigante."
+          "API Arena does not reward only final outcomes: it rewards consistent progress and your ability to iterate with technical judgment. If you start with a complex challenge before mastering build, test, and submission flow, frustration usually comes quickly.",
+          "For most students, the most effective strategy is simple: stack small wins in EASY and MEDIUM challenges, internalize the pipeline, and then scale difficulty on top of a stable base."
         ],
         bullets: [
-          "Trabaja por objetivos de 20-40 minutos: endpoint concreto, validacion concreta o bloque de tests concreto.",
-          "Envio incremental: si ya has mejorado algo medible, considera enviar para validar antes de seguir complicando.",
-          "Anota fallos recurrentes (status code, payload, headers) y convirtelos en checklist personal."
+          "Work in 20-40 minute goals: one endpoint, one validation, or one test block.",
+          "Submit incrementally: if something measurable improved, validate it before overcomplicating.",
+          "Track recurring failures (status codes, payloads, headers) and turn them into your personal checklist."
         ]
       },
       {
         id: "flujo-estudio",
-        heading: "Flujo de estudio y practica recomendado",
+        heading: "Recommended study and practice flow",
         paragraphs: [
-          "Antes de tocar codigo, invierte unos minutos en leer bien el enunciado y separar lo obligatorio de lo deseable. Esta distincion evita perder tiempo en extras cuando aun faltan requisitos criticos.",
-          "Cuando empieces a implementar, prioriza funcionalidad observable sobre perfeccion interna. Si el endpoint no responde como se espera, da igual lo bonita que sea la arquitectura: no superara pruebas funcionales."
+          "Before writing code, spend a few minutes reading the challenge carefully and separating mandatory requirements from optional improvements.",
+          "When implementing, prioritize observable behavior over internal perfection. If an endpoint does not respond as expected, clean architecture alone will not pass functional tests."
         ],
         bullets: [
-          "Paso 1: leer endpoints requeridos y codigos HTTP esperados.",
-          "Paso 2: levantar API minima con health + primer endpoint funcional.",
-          "Paso 3: completar CRUD o flujo principal.",
-          "Paso 4: revisar validaciones y errores.",
-          "Paso 5: optimizar rendimiento y detalles de diseno."
+          "Step 1: review required endpoints and expected HTTP codes.",
+          "Step 2: boot a minimal API with health + first working endpoint.",
+          "Step 3: implement the main CRUD or domain flow.",
+          "Step 4: tighten validations and error handling.",
+          "Step 5: optimize performance and design details."
         ],
         visual: {
           type: "flow",
-          title: "Mapa visual del flujo",
+          title: "Visual workflow map",
           steps: [
-            { label: "Leer challenge", hint: "Endpoints + codigos + restricciones" },
-            { label: "Implementar base", hint: "Health + routing + JSON" },
-            { label: "Completar funcionalidad", hint: "CRUD principal + validaciones" },
-            { label: "Revisar contrato HTTP", hint: "Status + payload + errores" },
-            { label: "Enviar y medir", hint: "Logs + score + siguiente iteracion" }
+            { label: "Read challenge", hint: "Endpoints + codes + constraints" },
+            { label: "Implement baseline", hint: "Health + routing + JSON" },
+            { label: "Complete core behavior", hint: "Main CRUD + validations" },
+            { label: "Verify HTTP contract", hint: "Status + payload + errors" },
+            { label: "Submit and measure", hint: "Logs + score + next iteration" }
           ]
         }
       },
       {
         id: "evitar-bloqueos",
-        heading: "Como evitar bloqueos tipicos de principiantes",
+        heading: "How to avoid beginner bottlenecks",
         paragraphs: [
-          "Cuando algo falla, no cambies diez cosas a la vez. Haz modificaciones pequenas, comprueba efecto, y sigue. Este enfoque reduce la incertidumbre y te da una trazabilidad clara de por que mejora o empeora tu score.",
-          "Si llevas mas de 25-30 minutos atascado en un punto, para y vuelve a una version estable. En APIs, volver a lo basico suele desbloquear mas que insistir en una solucion compleja."
+          "When something fails, do not change ten things at once. Make small changes, verify impact, then continue.",
+          "If you are stuck for 25-30 minutes, stop and return to a stable baseline. In API work, going back to basics often unblocks faster than forcing a complex fix."
         ],
         bullets: [
-          "Registra en un archivo local: problema, hipotesis, cambio aplicado, resultado.",
-          "Usa nombres de commit o checkpoints locales con intencion (fix-404-books, validate-input-auth).",
-          "Si no entiendes un error, llvalo a un caso minimo reproducible."
+          "Track issue, hypothesis, applied change, and outcome.",
+          "Use intentional local checkpoints (e.g. fix-404-books, validate-input-auth).",
+          "If you cannot explain an error, reduce it to a minimal reproducible case."
         ]
       }
     ]
   },
   {
     id: "primeros-pasos",
-    title: "Primeros pasos",
-    summary: "Checklist practica para preparar tu primer challenge de principio a fin sin sorpresas.",
+    title: "First Steps",
+    summary: "Practical checklist to prepare your first challenge from start to finish.",
     readTime: "11 min",
     sections: [
       {
         id: "antes-codificar",
-        heading: "Antes de codificar: preparar el terreno",
+        heading: "Before coding: prepare the ground",
         paragraphs: [
-          "Tu primer reto no empieza escribiendo controladores: empieza con una lectura tecnica del challenge y una validacion de entorno local. Si tu proyecto no arranca de forma confiable en local, es muy probable que falle en el sandbox.",
-          "Define una minima arquitectura antes de arrancar: capas, entidades, validaciones y manejo de errores. Con una estructura inicial clara evitas deuda accidental desde el minuto uno."
+          "Your first challenge does not begin with controllers. It begins with technical reading and local environment validation.",
+          "Define a minimum architecture up front: layers, entities, validations, and error handling. A clear starting structure avoids accidental debt."
         ],
         bullets: [
-          "Verifica version de Java y Maven compatibles con tu proyecto.",
-          "Comprueba que el empaquetado genera un JAR ejecutable.",
-          "Confirma que el puerto y contexto de tu API no dependen de configuraciones locales exoticas."
+          "Verify Java and Maven versions are compatible with your project.",
+          "Ensure packaging produces a runnable JAR.",
+          "Confirm API port and context do not depend on exotic local settings."
         ]
       },
       {
         id: "implementacion-minima",
-        heading: "Implementacion minima viable para enviar pronto",
+        heading: "Minimum viable implementation for an early submission",
         paragraphs: [
-          "No intentes resolver todo de golpe. Construye primero una columna vertebral estable: routing, serializacion JSON, validaciones basicas y respuestas HTTP coherentes.",
-          "El objetivo de la primera entrega no es score perfecto: es confirmar que el pipeline completo funciona con tu base tecnica."
+          "Do not solve everything at once. Build a stable backbone first: routing, JSON serialization, basic validation, and coherent HTTP responses.",
+          "The goal of your first submission is not a perfect score. It is proving the full pipeline works with your foundation."
         ],
         bullets: [
-          "Implementa primero los GET requeridos para validar estructura de respuesta.",
-          "Despues añade POST/PUT/DELETE con validaciones elementales.",
-          "Asegura manejo de 404, 400 y 500 de forma consistente."
+          "Start with required GET endpoints to validate response structures.",
+          "Then add POST/PUT/DELETE with essential validation.",
+          "Handle 404, 400, and 500 consistently."
         ]
       },
       {
         id: "primera-entrega",
-        heading: "Primera entrega: que revisar antes de subir ZIP",
+        heading: "First submission: what to verify before uploading ZIP",
         paragraphs: [
-          "La mayor parte de fallos en primeras entregas no son de logica de negocio, sino de formato de proyecto y empaquetado. Por eso la pre-revision del ZIP es un paso obligatorio, no opcional.",
-          "Asume que el evaluador es estricto y no conoce tu maquina: todo debe funcionar de forma reproducible y autonoma."
+          "Most first-submission failures are not business-logic issues but packaging and project-structure issues. ZIP pre-check is mandatory.",
+          "Assume evaluator environments are strict and know nothing about your local machine."
         ],
         bullets: [
-          "El archivo ZIP debe tener `pom.xml` en la raiz, no dentro de una carpeta anidada.",
-          "Evita dependencias locales no declaradas en Maven.",
-          "No subas artefactos innecesarios (target pesado, archivos temporales, credenciales)."
+          "ZIP must contain `pom.xml` at the root, not inside nested folders.",
+          "Avoid undeclared local dependencies.",
+          "Do not upload unnecessary artifacts (heavy target output, temp files, credentials)."
         ]
       }
     ]
   },
   {
     id: "preconfiguracion-proyecto",
-    title: "Preconfigurar proyecto para challenge",
-    summary: "Guia tecnica completa de prerequisitos, estructura minima y validaciones antes de cualquier envio.",
+    title: "Preconfigure Project for Challenges",
+    summary: "Complete technical guide for prerequisites, minimum structure, and pre-submission validation.",
     readTime: "14 min",
     sections: [
       {
         id: "estructura-base",
-        heading: "Estructura base que debe tener tu proyecto",
+        heading: "Base project structure requirements",
         paragraphs: [
-          "Para que el pipeline de API Arena pueda compilar y ejecutar tu entrega, debes mantener una estructura Maven estandar y predecible. Si el build system no encuentra lo esperado, el proceso falla antes incluso de ejecutar tests.",
-          "Piensa en tu proyecto como un paquete portable: cualquier entorno debe poder descomprimir, compilar y arrancar sin asistencia manual."
+          "For API Arena to compile and run your submission, keep a predictable standard Maven structure. If the build system cannot find expected files, it fails before tests run.",
+          "Treat your project as a portable package: any environment should unzip, compile, and start it without manual help."
         ],
         bullets: [
-          "Raiz del ZIP: `pom.xml`, carpeta `src/`, y archivos de configuracion necesarios.",
-          "Codigo principal en `src/main/java` y, si aplica, recursos en `src/main/resources`.",
-          "Sin rutas absolutas ni scripts que dependan de tu sistema local."
+          "ZIP root: `pom.xml`, `src/`, and required config files.",
+          "Main code in `src/main/java`, resources in `src/main/resources` when needed.",
+          "No absolute paths or scripts tied to your local machine."
         ],
         visual: {
           type: "tree",
-          title: "Estructura recomendada del ZIP",
+          title: "Recommended ZIP structure",
           lines: [
             "my-challenge-api.zip",
             "├── pom.xml",
             "├── src/",
-            "│   ├── main/java/com/tuapp/...",
+            "│   ├── main/java/com/yourapp/...",
             "│   └── main/resources/application.properties",
-            "└── README.md (opcional)"
+            "└── README.md (optional)"
           ]
         }
       },
       {
         id: "pom-dependencias",
-        heading: "Configuracion de Maven y dependencias",
+        heading: "Maven configuration and dependencies",
         paragraphs: [
-          "Tu `pom.xml` es el contrato de compilacion del challenge. Cualquier dependencia faltante o plugin mal definido puede tumbar la ejecucion en el sandbox.",
-          "Mantener el POM limpio y explicito reduce la variabilidad y facilita builds reproducibles."
+          "Your `pom.xml` is the challenge build contract. Missing dependencies or misconfigured plugins can break sandbox execution.",
+          "A clean and explicit POM reduces variability and improves reproducibility."
         ],
         bullets: [
-          "Declara version de Java compatible y plugin de compilacion.",
-          "Incluye starter web y dependencias de serializacion/validacion que realmente uses.",
-          "Evita dependencias innecesarias que inflen build time o introduzcan conflictos."
+          "Declare compatible Java version and compiler plugin.",
+          "Include only required web, serialization, and validation dependencies.",
+          "Avoid unnecessary dependencies that increase build time or conflict."
         ]
       },
       {
         id: "arranque-api",
-        heading: "Condiciones de arranque de la API",
+        heading: "API startup conditions",
         paragraphs: [
-          "Tu API debe arrancar de forma autonoma y responder en un tiempo razonable. Si tarda demasiado o falla en el bootstrap, los tests no llegaran a ejecutarse correctamente.",
-          "Configura valores por defecto seguros para entorno de evaluacion y evita bloquear inicio por variables opcionales."
+          "Your API must start autonomously and respond in a reasonable time. If startup is too slow or fails, tests cannot execute reliably.",
+          "Use safe defaults for evaluation environments and do not block startup on optional variables."
         ],
         bullets: [
-          "Asegura que existe un endpoint de salud o respuesta minima.",
-          "No dependas de servicios externos obligatorios para arrancar.",
-          "Controla errores de inicializacion con logs claros."
+          "Provide a health endpoint or minimum response endpoint.",
+          "Do not require external services just to boot.",
+          "Handle initialization failures with clear logs."
         ]
       },
       {
         id: "checklist-envio",
-        heading: "Checklist final antes de enviar",
+        heading: "Final checklist before submit",
         paragraphs: [
-          "Esta checklist es la diferencia entre una entrega evaluable y una entrega fallida por detalles de packaging. Recorrela siempre, aunque tengas experiencia.",
-          "Si fallas aqui, el score no reflejara tu capacidad tecnica real, sino un problema de entrega."
+          "This checklist often separates a valid submission from a failed packaging attempt. Always run it, even with experience.",
+          "If you fail here, score reflects delivery issues, not real technical ability."
         ],
         bullets: [
-          "Compila en local con `mvn clean package` sin pasos manuales adicionales.",
-          "Valida endpoints requeridos y codigos HTTP del challenge.",
-          "Genera ZIP final y verifica manualmente su estructura interna.",
-          "Haz una ultima lectura de logs y elimina secretos/credenciales."
+          "Compile locally with `mvn clean package` without extra manual steps.",
+          "Validate required endpoints and expected HTTP status codes.",
+          "Generate final ZIP and manually inspect internal structure.",
+          "Review logs once more and remove secrets/credentials."
         ],
         visual: {
           type: "checklist",
-          title: "Checklist rapida pre-envio",
+          title: "Quick pre-submit checklist",
           items: [
             { label: "Build local OK", status: "ok" },
-            { label: "pom.xml en raiz del ZIP", status: "ok" },
-            { label: "Endpoints requeridos cubiertos", status: "ok" },
-            { label: "Codigos HTTP correctos", status: "ok" },
-            { label: "Sin secretos en el bundle", status: "warn" }
+            { label: "pom.xml at ZIP root", status: "ok" },
+            { label: "Required endpoints covered", status: "ok" },
+            { label: "Correct HTTP status codes", status: "ok" },
+            { label: "No secrets inside bundle", status: "warn" }
           ]
         }
       }
@@ -192,98 +192,173 @@ export const DOC_DOCUMENTS = [
   },
   {
     id: "errores-comunes",
-    title: "Errores comunes",
-    summary: "Fallos recurrentes en submissions, por que ocurren y como prevenirlos de forma sistematica.",
+    title: "Common Errors",
+    summary: "Recurring submission failures, why they happen, and how to prevent them systematically.",
     readTime: "10 min",
     sections: [
       {
         id: "errores-build",
-        heading: "Errores de build y empaquetado",
+        heading: "Build and packaging errors",
         paragraphs: [
-          "El error mas comun es estructural: ZIP mal generado, POM fuera de raiz o dependencias no resueltas. Estos problemas son evitables con una revision previa de 2 minutos.",
-          "No confundas un fallo de build con un fallo de logica. Son categorias distintas y requieren estrategias distintas."
+          "The most common failures are structural: malformed ZIP, POM outside root, unresolved dependencies. A short pre-check prevents most of them.",
+          "Do not confuse build failures with business-logic failures. They are different categories and need different fixes."
         ],
         bullets: [
-          "POM no localizado en raiz del ZIP.",
-          "Dependencias no declaradas en `pom.xml`.",
-          "Configuraciones que solo funcionan en tu maquina."
+          "POM not found at ZIP root.",
+          "Dependencies missing from `pom.xml`.",
+          "Configurations that work only on your machine."
         ]
       },
       {
         id: "errores-http",
-        heading: "Errores de contrato HTTP",
+        heading: "HTTP contract errors",
         paragraphs: [
-          "Muchos challenges fallan por detalles de contrato: status code incorrecto, payload incompleto o naming inconsistente de endpoints.",
-          "Los tests del pipeline son estrictos porque simulan consumidores reales: pequeñas diferencias pueden implicar incompatibilidad."
+          "Many challenges fail because of contract details: wrong status code, incomplete payload, or inconsistent endpoint naming.",
+          "Pipeline tests are strict because they simulate real consumers: small differences can still break compatibility."
         ],
         bullets: [
-          "Responder `200` donde se esperaba `201` o `204`.",
-          "No devolver `404` en recursos inexistentes.",
-          "Formato JSON distinto al esperado por el challenge."
+          "Returning `200` where `201` or `204` is expected.",
+          "Not returning `404` for missing resources.",
+          "JSON format different from challenge contract."
         ]
       },
       {
         id: "errores-diseno-rendimiento",
-        heading: "Errores de diseno y rendimiento",
+        heading: "Design and performance errors",
         paragraphs: [
-          "Una API funcional puede perder muchos puntos en design/performance si no cuida consistencia, validaciones y latencia.",
-          "No necesitas una optimizacion extrema para buena nota, pero si decisiones tecnicas solidas y medibles."
+          "A functional API can still lose points in design/performance if consistency, validation, and latency are weak.",
+          "You do not need extreme optimization for a good score, but you do need solid and measurable technical choices."
         ],
         bullets: [
-          "Validaciones insuficientes o respuestas de error ambiguas.",
-          "Consultas o transformaciones innecesarias en endpoints calientes.",
-          "Ausencia de manejo robusto de excepciones."
+          "Insufficient validation or ambiguous error responses.",
+          "Unnecessary queries or transformations on hot endpoints.",
+          "Lack of robust exception handling."
         ]
       }
     ]
   },
   {
     id: "sistema-xp-elo",
-    title: "Sistema de XP y ELO",
-    summary: "Como se calcula tu progreso, que afecta a tu ranking y como tomar decisiones inteligentes de mejora.",
-    readTime: "8 min",
+    title: "XP and ELO System",
+    summary: "Complete guide to classification, ELO gains/losses, and ranking strategy.",
+    readTime: "16 min",
     sections: [
       {
         id: "xp",
-        heading: "XP: progreso acumulativo",
+        heading: "XP: cumulative progress",
         paragraphs: [
-          "La XP representa tu avance general en la plataforma. Se incrementa al completar y mejorar retos, premiando la constancia y la evolucion tecnica.",
-          "No es solo un contador de intentos: el sistema valora calidad de resultado y aprendizaje efectivo."
+          "XP represents your overall platform progression. It grows when you complete and improve challenges, rewarding consistency and technical evolution.",
+          "It is not just an attempt counter: the system values result quality and effective learning."
         ],
         bullets: [
-          "Completar retos desbloquea progresion base.",
-          "Mejorar submissions anteriores puede aportar progreso adicional.",
-          "El farm de envios sin mejora real se limita con reglas de anti-abuso."
+          "Completing challenges unlocks baseline progression.",
+          "Improving previous submissions adds extra progression.",
+          "Spam submissions without real improvement are limited by anti-abuse rules."
         ]
       },
       {
         id: "elo",
-        heading: "ELO: rendimiento competitivo",
+        heading: "ELO: how it really works",
         paragraphs: [
-          "El ELO refleja tu rendimiento relativo dentro del ecosistema. Es una metrica de nivel competitivo, no de volumen de actividad.",
-          "Puedes subir o bajar ELO segun la calidad de tus resultados en contexto, por eso conviene enviar cuando realmente has mejorado."
+          "ELO compares expected competitive performance versus real outcomes. It is not an activity counter; it estimates skill stability and penalizes low-value competitive choices.",
+          "Each relevant submission compares expected outcome (based on your state and challenge context) against your real result. Beat expectations and you climb; underperform and you drop."
         ],
         bullets: [
-          "No todos los envios impactan igual.",
-          "El rendimiento sostenido importa mas que picos aislados.",
-          "Reintentar con mejoras concretas suele ser mejor que enviar por impulso."
+          "Not every submission has equal impact: quality, consistency, and timing matter.",
+          "Repeated mediocre submissions can erode ELO even if XP still increases.",
+          "Climbing ELO requires real score improvement, not just attempt volume."
+        ],
+        visual: {
+          type: "flow",
+          title: "ELO calculation flow (simplified)",
+          steps: [
+            { label: "Compute expectation", hint: "Current level + challenge context" },
+            { label: "Evaluate real result", hint: "Technical score + AI review" },
+            { label: "Compare delta", hint: "Result - expectation" },
+            { label: "Apply adjustment", hint: "Positive delta up / negative delta down" }
+          ]
+        }
+      },
+      {
+        id: "clasificacion",
+        heading: "How to classify and become ranked",
+        paragraphs: [
+          "For rankings to be statistically meaningful, a minimum amount of valid activity is needed. Before that, your state may remain preliminary.",
+          "Classification does not depend on one brilliant run. It requires enough results for the system to estimate your level with less noise."
+        ],
+        bullets: [
+          "Complete a minimum set of challenges with consistent results to leave the initial state.",
+          "Avoid concentrating all activity in one challenge: diversification reduces noise.",
+          "Build a submission history with progressive, non-random improvement."
+        ]
+      },
+      {
+        id: "que-suma-elo",
+        heading: "What usually adds ELO (and why)",
+        paragraphs: [
+          "What adds the most is not submitting more, but submitting better. The system rewards robust technical decisions that produce high and repeatable scores.",
+          "Winning strategy combines functional reliability, clean design, and good latency."
+        ],
+        bullets: [
+          "Beat your previous best score on a challenge with a clearly stronger submission.",
+          "Reduce HTTP contract errors (status/payload) and improve correctness.",
+          "Maintain quality across multiple challenges, not just one.",
+          "Submit when improvement is proven, not impulsive."
+        ]
+      },
+      {
+        id: "que-no-suma-elo",
+        heading: "What does not help (or hurts) ELO",
+        paragraphs: [
+          "Some actions feel productive by activity alone, but add little competitive value. In ELO, marginal quality per submission matters a lot.",
+          "Spamming attempts without substantial changes increases negative-delta risk and hurts your relative position even when XP grows slowly."
+        ],
+        bullets: [
+          "Resubmitting nearly identical projects without measurable improvements.",
+          "Ignoring cooldown/limits and sending immediately without review.",
+          "Neglecting design and API errors while only aiming to compile.",
+          "Optimizing for submission volume instead of real technical improvement."
+        ],
+        visual: {
+          type: "checklist",
+          title: "Anti-patterns to avoid",
+          items: [
+            { label: "Submitting without reviewing previous error logs", status: "warn" },
+            { label: "Retrying with no changes in critical endpoints", status: "warn" },
+            { label: "Optimizing one area while breaking another", status: "warn" },
+            { label: "Validating functional + design + performance before submit", status: "ok" }
+          ]
+        }
+      },
+      {
+        id: "mantener-elo",
+        heading: "How to maintain and consolidate ELO over time",
+        paragraphs: [
+          "Maintaining high ELO does not mean avoiding risk. It means managing technical risk with discipline.",
+          "Best long-term strategy: small iterations, consistent quality, and smart submission timing."
+        ],
+        bullets: [
+          "Run a fixed pre-checklist before every submission (build, endpoints, errors, performance).",
+          "When stuck, return to a stable baseline and rebuild in layers.",
+          "Do not overtrain one challenge only; alternate to sustain overall level.",
+          "Prioritize weekly consistency over isolated spikes."
         ]
       },
       {
         id: "score-mixto",
-        heading: "Score tecnico + AI review",
+        heading: "Technical score + AI review",
         paragraphs: [
-          "La puntuacion final de submission combina evaluacion tecnica y revision asistida: 800 puntos tecnicos + 200 puntos de AI review.",
-          "Esto permite medir tanto cumplimiento funcional/rendimiento como calidad global de estructura y mantenibilidad."
+          "Final submission score combines technical evaluation and assisted review: 800 technical points + 200 AI review points.",
+          "This measures both functional/performance compliance and implementation quality."
         ],
         bullets: [
-          "Correctness, performance y design definen bloque tecnico principal.",
-          "AI review aporta analisis cualitativo con recomendaciones.",
-          "El mejor resultado llega al equilibrar fiabilidad tecnica y limpieza de implementacion."
+          "Correctness, performance, and design define the core technical block.",
+          "AI review adds qualitative analysis and recommendations.",
+          "Best outcomes come from balancing technical reliability with implementation cleanliness."
         ],
         visual: {
           type: "score",
-          title: "Distribucion visual de la puntuacion",
+          title: "Score distribution for strong ELO",
           items: [
             { label: "Correctness + Performance + Design", value: 800, max: 1000, color: "cyan" },
             { label: "AI Review", value: 200, max: 1000, color: "purple" }

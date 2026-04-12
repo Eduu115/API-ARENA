@@ -18,16 +18,16 @@ export default function HeroSection() {
           <span className="line-3">Win.</span>
         </h1>
         <p className="hero-sub">
-          La primera arena competitiva para <strong>APIs</strong>.<br />
-          Envía tu código. Supera los tests.{' '}
-          <strong>Domina el leaderboard.</strong><br />
-          No simulaciones. No teoría. Código real en producción real.
+          The first competitive arena for <strong>APIs</strong>.<br />
+          Submit your code. Pass the tests.{' '}
+          <strong>Own the leaderboard.</strong><br />
+          No simulations. No theory-only drills. Real code in real production conditions.
         </p>
 
         <div className="hero-actions">
           <Link to="/register" className="btn-primary">▶ Start Competing</Link>
           <Link to="/challenges" className="btn-secondary">
-            Ver challenges
+            View challenges
             <ArrowRightIcon />
           </Link>
         </div>

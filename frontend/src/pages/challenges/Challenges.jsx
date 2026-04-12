@@ -13,7 +13,7 @@ function mapApiToCard(api) {
   return {
     id: api.id,
     slug: api.slug,
-    title: api.title || 'Sin título',
+    title: api.title || 'Untitled',
     difficulty: diff,
     category: api.category || 'General',
     description: api.description || '',
@@ -172,7 +172,7 @@ export default function Challenges() {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e?.message || 'Error al cargar challenges');
+          setError(e?.message || 'Error loading challenges');
           setChallenges([]);
         }
       } finally {
@@ -429,20 +429,20 @@ export default function Challenges() {
             {loading ? (
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">...</div>
-                <div className="ch-empty-text">Cargando challenges...</div>
+                <div className="ch-empty-text">Loading challenges...</div>
               </div>
             ) : error ? (
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">!</div>
                 <div className="ch-empty-text">{error}</div>
                 <div className="ch-empty-text" style={{ fontSize: 12, marginTop: 8 }}>
-                  Comprueba que el challenge-service esté corriendo en http://localhost:8082
+                  Make sure challenge-service is running at http://localhost:8082
                 </div>
               </div>
             ) : filtered.length === 0 ? (
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">404</div>
-                <div className="ch-empty-text">No hay challenges que coincidan con tus filtros</div>
+                <div className="ch-empty-text">No challenges match your filters</div>
               </div>
             ) : (
               filtered.map(c => <ChallengeCard key={c.id} challenge={c} />)

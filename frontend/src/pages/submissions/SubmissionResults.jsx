@@ -59,6 +59,7 @@ export default function SubmissionResults() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [revealed, setRevealed] = useState(false);
+  const [showEloZeroHelp, setShowEloZeroHelp] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -186,7 +187,13 @@ export default function SubmissionResults() {
                 <div className="sr-reward-icon">ELO</div>
                 {isUnranked ? (
                   <>
-                    <div className="sr-reward-value sr-elo-unranked">UNRANKED</div>
+                    <div className="sr-elo-unranked-wrap">
+                      <div className="sr-reward-value sr-elo-unranked">UNRANKED</div>
+                      <div className="sr-elo-unranked-tooltip">
+                        You need at least {MIN_RANKED_CHALLENGES} completed challenges to classify.
+                        {challengesUntilRanked > 0 ? ` ${challengesUntilRanked} remaining.` : ""}
+                      </div>
+                    </div>
                     <div className="sr-reward-label">
                       {challengesUntilRanked > 0
                         ? `${challengesUntilRanked} more challenge${challengesUntilRanked > 1 ? 's' : ''} to rank`
@@ -195,11 +202,35 @@ export default function SubmissionResults() {
                   </>
                 ) : (
                   <>
-                    <div className={`sr-reward-value ${eloPositive ? 'sr-elo-up' : eloNegative ? 'sr-elo-down' : 'sr-elo-zero'}`}>
-                      {eloPositive && `+${eloAbsDisplay}`}
-                      {eloNegative && `-${eloAbsDisplay}`}
-                      {eloVal === 0 && '0'}
-                    </div>
+                    {eloVal === 0 ? (
+                      <div className="sr-elo-zero-wrap">
+                        <div className="sr-reward-value sr-elo-zero">0</div>
+                        <button
+                          type="button"
+                          className="sr-elo-help-btn"
+                          onClick={() => setShowEloZeroHelp((v) => !v)}
+                          aria-label="Why no ELO score"
+                        >
+                          ?
+                        </button>
+                        {showEloZeroHelp && (
+                          <div className="sr-elo-help-pop">
+                            Want to know why you did not score?
+                            <button
+                              type="button"
+                              className="sr-elo-help-link"
+                              onClick={() => navigate('/docs/sistema-xp-elo')}
+                            >
+                              View ELO System
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className={`sr-reward-value ${eloPositive ? 'sr-elo-up' : 'sr-elo-down'}`}>
+                        {eloPositive ? `+${eloAbsDisplay}` : `-${eloAbsDisplay}`}
+                      </div>
+                    )}
                     <div className="sr-reward-label">Rating Change</div>
                     {eloNegative && (
                       <div className="sr-penalty-note sr-elo-loss-note">Below expected performance</div>

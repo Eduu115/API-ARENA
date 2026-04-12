@@ -37,25 +37,25 @@ export default function Corrections() {
     <TeacherLayout>
       <div className="ch-page-header" style={{ marginBottom: 20 }}>
         <div>
-          <div className="ch-page-eyebrow">// Correcciones</div>
+          <div className="ch-page-eyebrow">// Corrections</div>
           <h1 className="ch-page-title">
-            Revisar<em>Entregas</em>
+            Review<em>Submissions</em>
           </h1>
         </div>
         <div className="ch-page-controls">
           <select className="ch-sort-select" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
-            <option value="all">GRUPO: TODOS</option>
+            <option value="all">GROUP: ALL</option>
             {groups.map((g) => (
               <option key={g.id} value={g.id}>
-                GRUPO: {g.name.toUpperCase()}
+                GROUP: {g.name.toUpperCase()}
               </option>
             ))}
           </select>
           <select className="ch-sort-select" value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="all">ESTADO: TODOS</option>
-            <option value="PENDING">ESTADO: PENDING</option>
-            <option value="NEEDS_REVIEW">ESTADO: NEEDS_REVIEW</option>
-            <option value="GRADED">ESTADO: GRADED</option>
+            <option value="all">STATUS: ALL</option>
+            <option value="PENDING">STATUS: PENDING</option>
+            <option value="NEEDS_REVIEW">STATUS: NEEDS_REVIEW</option>
+            <option value="GRADED">STATUS: GRADED</option>
           </select>
         </div>
       </div>
@@ -66,19 +66,19 @@ export default function Corrections() {
           <input
             type="text"
             className="ch-search-input"
-            placeholder="buscar por alumno, challenge o id..."
+            placeholder="search by student, challenge, or id..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <span className="ch-results-count" style={{ marginLeft: "auto" }}>
-          <span>{filtered.length}</span> entregas
+          <span>{filtered.length}</span> submissions
         </span>
       </div>
 
       <div className="db-panel" style={{ marginTop: 14 }}>
         <div className="db-panel-head">
-          <div className="db-panel-title">Listado</div>
+          <div className="db-panel-title">List</div>
           <div className="db-panel-action" style={{ cursor: "default" }}>
             // mock data
           </div>
@@ -87,15 +87,15 @@ export default function Corrections() {
         <div className="sub-table" style={{ border: "none" }}>
           <div className="sub-table-head">
             <div className="sub-th">ID</div>
-            <div className="sub-th">Alumno</div>
+            <div className="sub-th">Student</div>
             <div className="sub-th">Challenge</div>
-            <div className="sub-th">Estado</div>
-            <div className="sub-th sub-th-right">Fecha</div>
+            <div className="sub-th">Status</div>
+            <div className="sub-th sub-th-right">Date</div>
           </div>
 
           {filtered.length === 0 ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-              No hay entregas con esos filtros
+              No submissions for these filters
             </div>
           ) : (
             filtered.map((c) => {
@@ -107,7 +107,7 @@ export default function Corrections() {
                   <div style={{ minWidth: 0 }}>
                     <div className="sub-row-challenge-title">{c.challenge}</div>
                     <div className="sub-row-challenge-meta">
-                      <span style={{ color: "var(--muted)" }}>grupo</span>
+                      <span style={{ color: "var(--muted)" }}>group</span>
                       <span style={{ color: "var(--dim)" }}>·</span>
                       <span>{groups.find((g) => String(g.id) === String(c.groupId))?.name ?? c.groupId}</span>
                     </div>

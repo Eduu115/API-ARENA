@@ -31,7 +31,7 @@ export const MOCK_CORRECTIONS = [
 export const MOCK_TEACHER_CHALLENGES = [
   {
     id: "tc-1",
-    title: "Rate limiter básico",
+    title: "Basic rate limiter",
     category: "Security",
     difficulty: "MEDIUM",
     createdAt: "2026-03-20T12:00:00Z",
@@ -39,7 +39,7 @@ export const MOCK_TEACHER_CHALLENGES = [
   },
   {
     id: "tc-2",
-    title: "Diseño de contratos REST (v2)",
+    title: "REST contract design (v2)",
     category: "REST API Design",
     difficulty: "HARD",
     createdAt: "2026-03-22T08:30:00Z",
@@ -50,6 +50,6 @@ export const MOCK_TEACHER_CHALLENGES = [
 export function formatTeacherDate(iso) {
   if (!iso) return "—";
   const d = new Date(iso);
-  return d.toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "2-digit" });
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" });
 }
 

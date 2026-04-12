@@ -55,19 +55,18 @@ export default function LeaderboardSection() {
         </div>
 
         <div className="lb-right">
-          <div className="section-label">Competencia</div>
+          <div className="section-label">Competition</div>
           <h2 className="section-title">
-            Tu código<br />vs el mundo.<br /><em>Real time.</em>
+            Your code<br />vs the world.<br /><em>Real time.</em>
           </h2>
           <p className="lb-right-desc">
-            El leaderboard se actualiza vía WebSocket. Cada submission que
-            entra, cada posición que cambia — lo ves en el momento. Sin
-            recargar.<br /><br />
-            El sistema ELO asegura que subir una posición en el top 10
-            valga más que dominar el top 100.
+            The leaderboard updates through WebSocket. Every incoming submission
+            and every position change appears instantly, no refresh needed.<br /><br />
+            The ELO system ensures that climbing one spot in the top 10
+            matters more than dominating the top 100.
           </p>
           <Link to="/leaderboard" className="btn-primary">
-            Ver Leaderboard Global
+            View Global Leaderboard
           </Link>
         </div>
 

@@ -53,7 +53,7 @@ export default function CreateChallenge() {
           setForm((f) => ({ ...f, categoryId: f.categoryId ?? list?.[0]?.id ?? null }));
         }
       } catch (e) {
-        if (!cancelled) setServerError(e?.message || "Error cargando categorías");
+        if (!cancelled) setServerError(e?.message || "Error loading categories");
       } finally {
         if (!cancelled) setLoadingCats(false);
       }
@@ -79,7 +79,7 @@ export default function CreateChallenge() {
     if (!trimmed) return {};
     const parsed = JSON.parse(trimmed);
     if (parsed === null || Array.isArray(parsed) || typeof parsed !== "object") {
-      throw new Error("Debe ser un objeto JSON (ej: {})");
+      throw new Error("Must be a JSON object (e.g. {})");
     }
     return parsed;
   };
@@ -91,7 +91,7 @@ export default function CreateChallenge() {
       parseJsonOrThrow(value);
       setJsonErrors((prev) => ({ ...prev, [key]: null }));
     } catch (err) {
-      setJsonErrors((prev) => ({ ...prev, [key]: err?.message || "JSON inválido" }));
+      setJsonErrors((prev) => ({ ...prev, [key]: err?.message || "Invalid JSON" }));
     }
   };
 
@@ -195,7 +195,7 @@ export default function CreateChallenge() {
     try {
       await doCreate({ publish: false });
     } catch (e2) {
-      setServerError(e2?.message || "Error guardando borrador");
+      setServerError(e2?.message || "Error saving draft");
     } finally {
       setSaving(false);
     }
@@ -208,7 +208,7 @@ export default function CreateChallenge() {
     try {
       await doCreate({ publish: true });
     } catch (e2) {
-      setServerError(e2?.message || "Error publicando challenge");
+      setServerError(e2?.message || "Error publishing challenge");
     } finally {
       setPublishing(false);
     }
@@ -254,7 +254,7 @@ export default function CreateChallenge() {
     const errors = {};
     for (const e of form.requiredEndpoints || []) {
       const hasAny = String(e?.method || "").trim() || String(e?.path || "").trim() || String(e?.description || "").trim();
-      if (hasAny && !String(e?.path || "").trim()) errors.requiredEndpoints = "Hay endpoints con método pero sin path";
+      if (hasAny && !String(e?.path || "").trim()) errors.requiredEndpoints = "There are endpoints with method but no path";
     }
     setAdvancedErrors(errors);
   };
@@ -270,7 +270,7 @@ export default function CreateChallenge() {
         <div>
           <div className="ch-page-eyebrow">// Builder</div>
           <h1 className="ch-page-title">
-            Crear<em>Challenge</em>
+            Create<em>Challenge</em>
           </h1>
         </div>
       </div>
@@ -278,7 +278,7 @@ export default function CreateChallenge() {
       <div className="db-content-grid" style={{ gridTemplateColumns: "1fr 340px" }}>
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">Datos</div>
+            <div className="db-panel-title">Details</div>
             <div className="db-panel-action" style={{ cursor: "default" }}>
               {savedId ? `#${savedId}` : "// draft/publish"}
             </div>
@@ -293,21 +293,21 @@ export default function CreateChallenge() {
               )}
               <div>
                 <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                  Título
+                  Title
                 </div>
                 <input
                   className="ch-search-input"
                   style={{ width: "100%" }}
                   value={form.title}
                   onChange={on("title")}
-                  placeholder="Ej: Rate limiter básico"
+                  placeholder="Ex: Basic rate limiter"
                 />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Categoría
+                    Category
                   </div>
                   <select
                     className="ch-sort-select"
@@ -316,9 +316,9 @@ export default function CreateChallenge() {
                     disabled={loadingCats}
                   >
                     {loadingCats ? (
-                      <option value="">CARGANDO...</option>
+                      <option value="">LOADING...</option>
                     ) : categories.length === 0 ? (
-                      <option value="">SIN CATEGORÍAS</option>
+                      <option value="">NO CATEGORIES</option>
                     ) : (
                       categories.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -330,7 +330,7 @@ export default function CreateChallenge() {
                 </div>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Dificultad
+                    Difficulty
                   </div>
                   <select className="ch-sort-select" value={form.difficulty} onChange={on("difficulty")}>
                     {DIFFICULTIES.map((d) => (
@@ -345,7 +345,7 @@ export default function CreateChallenge() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Tiempo (min)
+                    Time (min)
                   </div>
                   <input
                     className="ch-search-input"
@@ -375,17 +375,17 @@ export default function CreateChallenge() {
 
               <div>
                 <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                  Descripción
+                  Description
                 </div>
                 <textarea
                   className="ch-search-input"
                   style={{ width: "100%", minHeight: 140, resize: "vertical", paddingTop: 10 }}
                   value={form.description}
                   onChange={on("description")}
-                  placeholder="Define el objetivo, requisitos, endpoints esperados, etc."
+                  placeholder="Define objective, requirements, expected endpoints, etc."
                 />
                 <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  Mínimo 20 caracteres. {form.description.trim().length}/20
+                  Minimum 20 characters. {form.description.trim().length}/20
                 </div>
               </div>
 
@@ -400,9 +400,9 @@ export default function CreateChallenge() {
                     if (e.key === "Enter" || e.key === " ") setShowAdvanced((s) => !s);
                   }}
                 >
-                  <div className="db-panel-title">Avanzado</div>
+                  <div className="db-panel-title">Advanced</div>
                   <div className="db-panel-action" style={{ cursor: "pointer" }}>
-                    {showAdvanced ? "Ocultar" : "Mostrar"} →
+                    {showAdvanced ? "Hide" : "Show"} →
                   </div>
                 </div>
 
@@ -433,20 +433,20 @@ export default function CreateChallenge() {
                             placeholder="/users/{id}"
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("requiredEndpoints", idx)}>
-                            Quitar
+                            Remove
                           </button>
                           <div style={{ gridColumn: "1 / -1" }}>
                             <input
                               className="ch-search-input"
                               value={row.description}
                               onChange={(e) => setListItem("requiredEndpoints", idx, { description: e.target.value })}
-                              placeholder="Descripción (opcional)"
+                              placeholder="Description (optional)"
                             />
                           </div>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("requiredEndpoints", itemDefaults("requiredEndpoints"))}>
-                        Añadir endpoint
+                        Add endpoint
                       </button>
                     </div>
 
@@ -469,20 +469,20 @@ export default function CreateChallenge() {
                             placeholder="GET /users"
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("requiredStatusCodes", idx)}>
-                            Quitar
+                            Remove
                           </button>
                           <div style={{ gridColumn: "1 / -1" }}>
                             <input
                               className="ch-search-input"
                               value={row.description}
                               onChange={(e) => setListItem("requiredStatusCodes", idx, { description: e.target.value })}
-                              placeholder="Descripción (opcional)"
+                              placeholder="Description (optional)"
                             />
                           </div>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("requiredStatusCodes", itemDefaults("requiredStatusCodes"))}>
-                        Añadir status code
+                        Add status code
                       </button>
                     </div>
 
@@ -510,15 +510,15 @@ export default function CreateChallenge() {
                               checked={!!row.required}
                               onChange={(e) => setListItem("requiredHeaders", idx, { required: e.target.checked })}
                             />
-                            Requerido
+                            Required
                           </label>
                           <button type="button" className="db-btn" onClick={() => removeListItem("requiredHeaders", idx)}>
-                            Quitar
+                            Remove
                           </button>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("requiredHeaders", itemDefaults("requiredHeaders"))}>
-                        Añadir header
+                        Add header
                       </button>
                     </div>
 
@@ -537,21 +537,21 @@ export default function CreateChallenge() {
                               className="ch-search-input"
                               value={row.name}
                               onChange={(e) => setListItem(block.key, idx, { name: e.target.value })}
-                              placeholder="clave"
+                              placeholder="key"
                             />
                             <input
                               className="ch-search-input"
                               value={row.value}
                               onChange={(e) => setListItem(block.key, idx, { value: e.target.value })}
-                              placeholder="valor"
+                              placeholder="value"
                             />
                             <button type="button" className="db-btn" onClick={() => removeListItem(block.key, idx)}>
-                              Quitar
+                              Remove
                             </button>
                           </div>
                         ))}
                         <button type="button" className="db-btn" onClick={() => addListItem(block.key, itemDefaults(block.key))}>
-                          Añadir campo
+                          Add field
                         </button>
                       </div>
                     ))}
@@ -566,15 +566,15 @@ export default function CreateChallenge() {
                             className="ch-search-input"
                             value={row.text}
                             onChange={(e) => setListItem("hints", idx, { text: e.target.value })}
-                            placeholder="Pista..."
+                            placeholder="Hint..."
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("hints", idx)}>
-                            Quitar
+                            Remove
                           </button>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("hints", itemDefaults("hints"))}>
-                        Añadir pista
+                        Add hint
                       </button>
                     </div>
 
@@ -588,15 +588,15 @@ export default function CreateChallenge() {
                             className="ch-search-input"
                             value={row.text}
                             onChange={(e) => setListItem("learningObjectives", idx, { text: e.target.value })}
-                            placeholder="Objetivo..."
+                            placeholder="Objective..."
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("learningObjectives", idx)}>
-                            Quitar
+                            Remove
                           </button>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("learningObjectives", itemDefaults("learningObjectives"))}>
-                        Añadir objetivo
+                        Add objective
                       </button>
                     </div>
 
@@ -609,7 +609,7 @@ export default function CreateChallenge() {
                         style={{ width: "100%", minHeight: 90, resize: "vertical", paddingTop: 10 }}
                         value={form.solutionExplanation}
                         onChange={on("solutionExplanation")}
-                        placeholder="Explicación de la solución (opcional)"
+                        placeholder="Solution explanation (optional)"
                       />
                     </div>
 
@@ -624,9 +624,9 @@ export default function CreateChallenge() {
                           if (e.key === "Enter" || e.key === " ") setShowRawJson((s) => !s);
                         }}
                       >
-                        <div className="db-panel-title">JSON (opcional)</div>
+                        <div className="db-panel-title">JSON (optional)</div>
                         <div className="db-panel-action" style={{ cursor: "pointer" }}>
-                          {showRawJson ? "Ocultar" : "Mostrar"} →
+                          {showRawJson ? "Hide" : "Show"} →
                         </div>
                       </div>
 
@@ -680,7 +680,7 @@ export default function CreateChallenge() {
                   disabled={!isValid || saving || publishing}
                   onClick={handleSaveDraft}
                 >
-                  {saving ? "Guardando..." : "Guardar borrador"}
+                  {saving ? "Saving..." : "Save draft"}
                 </button>
                 <button
                   type="button"
@@ -688,10 +688,10 @@ export default function CreateChallenge() {
                   disabled={!isValid || saving || publishing}
                   onClick={handlePublish}
                 >
-                  {publishing ? "Publicando..." : "Publicar"}
+                  {publishing ? "Publishing..." : "Publish"}
                 </button>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  {isValid ? "// listo" : "// faltan datos"}
+                  {isValid ? "// ready" : "// missing data"}
                 </div>
               </div>
             </div>
@@ -704,7 +704,7 @@ export default function CreateChallenge() {
           </div>
           <div style={{ padding: "16px 18px" }}>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, textTransform: "uppercase", fontSize: 20, color: "var(--white)" }}>
-              {form.title.trim() || "Título del challenge"}
+              {form.title.trim() || "Challenge title"}
             </div>
             <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
               <span className="ch-badge ch-badge-cat">
@@ -714,11 +714,11 @@ export default function CreateChallenge() {
               <span className="ch-badge ch-badge-cat">{form.timeLimitMinutes}m</span>
               <span className="ch-badge ch-badge-cat">{form.maxScore} pts</span>
               <span className="ch-badge ch-badge-cat" style={{ color: savedId ? "var(--green)" : "var(--warn)" }}>
-                {savedId ? "SAVED" : "NOT SAVED"}
+              {savedId ? "SAVED" : "NOT SAVED"}
               </span>
             </div>
             <div style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", lineHeight: 1.8 }}>
-              {form.description.trim() || "Aquí se verá la descripción…"}
+              {form.description.trim() || "Description preview appears here…"}
             </div>
           </div>
         </div>

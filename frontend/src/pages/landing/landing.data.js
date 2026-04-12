@@ -62,37 +62,37 @@ export const ABOUT_TAGS = [
   { label: 'Node.js',          active: false },
   { label: 'FastAPI',          active: false },
   { label: 'Go',               active: false },
-  { label: 'Cualquier lenguaje', active: false },
+  { label: 'Any language', active: false },
 ];
 
 export const STEPS = [
   {
     num: '01',
-    title: ['Elige', 'el reto'],
-    desc: 'Explora challenges de distintas dificultades. CRUD, Auth, Performance, Design. Cada uno tiene su especificación de API y tests ocultos.',
+    title: ['Pick', 'the challenge'],
+    desc: 'Explore challenges across difficulty levels. CRUD, Auth, Performance, Design. Each includes API specification and hidden tests.',
   },
   {
     num: '02',
-    title: ['Crea', 'tu API'],
-    desc: 'Usa el lenguaje y framework que quieras. Spring Boot, Node, Go, Rust. Lo que sea. Dockeriza y sube tu código.',
+    title: ['Build', 'your API'],
+    desc: 'Use the language and framework you prefer. Spring Boot, Node, Go, Rust. Dockerize it and upload your code.',
   },
   {
     num: '03',
     title: ['Sandbox', '& Tests'],
-    desc: 'Tu API se lanza en un contenedor aislado. Tests automáticos, análisis de rendimiento con 1000 RPS, validación REST y review de IA.',
+    desc: 'Your API runs in an isolated container. Automated tests, performance analysis with 1000 RPS, REST validation, and AI review.',
   },
   {
     num: '04',
-    title: ['Sube en', 'el ranking'],
-    desc: 'Tu score entra al leaderboard en tiempo real. Analiza tu replay, itera tu API, reenvía y escala posiciones.',
+    title: ['Climb', 'the ranking'],
+    desc: 'Your score enters the leaderboard in real time. Analyze replay, iterate your API, resubmit, and climb positions.',
   },
 ];
 
 export const FEATURES = [
   {
     num: '01',
-    title: 'Sandbox Aislado',
-    desc: 'Docker-in-Docker. Tu API corre en un entorno completamente aislado con límites de CPU y RAM. Sin trucos, sin trampas.',
+    title: 'Isolated Sandbox',
+    desc: 'Docker-in-Docker. Your API runs in a fully isolated environment with CPU and RAM limits. No tricks, no shortcuts.',
     wide: true,
     badges: [
       { label: 'CPU Limit',        color: 'cyan' },
@@ -103,22 +103,22 @@ export const FEATURES = [
   {
     num: '02',
     title: 'AI Review',
-    desc: 'Claude analiza tu código. Arquitectura, seguridad, best practices. Feedback real, no genérico.',
+    desc: 'AI analyzes your code: architecture, security, and best practices. Real feedback, not generic output.',
   },
   {
     num: '03',
-    title: 'Sistema Replay',
-    desc: 'Reproduce cada request, cada respuesta, cada métrica. Analiza dónde fallaste frame a frame.',
+    title: 'Replay System',
+    desc: 'Replay every request, every response, every metric. Analyze where it failed step by step.',
   },
   {
     num: '04',
     title: 'Multiplayer',
-    desc: 'Compite 1vs1 en tiempo real. Mismo challenge, mismo tiempo. El mejor score gana.',
+    desc: 'Compete 1v1 in real time. Same challenge, same clock. Best score wins.',
   },
   {
     num: '05',
-    title: 'Métricas en Tiempo Real',
-    desc: 'InfluxDB + Grafana integrado. P95, P99 response times, throughput, error rates. Todo mientras tu API se ejecuta.',
+    title: 'Real-Time Metrics',
+    desc: 'Integrated InfluxDB + Grafana. P95/P99 response times, throughput, error rates, all while your API runs.',
     wide: true,
     badges: [
       { label: 'InfluxDB',        color: 'cyan' },

@@ -23,11 +23,11 @@ export default function Register() {
     clearError();
     setFieldError(null);
     if (password !== confirmPassword) {
-      setFieldError("Las contraseñas no coinciden.");
+      setFieldError("Passwords do not match.");
       return;
     }
     if (password.length < 6) {
-      setFieldError("La contraseña debe tener al menos 6 caracteres.");
+      setFieldError("Password must be at least 6 characters long.");
       return;
     }
     setSubmitting(true);
@@ -49,7 +49,7 @@ export default function Register() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/" className="auth-page__back" title="Volver a la landing" aria-label="Volver a la landing">
+          <Link to="/" className="auth-page__back" title="Back to home" aria-label="Back to home">
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
           </Link>
           <ThemeToggle />
@@ -66,24 +66,24 @@ export default function Register() {
                 </span>
               </Link>
 
-              <div className="ch-page-eyebrow">// Registro</div>
+              <div className="ch-page-eyebrow">// Register</div>
               <div className="auth-title-crt">
                 <h1 className="ch-page-title">
-                  Crea tu
-                  <em>perfil</em>
+                  Create your
+                  <em>profile</em>
                 </h1>
               </div>
               <p className="ch-card-desc auth-copy-lead">
-                Una cuenta, un nombre, y listo. Entras al dashboard y a pelear por el ELO.
+                One account, one name, and you are in. Enter the dashboard and fight for ELO.
               </p>
 
               <div className="auth-actions">
                 <Link to="/login" className="auth-btn-outline">
-                  Ya tengo cuenta
+                  I already have an account
                   <ArrowRightIcon width={16} height={16} />
                 </Link>
                 <Link to="/leaderboard" className="auth-link-quiet">
-                  Ver leaderboard →
+                  View leaderboard →
                 </Link>
               </div>
             </div>
@@ -92,12 +92,12 @@ export default function Register() {
               <form className="auth-form" onSubmit={handleSubmit}>
                 <div className="auth-form__head">
                   <div>
-                    <div className="ch-page-eyebrow">// Datos</div>
+                    <div className="ch-page-eyebrow">// Details</div>
                     <div className="auth-title-crt auth-title-crt--sm">
-                      <h2 className="ch-card-title">Crear cuenta</h2>
+                      <h2 className="ch-card-title">Create account</h2>
                     </div>
                   </div>
-                  <div className="auth-form__status">{submitting ? "// creando…" : "// listo"}</div>
+                  <div className="auth-form__status">{submitting ? "// creating…" : "// ready"}</div>
                 </div>
 
                 {displayError && (
@@ -109,13 +109,13 @@ export default function Register() {
                 <div className="auth-fields">
                   <div>
                     <label htmlFor="register-username" className="auth-label">
-                      Usuario
+                      Username
                     </label>
                     <input
                       id="register-username"
                       type="text"
                       className="auth-input"
-                      placeholder="tuNick"
+                      placeholder="yourNick"
                       autoComplete="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -133,7 +133,7 @@ export default function Register() {
                       id="register-email"
                       type="email"
                       className="auth-input"
-                      placeholder="tu@email.com"
+                      placeholder="you@email.com"
                       autoComplete="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -144,7 +144,7 @@ export default function Register() {
                   <div className="auth-field-grid">
                     <div>
                       <label htmlFor="register-password" className="auth-label">
-                        Contraseña
+                        Password
                       </label>
                       <input
                         id="register-password"
@@ -160,7 +160,7 @@ export default function Register() {
                     </div>
                     <div>
                       <label htmlFor="register-confirm" className="auth-label">
-                        Confirmar
+                        Confirm
                       </label>
                       <input
                         id="register-confirm"
@@ -177,12 +177,12 @@ export default function Register() {
                 </div>
 
                 <button type="submit" className="auth-submit" disabled={submitting}>
-                  {submitting ? "Creando cuenta…" : "Registrarse"}
+                  {submitting ? "Creating account…" : "Sign up"}
                 </button>
 
                 <div className="auth-footer-row">
-                  <p>¿Eres profesor?</p>
-                  <Link to="/login">Inicia sesión (cuenta educativa) →</Link>
+                  <p>Are you a teacher?</p>
+                  <Link to="/login">Sign in (education account) →</Link>
                 </div>
               </form>
             </div>

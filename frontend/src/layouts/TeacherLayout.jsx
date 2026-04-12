@@ -7,7 +7,7 @@ function isTeacherRole(role) {
 }
 
 /**
- * Rutas de profesor: requiere sesión y rol TEACHER. Si no hay sesión → login; si no es teacher → dashboard.
+ * Teacher routes: requires session and TEACHER role.
  */
 export default function TeacherLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -16,7 +16,7 @@ export default function TeacherLayout() {
   if (isLoading) {
     return (
       <div className="auth-layout-loading" aria-busy="true" aria-live="polite">
-        <div className="auth-layout-loading-inner">Cargando…</div>
+        <div className="auth-layout-loading-inner">Loading…</div>
       </div>
     );
   }

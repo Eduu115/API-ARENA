@@ -96,6 +96,7 @@ export default function DocsHub() {
     () => DOC_BY_ID[docId] || DOC_DOCUMENTS[0],
     [docId]
   );
+  const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const [savingId, setSavingId] = useState(null);
   const [feedbackDone, setFeedbackDone] = useState({});
   const [summary, setSummary] = useState(null);
@@ -110,8 +111,12 @@ export default function DocsHub() {
   }, [docId, navigate]);
 
   useEffect(() => {
+    if (!isAdmin) {
+      setSummary(null);
+      return;
+    }
     getDocsFeedbackSummary().then(setSummary).catch(() => setSummary(null));
-  }, []);
+  }, [isAdmin]);
 
   const helpfulRate = useMemo(() => {
     if (!summary || !summary.totalFeedback) return null;
@@ -135,8 +140,10 @@ export default function DocsHub() {
         ...prev,
         [sectionKey]: helpful ? "helpful" : "not_helpful"
       }));
-      const latest = await getDocsFeedbackSummary();
-      setSummary(latest);
+      if (isAdmin) {
+        const latest = await getDocsFeedbackSummary();
+        setSummary(latest);
+      }
     } finally {
       setSavingId(null);
     }
@@ -156,7 +163,7 @@ export default function DocsHub() {
                 <h1 className="ch-page-title">Arena<em>Docs</em></h1>
               </div>
               <button className="docs-back-btn" onClick={() => navigate("/challenges")}>
-                VOLVER A CHALLENGES
+                BACK TO CHALLENGES
               </button>
             </div>
 
@@ -170,7 +177,7 @@ export default function DocsHub() {
 
             <div className="docs-layout">
               <aside className="docs-scrollspy">
-                <div className="docs-scrollspy-title">Documentos</div>
+                <div className="docs-scrollspy-title">Documents</div>
                 {DOC_DOCUMENTS.map((doc) => (
                   <Link
                     key={doc.id}
@@ -209,20 +216,20 @@ export default function DocsHub() {
                         <SectionVisual visual={section.visual} />
 
                         <div className="docs-feedback-row">
-                          <span className="docs-feedback-label">Te ha servido esta seccion?</span>
+                          <span className="docs-feedback-label">Was this section helpful?</span>
                           <button
                             className={`docs-feedback-btn ${voteState === "helpful" ? "is-selected" : ""}`}
                             onClick={() => handleFeedback(sectionKey, true)}
                             disabled={savingId === sectionKey}
                           >
-                            Esta bien explicado
+                            Well explained
                           </button>
                           <button
                             className={`docs-feedback-btn ${voteState === "not_helpful" ? "is-selected" : ""}`}
                             onClick={() => handleFeedback(sectionKey, false)}
                             disabled={savingId === sectionKey}
                           >
-                            Necesita mejora
+                            Needs improvement
                           </button>
                         </div>
                       </section>
@@ -230,38 +237,40 @@ export default function DocsHub() {
                   })}
 
                   <div className="docs-feedback-row docs-feedback-row-final">
-                    <span className="docs-feedback-label">Te ha servido el documento completo?</span>
+                    <span className="docs-feedback-label">Was the full document helpful?</span>
                     <button
                       className={`docs-feedback-btn ${feedbackDone[activeDoc.id] === "helpful" ? "is-selected" : ""}`}
                       onClick={() => handleFeedback(activeDoc.id, true)}
                       disabled={savingId === activeDoc.id}
                     >
-                      Si, muy util
+                      Yes, very useful
                     </button>
                     <button
                       className={`docs-feedback-btn ${feedbackDone[activeDoc.id] === "not_helpful" ? "is-selected" : ""}`}
                       onClick={() => handleFeedback(activeDoc.id, false)}
                       disabled={savingId === activeDoc.id}
                     >
-                      Puede mejorar
+                      Could be improved
                     </button>
                   </div>
                 </article>
               </div>
             </div>
 
-            <div className="docs-summary">
-              <div className="docs-summary-title">Feedback global docs</div>
-              {summary ? (
-                <div className="docs-summary-grid">
-                  <div><span>Total votos:</span> {summary.totalFeedback ?? 0}</div>
-                  <div><span>Votos utiles:</span> {summary.helpfulCount ?? 0}</div>
-                  <div><span>Tasa utilidad:</span> {helpfulRate != null ? `${helpfulRate}%` : "—"}</div>
-                </div>
-              ) : (
-                <div className="docs-summary-empty">Sin datos de feedback todavia.</div>
-              )}
-            </div>
+            {isAdmin && (
+              <div className="docs-summary">
+                <div className="docs-summary-title">Global docs feedback</div>
+                {summary ? (
+                  <div className="docs-summary-grid">
+                    <div><span>Total votes:</span> {summary.totalFeedback ?? 0}</div>
+                    <div><span>Helpful votes:</span> {summary.helpfulCount ?? 0}</div>
+                    <div><span>Usefulness rate:</span> {helpfulRate != null ? `${helpfulRate}%` : "—"}</div>
+                  </div>
+                ) : (
+                  <div className="docs-summary-empty">No feedback data yet.</div>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>

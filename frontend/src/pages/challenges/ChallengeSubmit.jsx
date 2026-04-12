@@ -200,7 +200,7 @@ export default function ChallengeSubmit() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  /** Fin del challenge en epoch ms — el tiempo sigue en marcha fuera de esta pantalla. */
+  /** Challenge end in epoch ms — time keeps running off-screen. */
   const [deadlineAt, setDeadlineAt] = useState(null);
   const [totalSeconds, setTotalSeconds] = useState(null);
   const [tick, setTick] = useState(0);
@@ -286,7 +286,7 @@ export default function ChallengeSubmit() {
     return () => { cancelled = true; };
   }, [id]);
 
-  /** Restaurar deadline desde localStorage o iniciar reloj. */
+  /** Restore deadline from localStorage or start timer. */
   useEffect(() => {
     if (!challenge || !id || !user?.id) return;
     const totalDefault = (challenge.timeLimitMinutes ?? 60) * 60;
@@ -317,7 +317,7 @@ export default function ChallengeSubmit() {
     }
   }, [challenge, id, user?.id]);
 
-  /** Persistir deadline (fija; no depende del tick). */
+  /** Persist fixed deadline (does not depend on tick). */
   useEffect(() => {
     if (!user?.id || !id || !challenge || deadlineAt == null || totalSeconds === null) return;
     setChallengeSession(user.id, {
@@ -453,7 +453,7 @@ export default function ChallengeSubmit() {
             ← BACK TO CHALLENGE
           </button>
 
-          {/* Límites de intentos — visibles de inmediato */}
+          {/* Attempt limits — visible immediately */}
           <section className="cs-attempts-hero" aria-labelledby="cs-attempts-title">
             <div className="cs-attempts-hero-head">
               <span className="cs-attempts-eyebrow">Fair play</span>
@@ -609,7 +609,7 @@ export default function ChallengeSubmit() {
             {/* Right column — Submit panel */}
             <div className="cs-panel">
               <div className="cs-panel-inner">
-                {/* Timer */}
+              {/* Timer */}
                 <div className="cs-timer-section">
                   <div className="cs-timer-label">TIME REMAINING</div>
                   <div className={`cs-timer-display ${timerClass}`}>
@@ -626,7 +626,7 @@ export default function ChallengeSubmit() {
                   </p>
                 </div>
 
-                {/* Dropzone */}
+              {/* Dropzone */}
                 <div className="cs-drop-section">
                   {!file ? (
                     <div
@@ -669,7 +669,7 @@ export default function ChallengeSubmit() {
                   )}
                 </div>
 
-                {/* Submit */}
+              {/* Submit */}
                 <div className="cs-submit-section">
                   <button
                     type="button"
@@ -695,21 +695,35 @@ export default function ChallengeSubmit() {
       </main>
       <BottomNav />
       <CustomCursor />
+      {submitting && (
+        <div className="cs-submit-modal-backdrop" role="status" aria-live="assertive" aria-label="Submission in progress">
+          <div className="cs-submit-modal">
+            <div className="cs-submit-modal-eyebrow">SUBMISSION IN PROGRESS</div>
+            <h2 className="cs-submit-modal-title">Do not close this tab or browser</h2>
+            <p className="cs-submit-modal-copy">
+              We are building and validating your project. If you interrupt the process now, your submission may fail
+              and you will need to wait for cooldown before submitting again.
+            </p>
+            <div className="cs-submit-modal-spinner" aria-hidden />
+            <div className="cs-submit-modal-hint">Uploading ZIP · Sandbox build · Test pipeline</div>
+          </div>
+        </div>
+      )}
       {showFirstSubmitModal && (
         <div className="cs-onboard-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cs-onboard-title">
           <div className="cs-onboard-modal">
             <div className="cs-onboard-eyebrow">FIRST SUBMISSION CHECK</div>
             <h2 id="cs-onboard-title" className="cs-onboard-title">
-              Sabes como preparar bien tu proyecto antes de enviar?
+              Do you know how to properly prepare your project before submitting?
             </h2>
             <p className="cs-onboard-copy">
-              Antes de tu primer envio, confirma que conoces la preconfiguracion minima del challenge (estructura del ZIP,
-              `pom.xml` en raiz, endpoints y codigos HTTP requeridos). Esto evita la mayoria de errores de build.
+              Before your first submission, confirm that you understand the minimum challenge preconfiguration (ZIP structure,
+              `pom.xml` at root, required endpoints and HTTP status codes). This prevents most build errors.
             </p>
             <ul className="cs-onboard-list">
-              <li>Tu ZIP debe abrir con `pom.xml` en la raiz.</li>
-              <li>La API tiene que arrancar sin pasos manuales adicionales.</li>
-              <li>Debes cubrir los endpoints y codigos esperados por el challenge.</li>
+              <li>Your ZIP must open with `pom.xml` at the root.</li>
+              <li>Your API must start without extra manual steps.</li>
+              <li>You must cover endpoints and status codes expected by the challenge.</li>
             </ul>
             <div className="cs-onboard-actions">
               <button
@@ -717,7 +731,7 @@ export default function ChallengeSubmit() {
                 className="cs-onboard-btn"
                 onClick={() => navigate('/docs/preconfiguracion-proyecto')}
               >
-                VER GUIA DE PRECONFIGURACION
+                VIEW PRECONFIGURATION GUIDE
               </button>
               <button
                 type="button"
@@ -727,7 +741,7 @@ export default function ChallengeSubmit() {
                   setShowFirstSubmitModal(false);
                 }}
               >
-                SI, LO ENTIENDO. CONTINUAR
+                YES, I UNDERSTAND. CONTINUE
               </button>
             </div>
           </div>

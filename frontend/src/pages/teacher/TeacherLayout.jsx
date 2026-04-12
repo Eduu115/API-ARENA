@@ -8,10 +8,10 @@ import "../../pages/dashboard/dashboard.css";
 
 const TEACHER_NAV = [
   { label: "Dashboard", path: "/teacher" },
-  { label: "Grupos", path: "/teacher/groups" },
-  { label: "Correcciones", path: "/teacher/corrections" },
+  { label: "Groups", path: "/teacher/groups" },
+  { label: "Corrections", path: "/teacher/corrections" },
   { label: "Challenges", path: "/teacher/challenges" },
-  { label: "Crear challenge", path: "/teacher/challenges/new" },
+  { label: "Create challenge", path: "/teacher/challenges/new" },
 ];
 
 export default function TeacherLayout({ children }) {
@@ -42,10 +42,10 @@ export default function TeacherLayout({ children }) {
 
         <aside className={`ch-sidebar${sidebarOpen ? " open" : ""}`}>
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Profesor</div>
+            <div className="ch-sidebar-label">Teacher</div>
             <div style={{ padding: "10px 0 2px" }}>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)" }}>
-                // Panel docente
+                // Teacher panel
               </div>
               <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
                 <Link
@@ -53,7 +53,7 @@ export default function TeacherLayout({ children }) {
                   className="ch-filter-btn"
                   style={{ justifyContent: "space-between" }}
                 >
-                  <span>Ir al dashboard</span>
+                  <span>Go to dashboard</span>
                   <span className="ch-filter-count">→</span>
                 </Link>
               </div>
@@ -61,7 +61,7 @@ export default function TeacherLayout({ children }) {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Navegación</div>
+            <div className="ch-sidebar-label">Navigation</div>
             {TEACHER_NAV.map((item) => (
               <Link
                 key={item.path}
@@ -76,19 +76,19 @@ export default function TeacherLayout({ children }) {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Atajos</div>
+            <div className="ch-sidebar-label">Shortcuts</div>
             <div className="db-quick-stats" style={{ marginTop: 10 }}>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: "var(--cyan)" }}>
                   ✓
                 </div>
-                <div className="db-qs-label">Evaluar</div>
+                <div className="db-qs-label">Review</div>
               </div>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: "var(--green)" }}>
                   +
                 </div>
-                <div className="db-qs-label">Crear</div>
+                <div className="db-qs-label">Create</div>
               </div>
             </div>
           </div>
