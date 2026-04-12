@@ -661,5 +661,29 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created ON notifications(user_id, created_at DESC);
 
+-- ===========================================
+-- Achievements (auth-service; seeded at runtime if empty)
+-- ===========================================
+CREATE TABLE IF NOT EXISTS achievement_definitions (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(64) NOT NULL,
+    title VARCHAR(160) NOT NULL,
+    description TEXT,
+    icon_key VARCHAR(32),
+    tier VARCHAR(20) NOT NULL DEFAULT 'COMMON',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT uq_achievement_definitions_code UNIQUE (code)
+);
+
+CREATE TABLE IF NOT EXISTS user_achievements (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    achievement_id BIGINT NOT NULL REFERENCES achievement_definitions(id) ON DELETE CASCADE,
+    unlocked_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_user_achievements_user_achievement UNIQUE (user_id, achievement_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);
+
 -- Verificacion
 SELECT 'Database initialized successfully!' as status;
