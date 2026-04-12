@@ -74,6 +74,9 @@ public class SandboxService {
     @Value("${sandbox.container.timeout-seconds:900}")
     private int timeoutSeconds;
 
+    @Value("${sandbox.dind.pids-limit:256}")
+    private int dindPidsLimit;
+
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
             .build();
@@ -259,6 +262,10 @@ public class SandboxService {
             Files.writeString(dockerfile, dockerfileBody, StandardCharsets.UTF_8);
 
             runDockerCommand(List.of("docker", "rm", "-f", containerName), workDir, 10, false);
+            if (!dockerNetworkExists(workDir, dindNetwork)) {
+                return failExecution(execution, "[BUILD] Docker network not found: " + dindNetwork,
+                        "Docker network not found: " + dindNetwork);
+            }
 
             CommandResult buildResult = runDockerCommand(
                     List.of("docker", "build", "-t", imageName, "-f", dockerfile.toString(), workDir.toString()),
@@ -276,6 +283,11 @@ public class SandboxService {
                             "--network", dindNetwork,
                             "--cpus", String.valueOf(cpuLimit),
                             "--memory", memoryLimit,
+                            "--pids-limit", String.valueOf(Math.max(64, dindPidsLimit)),
+                            "--cap-drop=ALL",
+                            "--security-opt=no-new-privileges:true",
+                            "--read-only",
+                            "--tmpfs", "/tmp:rw,nosuid,nodev,size=64m",
                             "-e", "SERVER_PORT=" + dindContainerPort,
                             imageName),
                     workDir,
@@ -380,6 +392,20 @@ public class SandboxService {
             return new CommandResult(124, out + "\n[CMD] timeout: " + String.join(" ", command));
         }
         return new CommandResult(p.exitValue(), out);
+    }
+
+    @SuppressWarnings("unused")
+    private boolean dockerNetworkExists(Path workDir, String networkName) {
+        try {
+            CommandResult result = runDockerCommand(
+                    List.of("docker", "network", "inspect", networkName),
+                    workDir,
+                    10,
+                    false);
+            return result.exitCode() == 0;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private record CommandResult(int exitCode, String output) {

@@ -88,6 +88,9 @@ public class SubmissionService implements ISubmissionService {
     @Value("${services.testing-url:http://localhost:8085}")
     private String testingServiceUrl;
 
+    @Value("${services.ai-review-url:http://localhost:8086}")
+    private String aiReviewServiceUrl;
+
     @Value("${services.candidate-host:localhost}")
     private String candidateApiHost;
 
@@ -96,6 +99,9 @@ public class SubmissionService implements ISubmissionService {
 
     @Value("${services.internal-token:}")
     private String internalToken;
+
+    @Value("${ai.review.enabled:false}")
+    private boolean aiReviewEnabled;
 
     @Value("${replay.source:structured}")
     private String replaySource;
@@ -381,6 +387,7 @@ public class SubmissionService implements ISubmissionService {
                     "Scores finalized",
                     Map.of("totalScore", totalBd, "correctnessScore", corrBd, "performanceScore", perfBd,
                             "designScore", designBd));
+            runAiReview(submissionId, sub.getChallengeId(), results);
             applyMetricsFromResults(submissionId, results);
 
             calculateAndApplyRewards(submissionId);
@@ -481,6 +488,64 @@ public class SubmissionService implements ISubmissionService {
         sub.setFailedRequests(failed);
         sub.setRestComplianceScore(BigDecimal.valueOf(85).setScale(2, RoundingMode.HALF_UP));
         submissionRepository.save(sub);
+    }
+
+    private void runAiReview(Long submissionId, Long challengeId, List<Map<String, Object>> results) {
+        if (!aiReviewEnabled) {
+            return;
+        }
+        try {
+            Submission sub = submissionRepository.findById(submissionId).orElse(null);
+            if (sub == null) {
+                return;
+            }
+            HttpHeaders headers = buildInternalHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            List<String> endpoints = List.of();
+            if (results != null) {
+                endpoints = results.stream()
+                        .map(r -> Objects.toString(r.get("requestPath"), null))
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .toList();
+            }
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("submissionId", submissionId);
+            body.put("challengeId", challengeId);
+            body.put("buildLogs", sub.getBuildLogs());
+            body.put("testLogs", sub.getTestLogs());
+            body.put("endpoints", endpoints);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> review = restTemplate.postForObject(
+                    aiReviewServiceUrl + "/internal/ai-review/analyze",
+                    entity,
+                    Map.class);
+            if (review == null) {
+                return;
+            }
+            int aiScore = toInt(review.get("score"));
+            sub.setAiReviewScore(BigDecimal.valueOf(aiScore).setScale(2, RoundingMode.HALF_UP));
+            Object suggestions = review.get("suggestions");
+            if (suggestions instanceof Map<?, ?> map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> sugMap = (Map<String, Object>) map;
+                sub.setAiSuggestions(sugMap);
+            } else {
+                sub.setAiSuggestions(Map.of(
+                        "summary", Objects.toString(review.get("summary"), ""),
+                        "suggestions", review.get("suggestions"),
+                        "diagnostics", review.get("diagnostics")));
+            }
+            submissionRepository.save(sub);
+            recordReplay(submissionId, "RESULT", "AI_REVIEW_COMPLETED", "info",
+                    "AI review completed", Map.of("aiReviewScore", aiScore));
+        } catch (Exception e) {
+            log.warn("AI review skipped for submission {}: {}", submissionId, e.getMessage());
+            recordReplay(submissionId, "RESULT", "AI_REVIEW_FAILED", "warn", e.getMessage(), null);
+        }
     }
 
     private static final Map<String, Integer> DIFFICULTY_RATING = Map.of(

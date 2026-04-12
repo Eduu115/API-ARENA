@@ -67,6 +67,7 @@ Resumen operativo detallado en:
 | `sandbox-service` | 8084 | Activo | Build/ejecución aislada (runner `process`/`dind`) |
 | `testing-service` | 8085 | Activo | Evaluación funcional/performance/diseño contra API candidata |
 | `leaderboard-service` | 8087 | Activo | Rankings globales y por challenge |
+| `ai-review-service` | 8086 (8186 host) | Activo (v1) | Revisión heurística de calidad, score AI y sugerencias |
 | `metrics-service` | 8089 | Activo | KPIs agregados y métricas de producto/pipeline |
 | `notification-service` | 8090 | Activo | Notificaciones in-app + WebSocket + mirror email (IMPORTANT) |
 
@@ -106,6 +107,7 @@ flowchart LR
 | Sandbox | 8084 | [http://localhost:8084](http://localhost:8084) |
 | Testing | 8085 | [http://localhost:8085](http://localhost:8085) |
 | Leaderboard | 8087 | [http://localhost:8087](http://localhost:8087) |
+| AI Review | 8186 | [http://localhost:8186](http://localhost:8186) |
 | Metrics | 8089 | [http://localhost:8089](http://localhost:8089) |
 | Notification | 8090 | [http://localhost:8090](http://localhost:8090) |
 | Prometheus | 9090 | [http://localhost:9090](http://localhost:9090) |
@@ -202,6 +204,15 @@ npm run dev
 
 - Swagger UI por servicio (`/swagger-ui.html`).
 - Colección Postman: `backend/API-ARENA_Postman_Collection.json`.
+- Smoke E2E automatizado local: `./scripts/e2e-smoke.sh`.
+- Carga concurrente básica: `./scripts/load-submissions.sh`.
+
+## CI / automatización
+
+- Workflow de smoke E2E: `.github/workflows/e2e-smoke.yml`
+  - permite ejecución manual (`workflow_dispatch`)
+  - incluye ejecución programada diaria
+  - levanta stack, corre E2E, y adjunta logs si falla
 
 ## Transparencia de despliegue y límites actuales
 
