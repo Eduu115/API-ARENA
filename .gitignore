@@ -58,7 +58,7 @@ Thumbs.db
 # Backups
 **/backups/
 
-# Cursor: ignore local/editor state; keep shared project rules versioned
+#
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
