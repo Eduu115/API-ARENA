@@ -1,0 +1,58 @@
+# API Arena - Core Specification
+
+## Concepto
+Plataforma educativa competitiva donde estudiantes **compiten creando APIs**. Evaluación automática mediante tests funcionales, rendimiento, diseño REST y review IA. Incluye Replay system y Multiplayer mode.
+
+## Microservicios (todos Spring Boot + Docker)
+| Servicio | Puerto | Función |
+|---|---|---|
+| auth-service | 8081 | JWT auth, registro, login, perfiles, grupos |
+| challenge-service | 8082 | CRUD retos, featured, origin (Legacy/Community) |
+| submission-service | 8083 | Submissions, orquestación del pipeline |
+| sandbox-service | 8084 | Docker-in-Docker, ejecución aislada |
+| testing-service | 8085 | Tests funcionales, performance, design |
+| ai-review-service | 8086 | Análisis IA (Claude/GPT) — BONUS |
+| leaderboard-service | 8087 | Rankings globales y por challenge |
+| multiplayer-service | 8088 | Sesiones competitivas real-time — BONUS |
+| metrics-service | 8089 | Estadísticas y analytics |
+| notification-service | 8090 | Notificaciones push |
+
+## Bases de datos
+- **PostgreSQL**: Datos principales (users, challenges, submissions, test_results, leaderboard_entries, multiplayer_sessions, achievements, notifications, refresh_tokens, teacher_groups)
+- **Redis**: Cache + sessions + rate limiting + live state
+- **MongoDB**: Logs de ejecución + replay recordings
+- **InfluxDB**: Métricas temporales (api_performance, container_metrics, throughput)
+
+## Flujo principal: Submission
+1. Usuario sube código → submission-service guarda + publica SUBMISSION_CREATED en Kafka
+2. sandbox-service: build Docker image → lanza contenedor → publica SANDBOX_READY
+3. testing-service: functional tests + performance tests + design analysis (paralelo)
+4. ai-review-service (BONUS): analiza código con Claude/GPT
+5. scoring: calcula total_score → actualiza submission
+6. leaderboard-service: actualiza rankings → WebSocket update
+7. notification-service: notifica usuario
+8. sandbox-service: cleanup contenedor
+
+## Event bus: Kafka
+Comunicación asíncrona entre servicios vía eventos.
+
+## Tiempo real: WebSocket (STOMP + SockJS)
+- Updates de submission status
+- Leaderboard live
+- Multiplayer sync
+- Notificaciones
+
+## Roles: STUDENT, TEACHER, ADMIN
+
+## Frontend: React 18 + React Router v6
+Páginas: Landing, Login, Register, Dashboard, Challenges, ChallengeDetail, Submissions, SubmissionDetail, Leaderboard, Profile, Replay, MultiplayerHub, Teacher (Dashboard, Corrections, Groups, Challenges, CreateChallenge)
+
+## Features BONUS
+- AI Code Review (Claude/GPT)
+- Replay System (grabación completa de ejecución con métricas)
+- Multiplayer Mode (sesiones real-time con código único)
+- Grafana dashboards embebidos
+- Achievements system
+
+## Seguridad
+JWT (access + refresh), BCrypt, RBAC, rate limiting, CORS, container resource limits, network isolation, SSL/TLS.

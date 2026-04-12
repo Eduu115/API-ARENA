@@ -1,0 +1,127 @@
+---
+description: Estado actual del proyecto API Arena - servicios implementados, lo que falta, y arquitectura.
+alwaysApply: true
+---
+
+# Progreso del Proyecto API Arena
+
+## Microservicios implementados y funcionando en Docker
+
+| Servicio | Puerto | Estado | Notas |
+|----------|--------|--------|-------|
+| **auth-service** | 8081 | ✅ Completo | JWT, registro, login, refresh, **verificación de email** (Resend + token 48h; **solo** email de verificación en registro); **tras verificar**: email bienvenida beta/legacy + “First steps” + creación notificación in-app vía notification-service; **mirror** a email solo notificaciones **IMPORTANT** (`POST /internal/users/{id}/notification-email`), flag `beta_legacy`, perfiles públicos, grupos de profesor, amistades, `/internal/users/{id}/reward`, logros, tiempo desarrollo/navegación |
+| **challenge-service** | 8082 | ✅ Completo | CRUD challenges, categorías, featured, legacy/community, slug, `xpReward`, `timeLimitMinutes` |
+| **submission-service** | 8083 | ✅ Completo | Upload ZIP, pipeline async (sandbox build → testing HTTP → COMPLETED), scores, logs, métricas, WebSocket, XP+ELO (HTTP a auth/challenge), **Kafka producer** `apiarena.submissions.completed`, **anti-farm**: cooldown + máx. 3 envíos/día UTC por challenge, **opcional** `developmentTimeSeconds` en `POST /api/submissions`, **replay timeline real** en `replay_events` + `GET /api/submissions/{id}/replay`, token interno `X-Internal-Token`, **retención replay programada** (`replay.retention.*`) |
+| **sandbox-service** | 8084 | ✅ Operativo | Runner dual por flag `sandbox.runner.mode=process|dind`. En `dind`: **contenedor por submission** (`apiarena-candidate-{id}`), cleanup de contenedor+imagen en stop, readiness probe HTTP, token interno y hardening runtime (`--cap-drop=ALL`, `--read-only`, `no-new-privileges`, `pids-limit`) |
+| **testing-service** | 8085 | ✅ Operativo | **Tests HTTP reales** (`RestTemplate`) contra la URL del candidato: funcionales (según `testSuite` del challenge), rendimiento y diseño; puntuación agregada. No sustituye tests unitarios dentro del ZIP del alumno — es caja negra contra la API levantada |
+| **leaderboard-service** | 8087 | ✅ Completo | Rankings globales y por challenge; **consumer Kafka** actualiza entradas al completar submission |
+| **ai-review-service** | 8086 | ✅ Operativo (v2 ready) | Endpoint interno `POST /internal/ai-review/analyze`, provider configurable (`heuristic|gemini`), fallback automático a heurístico, `aiScore` 0-200 + feedback estructurado; listo para API key por entorno |
+| **multiplayer-service** | 8088 | ❌ No creado | |
+| **metrics-service** | 8089 | ✅ Operativo | Agregados (`/api/metrics/overview`, `/api/metrics/submissions/daily`), feedback docs, **eventos de producto** (`POST /api/metrics/events`), **BI summary/export** (`/api/metrics/bi/summary`, `/api/metrics/bi/export?format=json|csv`), Prometheus; lectura de negocio restringida a ADMIN |
+| **notification-service** | 8090 | ✅ Completo | In-app + **WebSocket** `/ws/notifications` (JWT query); Kafka incl. **challengeTitle**; REST JWT; **importancia** `INFO|REMINDER|ALERTS|IMPORTANT`; **solo** `IMPORTANT` → email vía auth (mismo título/cuerpo); bienvenida in-app tras verificar email (auth → `POST /internal/notifications/welcome`); query `minImportance`; frontend: `/notifications` |
+
+## Infraestructura Docker
+
+- **PostgreSQL**: ✅ `init-db.sql` (seed, friendships, etc.)
+- **Redis**: ✅ (auth + submission cache)
+- **MongoDB**: ✅ contenedor, sin integración real
+- **InfluxDB**: ✅ contenedor, sin integración real
+- **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`)
+- **Prometheus + Grafana**: ✅ stack base operativo en Compose (`9090`, `3001`) con provisioning y dashboard inicial
+- **Frontend (Nginx)**: ✅ puerto 3000
+
+## Sistema de XP y ELO
+
+Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
+
+## Frontend — Páginas implementadas
+
+| Ruta | Componente | Estado |
+|------|------------|--------|
+| `/` | Landing | ✅ |
+| `/login` | Login | ✅ |
+| `/register` | Register | ✅ |
+| `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
+| `/challenges` | Challenges | ✅ |
+| `/challenges/:id` | ChallengeDetail | ✅ |
+| `/challenges/:id/submit` | ChallengeSubmit | ✅ Timer en tiempo real (`deadlineAt`), límites de intentos visibles, sesión persistida, banner “challenge in progress” |
+| `/dashboard` | Dashboard | ✅ |
+| `/submissions` | MySubmissions | ✅ (título del challenge vía `challengeTitle` en `GET /api/submissions/my`) |
+| `/submissions/:id` | SubmissionDetail | ✅ |
+| `/submissions/:id/results` | SubmissionResults | ✅ |
+| `/leaderboard` | Leaderboard | ✅ |
+| `/perfil` | Profile | ✅ KPI estilo dashboard + lista de logros (tiers), edición de bio/GitHub |
+| `/friends` | Friends | ✅ |
+| `/notifications` | Notifications | ✅ Campana en topbar + WebSocket + lista |
+| `/docs` + `/docs/:docId` | DocsHub | ✅ Mini-routing de documentos (sidebar), guías extensas (incl. preconfiguración), feedback por sección/documento y resumen global |
+| `/replay` | Replay | ✅ Timeline real (filtros por etapa, player, eventos estructurados) |
+| `/multiplayer` | MultiplayerHub | ⚠️ Parcial / mock |
+| `/teacher/*` | Teacher area | ✅ |
+
+## Flujo end-to-end verificado
+
+1. Login → JWT  
+2. Challenges → Detail → Submit (timer + límites + ZIP)  
+3. POST submission → **sandbox** (Maven + JAR) → **testing** (HTTP real) → COMPLETED  
+4. **Kafka** → leaderboard actualizado; **HTTP** → auth reward XP/ELO  
+5. Results / submissions / leaderboard coherentes  
+
+### Límites conocidos (sandbox / testing)
+
+- **Aislamiento DinD**: hay contenedor por submission y cleanup en stop; pendiente endurecer límites de red/sistema (rootless DinD/policies) para entorno de producción estricto.  
+- **Testing**: acoplado a contratos HTTP del challenge (`testSuite`, endpoints por defecto si faltan datos).  
+
+## Credenciales de prueba (seed)
+
+| Usuario | Email | Password | Rol |
+|---------|-------|----------|-----|
+| arclight | arclight@apiarena.dev | Arena2025! | STUDENT |
+| byterunner | byterunner@apiarena.dev | Arena2025! | STUDENT |
+| profoak | profoak@apiarena.dev | Arena2025! | TEACHER |
+| sysop | sysop@apiarena.dev | Arena2025! | ADMIN |
+
+## Hecho recientemente (resumen)
+
+- Kafka: producer en submission-service, consumer en leaderboard-service, `docker-compose` con `depends_on` kafka.  
+- Anti-farm: cooldown + 3 intentos/día UTC; endpoint `attempt-status`; staff sin límite.  
+- Challenge submit: sesión localStorage con deadline en tiempo real; banner global; UI de límites destacada; fix doble file picker.  
+- Email verification: Resend (opcional vía `RESEND_API_KEY`), tokens en `users`, frontend `/verify-email`, login bloqueado hasta verificar.  
+- Achievements v1: auth-service (definiciones + concesión por stats/cohort), perfil con lista y tiers.  
+- Hardening P1: runner DinD con fallback por flag, replay estructurado persistido y stack metrics/prometheus/grafana.
+- Automatización alta prioridad: `scripts/e2e-smoke.sh`, `scripts/load-submissions.sh`, workflow CI `.github/workflows/e2e-smoke.yml`.
+- AI review v2 ready: rúbrica final **800 técnico + 200 IA** en `submission-service`, proveedor configurable en `ai-review-service` y wiring de variables para API key en `.env` / Compose.
+- Docs learning hub: mini-routing `/docs/:docId`, contenido largo por documento, guía de preconfiguración, bloque visual tipo markdown y captura de feedback para decisiones de contenido.
+- Onboarding primer challenge: modal de confirmación en submit para primeros envíos con acceso directo a la guía de preconfiguración.
+- Métricas de negocio no públicas: endpoints de consulta en metrics-service protegidos para rol ADMIN; usuarios estándar solo pueden emitir feedback.
+- BI-ready baseline: tabla `product_events` + endpoint de ingestión y export CSV/JSON por ventana temporal para conectar con BI apps/GA pipelines.
+
+## Lo que falta (priorizado) y orden de magnitud
+
+Estimaciones **muy orientativas** (1 dev familiarizado con el repo; dependen de alcance y calidad “production-ready”).
+
+| Ítem | Notas | Duración estimada |
+|------|--------|-------------------|
+| Ampliar Kafka (más topics, DLQ, consumidores extra) | Opcional | **2–5 días** |
+| **Sandbox “duro”** (hardening final de aislamiento/red) | DinD base ya listo; faltan políticas avanzadas | **2–5 días** |
+| **metrics-service** + dashboards básicos | ✅ Entregado en v1, faltan dashboards de negocio avanzados | **2–4 días** |
+| **Notificaciones** | Push nativo / email / WebSocket tiempo real (v1 = in-app + Kafka ya hecho) | **1–2 semanas** |
+| **Replay funcional** | ✅ Timeline real entregado; faltan features avanzadas (diff payload/seek por testcase) | **3–7 días** |
+| **Grafana + InfluxDB** | Monitoring reutilizando métricas | **~1 semana** añadida a métricas |
+| **MongoDB** logs / replay storage | Tras definir modelo de datos | **1–2 semanas** |
+| **ai-review-service** (LLM) | ✅ Base v2 lista (falta calibración fina de prompts/rúbrica por challenge y control de costes) | **2–6 días** |
+| **multiplayer-service** | BONUS, WebSocket + salas | **3–6 semanas** |
+| **Achievements (ampliar)** | Más reglas, iconos asset, notificación al desbloquear | **0.5–2 semanas** |
+
+**Núcleo “MVP producto estable”** (Kafka ya hecho, límites hechos, listado de submissions con título de challenge, verificación de email con Resend, métricas mínimas): del orden de **~3–6 semanas** de trabajo enfocado.  
+**Con BONUS** (AI review + multiplayer + replay fuerte): **varios meses** adicionales en paralelo o secuencial.
+
+## Archivos clave
+
+- `docker-compose.yml`
+- `docker/postgres/init-db.sql`
+- `docs/xp-elo-system.md`
+- `docs/TECHNICAL-OVERVIEW.md` — documento técnico integral (stack, arquitectura, hecho/por hacer)
+- `docs/COMMIT-CONF-SPAIN-PROJECT-BRIEF.md` — briefing para propuestas (Commit Conf, etc.)
+- `frontend/src/lib/*` — API clients
+- `frontend/src/routes/RoutesConfig.jsx`
+- `frontend/src/pages/challenges/challenges.css` — tokens de marca

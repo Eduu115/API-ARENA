@@ -1,0 +1,17 @@
+---
+description: Mantener api-arena-project-progress.mdc alineado cuando cambie el alcance del proyecto.
+alwaysApply: true
+---
+
+# Project progress doc — keep in sync
+
+When completing work that **materially changes** what is implemented (new microservice, major feature, infra, or correcting a wrong assumption about a service), **update** `.cursor/rules/api-arena-project-progress.mdc` in the same change set (or immediately after):
+
+- **Microservicios** table: status and notes per service.
+- **Infra** section if Docker/services change.
+- **Frontend routes** table if new pages or meaningful UX change.
+- **“Lo que falta”** / estimates if backlog shifts.
+
+Do **not** inflate the file with every tiny bugfix; only **scope-relevant** updates.
+
+Commits for such edits: English subject, e.g. `docs(cursor): refresh project progress after sandbox/testing verification`.

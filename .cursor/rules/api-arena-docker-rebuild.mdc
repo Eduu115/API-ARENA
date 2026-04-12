@@ -1,0 +1,16 @@
+---
+description: Tras cambios en código servido por Docker, reconstruir imágenes necesarias.
+alwaysApply: true
+---
+
+# Docker: rebuild tras cambios
+
+Cuando se añadan o modifiquen funcionalidades que afecten a lo que corre en contenedores, **al finalizar la tarea** ejecutar el rebuild adecuado (desde la raíz del repo):
+
+| Cambios en | Comando típico |
+|------------|----------------|
+| `frontend/` | `docker compose up -d --build frontend` |
+| Un servicio Java concreto | `docker compose up -d --build <nombre-servicio>` (p. ej. `submission-service`, `auth-service`) |
+| Varios servicios / `docker-compose.yml` | `docker compose up -d --build` (stack completo, más lento) |
+
+No dejar solo instrucciones al usuario: **ejecutar** el comando en el entorno si hay acceso shell. Si solo cambió el frontend, no hace falta rebuild de todos los microservicios salvo que el bake lo exija como dependencia.

@@ -1,0 +1,11 @@
+---
+description: Preserva la identidad visual y de marca de API Arena (diseño original).
+alwaysApply: true
+---
+
+# Identidad API Arena
+
+- **No alterar** la identidad de marca ni la idea de diseño original: tipografía del producto (`Barlow Condensed`, `Syne`, `Share Tech Mono`), tokens CSS (`--arena-*`, `--cyan`, `--purple`, etc.), colores, espaciado y patrones ya definidos en `challenges.css` y estilos de página existentes.
+- **No sustituir** por defecto la voz de la UI del nav/chrome en inglés (Dashboard, Challenges, Profile, Log in, Teacher, etc.) salvo petición explícita del usuario.
+- **Botones que imitan enlaces de nav**: usar las mismas clases que los `<Link>` (p. ej. `ch-nav-item`) y solo resetear lo nativo del `<button>` (`background`, `border`, `appearance`). **No** usar `font: inherit` / `color: inherit` en esos botones: rompe la cascada respecto a `.ch-nav-item`.
+- **Cambios de UI**: mínimos y alineados con componentes existentes; no introducir paletas, fuentes o estilos de “otro producto”.
