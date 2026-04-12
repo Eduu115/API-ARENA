@@ -15,6 +15,7 @@ import VerifyEmail from "../pages/auth/VerifyEmail";
 import SubmissionDetail from "../pages/submissions/SubmissionDetail";
 import SubmissionResults from "../pages/submissions/SubmissionResults";
 import Replay from "../pages/Replay";
+import DocsHub from "../pages/docs/DocsHub";
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import Corrections from "../pages/teacher/Corrections";
 import TeacherChallenges from "../pages/teacher/TeacherChallenges";
@@ -44,6 +45,8 @@ export default function RoutesConfig() {
 
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/multiplayer" element={<MultiplayerHub />} />
+        <Route path="/docs" element={<DocsHub />} />
+        <Route path="/docs/:docId" element={<DocsHub />} />
 
         <Route element={<ProtectedLayout />}>
           <Route path="dashboard" element={<Dashboard />} />

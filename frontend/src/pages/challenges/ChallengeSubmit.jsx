@@ -7,7 +7,7 @@ import {
   setChallengeSession,
   challengeSessionKey,
 } from '../../lib/challengeSessionStorage';
-import { createSubmission, getChallengeAttemptStatus } from '../../lib/submissionsApi';
+import { createSubmission, getChallengeAttemptStatus, getMySubmissions } from '../../lib/submissionsApi';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
@@ -212,6 +212,7 @@ export default function ChallengeSubmit() {
 
   const [attemptPolicy, setAttemptPolicy] = useState(null);
   const [policyLoading, setPolicyLoading] = useState(true);
+  const [showFirstSubmitModal, setShowFirstSubmitModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -232,6 +233,38 @@ export default function ChallengeSubmit() {
     })();
     return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    if (!user?.id || staffBypass) return;
+    const confirmationKey = `apiarena:first-submit-check-confirmed:${user.id}`;
+    if (localStorage.getItem(confirmationKey) === '1') {
+      return;
+    }
+
+    const completed = Number(user.totalChallengesCompleted);
+    if (Number.isFinite(completed) && completed > 0) {
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const submissions = await getMySubmissions();
+        if (!cancelled && Array.isArray(submissions) && submissions.length === 0) {
+          setShowFirstSubmitModal(true);
+        }
+      } catch {
+        if (!cancelled) {
+          // If we cannot verify history, keep a safe warning for first-time UX.
+          setShowFirstSubmitModal(true);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.totalChallengesCompleted, staffBypass]);
 
   useEffect(() => {
     if (!id) return;
@@ -349,9 +382,17 @@ export default function ChallengeSubmit() {
   }, []);
 
   const policyBlocks = !staffBypass && attemptPolicy && attemptPolicy.allowed === false;
+  const submitBlockedByFirstTimeCheck = showFirstSubmitModal;
 
   const handleSubmit = async () => {
-    if (!file || submitting || timerExpired || (!staffBypass && policyLoading) || policyBlocks) return;
+    if (
+      !file ||
+      submitting ||
+      timerExpired ||
+      (!staffBypass && policyLoading) ||
+      policyBlocks ||
+      submitBlockedByFirstTimeCheck
+    ) return;
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -633,7 +674,14 @@ export default function ChallengeSubmit() {
                   <button
                     type="button"
                     className="cs-submit-btn"
-                    disabled={!file || submitting || timerExpired || (!staffBypass && policyLoading) || policyBlocks}
+                    disabled={
+                      !file ||
+                      submitting ||
+                      timerExpired ||
+                      (!staffBypass && policyLoading) ||
+                      policyBlocks ||
+                      submitBlockedByFirstTimeCheck
+                    }
                     onClick={handleSubmit}
                   >
                     {submitting ? 'Submitting...' : 'Submit Solution'}
@@ -647,6 +695,44 @@ export default function ChallengeSubmit() {
       </main>
       <BottomNav />
       <CustomCursor />
+      {showFirstSubmitModal && (
+        <div className="cs-onboard-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cs-onboard-title">
+          <div className="cs-onboard-modal">
+            <div className="cs-onboard-eyebrow">FIRST SUBMISSION CHECK</div>
+            <h2 id="cs-onboard-title" className="cs-onboard-title">
+              Sabes como preparar bien tu proyecto antes de enviar?
+            </h2>
+            <p className="cs-onboard-copy">
+              Antes de tu primer envio, confirma que conoces la preconfiguracion minima del challenge (estructura del ZIP,
+              `pom.xml` en raiz, endpoints y codigos HTTP requeridos). Esto evita la mayoria de errores de build.
+            </p>
+            <ul className="cs-onboard-list">
+              <li>Tu ZIP debe abrir con `pom.xml` en la raiz.</li>
+              <li>La API tiene que arrancar sin pasos manuales adicionales.</li>
+              <li>Debes cubrir los endpoints y codigos esperados por el challenge.</li>
+            </ul>
+            <div className="cs-onboard-actions">
+              <button
+                type="button"
+                className="cs-onboard-btn"
+                onClick={() => navigate('/docs/preconfiguracion-proyecto')}
+              >
+                VER GUIA DE PRECONFIGURACION
+              </button>
+              <button
+                type="button"
+                className="cs-onboard-btn cs-onboard-btn-primary"
+                onClick={() => {
+                  localStorage.setItem(`apiarena:first-submit-check-confirmed:${user.id}`, '1');
+                  setShowFirstSubmitModal(false);
+                }}
+              >
+                SI, LO ENTIENDO. CONTINUAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
