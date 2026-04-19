@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -45,6 +46,9 @@ import com.apiarena.submissionservice.model.dto.ReplayEventDTO;
 import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionStatusCacheDTO;
+import com.apiarena.submissionservice.model.dto.TeacherManualScoresRequest;
+import com.apiarena.submissionservice.model.dto.TeacherPenaltyApplyRequest;
+import com.apiarena.submissionservice.model.dto.TeacherPenaltiesBatchConfirmRequest;
 import com.apiarena.submissionservice.kafka.SubmissionCompletedEvent;
 import com.apiarena.submissionservice.kafka.SubmissionKafkaPublisher;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
@@ -60,6 +64,23 @@ import com.apiarena.submissionservice.integration.mongo.ReplayMongoArchiveServic
 public class SubmissionService implements ISubmissionService {
 
     private static final Logger log = LoggerFactory.getLogger(SubmissionService.class);
+
+    private static final BigDecimal MAX_SINGLE_PENALTY = new BigDecimal("300");
+    private static final BigDecimal MAX_TOTAL_SCORE = new BigDecimal("1000");
+    private static final Duration TEACHER_PENALTY_REVOCATION_WINDOW = Duration.ofHours(2);
+    private static final Map<String, BigDecimal> TEACHER_PRESET_PENALTIES = Map.of(
+            "WRONG_DELIVERABLE_NAME", new BigDecimal("40"),
+            "SPELLING_AND_DOCS", new BigDecimal("15"),
+            "CODE_DISORGANIZATION", new BigDecimal("25"),
+            "MISSING_README", new BigDecimal("20"),
+            "STYLE_AND_NAMING", new BigDecimal("15"));
+    private static final Map<String, String> TEACHER_PRESET_LABELS = Map.of(
+            "WRONG_DELIVERABLE_NAME", "Wrong deliverable / archive name",
+            "SPELLING_AND_DOCS", "Spelling and documentation issues",
+            "CODE_DISORGANIZATION", "Code disorganization / structure",
+            "MISSING_README", "Missing or broken README",
+            "STYLE_AND_NAMING", "Style and naming inconsistencies",
+            "OTHER", "Other (custom)");
 
     @Autowired
     private SubmissionRepository submissionRepository;
@@ -846,24 +867,23 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @Override
-    public SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher) {
+    public SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdmin, boolean isTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
-        if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
+        if (!canAccessSubmission(submission, userId, isAdmin, isTeacher)) {
             throw new SecurityException("You are not allowed to access this submission");
         }
 
-        String wsTopic = webSocketService.getWsTopicForSubmission(id);
-        return SubmissionDTO.fromEntity(submission, wsTopic);
+        return buildSubmissionDto(submission, userId, isAdmin, isTeacher);
     }
 
     @Override
-    public LogsResponse getLogs(Long id, Long userId, boolean isAdminOrTeacher) {
+    public LogsResponse getLogs(Long id, Long userId, boolean isAdmin, boolean isTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
-        if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
+        if (!canAccessSubmission(submission, userId, isAdmin, isTeacher)) {
             throw new SecurityException("You are not allowed to access this submission");
         }
 
@@ -871,10 +891,10 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @Override
-    public ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdminOrTeacher) {
+    public ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdmin, boolean isTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
-        if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
+        if (!canAccessSubmission(submission, userId, isAdmin, isTeacher)) {
             throw new SecurityException("You are not allowed to access this submission");
         }
         List<ReplayEvent> events = replayEventRepository.findBySubmissionIdOrderByOccurredAtAscIdAsc(id);
@@ -1039,11 +1059,11 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     @Transactional
-    public void deleteSubmission(Long id, Long userId, boolean isAdminOrTeacher) {
+    public void deleteSubmission(Long id, Long userId, boolean isAdmin, boolean isTeacher) {
         Submission submission = submissionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
 
-        if (!isAdminOrTeacher && !submission.getUserId().equals(userId)) {
+        if (!canAccessSubmission(submission, userId, isAdmin, isTeacher)) {
             throw new SecurityException("You are not allowed to delete this submission");
         }
 
@@ -1144,6 +1164,334 @@ public class SubmissionService implements ISubmissionService {
             return isTeacherOwnerOfChallenge(userId, challengeData);
         }
         return false;
+    }
+
+    private SubmissionDTO buildSubmissionDto(Submission submission, Long viewerId, boolean isAdmin, boolean isTeacher) {
+        String wsTopic = webSocketService.getWsTopicForSubmission(submission.getId());
+        SubmissionDTO dto = SubmissionDTO.fromEntity(submission, wsTopic);
+        enrichTeacherGradingFlags(submission, dto, viewerId, isTeacher);
+        return dto;
+    }
+
+    private void enrichTeacherGradingFlags(Submission submission, SubmissionDTO dto, Long viewerId, boolean isTeacher) {
+        dto.setTeacherCanApplyPenalty(false);
+        dto.setTeacherCanManualGrade(false);
+        if (!isTeacher || viewerId == null) {
+            return;
+        }
+        if (submission.getStatus() != Submission.Status.COMPLETED) {
+            return;
+        }
+        if (submission.getUserId() != null && submission.getUserId().equals(viewerId)) {
+            return;
+        }
+        Map<String, Object> ch = fetchChallengeData(submission.getChallengeId());
+        if (!isTeacherOwnerOfChallenge(viewerId, ch)) {
+            return;
+        }
+        dto.setTeacherCanApplyPenalty(true);
+        if (fetchStudentInTeacherGroup(viewerId, submission.getUserId())) {
+            dto.setTeacherCanManualGrade(true);
+        }
+    }
+
+    private boolean fetchStudentInTeacherGroup(Long teacherId, Long studentUserId) {
+        if (internalToken == null || internalToken.isBlank()) {
+            return false;
+        }
+        if (teacherId == null || studentUserId == null) {
+            return false;
+        }
+        try {
+            String url = authServiceUrl + "/internal/teachers/" + teacherId + "/students/" + studentUserId + "/in-group";
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-Internal-Token", internalToken);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            var resp = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+            Map<?, ?> body = resp.getBody();
+            if (body == null) {
+                return false;
+            }
+            Object v = body.get("inGroup");
+            return Boolean.TRUE.equals(v) || "true".equalsIgnoreCase(String.valueOf(v));
+        } catch (Exception e) {
+            log.warn("Could not verify teacher group membership: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional
+    public SubmissionDTO applyTeacherPenalty(Long submissionId, Long teacherId, TeacherPenaltyApplyRequest request) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (request == null || request.getPresetKey() == null || request.getPresetKey().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "presetKey is required");
+        }
+        Submission submission = loadSubmissionForTeacherPenalty(submissionId, teacherId);
+        Instant confirmedAt = Instant.now();
+        appendPenaltyEntries(submission, teacherId, List.of(request), confirmedAt);
+        persistAfterTeacherPenaltyChange(submissionId, submission);
+        return buildSubmissionDto(submission, teacherId, false, true);
+    }
+
+    @Override
+    @Transactional
+    public SubmissionDTO confirmTeacherPenalties(Long submissionId, Long teacherId,
+            TeacherPenaltiesBatchConfirmRequest request) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (request == null || request.getPenalties() == null || request.getPenalties().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "penalties must not be empty");
+        }
+        Submission submission = loadSubmissionForTeacherPenalty(submissionId, teacherId);
+        Instant confirmedAt = Instant.now();
+        appendPenaltyEntries(submission, teacherId, request.getPenalties(), confirmedAt);
+        persistAfterTeacherPenaltyChange(submissionId, submission);
+        return buildSubmissionDto(submission, teacherId, false, true);
+    }
+
+    @Override
+    @Transactional
+    public SubmissionDTO revokeTeacherPenalty(Long submissionId, Long teacherId, String penaltyId) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (penaltyId == null || penaltyId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "penaltyId is required");
+        }
+        Submission submission = loadSubmissionForTeacherPenalty(submissionId, teacherId);
+        List<Map<String, Object>> penalties = submission.getTeacherPenalties();
+        if (penalties == null || penalties.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No penalties on this submission");
+        }
+        List<Map<String, Object>> copy = new ArrayList<>(penalties);
+        int idx = -1;
+        for (int i = 0; i < copy.size(); i++) {
+            Object idObj = copy.get(i).get("id");
+            if (idObj != null && penaltyId.equals(String.valueOf(idObj))) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx < 0) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Penalty not found or cannot be removed (legacy entries without id are locked)");
+        }
+        Map<String, Object> removed = copy.get(idx);
+        Long entryTeacherId = asLong(removed.get("teacherId"));
+        if (entryTeacherId == null || !entryTeacherId.equals(teacherId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only remove penalties you applied");
+        }
+        Instant start = parsePenaltyRevocationClockStart(removed);
+        if (start.plus(TEACHER_PENALTY_REVOCATION_WINDOW).isBefore(Instant.now())) {
+            throw new ResponseStatusException(HttpStatus.GONE,
+                    "Penalty can no longer be removed (allowed for " + TEACHER_PENALTY_REVOCATION_WINDOW.toHours() + " hours after confirmation)");
+        }
+        BigDecimal pointsBack = toBigDecimal(removed.get("pointsDeducted"));
+        copy.remove(idx);
+        submission.setTeacherPenalties(copy);
+        BigDecimal newTotal = nz(submission.getTotalScore()).add(pointsBack).min(MAX_TOTAL_SCORE)
+                .setScale(2, RoundingMode.HALF_UP);
+        if (Boolean.TRUE.equals(submission.getTeacherManualGrading())) {
+            scaleComponentScoresToTotal(submission, newTotal);
+        } else {
+            submission.setTotalScore(newTotal);
+        }
+        persistAfterTeacherPenaltyChange(submissionId, submission);
+        return buildSubmissionDto(submission, teacherId, false, true);
+    }
+
+    private Submission loadSubmissionForTeacherPenalty(Long submissionId, Long teacherId) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
+        if (submission.getStatus() != Submission.Status.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Penalty applies only to completed submissions");
+        }
+        if (submission.getUserId() != null && submission.getUserId().equals(teacherId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot apply penalty to your own submission");
+        }
+        Map<String, Object> ch = fetchChallengeData(submission.getChallengeId());
+        if (!isTeacherOwnerOfChallenge(teacherId, ch)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this challenge");
+        }
+        return submission;
+    }
+
+    private void appendPenaltyEntries(Submission submission, Long teacherId, List<TeacherPenaltyApplyRequest> requests,
+            Instant confirmedAt) {
+        String atIso = confirmedAt.toString();
+        List<Map<String, Object>> penalties = submission.getTeacherPenalties() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(submission.getTeacherPenalties());
+        BigDecimal runningTotal = nz(submission.getTotalScore());
+        for (TeacherPenaltyApplyRequest request : requests) {
+            if (request == null || request.getPresetKey() == null || request.getPresetKey().isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "presetKey is required for each penalty");
+            }
+            String presetKey = request.getPresetKey().trim().toUpperCase();
+            BigDecimal requestedPenalty;
+            String label;
+            if ("OTHER".equals(presetKey)) {
+                if (request.getPenaltyPoints() == null || request.getPenaltyPoints().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "penaltyPoints is required for OTHER");
+                }
+                if (request.getCustomDescription() == null || request.getCustomDescription().isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "customDescription is required for OTHER");
+                }
+                requestedPenalty = request.getPenaltyPoints().min(MAX_SINGLE_PENALTY).setScale(2, RoundingMode.HALF_UP);
+                label = TEACHER_PRESET_LABELS.getOrDefault("OTHER", "Other (custom)");
+            } else {
+                if (!TEACHER_PRESET_PENALTIES.containsKey(presetKey)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown presetKey: " + presetKey);
+                }
+                requestedPenalty = TEACHER_PRESET_PENALTIES.get(presetKey);
+                label = TEACHER_PRESET_LABELS.getOrDefault(presetKey, presetKey);
+            }
+            BigDecimal applied = requestedPenalty.min(runningTotal).max(BigDecimal.ZERO);
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("id", UUID.randomUUID().toString());
+            entry.put("confirmedAt", atIso);
+            entry.put("presetKey", presetKey);
+            entry.put("label", label);
+            entry.put("pointsDeducted", applied);
+            entry.put("requestedPenalty", requestedPenalty);
+            if (request.getCustomNote() != null && !request.getCustomNote().isBlank()) {
+                entry.put("note", request.getCustomNote().trim());
+            }
+            if ("OTHER".equals(presetKey)) {
+                entry.put("customDescription", request.getCustomDescription().trim());
+            }
+            entry.put("teacherId", teacherId);
+            entry.put("appliedAt", atIso);
+            penalties.add(entry);
+            runningTotal = runningTotal.subtract(applied).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        }
+        submission.setTeacherPenalties(penalties);
+        if (Boolean.TRUE.equals(submission.getTeacherManualGrading())) {
+            scaleComponentScoresToTotal(submission, runningTotal);
+        } else {
+            submission.setTotalScore(runningTotal);
+        }
+    }
+
+    private void persistAfterTeacherPenaltyChange(Long submissionId, Submission submission) {
+        submissionRepository.save(submission);
+        statusCacheService.cacheStatus(submission);
+        webSocketService.sendCompleted(submissionId, SubmissionStatusCacheDTO.fromEntity(submission));
+    }
+
+    private static Instant parsePenaltyRevocationClockStart(Map<String, Object> entry) {
+        Object confirmed = entry.get("confirmedAt");
+        if (confirmed instanceof String s && !s.isBlank()) {
+            return Instant.parse(s);
+        }
+        Object applied = entry.get("appliedAt");
+        if (applied instanceof String s && !s.isBlank()) {
+            return Instant.parse(s);
+        }
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "Penalty entry has no confirmation timestamp");
+    }
+
+    private static BigDecimal toBigDecimal(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO;
+        }
+        if (value instanceof BigDecimal b) {
+            return b;
+        }
+        if (value instanceof Number n) {
+            return BigDecimal.valueOf(n.doubleValue()).setScale(2, RoundingMode.HALF_UP);
+        }
+        try {
+            return new BigDecimal(String.valueOf(value)).setScale(2, RoundingMode.HALF_UP);
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    @Override
+    @Transactional
+    public SubmissionDTO applyTeacherManualScores(Long submissionId, Long teacherId, TeacherManualScoresRequest request) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body is required");
+        }
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + submissionId));
+        if (submission.getStatus() != Submission.Status.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Manual grading applies only to completed submissions");
+        }
+        if (submission.getUserId() != null && submission.getUserId().equals(teacherId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot grade your own submission");
+        }
+        Map<String, Object> ch = fetchChallengeData(submission.getChallengeId());
+        if (!isTeacherOwnerOfChallenge(teacherId, ch)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this challenge");
+        }
+        if (!fetchStudentInTeacherGroup(teacherId, submission.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Manual grading is only available for students in your groups");
+        }
+
+        BigDecimal c = requireBoundedScore(request.getCorrectnessScore(), "correctnessScore", new BigDecimal("300"));
+        BigDecimal p = requireBoundedScore(request.getPerformanceScore(), "performanceScore", new BigDecimal("300"));
+        BigDecimal d = requireBoundedScore(request.getDesignScore(), "designScore", new BigDecimal("200"));
+        BigDecimal a = requireBoundedScore(request.getAiReviewScore(), "aiReviewScore", new BigDecimal("200"));
+
+        BigDecimal total = c.add(p).add(d).add(a).setScale(2, RoundingMode.HALF_UP);
+        if (total.compareTo(new BigDecimal("1000")) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sum of scores cannot exceed 1000");
+        }
+
+        submission.setCorrectnessScore(c);
+        submission.setPerformanceScore(p);
+        submission.setDesignScore(d);
+        submission.setAiReviewScore(a);
+        submission.setTotalScore(total);
+        submission.setTeacherManualGrading(true);
+
+        submissionRepository.save(submission);
+        statusCacheService.cacheStatus(submission);
+        webSocketService.sendCompleted(submissionId, SubmissionStatusCacheDTO.fromEntity(submission));
+
+        return buildSubmissionDto(submission, teacherId, false, true);
+    }
+
+    private static BigDecimal requireBoundedScore(BigDecimal v, String name, BigDecimal max) {
+        if (v == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, name + " is required");
+        }
+        if (v.compareTo(BigDecimal.ZERO) < 0 || v.compareTo(max) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, name + " must be between 0 and " + max);
+        }
+        return v.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static void scaleComponentScoresToTotal(Submission submission, BigDecimal targetTotal) {
+        BigDecimal c = nz(submission.getCorrectnessScore());
+        BigDecimal p = nz(submission.getPerformanceScore());
+        BigDecimal d = nz(submission.getDesignScore());
+        BigDecimal a = nz(submission.getAiReviewScore());
+        BigDecimal sum = c.add(p).add(d).add(a);
+        if (sum.compareTo(BigDecimal.ZERO) <= 0) {
+            submission.setTotalScore(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+            return;
+        }
+        BigDecimal ratio = targetTotal.divide(sum, 8, RoundingMode.HALF_UP);
+        submission.setCorrectnessScore(c.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
+        submission.setPerformanceScore(p.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
+        submission.setDesignScore(d.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
+        submission.setAiReviewScore(a.multiply(ratio).setScale(2, RoundingMode.HALF_UP));
+        submission.setTotalScore(targetTotal.setScale(2, RoundingMode.HALF_UP));
+    }
+
+    private static BigDecimal nz(BigDecimal v) {
+        return v != null ? v : BigDecimal.ZERO;
     }
 
     private Long asLong(Object value) {

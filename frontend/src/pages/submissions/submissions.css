@@ -696,3 +696,276 @@
 .sd-continue-btn:hover .sd-continue-arrow {
   transform: translateX(4px);
 }
+
+/* Teacher grading (SubmissionDetail) — centered column, no overlap */
+.sd-teacher-panel {
+  border: 1px solid rgba(255, 184, 0, 0.28);
+  box-shadow: 0 0 0 1px rgba(0, 217, 255, 0.04);
+}
+.sd-teacher-panel-body {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding-bottom: 22px;
+}
+.sd-teacher-alert {
+  color: var(--red);
+  margin: 0 auto 16px;
+  max-width: 560px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: rgba(255, 77, 106, 0.08);
+  border: 1px solid rgba(255, 77, 106, 0.25);
+}
+.sd-teacher-warn {
+  color: var(--warn);
+  margin: 0 auto 18px;
+  max-width: 560px;
+  line-height: 1.5;
+}
+.sd-teacher-grade-shell {
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+.sd-teacher-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+.sd-teacher-section {
+  width: 100%;
+}
+.sd-teacher-section--divider {
+  margin-top: 8px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sd-teacher-section-title {
+  font-family: var(--font-heading, var(--font-display));
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0 0 16px;
+}
+.sd-teacher-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+  width: 100%;
+  min-width: 0;
+}
+.sd-teacher-field--grow {
+  flex: 1;
+  min-height: 0;
+}
+.sd-teacher-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sd-teacher-input,
+.sd-teacher-select,
+.sd-teacher-textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.38);
+  border: 1px solid var(--dim);
+  color: var(--text);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.sd-teacher-select {
+  cursor: pointer;
+}
+.sd-teacher-textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+.sd-teacher-other-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.sd-teacher-manual-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  width: 100%;
+}
+@media (max-width: 520px) {
+  .sd-teacher-manual-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.sd-teacher-actions {
+  margin-top: 22px;
+  padding-top: 4px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  clear: both;
+}
+.sd-teacher-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(100%, 240px);
+  padding: 13px 32px;
+  margin: 4px 0 0;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, var(--cyan), var(--green, #00ffa3));
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0a0a0f;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sd-teacher-primary-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0, 217, 255, 0.3);
+}
+.sd-teacher-primary-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+.sd-teacher-primary-btn--secondary {
+  background: rgba(8, 12, 22, 0.95);
+  border: 1px solid rgba(0, 217, 255, 0.42);
+  color: var(--cyan);
+  text-shadow: none;
+}
+.sd-teacher-primary-btn--secondary:hover:not(:disabled) {
+  border-color: rgba(0, 217, 255, 0.65);
+  box-shadow: 0 8px 28px rgba(0, 217, 255, 0.18);
+}
+
+.sd-teacher-hint {
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin: 0 auto 18px;
+  max-width: 560px;
+}
+.sd-teacher-hint strong {
+  color: var(--warn);
+  font-weight: 700;
+}
+.sd-teacher-actions--start {
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+.sd-teacher-draft-list {
+  list-style: none;
+  margin: 20px auto 0;
+  padding: 0;
+  max-width: 560px;
+  width: 100%;
+}
+.sd-teacher-draft-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--dim);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+}
+.sd-teacher-draft-text {
+  color: var(--text);
+  font-size: 11px;
+  line-height: 1.45;
+  min-width: 0;
+  flex: 1;
+}
+.sd-teacher-ghost-btn {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 77, 106, 0.45);
+  background: rgba(255, 77, 106, 0.08);
+  color: var(--red);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sd-teacher-ghost-btn:hover:not(:disabled) {
+  border-color: rgba(255, 77, 106, 0.75);
+  background: rgba(255, 77, 106, 0.12);
+}
+.sd-teacher-ghost-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.sd-teacher-applied-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sd-teacher-applied-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.sd-teacher-applied-row:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.sd-teacher-applied-main {
+  min-width: 0;
+  flex: 1;
+  line-height: 1.5;
+}
+.sd-teacher-lock-hint {
+  color: var(--dim);
+  font-size: 10px;
+}
+.sd-teacher-revoke-btn {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 184, 0, 0.4);
+  background: rgba(255, 184, 0, 0.08);
+  color: var(--warn);
+  cursor: pointer;
+}
+.sd-teacher-revoke-btn:hover:not(:disabled) {
+  border-color: rgba(255, 184, 0, 0.65);
+}
+.sd-teacher-revoke-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}

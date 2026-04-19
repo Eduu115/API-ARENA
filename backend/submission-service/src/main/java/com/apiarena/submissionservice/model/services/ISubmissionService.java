@@ -13,6 +13,9 @@ import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionZipDownload;
+import com.apiarena.submissionservice.model.dto.TeacherManualScoresRequest;
+import com.apiarena.submissionservice.model.dto.TeacherPenaltyApplyRequest;
+import com.apiarena.submissionservice.model.dto.TeacherPenaltiesBatchConfirmRequest;
 import com.apiarena.submissionservice.model.entities.Submission;
 
 public interface ISubmissionService {
@@ -22,11 +25,11 @@ public interface ISubmissionService {
 
     ChallengeAttemptStatusDTO getChallengeAttemptStatus(Long userId, Long challengeId);
 
-    SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdminOrTeacher);
+    SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
-    LogsResponse getLogs(Long id, Long userId, boolean isAdminOrTeacher);
+    LogsResponse getLogs(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
-    ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdminOrTeacher);
+    ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
     List<SubmissionSummaryDTO> getMySubmissions(Long userId);
 
@@ -38,7 +41,15 @@ public interface ISubmissionService {
 
     SubmissionZipDownload prepareZipDownload(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
-    void deleteSubmission(Long id, Long userId, boolean isAdminOrTeacher);
+    void deleteSubmission(Long id, Long userId, boolean isAdmin, boolean isTeacher);
+
+    SubmissionDTO applyTeacherPenalty(Long submissionId, Long teacherId, TeacherPenaltyApplyRequest request);
+
+    SubmissionDTO confirmTeacherPenalties(Long submissionId, Long teacherId, TeacherPenaltiesBatchConfirmRequest request);
+
+    SubmissionDTO revokeTeacherPenalty(Long submissionId, Long teacherId, String penaltyId);
+
+    SubmissionDTO applyTeacherManualScores(Long submissionId, Long teacherId, TeacherManualScoresRequest request);
 
     void updateStatus(Long submissionId, Submission.Status status, String errorMessage);
 

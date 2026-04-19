@@ -1,6 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getMySubmissions, getSubmissionById, getSubmissionLogs } from '../../lib/submissionsApi';
+import {
+  getMySubmissions,
+  getSubmissionById,
+  getSubmissionLogs,
+  applyTeacherManualScores,
+  confirmTeacherPenalties,
+  revokeTeacherPenalty,
+} from '../../lib/submissionsApi';
+import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
@@ -8,6 +16,14 @@ import '../challenges/challenges.css';
 import './submissions.css';
 
 const TIMELINE_STEPS = ['PENDING', 'BUILDING', 'TESTING', 'COMPLETED'];
+
+const TEACHER_PENALTY_PRESETS = [
+  { key: 'WRONG_DELIVERABLE_NAME', label: 'Wrong deliverable / archive name', points: 40 },
+  { key: 'SPELLING_AND_DOCS', label: 'Spelling and documentation issues', points: 15 },
+  { key: 'CODE_DISORGANIZATION', label: 'Code disorganization / structure', points: 25 },
+  { key: 'MISSING_README', label: 'Missing or broken README', points: 20 },
+  { key: 'STYLE_AND_NAMING', label: 'Style and naming inconsistencies', points: 15 },
+];
 
 function formatDate(d) {
   if (!d) return '—';
@@ -30,6 +46,35 @@ function parseTestLines(testLogs) {
     });
 }
 
+const PENALTY_REVOCATION_MS = 2 * 60 * 60 * 1000;
+
+function penaltyRevocationDeadlineMs(p) {
+  const iso = p?.confirmedAt || p?.appliedAt;
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  return Number.isFinite(t) ? t + PENALTY_REVOCATION_MS : null;
+}
+
+function formatMsAsCountdown(msLeft) {
+  if (msLeft <= 0) return '0m';
+  const totalMin = Math.ceil(msLeft / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h <= 0) return `${m}m`;
+  return `${h}h ${m}m`;
+}
+
+function draftLabel(d) {
+  const preset = TEACHER_PENALTY_PRESETS.find((x) => x.key === d.presetKey);
+  if (d.presetKey === 'OTHER') {
+    const pts = d.penaltyPoints != null ? Number(d.penaltyPoints) : '—';
+    const desc = (d.customDescription || '').slice(0, 48) || '—';
+    return `Other (−${pts} pts): ${desc}`;
+  }
+  if (preset) return `${preset.label} (−${preset.points} pts)`;
+  return d.presetKey;
+}
+
 function normalizeAiReview(rawSuggestions, aiScoreRaw) {
   const aiScore = Number(aiScoreRaw) || 0;
   const source = rawSuggestions && typeof rawSuggestions === 'object' ? rawSuggestions : {};
@@ -43,12 +88,26 @@ function normalizeAiReview(rawSuggestions, aiScoreRaw) {
 export default function SubmissionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [sub, setSub] = useState(null);
   const [submissionLabel, setSubmissionLabel] = useState('');
   const [logs, setLogs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [penaltyPresetKey, setPenaltyPresetKey] = useState('WRONG_DELIVERABLE_NAME');
+  const [penaltyNote, setPenaltyNote] = useState('');
+  const [otherPenaltyPoints, setOtherPenaltyPoints] = useState('');
+  const [otherPenaltyDescription, setOtherPenaltyDescription] = useState('');
+  const [manualC, setManualC] = useState('');
+  const [manualP, setManualP] = useState('');
+  const [manualD, setManualD] = useState('');
+  const [manualA, setManualA] = useState('');
+  const [teacherBusy, setTeacherBusy] = useState(false);
+  const [teacherErr, setTeacherErr] = useState(null);
+  const [penaltyDrafts, setPenaltyDrafts] = useState([]);
+  const [penaltyClock, setPenaltyClock] = useState(() => Date.now());
 
   useEffect(() => {
     if (!id) return;
@@ -101,6 +160,14 @@ export default function SubmissionDetail() {
     return () => { cancelled = true; clearTimeout(pollTimer); };
   }, [id]);
 
+  useEffect(() => {
+    if (!sub) return;
+    setManualC(String(Number(sub.correctnessScore) || 0));
+    setManualP(String(Number(sub.performanceScore) || 0));
+    setManualD(String(Number(sub.designScore) || 0));
+    setManualA(String(Number(sub.aiReviewScore) || 0));
+  }, [sub?.id, sub?.correctnessScore, sub?.performanceScore, sub?.designScore, sub?.aiReviewScore]);
+
   const tests = useMemo(() => parseTestLines(logs?.testLogs || sub?.testLogs), [logs, sub]);
   const aiReview = useMemo(
     () => normalizeAiReview(sub?.aiSuggestions, sub?.aiReviewScore),
@@ -129,6 +196,116 @@ export default function SubmissionDetail() {
       { label: 'REST Compliance', value: sub.restComplianceScore != null ? `${Number(sub.restComplianceScore).toFixed(1)}%` : '—' },
     ];
   }, [sub]);
+
+  const showTeacherTools = useMemo(() => {
+    if (!sub || sub.status !== 'COMPLETED') return false;
+    if (user?.role !== 'TEACHER') return false;
+    return Boolean(sub.teacherCanApplyPenalty || sub.teacherCanManualGrade);
+  }, [sub, user?.role]);
+
+  useEffect(() => {
+    const t = setInterval(() => setPenaltyClock(Date.now()), 15000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    setPenaltyDrafts([]);
+  }, [id]);
+
+  function buildPenaltyBodyFromForm() {
+    const body = { presetKey: penaltyPresetKey, customNote: penaltyNote.trim() || undefined };
+    if (penaltyPresetKey === 'OTHER') {
+      body.penaltyPoints = Number(otherPenaltyPoints);
+      body.customDescription = otherPenaltyDescription.trim();
+    }
+    return body;
+  }
+
+  function handleAddPenaltyDraft(ev) {
+    ev.preventDefault();
+    setTeacherErr(null);
+    if (penaltyPresetKey === 'OTHER') {
+      const pts = Number(otherPenaltyPoints);
+      if (!Number.isFinite(pts) || pts <= 0) {
+        setTeacherErr('Enter a valid number of points to deduct for “Other”.');
+        return;
+      }
+      if (!otherPenaltyDescription.trim()) {
+        setTeacherErr('Short description is required for “Other”.');
+        return;
+      }
+    }
+    const b = buildPenaltyBodyFromForm();
+    const localId =
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `d-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setPenaltyDrafts((rows) => [...rows, { localId, ...b }]);
+    setPenaltyNote('');
+    setOtherPenaltyPoints('');
+    setOtherPenaltyDescription('');
+  }
+
+  function handleRemovePenaltyDraft(localId) {
+    setPenaltyDrafts((rows) => rows.filter((r) => r.localId !== localId));
+  }
+
+  async function handleConfirmPenaltyDrafts() {
+    if (!id || penaltyDrafts.length === 0) return;
+    setTeacherErr(null);
+    setTeacherBusy(true);
+    try {
+      const penalties = penaltyDrafts.map(({ localId, ...rest }) => rest);
+      const updated = await confirmTeacherPenalties(id, { penalties });
+      setSub(updated);
+      setPenaltyDrafts([]);
+    } catch (err) {
+      setTeacherErr(err?.message || 'Could not confirm penalties');
+    } finally {
+      setTeacherBusy(false);
+    }
+  }
+
+  async function handleRevokePenalty(penaltyId) {
+    if (!id || !penaltyId) return;
+    setTeacherErr(null);
+    setTeacherBusy(true);
+    try {
+      const updated = await revokeTeacherPenalty(id, penaltyId);
+      setSub(updated);
+    } catch (err) {
+      setTeacherErr(err?.message || 'Could not remove penalty');
+    } finally {
+      setTeacherBusy(false);
+    }
+  }
+
+  function canRevokeStoredPenalty(p) {
+    if (!p?.id || !sub?.teacherCanApplyPenalty) return false;
+    const end = penaltyRevocationDeadlineMs(p);
+    if (end == null) return false;
+    return penaltyClock < end;
+  }
+
+  async function handleManualSubmit(ev) {
+    ev.preventDefault();
+    if (!id) return;
+    setTeacherErr(null);
+    setTeacherBusy(true);
+    try {
+      const updated = await applyTeacherManualScores(id, {
+        correctnessScore: Number(manualC),
+        performanceScore: Number(manualP),
+        designScore: Number(manualD),
+        aiReviewScore: Number(manualA),
+      });
+      setSub(updated);
+    } catch (err) {
+      setTeacherErr(err?.message || 'Could not save manual scores');
+    } finally {
+      setTeacherBusy(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -194,7 +371,7 @@ export default function SubmissionDetail() {
                 const isActive = i === stepIndex && !isDone && !isFailed;
                 const isFail = isFailed && i === stepIndex;
                 return (
-                  <div key={step} style={{ display: 'contents' }}>
+                  <Fragment key={step}>
                     <div className="sd-timeline-step">
                       <div className={`sd-timeline-dot ${isDone ? 'done' : ''} ${isActive ? 'active' : ''} ${isFail ? 'failed' : ''}`} />
                       <span className={`sd-timeline-label ${isDone ? 'done' : ''} ${isActive ? 'active' : ''} ${isFail ? 'failed' : ''}`}>{step}</span>
@@ -202,7 +379,7 @@ export default function SubmissionDetail() {
                     {i < TIMELINE_STEPS.length - 1 && (
                       <div className={`sd-timeline-line ${isDone ? 'done' : ''}`} />
                     )}
-                  </div>
+                  </Fragment>
                 );
               })}
             </div>
@@ -241,6 +418,219 @@ export default function SubmissionDetail() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {!isProcessing && Array.isArray(sub.teacherPenalties) && sub.teacherPenalties.length > 0 && (
+              <div className="sd-panel" style={{ marginBottom: 20 }}>
+                <div className="sd-panel-head">
+                  <div className="sd-panel-title">Teacher score adjustments</div>
+                </div>
+                <div className="sd-panel-body" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
+                  <ul className="sd-teacher-applied-list">
+                    {sub.teacherPenalties.map((p, idx) => {
+                      const end = penaltyRevocationDeadlineMs(p);
+                      const canRev = canRevokeStoredPenalty(p);
+                      const msLeft = end != null ? end - penaltyClock : 0;
+                      return (
+                        <li key={p.id || `pen-${idx}`} className="sd-teacher-applied-row">
+                          <div className="sd-teacher-applied-main">
+                            <span style={{ color: 'var(--warn)' }}>
+                              −{p.pointsDeducted != null ? Number(p.pointsDeducted).toFixed(1) : '—'} pts
+                            </span>
+                            {' · '}
+                            {typeof p.label === 'string' ? p.label : p.presetKey}
+                            {p.customDescription ? ` — ${p.customDescription}` : ''}
+                            {p.note ? ` (note: ${p.note})` : ''}
+                            {p.appliedAt ? (
+                              <span style={{ color: 'var(--dim)' }}> · {formatDate(p.appliedAt)}</span>
+                            ) : null}
+                            {p.id && end != null && user?.role === 'TEACHER' && sub.teacherCanApplyPenalty && (
+                              <span className="sd-teacher-lock-hint">
+                                {canRev
+                                  ? ` · removable for ${formatMsAsCountdown(msLeft)}`
+                                  : ' · locked (2h window ended)'}
+                              </span>
+                            )}
+                          </div>
+                          {canRev && (
+                            <button
+                              type="button"
+                              className="sd-teacher-revoke-btn"
+                              disabled={teacherBusy}
+                              onClick={() => handleRevokePenalty(p.id)}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {showTeacherTools && (
+              <div className="sd-panel sd-teacher-panel" style={{ marginBottom: 20 }}>
+                <div className="sd-panel-head">
+                  <div className="sd-panel-title">Teacher grading</div>
+                </div>
+                <div className="sd-panel-body sd-teacher-panel-body">
+                  {teacherErr && (
+                    <div className="sd-teacher-alert">{teacherErr}</div>
+                  )}
+                  {sub.teacherManualGrading && (
+                    <div className="sd-teacher-warn">
+                      Manual scores have been applied to this submission (totals reflect teacher grading).
+                    </div>
+                  )}
+                  <div className="sd-teacher-grade-shell">
+                    {sub.teacherCanApplyPenalty && (
+                      <div className="sd-teacher-form">
+                        <div className="sd-teacher-section">
+                          <h3 className="sd-teacher-section-title">Penalize score</h3>
+                          <p className="sd-teacher-hint">
+                            Add issues to your draft and remove any line before you confirm. Once confirmed, each line
+                            can be removed for <strong>2 hours</strong> only; after that it is locked. You can always read the
+                            history above.
+                          </p>
+                          <div className="sd-teacher-field">
+                            <span className="sd-teacher-label" id="sd-penalty-type-label">Issue type</span>
+                            <select
+                              className="sd-teacher-select"
+                              aria-labelledby="sd-penalty-type-label"
+                              value={penaltyPresetKey}
+                              onChange={(e) => setPenaltyPresetKey(e.target.value)}
+                            >
+                              {TEACHER_PENALTY_PRESETS.map((p) => (
+                                <option key={p.key} value={p.key}>
+                                  {p.label} (−{p.points} pts)
+                                </option>
+                              ))}
+                              <option value="OTHER">Other (custom description &amp; points)</option>
+                            </select>
+                          </div>
+                          {penaltyPresetKey === 'OTHER' && (
+                            <div className="sd-teacher-other-grid">
+                              <div className="sd-teacher-field">
+                                <span className="sd-teacher-label">Points to deduct</span>
+                                <input
+                                  type="number"
+                                  className="sd-teacher-input"
+                                  min="0.01"
+                                  step="0.01"
+                                  max="300"
+                                  placeholder="e.g. 25"
+                                  value={otherPenaltyPoints}
+                                  onChange={(e) => setOtherPenaltyPoints(e.target.value)}
+                                />
+                              </div>
+                              <div className="sd-teacher-field sd-teacher-field--grow">
+                                <span className="sd-teacher-label">Short description</span>
+                                <textarea
+                                  className="sd-teacher-textarea"
+                                  placeholder="What went wrong (visible on the adjustment record)"
+                                  value={otherPenaltyDescription}
+                                  onChange={(e) => setOtherPenaltyDescription(e.target.value)}
+                                  rows={4}
+                                />
+                              </div>
+                            </div>
+                          )}
+                          <div className="sd-teacher-field">
+                            <span className="sd-teacher-label" id="sd-penalty-note-label">Optional note</span>
+                            <input
+                              type="text"
+                              className="sd-teacher-input"
+                              placeholder="Internal note (stored on the penalty record)"
+                              value={penaltyNote}
+                              onChange={(e) => setPenaltyNote(e.target.value)}
+                              aria-labelledby="sd-penalty-note-label"
+                            />
+                          </div>
+                        </div>
+                        <div className="sd-teacher-actions sd-teacher-actions--start">
+                          <button
+                            type="button"
+                            className="sd-teacher-primary-btn sd-teacher-primary-btn--secondary"
+                            disabled={teacherBusy}
+                            onClick={handleAddPenaltyDraft}
+                          >
+                            Add to draft
+                          </button>
+                        </div>
+                        {penaltyDrafts.length > 0 && (
+                          <>
+                            <ul className="sd-teacher-draft-list" aria-label="Penalty draft">
+                              {penaltyDrafts.map((d) => (
+                                <li key={d.localId} className="sd-teacher-draft-row">
+                                  <span className="sd-teacher-draft-text">{draftLabel(d)}</span>
+                                  <button
+                                    type="button"
+                                    className="sd-teacher-ghost-btn"
+                                    disabled={teacherBusy}
+                                    onClick={() => handleRemovePenaltyDraft(d.localId)}
+                                  >
+                                    Remove
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="sd-teacher-actions">
+                              <button
+                                type="button"
+                                className="sd-teacher-primary-btn"
+                                disabled={teacherBusy}
+                                onClick={handleConfirmPenaltyDrafts}
+                              >
+                                {penaltyDrafts.length === 1
+                                  ? 'Confirm 1 penalty'
+                                  : `Confirm ${penaltyDrafts.length} penalties`}
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {sub.teacherCanManualGrade && (
+                      <form className="sd-teacher-form" onSubmit={handleManualSubmit}>
+                        <div className={`sd-teacher-section${sub.teacherCanApplyPenalty ? ' sd-teacher-section--divider' : ''}`}>
+                          <h3 className="sd-teacher-section-title">Manual grading (group student)</h3>
+                          <div className="sd-teacher-manual-grid">
+                            {[
+                              ['Correctness (0–300)', manualC, setManualC],
+                              ['Performance (0–300)', manualP, setManualP],
+                              ['Design (0–200)', manualD, setManualD],
+                              ['AI review (0–200)', manualA, setManualA],
+                            ].map(([label, val, setVal]) => (
+                              <label key={label} className="sd-teacher-field">
+                                <span className="sd-teacher-label">{label}</span>
+                                <input
+                                  type="number"
+                                  className="sd-teacher-input"
+                                  step="0.01"
+                                  min="0"
+                                  value={val}
+                                  onChange={(e) => setVal(e.target.value)}
+                                />
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="sd-teacher-actions">
+                          <button
+                            type="submit"
+                            className="sd-teacher-primary-btn sd-teacher-primary-btn--secondary"
+                            disabled={teacherBusy}
+                          >
+                            Save manual scores
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
