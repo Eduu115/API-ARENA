@@ -12,7 +12,11 @@ import com.apiarena.submissionservice.model.entities.Submission;
 
 public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
+    List<Submission> findByChallengeIdOrderByCreatedAtDesc(Long challengeId);
+
     List<Submission> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    List<Submission> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds);
 
     List<Submission> findByUserIdAndChallengeIdOrderByCreatedAtDesc(Long userId, Long challengeId);
 

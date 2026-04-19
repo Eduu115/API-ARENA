@@ -33,6 +33,7 @@ public class UserDTO {
     private Boolean isActive;
     private Boolean emailVerified;
     private Boolean betaLegacy;
+    private Boolean newChallengeEmailAlerts;
 
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -54,7 +55,8 @@ public class UserDTO {
             user.getLastLogin(),
             user.getIsActive(),
             user.getEmailVerified(),
-            Boolean.TRUE.equals(user.getBetaLegacy())
+            Boolean.TRUE.equals(user.getBetaLegacy()),
+            Boolean.TRUE.equals(user.getNewChallengeEmailAlerts())
         );
     }
 }

@@ -54,6 +54,53 @@ export async function getMySubmissions() {
   return request("/api/submissions/my");
 }
 
+/** Teacher: list submissions from one student limited to teacher-owned challenges. */
+export async function getTeacherStudentSubmissions(studentId) {
+  return request(`/api/submissions/teacher/students/${studentId}`);
+}
+
+/** Teacher: all submissions for one challenge (any student), if the challenge belongs to the teacher. */
+export async function getTeacherChallengeSubmissions(challengeId) {
+  return request(`/api/submissions/teacher/challenges/${challengeId}/submissions`);
+}
+
+/** Teacher: count submissions by student IDs limited to teacher-owned challenges. */
+export async function getTeacherStudentsSubmissionCounts(studentIds) {
+  if (!Array.isArray(studentIds) || studentIds.length === 0) return {};
+  const params = new URLSearchParams();
+  studentIds.forEach((id) => {
+    if (id != null) params.append("studentIds", String(id));
+  });
+  return request(`/api/submissions/teacher/students/counts?${params.toString()}`);
+}
+
+/** Download submission ZIP (current user must have access). */
+export async function downloadSubmissionZip(submissionId) {
+  const base = getBaseUrl();
+  const tokens = getStoredTokens();
+  const headers = {};
+  if (tokens?.accessToken) {
+    headers.Authorization = `Bearer ${tokens.accessToken}`;
+  }
+
+  const res = await fetch(`${base}/api/submissions/${submissionId}/download`, {
+    method: "GET",
+    headers,
+  });
+
+  if (!res.ok) {
+    const message = await res.text().catch(() => "");
+    throw new Error(message || `Download failed (HTTP ${res.status})`);
+  }
+
+  const blob = await res.blob();
+  const disposition = res.headers.get("Content-Disposition") || "";
+  const match = disposition.match(/filename="([^"]+)"/i);
+  const filename = match?.[1] || `submission-${submissionId}.zip`;
+  const zipDownloadExpiresAt = res.headers.get("X-Zip-Download-Expires-At") || null;
+  return { blob, filename, zipDownloadExpiresAt };
+}
+
 /** Build and test logs for a submission. */
 export async function getSubmissionLogs(id) {
   return request(`/api/submissions/${id}/logs`);

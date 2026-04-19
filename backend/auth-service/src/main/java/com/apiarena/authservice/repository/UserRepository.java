@@ -26,4 +26,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "AND (LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')) "
             + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')))")
     List<User> searchUsersForSocial(@Param("q") String query, @Param("excludeId") Long excludeId);
+
+    List<User> findByRoleAndEmailVerifiedTrueAndNewChallengeEmailAlertsTrue(User.Role role);
 }

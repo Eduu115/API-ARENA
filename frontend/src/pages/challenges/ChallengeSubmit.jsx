@@ -11,6 +11,7 @@ import { createSubmission, getChallengeAttemptStatus, getMySubmissions } from '.
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
+import AttemptPolicyBlockModal from '../../components/AttemptPolicyBlockModal';
 import './challenges.css';
 import './ChallengeSubmit.css';
 
@@ -236,6 +237,7 @@ export default function ChallengeSubmit() {
 
   useEffect(() => {
     if (!user?.id || staffBypass) return;
+    if (!staffBypass && attemptPolicy && attemptPolicy.allowed === false) return;
     const confirmationKey = `apiarena:first-submit-check-confirmed:${user.id}`;
     if (localStorage.getItem(confirmationKey) === '1') {
       return;
@@ -264,7 +266,7 @@ export default function ChallengeSubmit() {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, user?.totalChallengesCompleted, staffBypass]);
+  }, [user?.id, user?.totalChallengesCompleted, staffBypass, attemptPolicy]);
 
   useEffect(() => {
     if (!id) return;
@@ -273,7 +275,7 @@ export default function ChallengeSubmit() {
       setLoading(true);
       setError(null);
       try {
-        const data = await challengesApi.getChallengeById(id);
+        const data = await challengesApi.getChallengeSpecs(id);
         if (!cancelled) {
           setChallenge(data);
         }
@@ -289,6 +291,10 @@ export default function ChallengeSubmit() {
   /** Restore deadline from localStorage or start timer. */
   useEffect(() => {
     if (!challenge || !id || !user?.id) return;
+    if (!staffBypass) {
+      if (policyLoading) return;
+      if (attemptPolicy && attemptPolicy.allowed === false) return;
+    }
     const totalDefault = (challenge.timeLimitMinutes ?? 60) * 60;
     const raw = localStorage.getItem(challengeSessionKey(user.id));
     let restored = false;
@@ -315,11 +321,15 @@ export default function ChallengeSubmit() {
       setTotalSeconds(totalDefault);
       setDeadlineAt(Date.now() + totalDefault * 1000);
     }
-  }, [challenge, id, user?.id]);
+  }, [challenge, id, user?.id, staffBypass, policyLoading, attemptPolicy]);
 
   /** Persist fixed deadline (does not depend on tick). */
   useEffect(() => {
     if (!user?.id || !id || !challenge || deadlineAt == null || totalSeconds === null) return;
+    if (!staffBypass) {
+      if (policyLoading) return;
+      if (attemptPolicy && attemptPolicy.allowed === false) return;
+    }
     setChallengeSession(user.id, {
       challengeId: id,
       deadlineAt,
@@ -327,7 +337,35 @@ export default function ChallengeSubmit() {
       challengeTitle: challenge.title || '',
       savedAt: Date.now(),
     });
-  }, [user?.id, id, challenge?.id, challenge?.title, deadlineAt, totalSeconds]);
+  }, [user?.id, id, challenge?.id, challenge?.title, deadlineAt, totalSeconds, staffBypass, policyLoading, attemptPolicy]);
+
+  /** When cooldown / daily window ends, refresh policy so the user can continue without reload. */
+  useEffect(() => {
+    if (staffBypass || !id || policyLoading) return;
+    if (!attemptPolicy || attemptPolicy.allowed !== false) return;
+    const iso =
+      attemptPolicy.blockReason === 'COOLDOWN'
+        ? attemptPolicy.cooldownUntilIso
+        : attemptPolicy.blockReason === 'DAILY_LIMIT'
+          ? attemptPolicy.dailyLimitResetsAtIso
+          : null;
+    if (!iso) return;
+    const ms = new Date(iso).getTime() - Date.now();
+    if (ms > 1500) return;
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const p = await getChallengeAttemptStatus(id);
+        if (!cancelled) setAttemptPolicy(p);
+      } catch {
+        /* keep current */
+      }
+    }, Math.max(500, ms + 400));
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [id, staffBypass, policyLoading, attemptPolicy, tick]);
 
   useEffect(() => {
     const t = setInterval(() => setTick((n) => n + 1), 1000);
@@ -383,6 +421,10 @@ export default function ChallengeSubmit() {
 
   const policyBlocks = !staffBypass && attemptPolicy && attemptPolicy.allowed === false;
   const submitBlockedByFirstTimeCheck = showFirstSubmitModal;
+
+  useEffect(() => {
+    if (policyBlocks) setShowFirstSubmitModal(false);
+  }, [policyBlocks]);
 
   const handleSubmit = async () => {
     if (
@@ -447,6 +489,15 @@ export default function ChallengeSubmit() {
   return (
     <div className="challenges-page chd-page">
       <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
+      <AttemptPolicyBlockModal
+        open={policyBlocks}
+        blockReason={attemptPolicy?.blockReason}
+        cooldownUntilIso={attemptPolicy?.cooldownUntilIso}
+        dailyLimitResetsAtIso={attemptPolicy?.dailyLimitResetsAtIso}
+        challengeTitle={challenge?.title}
+        primaryLabel="Back to challenge overview"
+        onDismiss={() => navigate(`/challenges/${id}`)}
+      />
       <main className="chd-main">
         <div className="chd-container">
           <button type="button" className="cs-back" onClick={() => navigate(`/challenges/${id}`)}>
@@ -709,7 +760,7 @@ export default function ChallengeSubmit() {
           </div>
         </div>
       )}
-      {showFirstSubmitModal && (
+      {showFirstSubmitModal && !policyBlocks && (
         <div className="cs-onboard-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cs-onboard-title">
           <div className="cs-onboard-modal">
             <div className="cs-onboard-eyebrow">FIRST SUBMISSION CHECK</div>

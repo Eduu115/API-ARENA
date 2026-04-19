@@ -3,6 +3,7 @@ package com.apiarena.challengeservice.model.services;
 import java.util.List;
 
 import com.apiarena.challengeservice.model.dto.ChallengeDTO;
+import com.apiarena.challengeservice.model.dto.ChallengePreviewDTO;
 import com.apiarena.challengeservice.model.dto.ChallengeSummaryDTO;
 import com.apiarena.challengeservice.model.dto.CreateChallengeRequest;
 import com.apiarena.challengeservice.model.dto.UpdateChallengeRequest;
@@ -16,6 +17,10 @@ public interface IChallengeService {
     ChallengeDTO getChallengeById(Long id);
 
     ChallengeDTO getChallengeBySlug(String slug);
+
+    ChallengePreviewDTO getChallengePreviewById(Long id);
+
+    ChallengePreviewDTO getChallengePreviewBySlug(String slug);
 
     List<ChallengeSummaryDTO> getAllChallenges();
 

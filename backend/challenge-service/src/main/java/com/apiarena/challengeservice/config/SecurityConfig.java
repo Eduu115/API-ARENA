@@ -34,6 +34,8 @@ public class SecurityConfig {
                     .requestMatchers(
                             "/api/challenges",
                             "/api/challenges/{id}",
+                            "/api/challenges/*/preview",
+                            "/api/challenges/slug/*/preview",
                             "/api/challenges/slug/{slug}",
                             "/api/challenges/featured",
                             "/api/challenges/categories",

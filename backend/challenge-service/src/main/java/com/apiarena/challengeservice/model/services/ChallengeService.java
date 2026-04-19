@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.apiarena.challengeservice.model.dto.ChallengeDTO;
+import com.apiarena.challengeservice.model.dto.ChallengePreviewDTO;
 import com.apiarena.challengeservice.model.dto.ChallengeSummaryDTO;
 import com.apiarena.challengeservice.model.dto.CreateChallengeRequest;
 import com.apiarena.challengeservice.model.dto.UpdateChallengeRequest;
@@ -23,6 +24,9 @@ public class ChallengeService implements IChallengeService {
     
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private NewChallengePublishedNotifier newChallengePublishedNotifier;
 
     @Override
     @Transactional
@@ -64,6 +68,7 @@ public class ChallengeService implements IChallengeService {
         challenge.setLearningObjectives(request.getLearningObjectives());
         challenge.setOrigin(Challenge.Origin.COMMUNITY);
         challenge.setCreatedBy(userId);
+        challenge.setIsActive(false);
 
         if (request.getMaxScore() != null) {
             challenge.setMaxScore(request.getMaxScore());
@@ -99,6 +104,20 @@ public class ChallengeService implements IChallengeService {
         Challenge challenge = challengeRepository.findBySlug(slug)
                 .orElseThrow(() -> new IllegalArgumentException("Challenge not found with slug: " + slug));
         return ChallengeDTO.fromEntity(challenge);
+    }
+
+    @Override
+    public ChallengePreviewDTO getChallengePreviewById(Long id) {
+        Challenge challenge = challengeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
+        return ChallengePreviewDTO.fromEntity(challenge);
+    }
+
+    @Override
+    public ChallengePreviewDTO getChallengePreviewBySlug(String slug) {
+        Challenge challenge = challengeRepository.findBySlug(slug)
+                .orElseThrow(() -> new IllegalArgumentException("Challenge not found with slug: " + slug));
+        return ChallengePreviewDTO.fromEntity(challenge);
     }
 
     @Override
@@ -170,6 +189,8 @@ public class ChallengeService implements IChallengeService {
         Challenge challenge = challengeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Challenge not found with id: " + id));
 
+        boolean wasActive = Boolean.TRUE.equals(challenge.getIsActive());
+
         if (request.getTitle() != null) {
             challenge.setTitle(request.getTitle());
             challenge.setSlug(generateSlug(request.getTitle()));
@@ -226,6 +247,12 @@ public class ChallengeService implements IChallengeService {
         }
 
         Challenge updatedChallenge = challengeRepository.save(challenge);
+        if (!wasActive && Boolean.TRUE.equals(updatedChallenge.getIsActive())) {
+            newChallengePublishedNotifier.notifyAsync(
+                    updatedChallenge.getId(),
+                    updatedChallenge.getTitle(),
+                    updatedChallenge.getCreatedBy());
+        }
         return ChallengeDTO.fromEntity(updatedChallenge);
     }
 

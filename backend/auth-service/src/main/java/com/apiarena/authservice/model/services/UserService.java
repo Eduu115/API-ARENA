@@ -1,6 +1,7 @@
 package com.apiarena.authservice.model.services;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -73,6 +74,13 @@ public class UserService implements IUserService {
         }
         if (request.getGithubUsername() != null) {
             user.setGithubUsername(request.getGithubUsername());
+        }
+        if (request.getNewChallengeEmailAlerts() != null) {
+            if (user.getRole() != User.Role.STUDENT) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "New challenge email alerts are only available for student accounts");
+            }
+            user.setNewChallengeEmailAlerts(request.getNewChallengeEmailAlerts());
         }
 
         User savedUser = userRepository.save(user);
@@ -160,5 +168,22 @@ public class UserService implements IUserService {
         long cur = user.getTotalBrowsingSeconds() != null ? user.getTotalBrowsingSeconds() : 0L;
         user.setTotalBrowsingSeconds(cur + capped);
         userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void notifyNewChallengeEmailSubscribers(Long challengeId, String challengeTitle, Long createdByUserId) {
+        if (challengeId == null) {
+            return;
+        }
+        List<User> subscribers = userRepository.findByRoleAndEmailVerifiedTrueAndNewChallengeEmailAlertsTrue(
+                User.Role.STUDENT);
+        String title = challengeTitle != null && !challengeTitle.isBlank() ? challengeTitle : "New challenge";
+        for (User u : subscribers) {
+            if (createdByUserId != null && createdByUserId.equals(u.getId())) {
+                continue;
+            }
+            emailDispatchService.sendNewChallengePublishedEmail(u.getEmail(), u.getUsername(), title, challengeId);
+        }
     }
 }

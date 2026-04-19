@@ -21,12 +21,28 @@ public class SubmissionSummaryDTO {
     private LocalDateTime completedAt;
     /** Resolved from challenge-service when listing; may be null if unavailable. */
     private String challengeTitle;
+    /**
+     * UTC instant (ISO-8601) after which the stored ZIP is considered past the configured retention window
+     * (informational; ops may delete earlier or later). Null if no ZIP was stored.
+     */
+    private String zipDownloadExpiresAt;
+    /** Public username when resolved (e.g. teacher challenge-wide submission list); may be null. */
+    private String submitterUsername;
 
     public static SubmissionSummaryDTO fromEntity(Submission entity) {
-        return fromEntity(entity, null);
+        return fromEntity(entity, null, null, null);
     }
 
     public static SubmissionSummaryDTO fromEntity(Submission entity, String challengeTitle) {
+        return fromEntity(entity, challengeTitle, null, null);
+    }
+
+    public static SubmissionSummaryDTO fromEntity(Submission entity, String challengeTitle, String zipDownloadExpiresAt) {
+        return fromEntity(entity, challengeTitle, zipDownloadExpiresAt, null);
+    }
+
+    public static SubmissionSummaryDTO fromEntity(Submission entity, String challengeTitle, String zipDownloadExpiresAt,
+            String submitterUsername) {
         return new SubmissionSummaryDTO(
                 entity.getId(),
                 entity.getChallengeId(),
@@ -35,7 +51,9 @@ public class SubmissionSummaryDTO {
                 entity.getTotalScore(),
                 entity.getCreatedAt(),
                 entity.getCompletedAt(),
-                challengeTitle
+                challengeTitle,
+                zipDownloadExpiresAt,
+                submitterUsername
         );
     }
 }

@@ -32,7 +32,8 @@ public class UploadStorageService {
         }
 
         if (file.getSize() > maxFileSize) {
-            throw new IllegalArgumentException("File size exceeds maximum allowed (" + (maxFileSize / 1024 / 1024) + " MB)");
+            throw new IllegalArgumentException("File size exceeds maximum allowed (" + (maxFileSize / 1024 / 1024)
+                    + " MB). Please upload a lean ZIP with only challenge-related source and config files.");
         }
 
         try {

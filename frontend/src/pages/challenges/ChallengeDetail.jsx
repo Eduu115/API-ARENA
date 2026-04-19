@@ -1,70 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as challengesApi from '../../lib/challengesApi';
+import { getChallengeAttemptStatus } from '../../lib/submissionsApi';
 import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
 import LoginPromptModal from '../../components/LoginPromptModal';
+import AttemptPolicyBlockModal from '../../components/AttemptPolicyBlockModal';
+import { useMsUntilIso, formatCountdownMs } from '../../lib/challengeAttemptUtils';
 import './challenges.css';
 import './ChallengeDetail.css';
-
-function JsonBlock({ title, data }) {
-  if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) return null;
-  return (
-    <section className="chd-section">
-      <h2 className="chd-section-title">{title}</h2>
-      <pre className="chd-json-block">{JSON.stringify(data, null, 2)}</pre>
-    </section>
-  );
-}
-
-function ListBlock({ title, items }) {
-  if (!items || (Array.isArray(items) && items.length === 0)) return null;
-  const list = Array.isArray(items) ? items : (items?.objectives ?? Object.values(items));
-  if (!list?.length) return null;
-  return (
-    <section className="chd-section">
-      <h2 className="chd-section-title">{title}</h2>
-      <ul className="chd-list">
-        {list.map((item, i) => (
-          <li key={i}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function HintsBlock({ hints }) {
-  if (!hints || (typeof hints === 'object' && Object.keys(hints).length === 0)) return null;
-  const entries = typeof hints === 'object' ? Object.entries(hints) : [];
-  return (
-    <section className="chd-section">
-      <h2 className="chd-section-title">Hints</h2>
-      <ul className="chd-hints-list">
-        {entries.map(([key, val]) => (
-          <li key={key}>
-            <span className="chd-hint-num">{key}</span>
-            <span>{typeof val === 'string' ? val : JSON.stringify(val)}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
 
 export default function ChallengeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const staffBypass = user?.role === 'TEACHER' || user?.role === 'ADMIN';
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [attemptPolicy, setAttemptPolicy] = useState(null);
+  const [policyLoading, setPolicyLoading] = useState(false);
+  const [attemptBlockModalOpen, setAttemptBlockModalOpen] = useState(false);
+
+  const policyBlocks = useMemo(
+    () => !staffBypass && attemptPolicy && attemptPolicy.allowed === false,
+    [staffBypass, attemptPolicy],
+  );
+
+  const blockTargetIso = useMemo(() => {
+    if (!attemptPolicy || attemptPolicy.allowed !== false) return null;
+    return attemptPolicy.blockReason === 'DAILY_LIMIT'
+      ? attemptPolicy.dailyLimitResetsAtIso
+      : attemptPolicy.cooldownUntilIso;
+  }, [attemptPolicy]);
+
+  const bannerMsLeft = useMsUntilIso(policyBlocks ? blockTargetIso : null);
 
   const handleStartChallenge = () => {
     if (!isAuthenticated) {
       setLoginModalOpen(true);
+      return;
+    }
+    if (!staffBypass && policyLoading) return;
+    if (policyBlocks) {
+      setAttemptBlockModalOpen(true);
       return;
     }
     navigate(`/challenges/${id}/submit`);
@@ -77,7 +59,7 @@ export default function ChallengeDetail() {
       setLoading(true);
       setError(null);
       try {
-        const data = await challengesApi.getChallengeById(id);
+        const data = await challengesApi.getChallengePreview(id);
         if (!cancelled) setChallenge(data);
       } catch (e) {
         if (!cancelled) setError(e?.message || 'Error loading challenge');
@@ -86,8 +68,33 @@ export default function ChallengeDetail() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !isAuthenticated || staffBypass) {
+      setAttemptPolicy(null);
+      setPolicyLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setPolicyLoading(true);
+    (async () => {
+      try {
+        const p = await getChallengeAttemptStatus(id);
+        if (!cancelled) setAttemptPolicy(p);
+      } catch {
+        if (!cancelled) setAttemptPolicy({ allowed: true, attemptsUsedToday: 0, maxAttemptsPerDay: 3 });
+      } finally {
+        if (!cancelled) setPolicyLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isAuthenticated, staffBypass]);
 
   const diff = challenge?.difficulty?.toLowerCase() || 'easy';
   const diffBadgeClass = {
@@ -133,12 +140,41 @@ export default function ChallengeDetail() {
       <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
       <main className="chd-main">
         <div className="chd-container">
+          {isAuthenticated && !staffBypass && policyBlocks && bannerMsLeft != null && (
+            <div className="chd-policy-banner" role="status">
+              <div className="chd-policy-banner-title">
+                {attemptPolicy.blockReason === 'DAILY_LIMIT' ? 'Daily limit active' : 'Cooldown active'}
+              </div>
+              <div className="chd-policy-banner-count">{formatCountdownMs(bannerMsLeft)}</div>
+              <p className="chd-policy-banner-copy">
+                {attemptPolicy.blockReason === 'DAILY_LIMIT'
+                  ? 'You cannot start a new run until the daily counter resets (UTC).'
+                  : 'You cannot start a new run until the cooldown ends. Full requirements are available only from the submit screen after you can start.'}
+              </p>
+              <div className="chd-policy-banner-actions">
+                <button type="button" className="chd-policy-banner-link" onClick={() => setAttemptBlockModalOpen(true)}>
+                  View full details
+                </button>
+              </div>
+            </div>
+          )}
           <div className="chd-top-actions">
             <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
               ← Back to Challenges
             </button>
-            <button type="button" className="chd-btn-start" onClick={handleStartChallenge}>
-              Start Challenge
+            <button
+              type="button"
+              className={`chd-btn-start${policyBlocks ? ' chd-btn-start--blocked' : ''}`}
+              onClick={handleStartChallenge}
+              disabled={isAuthenticated && !staffBypass && policyLoading}
+            >
+              {policyLoading && isAuthenticated && !staffBypass
+                ? 'Checking limits…'
+                : policyBlocks
+                  ? attemptPolicy?.blockReason === 'DAILY_LIMIT'
+                    ? 'Daily limit — details'
+                    : 'Cooldown — details'
+                  : 'Start Challenge'}
             </button>
           </div>
 
@@ -165,6 +201,10 @@ export default function ChallengeDetail() {
                 <span className="chd-stat-label">Minutes</span>
               </div>
               <div className="chd-stat">
+                <span className="chd-stat-value">{challenge.xpReward ?? 200}</span>
+                <span className="chd-stat-label">XP reward</span>
+              </div>
+              <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timesAttempted ?? 0}</span>
                 <span className="chd-stat-label">Attempts</span>
               </div>
@@ -180,7 +220,6 @@ export default function ChallengeDetail() {
 
             <div className="chd-hero-meta">
               <span>ID: {challenge.id}</span>
-              {challenge.createdBy != null && <span>Created by: {challenge.createdBy}</span>}
               <span>Created: {formatDate(challenge.createdAt)}</span>
               <span>Updated: {formatDate(challenge.updatedAt)}</span>
             </div>
@@ -191,21 +230,19 @@ export default function ChallengeDetail() {
             <p className="chd-description-text">{challenge.description || 'No description.'}</p>
           </section>
 
-          <JsonBlock title="Required endpoints" data={challenge.requiredEndpoints} />
-          <JsonBlock title="Required status codes" data={challenge.requiredStatusCodes} />
-          <JsonBlock title="Required headers" data={challenge.requiredHeaders} />
-          <JsonBlock title="Test suite" data={challenge.testSuite} />
-          <JsonBlock title="Performance requirements" data={challenge.performanceRequirements} />
-          <JsonBlock title="Design criteria" data={challenge.designCriteria} />
-          <HintsBlock hints={challenge.hints} />
-          <ListBlock title="Learning objectives" items={challenge.learningObjectives} />
-          {challenge.solutionExplanation && (
-            <section className="chd-section">
-              <h2 className="chd-section-title">Solution explanation</h2>
-              <p className="chd-solution-text">{challenge.solutionExplanation}</p>
-            </section>
-          )}
-
+          <section className="chd-specs-teaser" aria-labelledby="chd-specs-teaser-title">
+            <h2 id="chd-specs-teaser-title" className="chd-specs-teaser-title">
+              Full requirements
+            </h2>
+            <p className="chd-specs-teaser-copy">
+              Endpoints, HTTP contracts, automated test suite, performance and design criteria, hints, and learning objectives
+              are only revealed inside the challenge once you start and open the submit workspace. Sign in, then use{' '}
+              <strong>Start Challenge</strong> when you are ready to see everything you need to build and ship your ZIP.
+            </p>
+            <p className="chd-specs-teaser-foot">
+              Think of this page as the briefing — the arena opens when you enter the timed run.
+            </p>
+          </section>
         </div>
       </main>
       <BottomNav />
@@ -214,6 +251,15 @@ export default function ChallengeDetail() {
         onClose={() => setLoginModalOpen(false)}
         title="Sign in to compete"
         description="You need to sign in to start this challenge and submit your solution. If you do not have an account yet, you can register in a moment."
+      />
+      <AttemptPolicyBlockModal
+        open={attemptBlockModalOpen}
+        blockReason={attemptPolicy?.blockReason}
+        cooldownUntilIso={attemptPolicy?.cooldownUntilIso}
+        dailyLimitResetsAtIso={attemptPolicy?.dailyLimitResetsAtIso}
+        challengeTitle={challenge?.title}
+        primaryLabel="Close"
+        onDismiss={() => setAttemptBlockModalOpen(false)}
       />
       <CustomCursor />
     </div>

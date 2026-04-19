@@ -52,8 +52,22 @@ export async function getChallengeById(id) {
   return request(`/api/challenges/${id}`);
 }
 
+/** Public card / detail: no endpoints, test suite, or hints. */
+export async function getChallengePreview(id) {
+  return request(`/api/challenges/${id}/preview`);
+}
+
+/** Full specs for submit flow — requires JWT. */
+export async function getChallengeSpecs(id) {
+  return request(`/api/challenges/${id}/specs`);
+}
+
 export async function getChallengeBySlug(slug) {
   return request(`/api/challenges/slug/${slug}`);
+}
+
+export async function getChallengePreviewBySlug(slug) {
+  return request(`/api/challenges/slug/${encodeURIComponent(slug)}/preview`);
 }
 
 export async function getFeaturedChallenges() {

@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TeacherLayout from "./TeacherLayout";
 import * as groupsApi from "../../lib/groupsApi";
+import * as submissionsApi from "../../lib/submissionsApi";
+import SubmissionZipDownloadBlock from "../../components/teacher/SubmissionZipDownloadBlock";
 
 export default function TeacherGroups() {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [submissionCounts, setSubmissionCounts] = useState({});
+  const [submissionCountsLoading, setSubmissionCountsLoading] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [studentSubmissions, setStudentSubmissions] = useState([]);
+  const [studentSubmissionsLoading, setStudentSubmissionsLoading] = useState(false);
+  const [studentSubmissionsError, setStudentSubmissionsError] = useState(null);
+  const [downloadingSubmissionId, setDownloadingSubmissionId] = useState(null);
 
   const [showCreate, setShowCreate] = useState(false);
   const [createName, setCreateName] = useState("");
@@ -47,8 +58,45 @@ export default function TeacherGroups() {
 
   useEffect(() => {
     if (selected) loadDetail(selected);
-    else setDetail(null);
+    else {
+      setDetail(null);
+      setSelectedStudent(null);
+      setStudentSubmissions([]);
+      setSubmissionCounts({});
+    }
   }, [selected, loadDetail]);
+
+  useEffect(() => {
+    const members = detail?.members || [];
+    if (!members.length) {
+      setSubmissionCounts({});
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      setSubmissionCountsLoading(true);
+      try {
+        const ids = members.map((m) => m.userId).filter((id) => id != null);
+        const counts = await submissionsApi.getTeacherStudentsSubmissionCounts(ids);
+        if (!cancelled) {
+          setSubmissionCounts(counts || {});
+        }
+      } catch {
+        if (!cancelled) {
+          setSubmissionCounts({});
+        }
+      } finally {
+        if (!cancelled) {
+          setSubmissionCountsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [detail]);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -106,6 +154,7 @@ export default function TeacherGroups() {
     try {
       const updated = await groupsApi.removeMember(selected, userId);
       setDetail(updated);
+      setSelectedStudent((prev) => (prev?.userId === userId ? null : prev));
       setGroups((prev) => prev.map((g) => (g.id === selected ? { ...g, studentCount: updated.studentCount } : g)));
     } catch (err) {
       alert(err.message || "Error removing student");
@@ -120,6 +169,40 @@ export default function TeacherGroups() {
       await loadGroups();
     } catch (err) {
       alert(err.message || "Error deleting group");
+    }
+  }
+
+  async function handleViewStudentSubmissions(member) {
+    setSelectedStudent(member);
+    setStudentSubmissionsLoading(true);
+    setStudentSubmissionsError(null);
+    try {
+      const data = await submissionsApi.getTeacherStudentSubmissions(member.userId);
+      setStudentSubmissions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setStudentSubmissions([]);
+      setStudentSubmissionsError(err?.message || "Error loading submissions");
+    } finally {
+      setStudentSubmissionsLoading(false);
+    }
+  }
+
+  async function handleDownloadSubmission(submissionId) {
+    setDownloadingSubmissionId(submissionId);
+    try {
+      const { blob, filename } = await submissionsApi.downloadSubmissionZip(submissionId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err?.message || "Error downloading submission");
+    } finally {
+      setDownloadingSubmissionId(null);
     }
   }
 
@@ -337,27 +420,152 @@ export default function TeacherGroups() {
                           {m.email}
                         </span>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(m.userId)}
-                        style={{
-                          background: "rgba(255,77,106,0.1)",
-                          border: "1px solid rgba(255,77,106,0.3)",
-                          color: "var(--red)",
-                          borderRadius: 4,
-                          padding: "3px 10px",
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 11,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Remove
-                      </button>
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <button
+                          type="button"
+                          onClick={() => handleViewStudentSubmissions(m)}
+                          style={{
+                            background: "rgba(0,217,255,0.08)",
+                            border: "1px solid rgba(0,217,255,0.3)",
+                            color: "var(--cyan)",
+                            borderRadius: 4,
+                            padding: "3px 10px",
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 11,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {submissionCountsLoading ? "..." : `${Number(submissionCounts[m.userId] ?? 0)} entregas`}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(m.userId)}
+                          style={{
+                            background: "rgba(255,77,106,0.1)",
+                            border: "1px solid rgba(255,77,106,0.3)",
+                            color: "var(--red)",
+                            borderRadius: 4,
+                            padding: "3px 10px",
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 11,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
               </div>
             </div>
+
+            {selectedStudent && (
+              <div className="db-panel">
+                <div className="db-panel-head">
+                  <div className="db-panel-title">
+                    @{selectedStudent.username} — entregas en tus challenges ({studentSubmissions.length})
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedStudent(null);
+                      setStudentSubmissions([]);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "var(--muted)",
+                      cursor: "pointer",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+                <div style={{ padding: "10px 18px" }}>
+                  {studentSubmissionsLoading ? (
+                    <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
+                      Loading submissions...
+                    </div>
+                  ) : studentSubmissionsError ? (
+                    <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--red)" }}>
+                      {studentSubmissionsError}
+                    </div>
+                  ) : studentSubmissions.length === 0 ? (
+                    <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
+                      No hay entregas de este alumno en tus challenges.
+                    </div>
+                  ) : (
+                    studentSubmissions.map((sub) => {
+                      const title = (sub.challengeTitle && String(sub.challengeTitle).trim()) || `Challenge #${sub.challengeId}`;
+                      const score = Number(sub.totalScore) || 0;
+                      return (
+                        <div
+                          key={sub.id}
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto",
+                            gap: 10,
+                            padding: "10px 0",
+                            borderBottom: "1px solid var(--dim)",
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontFamily: "var(--font-heading)", fontSize: 14, color: "var(--text)" }}>
+                              {title}
+                            </div>
+                            <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+                              Submission #{sub.id} · {sub.status} · score {score > 0 ? score.toFixed(1) : "—"}
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/submissions/${sub.id}`)}
+                              style={{
+                                background: "rgba(0,255,163,0.1)",
+                                border: "1px solid rgba(0,255,163,0.3)",
+                                color: "var(--green)",
+                                borderRadius: 4,
+                                padding: "3px 10px",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 11,
+                                cursor: "pointer",
+                              }}
+                            >
+                              View
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/submissions/${sub.id}/results`)}
+                              style={{
+                                background: "rgba(189,102,255,0.1)",
+                                border: "1px solid rgba(189,102,255,0.3)",
+                                color: "var(--purple)",
+                                borderRadius: 4,
+                                padding: "3px 10px",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 11,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Results
+                            </button>
+                            <SubmissionZipDownloadBlock
+                              zipDownloadExpiresAt={sub.zipDownloadExpiresAt}
+                              downloading={downloadingSubmissionId === sub.id}
+                              onDownload={() => handleDownloadSubmission(sub.id)}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

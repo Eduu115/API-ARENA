@@ -4,7 +4,7 @@ import Topbar from "../components/Topbar";
 import BottomNav from "../components/BottomNav";
 import CustomCursor from "../components/CustomCursor";
 import { getMySubmissions, getSubmissionReplay } from "../lib/submissionsApi.js";
-import { getChallengeById } from "../lib/challengesApi.js";
+import { getChallengePreview } from "../lib/challengesApi.js";
 import "./challenges/challenges.css";
 import "./replay.css";
 
@@ -176,7 +176,7 @@ export default function Replay() {
     setDetailEvent(null);
     setFilterMode("ALL");
 
-    getChallengeById(sub.challengeId)
+    getChallengePreview(sub.challengeId)
       .then((c) => {
         if (!cancelled) setChallengeTitle(c?.title || `Challenge #${sub.challengeId}`);
       })
