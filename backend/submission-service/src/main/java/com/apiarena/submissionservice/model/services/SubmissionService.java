@@ -662,6 +662,13 @@ public class SubmissionService implements ISubmissionService {
     private static final Map<String, Double> DIFFICULTY_ELO_MULTIPLIER = Map.of(
             "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8);
     private static final int MIN_RANKED_CHALLENGES = 3;
+    /** Extra ELO weight when a repeat completion scores below the player's previous best on this challenge. */
+    private static final double ELO_REPEAT_REGRESSION_WEIGHT = 0.35;
+    /** Minimum loss when score is below expectation but base formula rounds to zero. */
+    private static final int ELO_MIN_UNDERPERFORM_PENALTY = 4;
+    private static final double ELO_VERY_BAD_SCORE_THRESHOLD = 0.32;
+    private static final double ELO_VERY_BAD_EXTRA_WEIGHT = 1.75;
+    private static final int ELO_CHANGE_FLOOR_PER_SUBMISSION = -90;
 
     @SuppressWarnings("unchecked")
     private void calculateAndApplyRewards(Long submissionId) {
@@ -710,6 +717,28 @@ public class SubmissionService implements ISubmissionService {
                 int K = totalChallenges < 10 ? 48 : 32;
                 double expected = 1.0 / (1.0 + Math.pow(10.0, (challengeRating - currentElo) / 400.0));
                 eloChange = (int) Math.round(K * eloMultiplier * (scoreRatio - expected));
+
+                // Worse than your own previous best on this challenge (repeat) — extra ELO downside
+                if (!isFirst && totalScore + 1e-6 < prevBestVal) {
+                    double regression = (prevBestVal - totalScore) / 1000.0;
+                    int repeatPenalty = (int) Math.round(K * eloMultiplier * ELO_REPEAT_REGRESSION_WEIGHT * regression);
+                    eloChange -= Math.max(3, repeatPenalty);
+                }
+
+                // Base formula can round to 0 while still below expectation — keep a small guaranteed loss
+                if (scoreRatio + 1e-9 < expected && eloChange >= 0) {
+                    eloChange = -Math.max(ELO_MIN_UNDERPERFORM_PENALTY,
+                            (int) Math.round(K * eloMultiplier * 0.09));
+                }
+
+                // Very low score / "muy mal": additional penalty (applies to repeats as well)
+                if (scoreRatio < ELO_VERY_BAD_SCORE_THRESHOLD) {
+                    double gap = ELO_VERY_BAD_SCORE_THRESHOLD - scoreRatio;
+                    int veryBadExtra = (int) Math.round(K * eloMultiplier * ELO_VERY_BAD_EXTRA_WEIGHT * gap);
+                    eloChange -= Math.max(0, veryBadExtra);
+                }
+
+                eloChange = Math.max(ELO_CHANGE_FLOOR_PER_SUBMISSION, eloChange);
             }
 
             sub.setXpEarned(xpEarned);

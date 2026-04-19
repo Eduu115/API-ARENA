@@ -75,6 +75,7 @@ export default function UserProfileCard({ userId, onClose }) {
         ) : profile && (
           <>
             <div className="upc-header">
+              <div className="upc-eyebrow">Public profile</div>
               <div className="upc-avatar" style={{ background: avatarBg }}>{initials}</div>
               <div className="upc-name">{profile.username}</div>
               <div className="upc-role">{profile.role}</div>
