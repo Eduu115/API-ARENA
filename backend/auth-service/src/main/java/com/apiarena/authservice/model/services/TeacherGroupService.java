@@ -28,20 +28,22 @@ public class TeacherGroupService {
     @Autowired
     private UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public List<TeacherGroupDTO> getMyGroups(Long teacherId) {
-        return groupRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId)
+        return groupRepository.findAccessibleByTeacherId(teacherId)
                 .stream()
-                .map(g -> TeacherGroupDTO.fromEntity(g, false))
+                .map(g -> TeacherGroupDTO.fromEntity(g, false, teacherId))
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public TeacherGroupDTO getGroupById(Long groupId, Long teacherId) {
         TeacherGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-        if (!group.getTeacher().getId().equals(teacherId)) {
+        if (!canAccessGroup(group, teacherId)) {
             throw new SecurityException("Not your group");
         }
-        return TeacherGroupDTO.fromEntity(group, true);
+        return TeacherGroupDTO.fromEntity(group, true, teacherId);
     }
 
     @Transactional
@@ -53,16 +55,17 @@ public class TeacherGroupService {
         group.setName(request.getName());
         group.setDescription(request.getDescription());
         group.setTeacher(teacher);
+        validateAndSetCoTeacher(group, request.getCoTeacherId(), teacherId);
 
         TeacherGroup saved = groupRepository.save(group);
-        return TeacherGroupDTO.fromEntity(saved, true);
+        return TeacherGroupDTO.fromEntity(saved, true, teacherId);
     }
 
     @Transactional
     public TeacherGroupDTO updateGroup(Long groupId, CreateGroupRequest request, Long teacherId) {
         TeacherGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-        if (!group.getTeacher().getId().equals(teacherId)) {
+        if (!canAccessGroup(group, teacherId)) {
             throw new SecurityException("Not your group");
         }
 
@@ -72,15 +75,28 @@ public class TeacherGroupService {
         }
 
         TeacherGroup saved = groupRepository.save(group);
-        return TeacherGroupDTO.fromEntity(saved, true);
+        return TeacherGroupDTO.fromEntity(saved, true, teacherId);
+    }
+
+    /** Primary teacher only: set or remove co-teacher (does not change name/description). */
+    @Transactional
+    public TeacherGroupDTO setCoTeacher(Long groupId, Long coTeacherId, Long teacherId) {
+        TeacherGroup group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        if (!isPrimaryTeacher(group, teacherId)) {
+            throw new SecurityException("Only the primary teacher can assign a co-teacher");
+        }
+        validateAndSetCoTeacher(group, coTeacherId, group.getTeacher().getId());
+        TeacherGroup saved = groupRepository.save(group);
+        return TeacherGroupDTO.fromEntity(saved, true, teacherId);
     }
 
     @Transactional
     public void deleteGroup(Long groupId, Long teacherId) {
         TeacherGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-        if (!group.getTeacher().getId().equals(teacherId)) {
-            throw new SecurityException("Not your group");
+        if (!isPrimaryTeacher(group, teacherId)) {
+            throw new SecurityException("Only the primary teacher can delete this group");
         }
         groupRepository.delete(group);
     }
@@ -89,7 +105,7 @@ public class TeacherGroupService {
     public TeacherGroupDTO addMember(Long groupId, AddMemberRequest request, Long teacherId) {
         TeacherGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-        if (!group.getTeacher().getId().equals(teacherId)) {
+        if (!canAccessGroup(group, teacherId)) {
             throw new SecurityException("Not your group");
         }
 
@@ -110,14 +126,14 @@ public class TeacherGroupService {
         memberRepository.save(member);
 
         TeacherGroup refreshed = groupRepository.findById(groupId).orElseThrow();
-        return TeacherGroupDTO.fromEntity(refreshed, true);
+        return TeacherGroupDTO.fromEntity(refreshed, true, teacherId);
     }
 
     @Transactional
     public TeacherGroupDTO removeMember(Long groupId, Long userId, Long teacherId) {
         TeacherGroup group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
-        if (!group.getTeacher().getId().equals(teacherId)) {
+        if (!canAccessGroup(group, teacherId)) {
             throw new SecurityException("Not your group");
         }
 
@@ -127,6 +143,44 @@ public class TeacherGroupService {
         memberRepository.delete(member);
 
         TeacherGroup refreshed = groupRepository.findById(groupId).orElseThrow();
-        return TeacherGroupDTO.fromEntity(refreshed, true);
+        return TeacherGroupDTO.fromEntity(refreshed, true, teacherId);
+    }
+
+    /** True if the student is in any group where this teacher is primary or co-teacher. */
+    public boolean isStudentInAnyTeacherGroup(Long teacherId, Long studentUserId) {
+        if (teacherId == null || studentUserId == null) {
+            return false;
+        }
+        return memberRepository.existsByTeacherIdAndStudentUserId(teacherId, studentUserId);
+    }
+
+    private boolean canAccessGroup(TeacherGroup group, Long userId) {
+        if (userId == null) {
+            return false;
+        }
+        if (group.getTeacher().getId().equals(userId)) {
+            return true;
+        }
+        return group.getCoTeacher() != null && group.getCoTeacher().getId().equals(userId);
+    }
+
+    private boolean isPrimaryTeacher(TeacherGroup group, Long userId) {
+        return userId != null && group.getTeacher().getId().equals(userId);
+    }
+
+    private void validateAndSetCoTeacher(TeacherGroup group, Long coTeacherId, Long primaryTeacherId) {
+        if (coTeacherId == null) {
+            group.setCoTeacher(null);
+            return;
+        }
+        if (coTeacherId.equals(primaryTeacherId)) {
+            throw new IllegalArgumentException("Co-teacher must be a different user than the primary teacher");
+        }
+        User co = userRepository.findById(coTeacherId)
+                .orElseThrow(() -> new IllegalArgumentException("Co-teacher user not found"));
+        if (co.getRole() != User.Role.TEACHER) {
+            throw new IllegalArgumentException("Co-teacher must be a user with role TEACHER");
+        }
+        group.setCoTeacher(co);
     }
 }

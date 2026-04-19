@@ -14,6 +14,8 @@ import CustomCursor from '../../components/CustomCursor';
 import AttemptPolicyBlockModal from '../../components/AttemptPolicyBlockModal';
 import './challenges.css';
 import './ChallengeSubmit.css';
+import TutorialTour from '../../components/tutorial/TutorialTour';
+import { DOCS_PATHS, TOUR_CHALLENGE_SUBMIT } from '../../tutorial/tourDefinitions';
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -505,7 +507,7 @@ export default function ChallengeSubmit() {
           </button>
 
           {/* Attempt limits — visible immediately */}
-          <section className="cs-attempts-hero" aria-labelledby="cs-attempts-title">
+          <section className="cs-attempts-hero" aria-labelledby="cs-attempts-title" data-tutorial="submit-limits">
             <div className="cs-attempts-hero-head">
               <span className="cs-attempts-eyebrow">Fair play</span>
               <h2 id="cs-attempts-title" className="cs-attempts-title">
@@ -661,7 +663,7 @@ export default function ChallengeSubmit() {
             <div className="cs-panel">
               <div className="cs-panel-inner">
               {/* Timer */}
-                <div className="cs-timer-section">
+                <div className="cs-timer-section" data-tutorial="submit-timer">
                   <div className="cs-timer-label">TIME REMAINING</div>
                   <div className={`cs-timer-display ${timerClass}`}>
                     {timerExpired ? "TIME'S UP" : formatTime(secondsLeft ?? 0)}
@@ -678,7 +680,7 @@ export default function ChallengeSubmit() {
                 </div>
 
               {/* Dropzone */}
-                <div className="cs-drop-section">
+                <div className="cs-drop-section" data-tutorial="submit-zip">
                   {!file ? (
                     <div
                       className={`cs-dropzone ${dragging ? 'dragging' : ''}`}
@@ -721,7 +723,7 @@ export default function ChallengeSubmit() {
                 </div>
 
               {/* Submit */}
-                <div className="cs-submit-section">
+                <div className="cs-submit-section" data-tutorial="submit-button">
                   <button
                     type="button"
                     className="cs-submit-btn"
@@ -760,6 +762,12 @@ export default function ChallengeSubmit() {
           </div>
         </div>
       )}
+      <TutorialTour
+        tourKey="challengeSubmit"
+        steps={TOUR_CHALLENGE_SUBMIT}
+        docsHref={DOCS_PATHS.challengeSubmit}
+        when={!showFirstSubmitModal && !policyBlocks}
+      />
       {showFirstSubmitModal && !policyBlocks && (
         <div className="cs-onboard-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cs-onboard-title">
           <div className="cs-onboard-modal">

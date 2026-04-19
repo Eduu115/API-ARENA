@@ -67,3 +67,16 @@ export function searchStudents(query) {
   if (!query || query.trim().length < 2) return Promise.resolve([]);
   return request(`/api/groups/search-students?q=${encodeURIComponent(query.trim())}`);
 }
+
+export function searchTeachers(query) {
+  if (!query || query.trim().length < 2) return Promise.resolve([]);
+  return request(`/api/groups/search-teachers?q=${encodeURIComponent(query.trim())}`);
+}
+
+/** Primary teacher only: set or clear co-teacher (`null` removes). */
+export function setCoTeacher(groupId, coTeacherId) {
+  return request(`/api/groups/${groupId}/co-teacher`, {
+    method: "PUT",
+    body: JSON.stringify({ coTeacherId: coTeacherId == null ? null : coTeacherId }),
+  });
+}

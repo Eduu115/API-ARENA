@@ -47,8 +47,10 @@ import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionStatusCacheDTO;
 import com.apiarena.submissionservice.model.dto.TeacherManualScoresRequest;
+import com.apiarena.submissionservice.model.dto.TeacherBonusLineRequest;
 import com.apiarena.submissionservice.model.dto.TeacherPenaltyApplyRequest;
 import com.apiarena.submissionservice.model.dto.TeacherPenaltiesBatchConfirmRequest;
+import com.apiarena.submissionservice.model.dto.TeacherSubmissionReviewRequest;
 import com.apiarena.submissionservice.kafka.SubmissionCompletedEvent;
 import com.apiarena.submissionservice.kafka.SubmissionKafkaPublisher;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
@@ -135,6 +137,9 @@ public class SubmissionService implements ISubmissionService {
 
     @Value("${services.internal-token:}")
     private String internalToken;
+
+    @Value("${services.notification-url:http://localhost:8090}")
+    private String notificationServiceUrl;
 
     @Value("${ai.review.enabled:false}")
     private boolean aiReviewEnabled;
@@ -1176,6 +1181,7 @@ public class SubmissionService implements ISubmissionService {
     private void enrichTeacherGradingFlags(Submission submission, SubmissionDTO dto, Long viewerId, boolean isTeacher) {
         dto.setTeacherCanApplyPenalty(false);
         dto.setTeacherCanManualGrade(false);
+        dto.setTeacherCanEditSubmissionReview(false);
         if (!isTeacher || viewerId == null) {
             return;
         }
@@ -1193,6 +1199,8 @@ public class SubmissionService implements ISubmissionService {
         if (fetchStudentInTeacherGroup(viewerId, submission.getUserId())) {
             dto.setTeacherCanManualGrade(true);
         }
+        dto.setTeacherCanEditSubmissionReview(Boolean.TRUE.equals(dto.getTeacherCanApplyPenalty())
+                || Boolean.TRUE.equals(dto.getTeacherCanManualGrade()));
     }
 
     private boolean fetchStudentInTeacherGroup(Long teacherId, Long studentUserId) {
@@ -1218,6 +1226,233 @@ public class SubmissionService implements ISubmissionService {
             log.warn("Could not verify teacher group membership: {}", e.getMessage());
             return false;
         }
+    }
+
+    @Override
+    @Transactional
+    public SubmissionDTO saveTeacherSubmissionReview(Long submissionId, Long teacherId,
+            TeacherSubmissionReviewRequest request) {
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body is required");
+        }
+        Submission submission = loadSubmissionForTeacherPenalty(submissionId, teacherId);
+
+        BigDecimal oldBonusSum = sumTeacherBonusPointsJson(submission.getTeacherScoreBonuses());
+        List<Map<String, Object>> newBonusRows = buildTeacherBonusRowsFromRequest(teacherId, request.getBonuses());
+        BigDecimal newBonusSum = sumTeacherBonusPointsJson(newBonusRows);
+        BigDecimal delta = newBonusSum.subtract(oldBonusSum).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal candidateTotal = nz(submission.getTotalScore()).add(delta);
+        if (candidateTotal.compareTo(MAX_TOTAL_SCORE) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Total score after bonus adjustment cannot exceed 1000. Reduce bonus points or remove lines.");
+        }
+        BigDecimal newTotal = candidateTotal.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        if (Boolean.TRUE.equals(submission.getTeacherManualGrading())) {
+            scaleComponentScoresToTotal(submission, newTotal);
+        } else {
+            submission.setTotalScore(newTotal);
+        }
+        submission.setTeacherScoreBonuses(newBonusRows);
+
+        String note = request.getPersonalNote() != null ? request.getPersonalNote().trim() : "";
+        submission.setTeacherPersonalNote(note.isBlank() ? null : note);
+
+        Map<String, String> zn = sanitizeTeacherZoneNotes(request.getZoneNotes());
+        submission.setTeacherZoneNotes(zn.isEmpty() ? new HashMap<>() : zn);
+
+        Map<String, Object> sf = sanitizeTeacherStructuredFeedback(request.getStructuredFeedback());
+        submission.setTeacherStructuredFeedback(sf == null || sf.isEmpty() ? null : sf);
+
+        submissionRepository.save(submission);
+        statusCacheService.cacheStatus(submission);
+        webSocketService.sendCompleted(submissionId, SubmissionStatusCacheDTO.fromEntity(submission));
+
+        boolean notify = request.getNotifyStudent() == null || Boolean.TRUE.equals(request.getNotifyStudent());
+        if (notify) {
+            try {
+                pushTeacherReviewNotification(submission);
+            } catch (Exception e) {
+                log.warn("Could not notify student about teacher review: {}", e.getMessage());
+            }
+        }
+        return buildSubmissionDto(submission, teacherId, false, true);
+    }
+
+    private void pushTeacherReviewNotification(Submission submission) {
+        String base = notificationServiceUrl != null ? notificationServiceUrl.trim() : "";
+        if (base.isEmpty()) {
+            return;
+        }
+        Map<String, Object> ch = fetchChallengeData(submission.getChallengeId());
+        String challengeTitle = ch != null && ch.get("title") != null ? Objects.toString(ch.get("title")) : "";
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("userId", submission.getUserId());
+        body.put("submissionId", submission.getId());
+        body.put("challengeId", submission.getChallengeId());
+        body.put("challengeTitle", challengeTitle);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        restTemplate.postForEntity(
+                base + "/internal/notifications/teacher-submission-review",
+                new HttpEntity<>(body, headers),
+                Void.class);
+    }
+
+    private static List<Map<String, Object>> buildTeacherBonusRowsFromRequest(Long teacherId,
+            List<TeacherBonusLineRequest> lines) {
+        if (lines == null || lines.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String now = Instant.now().toString();
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (TeacherBonusLineRequest line : lines) {
+            if (line == null || line.getPoints() == null) {
+                continue;
+            }
+            BigDecimal pts = line.getPoints().setScale(2, RoundingMode.HALF_UP);
+            if (pts.compareTo(BigDecimal.ZERO) <= 0) {
+                continue;
+            }
+            String id = line.getId() != null && !line.getId().isBlank()
+                    ? line.getId().trim()
+                    : UUID.randomUUID().toString();
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", id);
+            row.put("pointsAdded", pts);
+            if (line.getLabel() != null && !line.getLabel().isBlank()) {
+                row.put("label", line.getLabel().trim());
+            }
+            if (line.getNote() != null && !line.getNote().isBlank()) {
+                row.put("note", line.getNote().trim());
+            }
+            row.put("teacherId", teacherId);
+            row.put("updatedAt", now);
+            out.add(row);
+        }
+        return out;
+    }
+
+    private static BigDecimal sumTeacherBonusPointsJson(List<Map<String, Object>> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        BigDecimal sum = BigDecimal.ZERO;
+        for (Map<String, Object> row : rows) {
+            if (row == null) {
+                continue;
+            }
+            sum = sum.add(toBigDecimal(row.get("pointsAdded")));
+        }
+        return sum.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static final Set<String> TEACHER_ZONE_KEYS = Set.of("correctness", "performance", "design", "aiReview");
+
+    private static String normalizeTeacherZoneKey(String rawKey) {
+        if (rawKey == null) {
+            return null;
+        }
+        String k = rawKey.trim();
+        if ("aireview".equalsIgnoreCase(k) || "ai_review".equalsIgnoreCase(k)) {
+            return "aiReview";
+        }
+        for (String canonical : TEACHER_ZONE_KEYS) {
+            if (canonical.equalsIgnoreCase(k)) {
+                return canonical;
+            }
+        }
+        return null;
+    }
+
+    private static Map<String, String> sanitizeTeacherZoneNotes(Map<String, String> raw) {
+        if (raw == null || raw.isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<String, String> out = new HashMap<>();
+        for (Map.Entry<String, String> e : raw.entrySet()) {
+            String canonical = normalizeTeacherZoneKey(e.getKey());
+            if (canonical == null) {
+                continue;
+            }
+            String v = e.getValue() == null ? "" : e.getValue().trim();
+            if (v.length() > 4000) {
+                v = v.substring(0, 4000);
+            }
+            if (!v.isBlank()) {
+                out.put(canonical, v);
+            }
+        }
+        return out;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> sanitizeTeacherStructuredFeedback(Map<String, Object> raw) {
+        if (raw == null || raw.isEmpty()) {
+            return null;
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        Object summary = raw.get("summary");
+        if (summary instanceof String s && !s.isBlank()) {
+            String t = s.trim();
+            if (t.length() > 4000) {
+                t = t.substring(0, 4000);
+            }
+            out.put("summary", t);
+        }
+        List<String> strengths = normalizeTeacherFeedbackLines(raw.get("strengths"));
+        List<String> suggestions = normalizeTeacherFeedbackLines(raw.get("suggestions"));
+        if (!strengths.isEmpty()) {
+            out.put("strengths", strengths);
+        }
+        if (!suggestions.isEmpty()) {
+            out.put("suggestions", suggestions);
+        }
+        if (out.isEmpty()) {
+            return null;
+        }
+        return out;
+    }
+
+    private static List<String> normalizeTeacherFeedbackLines(Object raw) {
+        List<String> out = new ArrayList<>();
+        if (raw == null) {
+            return out;
+        }
+        if (raw instanceof String s) {
+            for (String line : s.split("\\r?\\n")) {
+                String t = line.trim();
+                if (t.length() > 400) {
+                    t = t.substring(0, 400);
+                }
+                if (!t.isBlank()) {
+                    out.add(t);
+                }
+                if (out.size() >= 30) {
+                    break;
+                }
+            }
+            return out;
+        }
+        if (raw instanceof List<?> list) {
+            for (Object o : list) {
+                if (o == null) {
+                    continue;
+                }
+                String t = String.valueOf(o).trim();
+                if (t.length() > 400) {
+                    t = t.substring(0, 400);
+                }
+                if (!t.isBlank()) {
+                    out.add(t);
+                }
+                if (out.size() >= 30) {
+                    break;
+                }
+            }
+        }
+        return out;
     }
 
     @Override

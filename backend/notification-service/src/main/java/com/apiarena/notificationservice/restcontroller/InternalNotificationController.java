@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apiarena.notificationservice.model.dto.InternalTeacherSubmissionReviewRequest;
 import com.apiarena.notificationservice.model.dto.InternalWelcomeRequest;
 import com.apiarena.notificationservice.model.services.NotificationService;
 
@@ -24,6 +25,12 @@ public class InternalNotificationController {
     @PostMapping("/welcome")
     public ResponseEntity<Void> welcome(@Valid @RequestBody InternalWelcomeRequest body) {
         notificationService.createWelcomeNotification(body.userId(), body.username());
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/teacher-submission-review")
+    public ResponseEntity<Void> teacherSubmissionReview(@Valid @RequestBody InternalTeacherSubmissionReviewRequest body) {
+        notificationService.createTeacherSubmissionReviewNotification(body);
         return ResponseEntity.accepted().build();
     }
 }

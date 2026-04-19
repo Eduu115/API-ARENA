@@ -11,6 +11,8 @@ import AttemptPolicyBlockModal from '../../components/AttemptPolicyBlockModal';
 import { useMsUntilIso, formatCountdownMs } from '../../lib/challengeAttemptUtils';
 import './challenges.css';
 import './ChallengeDetail.css';
+import TutorialTour from '../../components/tutorial/TutorialTour';
+import { DOCS_PATHS, TOUR_CHALLENGE_DETAIL } from '../../tutorial/tourDefinitions';
 
 export default function ChallengeDetail() {
   const { id } = useParams();
@@ -158,7 +160,7 @@ export default function ChallengeDetail() {
               </div>
             </div>
           )}
-          <div className="chd-top-actions">
+          <div className="chd-top-actions" data-tutorial="challenge-detail-actions">
             <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
               ← Back to Challenges
             </button>
@@ -178,7 +180,7 @@ export default function ChallengeDetail() {
             </button>
           </div>
 
-          <header className="chd-hero">
+          <header className="chd-hero" data-tutorial="challenge-detail-hero">
             <div className="chd-hero-tags">
               <span className={`ch-badge ${diffBadgeClass}`}>{challenge.difficulty}</span>
               <span className="ch-badge ch-badge-cat">{challenge.category}</span>
@@ -230,7 +232,7 @@ export default function ChallengeDetail() {
             <p className="chd-description-text">{challenge.description || 'No description.'}</p>
           </section>
 
-          <section className="chd-specs-teaser" aria-labelledby="chd-specs-teaser-title">
+          <section className="chd-specs-teaser" aria-labelledby="chd-specs-teaser-title" data-tutorial="challenge-detail-specs-note">
             <h2 id="chd-specs-teaser-title" className="chd-specs-teaser-title">
               Full requirements
             </h2>
@@ -260,6 +262,12 @@ export default function ChallengeDetail() {
         challengeTitle={challenge?.title}
         primaryLabel="Close"
         onDismiss={() => setAttemptBlockModalOpen(false)}
+      />
+      <TutorialTour
+        tourKey="challengeDetail"
+        steps={TOUR_CHALLENGE_DETAIL}
+        docsHref={DOCS_PATHS.challengeDetail}
+        when
       />
       <CustomCursor />
     </div>

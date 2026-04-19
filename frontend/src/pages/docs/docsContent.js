@@ -1,5 +1,186 @@
 export const DOC_DOCUMENTS = [
   {
+    id: "platform-navigation",
+    title: "Platform navigation",
+    summary:
+      "Where everything lives: landing, app chrome, dashboard, challenges, submissions, Docs, and account basics.",
+    readTime: "6 min",
+    sections: [
+      {
+        id: "map",
+        heading: "High-level map",
+        paragraphs: [
+          "API Arena splits marketing pages (landing) from the authenticated app. Once you sign in, the same top bar follows you everywhere so muscle memory builds fast.",
+          "Use Docs as the permanent reference. Guided tours only introduce the UI once; Docs stays available for deep dives (ZIP layout, ELO, troubleshooting)."
+        ],
+        bullets: [
+          "Landing: public overview, links to Challenges and registration.",
+          "App pages: Dashboard, Challenges catalog, Submissions, Friends, Leaderboard, Docs, Replay.",
+          "Profile and Alerts live on the right side of the top bar when you are signed in."
+        ]
+      },
+      {
+        id: "chrome",
+        heading: "Top bar (guest vs signed in)",
+        paragraphs: [
+          "Guests see Challenges, Leaderboard, Docs, and Replay plus Log in. Signed-in users also see Dashboard, Submissions, Friends, ELO, Alerts, theme toggle, and Profile.",
+          "The bottom navigation on smaller screens mirrors the same destinations where applicable."
+        ],
+        bullets: [
+          "Docs opens the learning hub with long-form guides — bookmark pages you reuse often.",
+          "Replay shows pipeline timelines for past submissions when available.",
+          "Teacher accounts may see an extra Teacher entry for class workflows."
+        ]
+      },
+      {
+        id: "dashboard",
+        heading: "Dashboard",
+        paragraphs: [
+          "The dashboard is your home after login: KPI cards, recent challenges, and shortcuts into the catalog. The sidebar summarizes level, XP, solved count, and category mix.",
+          "Treat it as a launch pad, not the only place to browse — the full catalog with filters lives under Challenges."
+        ],
+        bullets: [
+          "Open a challenge from the table or featured cards to read the public briefing.",
+          "Use Enter Arena or Browse all to jump into the full challenge list when you want filters."
+        ]
+      }
+    ]
+  },
+  {
+    id: "challenges-catalog",
+    title: "Challenges catalog",
+    summary: "How to search, filter, sort, and open a challenge before you start a timed run.",
+    readTime: "5 min",
+    sections: [
+      {
+        id: "sidebar",
+        heading: "Sidebar filters",
+        paragraphs: [
+          "The left column is for narrowing the list: text search, difficulty, completion status, category chips, and a short progress summary.",
+          "Filters combine — clear tags at the top of the main column when you want to reset one dimension."
+        ],
+        bullets: [
+          "Difficulty filters match the badge on each card (easy → expert).",
+          "Status helps you focus on unsolved, in-progress, or completed challenges when you are planning practice.",
+          "Sort changes ordering only; it does not hide challenges unless combined with filters."
+        ]
+      },
+      {
+        id: "cards",
+        heading: "Reading a card",
+        paragraphs: [
+          "Each card shows difficulty, category, origin (legacy vs community), points, description snippet, and community stats (attempts, solves). Your best score appears when you have history on that challenge.",
+          "Click the card to open the challenge detail page — the public briefing before you commit to a timed run."
+        ],
+        bullets: [
+          "Featured badges highlight editorial picks; they are still normal challenges with the same rules.",
+          "Grid vs list view is preference only — content is identical."
+        ]
+      },
+      {
+        id: "next",
+        heading: "What happens next",
+        paragraphs: [
+          "From detail, Start Challenge checks limits and then opens the submit workspace with the full contract, timer, and ZIP upload.",
+          "If you only want to read, stay on the detail page — nothing is consumed until you start."
+        ],
+        bullets: [
+          "Sign in is required to start — guests get a login prompt.",
+          "See Challenge workspace for the difference between preview and full specs."
+        ]
+      }
+    ]
+  },
+  {
+    id: "challenge-workspace",
+    title: "Challenge workspace",
+    summary: "Challenge detail vs submit screen: what you see before and after you start a timed run.",
+    readTime: "6 min",
+    sections: [
+      {
+        id: "preview",
+        heading: "Challenge detail (preview)",
+        paragraphs: [
+          "The detail page is the public briefing: title, difficulty, category, timing, XP reward, and a description. Full HTTP contracts, test expectations, and hints are intentionally gated.",
+          "That keeps the catalog readable while protecting competitive integrity — you commit to the timer before seeing the complete specification."
+        ],
+        bullets: [
+          "Back returns to the catalog; Start Challenge is the primary action when you are ready.",
+          "If limits block you (daily cap or cooldown), the UI explains the next eligible time in UTC."
+        ]
+      },
+      {
+        id: "submit",
+        heading: "Submit workspace (after start)",
+        paragraphs: [
+          "After you start, the submit route shows the full requirements: endpoints, status codes, tests, performance and design criteria, hints, and learning objectives.",
+          "A live timer counts down for your session. Leaving the page does not pause the clock — plan before you start."
+        ],
+        bullets: [
+          "Fair-play limits (attempts per day UTC, cooldown) appear at the top of the workspace.",
+          "Staff roles may bypass student limits for operational testing — students should assume standard rules apply."
+        ]
+      },
+      {
+        id: "pedagogy",
+        heading: "Pedagogy tips",
+        paragraphs: [
+          "If you are new, read First Steps and Preconfigure Project in Docs before your first start — it prevents most packaging failures.",
+          "Use the guided tour the first time you open the workspace; you can skip it and still reread this document later."
+        ],
+        bullets: [
+          "Treat each run as a single delivery: build, verify locally, then upload a clean ZIP.",
+          "If time expires, you will need a new run when eligible — do not rely on pausing."
+        ]
+      }
+    ]
+  },
+  {
+    id: "submitting-a-challenge",
+    title: "Submitting a challenge",
+    summary: "ZIP rules, pipeline expectations, and what to do while your submission is processing.",
+    readTime: "7 min",
+    sections: [
+      {
+        id: "zip",
+        heading: "ZIP packaging",
+        paragraphs: [
+          "Upload a single `.zip` archive. The build expects a Maven project with `pom.xml` at the root of the archive — not nested inside an extra folder unless the challenge explicitly allows it.",
+          "Remove secrets, local paths, and unnecessary binaries. The sandbox builds from scratch."
+        ],
+        bullets: [
+          "Drag and drop onto the panel or click to browse — only `.zip` is accepted.",
+          "Confirm structure locally: unzip into a clean folder and run `mvn clean package` before uploading.",
+          "If you replace the file, review the filename and size shown in the panel before submitting."
+        ]
+      },
+      {
+        id: "pipeline",
+        heading: "What the pipeline does",
+        paragraphs: [
+          "After upload, the platform builds your project, runs the candidate API, and executes automated HTTP tests against it. Scores combine functional, performance, and design signals plus an AI-assisted review block.",
+          "Keep the tab open until processing completes — interrupting during upload or early build can fail the run and still consume limits."
+        ],
+        bullets: [
+          "You will navigate to the submission detail page on success — from there open Results or Replay when available.",
+          "Logs and timelines help you debug; use them before blindly resubmitting."
+        ]
+      },
+      {
+        id: "limits",
+        heading: "Limits and cooldown",
+        paragraphs: [
+          "Students have per-challenge daily attempt budgets and cooldown between submissions. These protect ranking quality — see the counters at the top of the workspace.",
+          "Plan retries: read the failure, fix the root cause, then submit again when allowed."
+        ],
+        bullets: [
+          "UTC is authoritative for daily resets — check the copy on the limit banner for exact times.",
+          "If you are blocked, use the wait time to read Docs or improve tests locally."
+        ]
+      }
+    ]
+  },
+  {
     id: "guia-para-empezar",
     title: "Getting Started Guide",
     summary: "Mindset, work strategy, and delivery rhythm to progress fast without burning out.",

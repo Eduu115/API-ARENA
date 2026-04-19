@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,6 +39,7 @@ import com.apiarena.submissionservice.model.dto.SubmissionZipDownload;
 import com.apiarena.submissionservice.model.dto.TeacherManualScoresRequest;
 import com.apiarena.submissionservice.model.dto.TeacherPenaltyApplyRequest;
 import com.apiarena.submissionservice.model.dto.TeacherPenaltiesBatchConfirmRequest;
+import com.apiarena.submissionservice.model.dto.TeacherSubmissionReviewRequest;
 import com.apiarena.submissionservice.model.services.ISubmissionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -220,6 +222,22 @@ public class SubmissionController {
             throw new IllegalArgumentException("User ID not found in token.");
         }
         return ResponseEntity.ok(submissionService.revokeTeacherPenalty(id, teacherId, penaltyId));
+    }
+
+    @PutMapping("/{id}/teacher/submission-review")
+    @PreAuthorize("hasRole('TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Teacher submission review",
+            description = "Personal note, per-area comments, structured feedback, and positive bonus lines (total never exceeds 1000). "
+                    + "Optionally notifies the student in-app.")
+    public ResponseEntity<SubmissionDTO> saveTeacherSubmissionReview(
+            @PathVariable Long id,
+            @Valid @RequestBody TeacherSubmissionReviewRequest body) {
+        Long teacherId = extractUserIdFromAuthentication();
+        if (teacherId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.saveTeacherSubmissionReview(id, teacherId, body));
     }
 
     @PostMapping("/{id}/teacher/manual-scores")

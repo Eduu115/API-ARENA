@@ -115,7 +115,7 @@ export default function Topbar({
 
   return (
     <>
-      <header className="arena-navbar" role="banner">
+      <header className="arena-navbar" role="banner" data-tutorial="topbar">
         <nav className="arena-navbar__inner" aria-label="Main">
           <div className="arena-navbar__brand">
             <div className="arena-navbar__logo">

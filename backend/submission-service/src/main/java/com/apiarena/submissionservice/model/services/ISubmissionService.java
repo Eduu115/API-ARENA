@@ -16,6 +16,7 @@ import com.apiarena.submissionservice.model.dto.SubmissionZipDownload;
 import com.apiarena.submissionservice.model.dto.TeacherManualScoresRequest;
 import com.apiarena.submissionservice.model.dto.TeacherPenaltyApplyRequest;
 import com.apiarena.submissionservice.model.dto.TeacherPenaltiesBatchConfirmRequest;
+import com.apiarena.submissionservice.model.dto.TeacherSubmissionReviewRequest;
 import com.apiarena.submissionservice.model.entities.Submission;
 
 public interface ISubmissionService {
@@ -48,6 +49,8 @@ public interface ISubmissionService {
     SubmissionDTO confirmTeacherPenalties(Long submissionId, Long teacherId, TeacherPenaltiesBatchConfirmRequest request);
 
     SubmissionDTO revokeTeacherPenalty(Long submissionId, Long teacherId, String penaltyId);
+
+    SubmissionDTO saveTeacherSubmissionReview(Long submissionId, Long teacherId, TeacherSubmissionReviewRequest request);
 
     SubmissionDTO applyTeacherManualScores(Long submissionId, Long teacherId, TeacherManualScoresRequest request);
 

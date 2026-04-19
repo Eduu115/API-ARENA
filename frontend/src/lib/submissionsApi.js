@@ -147,6 +147,14 @@ export async function applyTeacherManualScores(submissionId, body) {
   });
 }
 
+/** Teacher: personal note, per-area notes, structured feedback, positive bonus lines (capped at 1000 total). */
+export async function saveTeacherSubmissionReview(submissionId, body) {
+  return request(`/api/submissions/${submissionId}/teacher/submission-review`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
 /** Upload ZIP and create submission (multipart/form-data). */
 export async function createSubmission(challengeId, file, developmentTimeSeconds) {
   const base = getBaseUrl();

@@ -969,3 +969,46 @@
   opacity: 0.5;
   cursor: wait;
 }
+
+.sd-teacher-field--inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.sd-teacher-field--inline input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--cyan);
+}
+
+.sd-teacher-bonus-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sd-teacher-bonus-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sd-teacher-bonus-row .sd-teacher-input:first-of-type {
+  width: 76px;
+  min-width: 76px;
+}
+
+.sd-teacher-input--grow {
+  flex: 1;
+  min-width: 140px;
+}
+
+.sd-teacher-feedback-panel .sd-panel-title {
+  color: var(--purple);
+}

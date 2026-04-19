@@ -7,6 +7,7 @@ import {
   applyTeacherManualScores,
   confirmTeacherPenalties,
   revokeTeacherPenalty,
+  saveTeacherSubmissionReview,
 } from '../../lib/submissionsApi';
 import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
@@ -85,6 +86,49 @@ function normalizeAiReview(rawSuggestions, aiScoreRaw) {
   return { aiScore, summary, provider, strengths, suggestions };
 }
 
+function newBonusDraftRow() {
+  const clientKey =
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `bk-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return { clientKey, id: '', points: '', label: '', note: '' };
+}
+
+function teacherReviewViewFromSubmission(s) {
+  if (!s) return null;
+  const zn = s.teacherZoneNotes && typeof s.teacherZoneNotes === 'object' ? s.teacherZoneNotes : {};
+  const sf = s.teacherStructuredFeedback && typeof s.teacherStructuredFeedback === 'object'
+    ? s.teacherStructuredFeedback
+    : {};
+  const personal = s.teacherPersonalNote && String(s.teacherPersonalNote).trim();
+  const zoneList = [
+    { key: 'correctness', label: 'Correctness' },
+    { key: 'performance', label: 'Performance' },
+    { key: 'design', label: 'Design' },
+    { key: 'aiReview', label: 'AI review' },
+  ]
+    .map(({ key, label }) => ({ label, text: zn[key] ? String(zn[key]).trim() : '' }))
+    .filter((z) => z.text);
+  const summary = typeof sf.summary === 'string' ? sf.summary.trim() : '';
+  const strengths = Array.isArray(sf.strengths) ? sf.strengths.filter(Boolean) : [];
+  const suggestions = Array.isArray(sf.suggestions) ? sf.suggestions.filter(Boolean) : [];
+  const bonusRows = Array.isArray(s.teacherScoreBonuses) ? s.teacherScoreBonuses : [];
+  return { personal, zoneList, summary, strengths, suggestions, bonusRows };
+}
+
+function sumTeacherBonusPointsFromApiRows(rows) {
+  if (!Array.isArray(rows)) return 0;
+  return rows.reduce((acc, b) => acc + (Number(b?.pointsAdded) || 0), 0);
+}
+
+function sumTeacherBonusPointsFromDraftRows(rows) {
+  if (!Array.isArray(rows)) return 0;
+  return rows.reduce((acc, r) => {
+    const p = Number(r?.points);
+    return acc + (Number.isFinite(p) && p > 0 ? p : 0);
+  }, 0);
+}
+
 export default function SubmissionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -108,6 +152,17 @@ export default function SubmissionDetail() {
   const [teacherErr, setTeacherErr] = useState(null);
   const [penaltyDrafts, setPenaltyDrafts] = useState([]);
   const [penaltyClock, setPenaltyClock] = useState(() => Date.now());
+
+  const [reviewPersonalNote, setReviewPersonalNote] = useState('');
+  const [reviewZoneC, setReviewZoneC] = useState('');
+  const [reviewZoneP, setReviewZoneP] = useState('');
+  const [reviewZoneD, setReviewZoneD] = useState('');
+  const [reviewZoneAi, setReviewZoneAi] = useState('');
+  const [reviewSummary, setReviewSummary] = useState('');
+  const [reviewStrengths, setReviewStrengths] = useState('');
+  const [reviewSuggestions, setReviewSuggestions] = useState('');
+  const [reviewBonuses, setReviewBonuses] = useState([]);
+  const [reviewNotifyStudent, setReviewNotifyStudent] = useState(true);
 
   useEffect(() => {
     if (!id) return;
@@ -200,8 +255,34 @@ export default function SubmissionDetail() {
   const showTeacherTools = useMemo(() => {
     if (!sub || sub.status !== 'COMPLETED') return false;
     if (user?.role !== 'TEACHER') return false;
-    return Boolean(sub.teacherCanApplyPenalty || sub.teacherCanManualGrade);
+    return Boolean(sub.teacherCanEditSubmissionReview);
   }, [sub, user?.role]);
+
+  const teacherReviewReader = useMemo(() => teacherReviewViewFromSubmission(sub), [sub]);
+
+  const showTeacherReviewReader = useMemo(() => {
+    if (!sub || !teacherReviewReader) return false;
+    if (sub.status !== 'COMPLETED' && sub.status !== 'FAILED') return false;
+    const v = teacherReviewReader;
+    const has =
+      v.personal ||
+      v.zoneList.length > 0 ||
+      v.summary ||
+      v.strengths.length > 0 ||
+      v.suggestions.length > 0 ||
+      v.bonusRows.length > 0;
+    if (!has) return false;
+    if (user?.role === 'TEACHER' && sub.teacherCanEditSubmissionReview) return false;
+    return true;
+  }, [sub, teacherReviewReader, user?.role]);
+
+  const reviewProjectedTotal = useMemo(() => {
+    if (!sub) return null;
+    const base = Number(sub.totalScore) || 0;
+    const oldB = sumTeacherBonusPointsFromApiRows(sub.teacherScoreBonuses);
+    const newB = sumTeacherBonusPointsFromDraftRows(reviewBonuses);
+    return Math.round((base - oldB + newB) * 100) / 100;
+  }, [sub, reviewBonuses]);
 
   useEffect(() => {
     const t = setInterval(() => setPenaltyClock(Date.now()), 15000);
@@ -211,6 +292,54 @@ export default function SubmissionDetail() {
   useEffect(() => {
     setPenaltyDrafts([]);
   }, [id]);
+
+  const teacherReviewHydrateKey = useMemo(() => {
+    if (!sub) return '';
+    return [
+      sub.id,
+      sub.teacherPersonalNote ?? '',
+      JSON.stringify(sub.teacherZoneNotes ?? {}),
+      JSON.stringify(sub.teacherStructuredFeedback ?? {}),
+      JSON.stringify(sub.teacherScoreBonuses ?? []),
+      Boolean(sub.teacherCanEditSubmissionReview),
+    ].join('|');
+  }, [sub]);
+
+  useEffect(() => {
+    if (!sub || user?.role !== 'TEACHER' || !sub.teacherCanEditSubmissionReview) {
+      return;
+    }
+    const zn = sub.teacherZoneNotes && typeof sub.teacherZoneNotes === 'object' ? sub.teacherZoneNotes : {};
+    setReviewPersonalNote(sub.teacherPersonalNote ? String(sub.teacherPersonalNote) : '');
+    setReviewZoneC(zn.correctness ? String(zn.correctness) : '');
+    setReviewZoneP(zn.performance ? String(zn.performance) : '');
+    setReviewZoneD(zn.design ? String(zn.design) : '');
+    setReviewZoneAi(zn.aiReview ? String(zn.aiReview) : '');
+    const sf = sub.teacherStructuredFeedback && typeof sub.teacherStructuredFeedback === 'object'
+      ? sub.teacherStructuredFeedback
+      : {};
+    setReviewSummary(typeof sf.summary === 'string' ? sf.summary : '');
+    setReviewStrengths(Array.isArray(sf.strengths) ? sf.strengths.join('\n') : '');
+    setReviewSuggestions(Array.isArray(sf.suggestions) ? sf.suggestions.join('\n') : '');
+    const apiRows = Array.isArray(sub.teacherScoreBonuses) ? sub.teacherScoreBonuses : [];
+    if (apiRows.length === 0) {
+      setReviewBonuses([newBonusDraftRow()]);
+    } else {
+      setReviewBonuses(
+        apiRows.map((b) => ({
+          clientKey:
+            typeof crypto !== 'undefined' && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `bk-${b?.id || Math.random()}`,
+          id: b?.id ? String(b.id) : '',
+          points: b?.pointsAdded != null ? String(b.pointsAdded) : '',
+          label: b?.label != null ? String(b.label) : '',
+          note: b?.note != null ? String(b.note) : '',
+        })),
+      );
+    }
+    setReviewNotifyStudent(true);
+  }, [teacherReviewHydrateKey, user?.role]);
 
   function buildPenaltyBodyFromForm() {
     const body = { presetKey: penaltyPresetKey, customNote: penaltyNote.trim() || undefined };
@@ -302,6 +431,81 @@ export default function SubmissionDetail() {
       setSub(updated);
     } catch (err) {
       setTeacherErr(err?.message || 'Could not save manual scores');
+    } finally {
+      setTeacherBusy(false);
+    }
+  }
+
+  function handleAddBonusRow() {
+    setReviewBonuses((rows) => [...rows, newBonusDraftRow()]);
+  }
+
+  function handleRemoveBonusRow(clientKey) {
+    setReviewBonuses((rows) => {
+      const next = rows.filter((r) => r.clientKey !== clientKey);
+      return next.length ? next : [newBonusDraftRow()];
+    });
+  }
+
+  function buildTeacherReviewPayload() {
+    const zoneNotes = {};
+    if (reviewZoneC.trim()) zoneNotes.correctness = reviewZoneC.trim();
+    if (reviewZoneP.trim()) zoneNotes.performance = reviewZoneP.trim();
+    if (reviewZoneD.trim()) zoneNotes.design = reviewZoneD.trim();
+    if (reviewZoneAi.trim()) zoneNotes.aiReview = reviewZoneAi.trim();
+
+    const strengths = reviewStrengths
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const suggestions = reviewSuggestions
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    let structuredFeedback;
+    if (reviewSummary.trim() || strengths.length || suggestions.length) {
+      structuredFeedback = {};
+      if (reviewSummary.trim()) structuredFeedback.summary = reviewSummary.trim();
+      if (strengths.length) structuredFeedback.strengths = strengths;
+      if (suggestions.length) structuredFeedback.suggestions = suggestions;
+    }
+
+    const bonuses = reviewBonuses
+      .map((r) => {
+        const pts = Number(r.points);
+        if (!Number.isFinite(pts) || pts <= 0) return null;
+        const line = { points: pts };
+        if (r.id && String(r.id).trim()) line.id = String(r.id).trim();
+        if (r.label && r.label.trim()) line.label = r.label.trim();
+        if (r.note && r.note.trim()) line.note = r.note.trim();
+        return line;
+      })
+      .filter(Boolean);
+
+    return {
+      personalNote: reviewPersonalNote.trim() || undefined,
+      zoneNotes: Object.keys(zoneNotes).length ? zoneNotes : undefined,
+      structuredFeedback,
+      bonuses,
+      notifyStudent: reviewNotifyStudent,
+    };
+  }
+
+  async function handleSaveTeacherReview(ev) {
+    ev.preventDefault();
+    if (!id || !sub?.teacherCanEditSubmissionReview) return;
+    const projected = reviewProjectedTotal;
+    if (projected != null && projected > 1000 + 1e-6) {
+      setTeacherErr('Total score after bonuses cannot exceed 1000. Reduce bonus points or remove lines.');
+      return;
+    }
+    setTeacherErr(null);
+    setTeacherBusy(true);
+    try {
+      const updated = await saveTeacherSubmissionReview(id, buildTeacherReviewPayload());
+      setSub(updated);
+    } catch (err) {
+      setTeacherErr(err?.message || 'Could not save teacher review');
     } finally {
       setTeacherBusy(false);
     }
@@ -629,6 +833,183 @@ export default function SubmissionDetail() {
                         </div>
                       </form>
                     )}
+                    {sub.teacherCanEditSubmissionReview && (
+                      <form className="sd-teacher-form" onSubmit={handleSaveTeacherReview}>
+                        <div
+                          className={`sd-teacher-section${
+                            sub.teacherCanApplyPenalty || sub.teacherCanManualGrade
+                              ? ' sd-teacher-section--divider'
+                              : ''
+                          }`}
+                        >
+                          <h3 className="sd-teacher-section-title">Submission review &amp; score bonuses</h3>
+                          <p className="sd-teacher-hint">
+                            Notes and structured feedback are visible to the student. Bonus lines add points (max 1000
+                            total); you can change or remove lines anytime—unlike penalties, there is no 2-hour lock.
+                          </p>
+                          {reviewProjectedTotal != null && (
+                            <p
+                              className="sd-teacher-hint"
+                              style={{
+                                color: reviewProjectedTotal > 1000 ? 'var(--red)' : 'var(--cyan)',
+                              }}
+                            >
+                              Projected total score:{' '}
+                              <strong>{reviewProjectedTotal.toFixed(2)}</strong> / 1000
+                            </p>
+                          )}
+                          <label className="sd-teacher-field">
+                            <span className="sd-teacher-label">Personal note to student</span>
+                            <textarea
+                              className="sd-teacher-textarea"
+                              rows={4}
+                              value={reviewPersonalNote}
+                              onChange={(e) => setReviewPersonalNote(e.target.value)}
+                              placeholder="Overall comment for this submission"
+                            />
+                          </label>
+                          <div className="sd-teacher-manual-grid">
+                            {[
+                              ['Correctness (note)', reviewZoneC, setReviewZoneC],
+                              ['Performance (note)', reviewZoneP, setReviewZoneP],
+                              ['Design (note)', reviewZoneD, setReviewZoneD],
+                              ['AI review (note)', reviewZoneAi, setReviewZoneAi],
+                            ].map(([label, val, setVal]) => (
+                              <label key={label} className="sd-teacher-field">
+                                <span className="sd-teacher-label">{label}</span>
+                                <textarea
+                                  className="sd-teacher-textarea"
+                                  rows={3}
+                                  value={val}
+                                  onChange={(e) => setVal(e.target.value)}
+                                  placeholder="Short feedback for this scoring area"
+                                />
+                              </label>
+                            ))}
+                          </div>
+                          <label className="sd-teacher-field">
+                            <span className="sd-teacher-label">Structured summary</span>
+                            <textarea
+                              className="sd-teacher-textarea"
+                              rows={3}
+                              value={reviewSummary}
+                              onChange={(e) => setReviewSummary(e.target.value)}
+                              placeholder="High-level summary (similar to AI review)"
+                            />
+                          </label>
+                          <label className="sd-teacher-field">
+                            <span className="sd-teacher-label">Strengths (one per line)</span>
+                            <textarea
+                              className="sd-teacher-textarea"
+                              rows={4}
+                              value={reviewStrengths}
+                              onChange={(e) => setReviewStrengths(e.target.value)}
+                              placeholder="Bullet-style strengths"
+                            />
+                          </label>
+                          <label className="sd-teacher-field">
+                            <span className="sd-teacher-label">Suggestions (one per line)</span>
+                            <textarea
+                              className="sd-teacher-textarea"
+                              rows={4}
+                              value={reviewSuggestions}
+                              onChange={(e) => setReviewSuggestions(e.target.value)}
+                              placeholder="What to improve next"
+                            />
+                          </label>
+                          <div className="sd-teacher-section" style={{ marginTop: 12 }}>
+                            <span className="sd-teacher-label">Positive score lines (optional)</span>
+                            <ul className="sd-teacher-bonus-list" aria-label="Bonus lines">
+                              {reviewBonuses.map((row) => (
+                                <li key={row.clientKey} className="sd-teacher-bonus-row">
+                                  <input
+                                    type="number"
+                                    className="sd-teacher-input"
+                                    min="0.01"
+                                    max="100"
+                                    step="0.01"
+                                    placeholder="Pts"
+                                    value={row.points}
+                                    onChange={(e) =>
+                                      setReviewBonuses((prev) =>
+                                        prev.map((r) =>
+                                          r.clientKey === row.clientKey
+                                            ? { ...r, points: e.target.value }
+                                            : r,
+                                        ),
+                                      )
+                                    }
+                                  />
+                                  <input
+                                    type="text"
+                                    className="sd-teacher-input"
+                                    placeholder="Label"
+                                    value={row.label}
+                                    onChange={(e) =>
+                                      setReviewBonuses((prev) =>
+                                        prev.map((r) =>
+                                          r.clientKey === row.clientKey
+                                            ? { ...r, label: e.target.value }
+                                            : r,
+                                        ),
+                                      )
+                                    }
+                                  />
+                                  <input
+                                    type="text"
+                                    className="sd-teacher-input sd-teacher-input--grow"
+                                    placeholder="Note (optional)"
+                                    value={row.note}
+                                    onChange={(e) =>
+                                      setReviewBonuses((prev) =>
+                                        prev.map((r) =>
+                                          r.clientKey === row.clientKey
+                                            ? { ...r, note: e.target.value }
+                                            : r,
+                                        ),
+                                      )
+                                    }
+                                  />
+                                  <button
+                                    type="button"
+                                    className="sd-teacher-ghost-btn"
+                                    disabled={teacherBusy}
+                                    onClick={() => handleRemoveBonusRow(row.clientKey)}
+                                  >
+                                    Remove
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="sd-teacher-actions sd-teacher-actions--start">
+                              <button
+                                type="button"
+                                className="sd-teacher-primary-btn sd-teacher-primary-btn--secondary"
+                                disabled={teacherBusy}
+                                onClick={handleAddBonusRow}
+                              >
+                                Add bonus line
+                              </button>
+                            </div>
+                          </div>
+                          <label className="sd-teacher-field sd-teacher-field--inline">
+                            <input
+                              type="checkbox"
+                              checked={reviewNotifyStudent}
+                              onChange={(e) => setReviewNotifyStudent(e.target.checked)}
+                            />
+                            <span className="sd-teacher-label" style={{ marginBottom: 0 }}>
+                              Notify student in-app when saving
+                            </span>
+                          </label>
+                        </div>
+                        <div className="sd-teacher-actions">
+                          <button type="submit" className="sd-teacher-primary-btn" disabled={teacherBusy}>
+                            Save review &amp; bonuses
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 </div>
               </div>
@@ -668,6 +1049,99 @@ export default function SubmissionDetail() {
                       )}
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {!isProcessing && showTeacherReviewReader && teacherReviewReader && (
+              <div className="sd-panel sd-ai-panel sd-teacher-feedback-panel" style={{ marginBottom: 20 }}>
+                <div className="sd-panel-head">
+                  <div className="sd-panel-title">Teacher review</div>
+                </div>
+                <div className="sd-panel-body">
+                  {teacherReviewReader.personal && (
+                    <p className="sd-ai-summary">{teacherReviewReader.personal}</p>
+                  )}
+                  {teacherReviewReader.zoneList.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      {teacherReviewReader.zoneList.map((z) => (
+                        <div key={z.label} style={{ marginBottom: 10, fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                          <div style={{ color: 'var(--cyan)' }}>{z.label}</div>
+                          <p style={{ margin: '4px 0 0', color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{z.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {teacherReviewReader.summary && (
+                    <p
+                      className="sd-ai-summary"
+                      style={{
+                        marginTop:
+                          teacherReviewReader.personal || teacherReviewReader.zoneList.length > 0 ? 12 : 0,
+                      }}
+                    >
+                      {teacherReviewReader.summary}
+                    </p>
+                  )}
+                  {(teacherReviewReader.strengths.length > 0 || teacherReviewReader.suggestions.length > 0) && (
+                    <div className="sd-ai-columns">
+                      <div>
+                        <div className="sd-ai-col-title">Strengths</div>
+                        {teacherReviewReader.strengths.length ? (
+                          <ul className="sd-ai-list">
+                            {teacherReviewReader.strengths.map((item, idx) => (
+                              <li key={`tstr-${idx}`}>{item}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="sd-ai-empty">—</div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="sd-ai-col-title">Suggestions</div>
+                        {teacherReviewReader.suggestions.length ? (
+                          <ul className="sd-ai-list">
+                            {teacherReviewReader.suggestions.map((item, idx) => (
+                              <li key={`tsug-${idx}`}>{item}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="sd-ai-empty">—</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {teacherReviewReader.bonusRows.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: 16,
+                        paddingTop: 12,
+                        borderTop: '1px solid rgba(255,255,255,0.08)',
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 11,
+                        color: 'var(--muted)',
+                      }}
+                    >
+                      <div style={{ color: 'var(--green)', marginBottom: 8 }}>Score bonuses</div>
+                      <ul className="sd-teacher-applied-list">
+                        {teacherReviewReader.bonusRows.map((b, idx) => (
+                          <li key={b.id || `tb-${idx}`} className="sd-teacher-applied-row">
+                            <div className="sd-teacher-applied-main">
+                              <span style={{ color: 'var(--green)' }}>
+                                +{b.pointsAdded != null ? Number(b.pointsAdded).toFixed(1) : '—'} pts
+                              </span>
+                              {b.label ? ` · ${b.label}` : ''}
+                              {b.note ? ` — ${b.note}` : ''}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                      <div style={{ color: 'var(--dim)', marginTop: 8 }}>
+                        Total bonus: +
+                        {sumTeacherBonusPointsFromApiRows(teacherReviewReader.bonusRows).toFixed(1)} pts
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

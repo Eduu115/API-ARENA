@@ -9,6 +9,8 @@ import FeaturesSection from './sections/FeaturesSection';
 import LeaderboardSection from './sections/LeaderboardSection';
 import CtaSection from './sections/CtaSection';
 import LandingFooter from './sections/LandingFooter';
+import TutorialTour from '../../components/tutorial/TutorialTour';
+import { DOCS_PATHS, TOUR_LANDING } from '../../tutorial/tourDefinitions';
 import './landing.css';
 
 function useLandingCursor() {
@@ -84,6 +86,7 @@ export default function Landing() {
       <LeaderboardSection />
       <CtaSection />
       <LandingFooter />
+      <TutorialTour tourKey="landing" steps={TOUR_LANDING} docsHref={DOCS_PATHS.landing} when />
     </div>
   );
 }

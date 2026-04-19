@@ -2,6 +2,8 @@ package com.apiarena.submissionservice.model.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import com.apiarena.submissionservice.model.entities.Submission;
 import lombok.AllArgsConstructor;
@@ -43,6 +45,18 @@ public class SubmissionDTO {
     private LocalDateTime completedAt;
     private String wsTopic;
 
+    private List<Map<String, Object>> teacherPenalties;
+    private Boolean teacherManualGrading;
+    /** Populated for the current viewer when they are an eligible teacher. */
+    private Boolean teacherCanApplyPenalty;
+    private Boolean teacherCanManualGrade;
+    private Boolean teacherCanEditSubmissionReview;
+
+    private String teacherPersonalNote;
+    private Map<String, String> teacherZoneNotes;
+    private Map<String, Object> teacherStructuredFeedback;
+    private List<Map<String, Object>> teacherScoreBonuses;
+
     public static SubmissionDTO fromEntity(Submission entity, String wsTopic) {
         return SubmissionDTO.builder()
                 .id(entity.getId())
@@ -71,6 +85,19 @@ public class SubmissionDTO {
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .completedAt(entity.getCompletedAt())
-                .wsTopic(wsTopic).build();
+                .wsTopic(wsTopic)
+                .teacherPenalties(entity.getTeacherPenalties() != null
+                        ? entity.getTeacherPenalties() : Collections.emptyList())
+                .teacherManualGrading(entity.getTeacherManualGrading())
+                .teacherCanApplyPenalty(false)
+                .teacherCanManualGrade(false)
+                .teacherCanEditSubmissionReview(false)
+                .teacherPersonalNote(entity.getTeacherPersonalNote())
+                .teacherZoneNotes(entity.getTeacherZoneNotes() != null
+                        ? entity.getTeacherZoneNotes() : Collections.emptyMap())
+                .teacherStructuredFeedback(entity.getTeacherStructuredFeedback())
+                .teacherScoreBonuses(entity.getTeacherScoreBonuses() != null
+                        ? entity.getTeacherScoreBonuses() : Collections.emptyList())
+                .build();
     }
 }

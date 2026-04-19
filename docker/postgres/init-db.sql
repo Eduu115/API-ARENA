@@ -114,6 +114,8 @@ CREATE TABLE IF NOT EXISTS teacher_groups (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE teacher_groups ADD COLUMN IF NOT EXISTS co_teacher_id BIGINT REFERENCES users(id) ON DELETE SET NULL;
+
 -- ===========================================
 -- Tabla: teacher_group_members
 -- ===========================================
@@ -227,6 +229,12 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS development_time_seconds INTEGER;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_penalties JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_manual_grading BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_personal_note TEXT;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_zone_notes JSONB DEFAULT '{}'::jsonb;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_structured_feedback JSONB;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_score_bonuses JSONB DEFAULT '[]'::jsonb;
 
 CREATE TABLE IF NOT EXISTS replay_events (
     id BIGSERIAL PRIMARY KEY,
@@ -260,6 +268,7 @@ CREATE INDEX IF NOT EXISTS idx_sandbox_status ON sandbox_executions(status);
 CREATE INDEX IF NOT EXISTS idx_leaderboard_challenge_rank ON leaderboard_entries(challenge_id, rank);
 CREATE INDEX IF NOT EXISTS idx_leaderboard_user ON leaderboard_entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_teacher_groups_teacher_id ON teacher_groups(teacher_id);
+CREATE INDEX IF NOT EXISTS idx_teacher_groups_co_teacher_id ON teacher_groups(co_teacher_id);
 CREATE INDEX IF NOT EXISTS idx_teacher_group_members_group_id ON teacher_group_members(group_id);
 CREATE INDEX IF NOT EXISTS idx_teacher_group_members_user_id ON teacher_group_members(user_id);
 
@@ -577,6 +586,9 @@ INSERT INTO teacher_groups (name, description, teacher_id) VALUES
   ('Backend Avanzado',    'Microservicios, Docker y despliegue cloud',                  7),
   ('Intro Programación',  'Fundamentos de programación y lógica computacional',         7)
 ON CONFLICT DO NOTHING;
+
+-- Shared group example: profoak (3) + profsanchez (7) co-teach DAW 2ºA (id 1)
+UPDATE teacher_groups SET co_teacher_id = 7 WHERE id = 1 AND teacher_id = 3;
 
 -- ===========================================
 -- Seed: teacher_group_members
