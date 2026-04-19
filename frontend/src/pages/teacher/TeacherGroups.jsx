@@ -30,6 +30,11 @@ export default function TeacherGroups() {
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef(null);
 
+  const [coSearchQ, setCoSearchQ] = useState("");
+  const [coSearchResults, setCoSearchResults] = useState([]);
+  const [coSearching, setCoSearching] = useState(false);
+  const coDebounceRef = useRef(null);
+
   const loadGroups = useCallback(async () => {
     setLoading(true);
     try {
@@ -118,6 +123,26 @@ export default function TeacherGroups() {
     return () => clearTimeout(debounceRef.current);
   }, [searchQ]);
 
+  useEffect(() => {
+    if (coDebounceRef.current) clearTimeout(coDebounceRef.current);
+    if (!coSearchQ || coSearchQ.trim().length < 2) {
+      setCoSearchResults([]);
+      return;
+    }
+    coDebounceRef.current = setTimeout(async () => {
+      setCoSearching(true);
+      try {
+        const res = await groupsApi.searchTeachers(coSearchQ);
+        setCoSearchResults(Array.isArray(res) ? res : []);
+      } catch {
+        setCoSearchResults([]);
+      } finally {
+        setCoSearching(false);
+      }
+    }, 350);
+    return () => clearTimeout(coDebounceRef.current);
+  }, [coSearchQ]);
+
   const memberIds = useMemo(
     () => new Set((detail?.members || []).map((m) => m.userId)),
     [detail]
@@ -169,6 +194,30 @@ export default function TeacherGroups() {
       await loadGroups();
     } catch (err) {
       alert(err.message || "Error deleting group");
+    }
+  }
+
+  async function handleSetCoTeacher(userId) {
+    if (!selected) return;
+    try {
+      const updated = await groupsApi.setCoTeacher(selected, userId);
+      setDetail(updated);
+      setCoSearchQ("");
+      setCoSearchResults([]);
+      await loadGroups();
+    } catch (err) {
+      alert(err.message || "Could not update co-teacher");
+    }
+  }
+
+  async function handleRemoveCoTeacher() {
+    if (!selected) return;
+    try {
+      const updated = await groupsApi.setCoTeacher(selected, null);
+      setDetail(updated);
+      await loadGroups();
+    } catch (err) {
+      alert(err.message || "Could not remove co-teacher");
     }
   }
 
@@ -285,22 +334,45 @@ export default function TeacherGroups() {
                   }}
                 >
                   <div>
-                    <div style={{ fontFamily: "var(--font-heading)", fontSize: 14, color: "var(--text)" }}>{g.name}</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: "var(--font-heading)", fontSize: 14, color: "var(--text)" }}>{g.name}</span>
+                      {g.shared && (
+                        <span
+                          style={{
+                            fontFamily: "var(--font-mono)",
+                            fontSize: 10,
+                            letterSpacing: 0.5,
+                            textTransform: "uppercase",
+                            color: "var(--purple)",
+                            border: "1px solid rgba(189,102,255,0.45)",
+                            borderRadius: 4,
+                            padding: "1px 6px",
+                          }}
+                        >
+                          Shared
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
                       {g.studentCount} student{g.studentCount !== 1 ? "s" : ""}
+                      {g.currentUserIsPrimary === false && (
+                        <span style={{ marginLeft: 8, color: "var(--dim)" }}>· co-teaching</span>
+                      )}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(g.id); }}
-                    style={{
-                      background: "none", border: "none", color: "var(--red)",
-                      cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: 11,
-                      opacity: 0.6,
-                    }}
-                  >
-                    ✕
-                  </button>
+                  {g.currentUserIsPrimary !== false && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(g.id); }}
+                      style={{
+                        background: "none", border: "none", color: "var(--red)",
+                        cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: 11,
+                        opacity: 0.6,
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
               ))
             )}
@@ -310,6 +382,113 @@ export default function TeacherGroups() {
         {/* --- detail panel --- */}
         {selected && (
           <div style={{ display: "grid", gap: 16 }}>
+            {/* co-teacher */}
+            <div className="db-panel">
+              <div className="db-panel-head">
+                <div className="db-panel-title">Co-teacher</div>
+              </div>
+              <div style={{ padding: "12px 18px" }}>
+                {detailLoading || !detail ? (
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>Loading…</div>
+                ) : detail.currentUserIsPrimary === false ? (
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>
+                    <div style={{ color: "var(--purple)", marginBottom: 6, fontSize: 11, letterSpacing: 1 }}>SHARED GROUP</div>
+                    <div>
+                      Primary teacher:{" "}
+                      <span style={{ color: "var(--text)" }}>@{detail.primaryTeacherUsername || "—"}</span>
+                    </div>
+                    <div style={{ marginTop: 8, color: "var(--text)" }}>
+                      Your role: co-teacher (same member access as the primary).
+                    </div>
+                  </div>
+                ) : detail.coTeacherId ? (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" }}>
+                      Co-teacher: <span style={{ color: "var(--cyan)" }}>@{detail.coTeacherUsername}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCoTeacher()}
+                      style={{
+                        background: "rgba(255,77,106,0.1)",
+                        border: "1px solid rgba(255,77,106,0.35)",
+                        color: "var(--red)",
+                        borderRadius: 4,
+                        padding: "4px 12px",
+                        fontFamily: "var(--font-mono)",
+                        fontSize: 11,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Remove co-teacher
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginBottom: 8 }}>
+                      Invite another teacher to manage this group with you (shared on the dashboard).
+                    </div>
+                    <div className="ch-search-wrap" style={{ marginBottom: 8 }}>
+                      <span className="ch-search-icon">/</span>
+                      <input
+                        type="text"
+                        className="ch-search-input"
+                        placeholder="Search teacher by username or email…"
+                        value={coSearchQ}
+                        onChange={(e) => setCoSearchQ(e.target.value)}
+                      />
+                    </div>
+                    {coSearching && (
+                      <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", padding: "4px 0" }}>
+                        Searching…
+                      </div>
+                    )}
+                    {coSearchResults.length > 0 && (
+                      <div style={{ maxHeight: 180, overflowY: "auto" }}>
+                        {coSearchResults.map((u) => (
+                          <div
+                            key={u.id}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              padding: "7px 0",
+                              borderBottom: "1px solid var(--dim)",
+                            }}
+                          >
+                            <div>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" }}>
+                                @{u.username}
+                              </span>
+                              <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginLeft: 8 }}>
+                                {u.email}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleSetCoTeacher(u.id)}
+                              style={{
+                                background: "rgba(189,102,255,0.12)",
+                                border: "1px solid rgba(189,102,255,0.35)",
+                                color: "var(--purple)",
+                                borderRadius: 4,
+                                padding: "3px 10px",
+                                fontFamily: "var(--font-mono)",
+                                fontSize: 11,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Add as co-teacher
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* search */}
             <div className="db-panel">
               <div className="db-panel-head">

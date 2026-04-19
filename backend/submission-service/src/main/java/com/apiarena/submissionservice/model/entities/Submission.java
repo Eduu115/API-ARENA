@@ -2,6 +2,9 @@ package com.apiarena.submissionservice.model.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -162,6 +165,35 @@ public class Submission {
 
     @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    /** Audit trail of teacher-applied score deductions (JSON array). */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "teacher_penalties", columnDefinition = "jsonb")
+    @Builder.Default
+    private List<Map<String, Object>> teacherPenalties = new ArrayList<>();
+
+    /** When true, component scores were set by a teacher (group manual grading). */
+    @Column(name = "teacher_manual_grading")
+    @Builder.Default
+    private Boolean teacherManualGrading = Boolean.FALSE;
+
+    @Column(name = "teacher_personal_note", columnDefinition = "TEXT")
+    private String teacherPersonalNote;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "teacher_zone_notes", columnDefinition = "jsonb")
+    @Builder.Default
+    private Map<String, String> teacherZoneNotes = new HashMap<>();
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "teacher_structured_feedback", columnDefinition = "jsonb")
+    private Map<String, Object> teacherStructuredFeedback;
+
+    /** Positive score lines; sum reflected in total_score (capped at 1000). Editable anytime by the teacher. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "teacher_score_bonuses", columnDefinition = "jsonb")
+    @Builder.Default
+    private List<Map<String, Object>> teacherScoreBonuses = new ArrayList<>();
 
     public enum Status {
         PENDING,

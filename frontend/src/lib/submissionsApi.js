@@ -116,6 +116,45 @@ export async function getSubmissionById(id) {
   return request(`/api/submissions/${id}`);
 }
 
+/** Teacher: apply a single score penalty (predefined or OTHER). Prefer {@link confirmTeacherPenalties} for draft batch. */
+export async function applyTeacherPenalty(submissionId, body) {
+  return request(`/api/submissions/${submissionId}/teacher/penalty`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Teacher: confirm multiple penalties in one request (same confirmation timestamp). */
+export async function confirmTeacherPenalties(submissionId, body) {
+  return request(`/api/submissions/${submissionId}/teacher/penalties/confirm`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Teacher: revoke a penalty within the 2h window after it was confirmed (requires penalty `id` from API). */
+export async function revokeTeacherPenalty(submissionId, penaltyId) {
+  return request(`/api/submissions/${submissionId}/teacher/penalty/${encodeURIComponent(penaltyId)}`, {
+    method: "DELETE",
+  });
+}
+
+/** Teacher: set manual scores by part (only for students in your groups). */
+export async function applyTeacherManualScores(submissionId, body) {
+  return request(`/api/submissions/${submissionId}/teacher/manual-scores`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+/** Teacher: personal note, per-area notes, structured feedback, positive bonus lines (capped at 1000 total). */
+export async function saveTeacherSubmissionReview(submissionId, body) {
+  return request(`/api/submissions/${submissionId}/teacher/submission-review`, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+}
+
 /** Upload ZIP and create submission (multipart/form-data). */
 export async function createSubmission(challengeId, file, developmentTimeSeconds) {
   const base = getBaseUrl();

@@ -47,7 +47,7 @@ export default function Corrections() {
             <option value="all">GROUP: ALL</option>
             {groups.map((g) => (
               <option key={g.id} value={g.id}>
-                GROUP: {g.name.toUpperCase()}
+                GROUP: {g.name.toUpperCase()}{g.shared ? " · SHARED" : ""}
               </option>
             ))}
           </select>

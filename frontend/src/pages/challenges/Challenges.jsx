@@ -7,6 +7,8 @@ import * as challengesApi from '../../lib/challengesApi';
 import * as authApi from '../../lib/authApi';
 import { useAuth } from '../../context/AuthContext';
 import './challenges.css';
+import TutorialTour from '../../components/tutorial/TutorialTour';
+import { DOCS_PATHS, TOUR_CHALLENGES } from '../../tutorial/tourDefinitions';
 
 function mapApiToCard(api) {
   const diff = (api.difficulty || 'EASY').toLowerCase();
@@ -256,7 +258,7 @@ export default function Challenges() {
           onClick={() => setSidebarOpen(false)}
         />
 
-        <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`}>
+        <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`} data-tutorial="challenges-sidebar">
 
           <div className="ch-sidebar-section">
             <div className="ch-sidebar-label">Search</div>
@@ -399,7 +401,7 @@ export default function Challenges() {
 
         </aside>
 
-        <main className="ch-main">
+        <main className="ch-main" data-tutorial="challenges-main">
 
           <div className="ch-page-header">
             <div>
@@ -493,6 +495,7 @@ export default function Challenges() {
       </div>
 
       <BottomNav />
+      <TutorialTour tourKey="challenges" steps={TOUR_CHALLENGES} docsHref={DOCS_PATHS.challenges} when={!loading} />
     </div>
   );
 }

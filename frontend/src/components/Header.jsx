@@ -3,7 +3,7 @@ import "../pages/landing/landing.css";
 
 export default function Header() {
   return (
-    <nav>
+    <nav data-tutorial="landing-nav">
       <div className="nav-logo">
         <img className="nav-logo-hex" src="/icons/logo-hex-lg.svg" alt="API Arena logo" width="40" height="40" />
         <Link to="/" className="nav-logo-text"><span>API</span>Arena</Link>

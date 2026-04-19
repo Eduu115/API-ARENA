@@ -10,7 +10,7 @@ export default function HeroSection() {
       <div className="hero-glow" />
       <div className="hero-glow-2" />
 
-      <div className="hero-content">
+      <div className="hero-content" data-tutorial="landing-hero-content">
         <div className="hero-eyebrow">Season 01 · Open Beta Active</div>
         <h1 className="hero-title">
           <span className="line-1">Code</span>
@@ -24,7 +24,7 @@ export default function HeroSection() {
           No simulations. No theory-only drills. Real code in real production conditions.
         </p>
 
-        <div className="hero-actions">
+        <div className="hero-actions" data-tutorial="landing-hero-cta">
           <Link to="/register" className="btn-primary">▶ Start Competing</Link>
           <Link to="/challenges" className="btn-secondary">
             View challenges

@@ -45,6 +45,11 @@ public class TeacherGroup {
     @JoinColumn(name = "teacher_id", nullable = false)
     private User teacher;
 
+    /** Optional second teacher with the same access to members (not the group owner). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "co_teacher_id")
+    private User coTeacher;
+
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeacherGroupMember> members = new ArrayList<>();
 

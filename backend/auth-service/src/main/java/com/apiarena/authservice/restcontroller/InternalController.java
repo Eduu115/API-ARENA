@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import java.util.Map;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +20,7 @@ import com.apiarena.authservice.model.dto.InternalNotificationEmailRequest;
 import com.apiarena.authservice.model.dto.NewChallengePublishedRequest;
 import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.services.IUserService;
+import com.apiarena.authservice.model.services.TeacherGroupService;
 
 import jakarta.validation.Valid;
 
@@ -26,6 +30,9 @@ public class InternalController {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private TeacherGroupService teacherGroupService;
 
     @Value("${services.internal-token:}")
     private String internalServiceToken;
@@ -63,6 +70,19 @@ public class InternalController {
                 body.getTitle(),
                 body.getCreatedByUserId());
         return ResponseEntity.accepted().build();
+    }
+
+    /**
+     * Used by submission-service to decide if manual grading is allowed (student in a group of this teacher).
+     */
+    @GetMapping("/teachers/{teacherId}/students/{studentUserId}/in-group")
+    public ResponseEntity<Map<String, Boolean>> isStudentInTeacherGroup(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @PathVariable Long teacherId,
+            @PathVariable Long studentUserId) {
+        requireInternalToken(token);
+        boolean inGroup = teacherGroupService.isStudentInAnyTeacherGroup(teacherId, studentUserId);
+        return ResponseEntity.ok(Map.of("inGroup", inGroup));
     }
 
     private void requireInternalToken(String token) {

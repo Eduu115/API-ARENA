@@ -140,76 +140,12 @@ export default function TeacherDashboard() {
       <div className="db-content-grid">
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">
-              <span className="db-live-dot" />
-              Recent corrections
-            </div>
-            <Link to="/teacher/corrections" className="db-panel-action">
-              View all →
+            <div className="db-panel-title">My challenges & submissions</div>
+            <Link to="/teacher/challenges" className="db-panel-action">
+              Full list →
             </Link>
           </div>
-
-          {MOCK_CORRECTIONS.slice(0, 6).map((c) => (
-            <div key={c.id} className="db-activity-row">
-              <div className="db-row-dot" style={{ background: "var(--warn)", boxShadow: "0 0 5px var(--warn)" }} />
-              <div className="db-row-info">
-                <div className="db-row-title">{c.challenge}</div>
-                <div className="db-row-meta">
-                  <span>@{c.student}</span>
-                  <span style={{ color: "var(--dim)" }}>·</span>
-                  <span>{c.status}</span>
-                </div>
-              </div>
-              <div className="db-row-status" style={{ color: "var(--warn)" }}>
-                {c.score == null ? "—" : `${c.score}`}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="db-right-stack">
-          <div className="db-panel">
-            <div className="db-panel-head">
-              <div className="db-panel-title">Groups</div>
-              <Link to="/teacher/groups" className="db-panel-action">
-                Manage →
-              </Link>
-            </div>
-            <div style={{ padding: "12px 18px" }}>
-              {groups.length === 0 ? (
-                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", textAlign: "center", padding: 10 }}>
-                  No groups yet
-                </div>
-              ) : (
-                groups.map((g) => (
-                  <div
-                    key={g.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "6px 0",
-                      borderBottom: "1px solid var(--dim)",
-                      fontFamily: "var(--font-mono)",
-                      fontSize: 12,
-                      color: "var(--muted)",
-                    }}
-                  >
-                    <span>{g.name}</span>
-                    <span style={{ color: "var(--text)" }}>{g.studentCount}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="db-panel">
-            <div className="db-panel-head">
-              <div className="db-panel-title">My challenges & submissions</div>
-              <Link to="/teacher/challenges" className="db-panel-action">
-                Full list →
-              </Link>
-            </div>
-            <div style={{ padding: "6px 18px 14px", maxHeight: 520, overflowY: "auto" }}>
+          <div style={{ padding: "6px 18px 14px", maxHeight: 520, overflowY: "auto" }}>
               {challengesLoading ? (
                 <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
                   Loading challenges...
@@ -355,6 +291,90 @@ export default function TeacherDashboard() {
                 })
               )}
             </div>
+        </div>
+
+        <div className="db-right-stack">
+          <div className="db-panel">
+            <div className="db-panel-head">
+              <div className="db-panel-title">Groups</div>
+              <Link to="/teacher/groups" className="db-panel-action">
+                Manage →
+              </Link>
+            </div>
+            <div style={{ padding: "12px 18px" }}>
+              {groups.length === 0 ? (
+                <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", textAlign: "center", padding: 10 }}>
+                  No groups yet
+                </div>
+              ) : (
+                groups.map((g) => (
+                  <div
+                    key={g.id}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "6px 0",
+                      borderBottom: "1px solid var(--dim)",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 12,
+                      color: "var(--muted)",
+                    }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 }}>
+                      <span>{g.name}</span>
+                      {g.shared && (
+                        <span
+                          style={{
+                            flexShrink: 0,
+                            fontSize: 10,
+                            letterSpacing: 0.5,
+                            textTransform: "uppercase",
+                            color: "var(--purple)",
+                            border: "1px solid rgba(189,102,255,0.45)",
+                            borderRadius: 4,
+                            padding: "2px 7px",
+                          }}
+                        >
+                          Shared
+                        </span>
+                      )}
+                    </span>
+                    <span style={{ color: "var(--text)", flexShrink: 0 }}>{g.studentCount}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="db-panel">
+            <div className="db-panel-head">
+              <div className="db-panel-title">
+                <span className="db-live-dot" />
+                Recent corrections
+              </div>
+              <Link to="/teacher/corrections" className="db-panel-action">
+                View all →
+              </Link>
+            </div>
+
+            {MOCK_CORRECTIONS.slice(0, 6).map((c) => (
+              <div key={c.id} className="db-activity-row">
+                <div className="db-row-dot" style={{ background: "var(--warn)", boxShadow: "0 0 5px var(--warn)" }} />
+                <div className="db-row-info">
+                  <div className="db-row-title">{c.challenge}</div>
+                  <div className="db-row-meta">
+                    <span>@{c.student}</span>
+                    <span style={{ color: "var(--dim)" }}>·</span>
+                    <span>{c.status}</span>
+                  </div>
+                </div>
+                <div className="db-row-status" style={{ color: "var(--warn)" }}>
+                  {c.score == null ? "—" : `${c.score}`}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

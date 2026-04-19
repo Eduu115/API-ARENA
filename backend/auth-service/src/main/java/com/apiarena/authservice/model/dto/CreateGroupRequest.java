@@ -16,4 +16,7 @@ public class CreateGroupRequest {
     private String name;
 
     private String description;
+
+    /** Optional second teacher at creation (must be role TEACHER, not the primary). */
+    private Long coTeacherId;
 }

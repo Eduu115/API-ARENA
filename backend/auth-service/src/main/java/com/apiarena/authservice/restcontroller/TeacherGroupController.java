@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apiarena.authservice.model.dto.AddMemberRequest;
+import com.apiarena.authservice.model.dto.CoTeacherUpdateRequest;
 import com.apiarena.authservice.model.dto.CreateGroupRequest;
 import com.apiarena.authservice.model.dto.TeacherGroupDTO;
 import com.apiarena.authservice.model.dto.UserDTO;
@@ -72,6 +73,17 @@ public class TeacherGroupController {
         return ResponseEntity.ok(groupService.updateGroup(id, request, teacherId));
     }
 
+    @PutMapping("/{id}/co-teacher")
+    public ResponseEntity<TeacherGroupDTO> setCoTeacher(
+            @PathVariable Long id,
+            @RequestBody CoTeacherUpdateRequest request) {
+        Long teacherId = getCurrentTeacherId();
+        if (request == null) {
+            request = new CoTeacherUpdateRequest();
+        }
+        return ResponseEntity.ok(groupService.setCoTeacher(id, request.getCoTeacherId(), teacherId));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGroup(@PathVariable Long id) {
         Long teacherId = getCurrentTeacherId();
@@ -101,6 +113,27 @@ public class TeacherGroupController {
             return ResponseEntity.ok(List.of());
         }
         List<UserDTO> results = userRepository.searchStudents(q.trim())
+                .stream()
+                .map(UserDTO::fromEntity)
+                .limit(20)
+                .toList();
+        return ResponseEntity.ok(results);
+    }
+
+    /** Search other teachers by username/email (for assigning a co-teacher). TEACHER role only. */
+    @GetMapping("/search-teachers")
+    public ResponseEntity<List<UserDTO>> searchTeachers(@RequestParam String q) {
+        if (q == null || q.trim().length() < 2) {
+            return ResponseEntity.ok(List.of());
+        }
+        User meUser = userRepository.findByEmail(
+                        SecurityContextHolder.getContext().getAuthentication().getName())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (meUser.getRole() != User.Role.TEACHER) {
+            return ResponseEntity.ok(List.of());
+        }
+        Long me = meUser.getId();
+        List<UserDTO> results = userRepository.searchTeachers(q.trim(), me)
                 .stream()
                 .map(UserDTO::fromEntity)
                 .limit(20)

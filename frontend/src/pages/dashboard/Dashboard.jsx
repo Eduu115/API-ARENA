@@ -7,6 +7,8 @@ import CustomCursor from '../../components/CustomCursor';
 import * as challengesApi from '../../lib/challengesApi';
 import '../challenges/challenges.css';
 import './dashboard.css';
+import TutorialTour from '../../components/tutorial/TutorialTour';
+import { DOCS_PATHS, TOUR_DASHBOARD } from '../../tutorial/tourDefinitions';
 
 const DIFF_COLOR = { easy: 'var(--green)', medium: 'var(--warn)', hard: 'var(--red)', expert: 'var(--purple)' };
 const DIFF_CLASS = { easy: 'ch-badge-easy', medium: 'ch-badge-medium', hard: 'ch-badge-hard', expert: 'ch-badge-expert' };
@@ -121,7 +123,7 @@ export default function Dashboard() {
           onClick={() => setSidebarOpen(false)}
         />
 
-        <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`}>
+        <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`} data-tutorial="dashboard-sidebar">
 
           <div className="db-profile-wrap">
             <div className="db-avatar">{initials}</div>
@@ -199,7 +201,7 @@ export default function Dashboard() {
 
         </aside>
 
-        <main className="ch-main">
+        <main className="ch-main" data-tutorial="dashboard-main">
 
           <div className="ch-page-header" style={{ marginBottom: 28 }}>
             <div>
@@ -440,6 +442,7 @@ export default function Dashboard() {
       </div>
 
       <BottomNav />
+      <TutorialTour tourKey="dashboard" steps={TOUR_DASHBOARD} docsHref={DOCS_PATHS.dashboard} when />
     </div>
   );
 }

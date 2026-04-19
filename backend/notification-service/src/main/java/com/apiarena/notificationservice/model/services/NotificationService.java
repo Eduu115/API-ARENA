@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.apiarena.notificationservice.kafka.SubmissionCompletedEvent;
+import com.apiarena.notificationservice.model.dto.InternalTeacherSubmissionReviewRequest;
 import com.apiarena.notificationservice.model.dto.NotificationDTO;
 import com.apiarena.notificationservice.model.entities.Notification;
 import com.apiarena.notificationservice.model.entities.NotificationImportance;
@@ -24,6 +25,8 @@ public class NotificationService {
     public static final String TYPE_SUBMISSION_COMPLETED = "SUBMISSION_COMPLETED";
 
     public static final String TYPE_WELCOME = "WELCOME";
+
+    public static final String TYPE_TEACHER_SUBMISSION_REVIEW = "TEACHER_SUBMISSION_REVIEW";
 
     private final NotificationRepository notificationRepository;
     private final ObjectMapper objectMapper;
@@ -127,6 +130,50 @@ public class NotificationService {
         NotificationDTO dto = toDto(n);
         long unread = notificationRepository.countByUserIdAndReadAtIsNull(userId);
         notificationPushService.pushNewNotification(userId, dto, unread);
+        notificationEmailDispatchService.mirrorNotificationToEmail(n);
+    }
+
+    /**
+     * In-app alert when a teacher saves a submission review (notes, structured feedback, bonuses).
+     * Multiple saves may produce multiple notifications so the student sees each update.
+     */
+    @Transactional
+    public void createTeacherSubmissionReviewNotification(InternalTeacherSubmissionReviewRequest body) {
+        if (body == null || body.userId() == null || body.submissionId() == null) {
+            return;
+        }
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("submissionId", body.submissionId());
+        if (body.challengeId() != null) {
+            meta.put("challengeId", body.challengeId());
+        }
+        if (body.challengeTitle() != null && !body.challengeTitle().isBlank()) {
+            meta.put("challengeTitle", body.challengeTitle());
+        }
+        String metadataJson;
+        try {
+            metadataJson = objectMapper.writeValueAsString(meta);
+        } catch (Exception e) {
+            metadataJson = "{}";
+        }
+
+        String challengeLabel = (body.challengeTitle() != null && !body.challengeTitle().isBlank())
+                ? "\"" + body.challengeTitle().trim() + "\""
+                : (body.challengeId() != null ? "challenge #" + body.challengeId() : "your challenge");
+
+        Notification n = new Notification();
+        n.setUserId(body.userId());
+        n.setType(TYPE_TEACHER_SUBMISSION_REVIEW);
+        n.setImportance(NotificationImportance.INFO);
+        n.setTitle("Teacher feedback on your submission");
+        n.setBody(String.format("Open the submission to read notes, structured feedback, and any score bonuses for %s.", challengeLabel));
+        n.setMetadataJson(metadataJson);
+        n.setSourceSubmissionId(body.submissionId());
+
+        notificationRepository.save(n);
+        NotificationDTO dto = toDto(n);
+        long unread = notificationRepository.countByUserIdAndReadAtIsNull(body.userId());
+        notificationPushService.pushNewNotification(body.userId(), dto, unread);
         notificationEmailDispatchService.mirrorNotificationToEmail(n);
     }
 

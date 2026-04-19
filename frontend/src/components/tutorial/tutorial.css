@@ -1,0 +1,125 @@
+/* Tutorial overlay — above challenge modals (12k) */
+.tutorial-root {
+  position: fixed;
+  inset: 0;
+  z-index: 13050;
+  pointer-events: none;
+}
+
+.tutorial-root * {
+  pointer-events: auto;
+}
+
+.tutorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.82);
+  backdrop-filter: blur(2px);
+}
+
+.tutorial-hole {
+  position: absolute;
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 2px rgba(0, 217, 255, 0.65),
+    0 0 24px rgba(0, 217, 255, 0.25),
+    0 0 0 9999px rgba(3, 6, 12, 0.82);
+  transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease;
+  pointer-events: none;
+}
+
+.tutorial-card-wrap {
+  position: absolute;
+  max-width: min(420px, calc(100vw - 32px));
+  width: 100%;
+}
+
+.tutorial-card {
+  background: linear-gradient(145deg, rgba(12, 18, 28, 0.98), rgba(8, 12, 20, 0.98));
+  border: 1px solid rgba(0, 217, 255, 0.35);
+  border-radius: 12px;
+  padding: 18px 20px 16px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+}
+
+.tutorial-card-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan, #00d9ff);
+  margin-bottom: 8px;
+}
+
+.tutorial-card-title {
+  font-family: var(--font-heading, "Barlow Condensed", sans-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text, #e8f0ff);
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
+.tutorial-card-body {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted, #8a9bb0);
+  margin: 0 0 14px;
+}
+
+.tutorial-card-hint {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--dim, #5c6b7e);
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(189, 102, 255, 0.08);
+  border: 1px solid rgba(189, 102, 255, 0.22);
+}
+
+.tutorial-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tutorial-btn {
+  font-family: var(--font-mono, inherit);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.tutorial-btn-skip {
+  background: transparent;
+  border-color: var(--dim, #5c6b7e);
+  color: var(--muted, #8a9bb0);
+}
+
+.tutorial-btn-next {
+  background: rgba(0, 217, 255, 0.12);
+  border-color: rgba(0, 217, 255, 0.45);
+  color: var(--cyan, #00d9ff);
+}
+
+.tutorial-btn-docs {
+  background: rgba(189, 102, 255, 0.1);
+  border-color: rgba(189, 102, 255, 0.35);
+  color: var(--purple, #bd66ff);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tutorial-step-pill {
+  font-size: 10px;
+  color: var(--dim);
+  margin-right: auto;
+}
