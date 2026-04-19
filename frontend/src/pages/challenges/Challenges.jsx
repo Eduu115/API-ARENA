@@ -4,6 +4,8 @@ import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
 import * as challengesApi from '../../lib/challengesApi';
+import * as authApi from '../../lib/authApi';
+import { useAuth } from '../../context/AuthContext';
 import './challenges.css';
 
 function mapApiToCard(api) {
@@ -139,6 +141,8 @@ function ChallengeCard({ challenge }) {
 }
 
 export default function Challenges() {
+  const { user, isAuthenticated, loadUser } = useAuth();
+  const [alertsSaving, setAlertsSaving] = useState(false);
   const [search, setSearch]           = useState('');
   const [diffFilter, setDiffFilter]   = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -356,6 +360,42 @@ export default function Challenges() {
               </div>
             </div>
           </div>
+
+          {isAuthenticated && user?.role === 'STUDENT' && (
+            <div className="ch-sidebar-section">
+              <div className="ch-sidebar-label">Email alerts</div>
+              <label className="ch-email-alert-row">
+                <input
+                  type="checkbox"
+                  checked={Boolean(user?.newChallengeEmailAlerts)}
+                  disabled={alertsSaving || !user?.emailVerified}
+                  onChange={async (e) => {
+                    const checked = e.target.checked;
+                    setAlertsSaving(true);
+                    try {
+                      await authApi.updateProfile({ newChallengeEmailAlerts: checked });
+                      await loadUser();
+                    } catch (err) {
+                      e.target.checked = !checked;
+                      alert(err?.message || 'Could not update preference');
+                    } finally {
+                      setAlertsSaving(false);
+                    }
+                  }}
+                />
+                <span className="ch-email-alert-copy">
+                  <strong>New challenges</strong>
+                  {' '}
+                  — email me when a new challenge is published in the catalog.
+                  {!user?.emailVerified ? (
+                    <span className="ch-email-alert-verify-note">
+                      Verify your email to enable this option.
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+            </div>
+          )}
 
         </aside>
 

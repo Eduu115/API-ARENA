@@ -137,6 +137,34 @@ public class EmailDispatchService {
     }
 
     /**
+     * Opt-in alert when a challenge is published (Challenges page checkbox).
+     */
+    public void sendNewChallengePublishedEmail(String toEmail, String username, String challengeTitle, long challengeId) {
+        String apiKey = emailProperties.getResendApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("RESEND_API_KEY not set; skip new-challenge alert to {}", toEmail);
+            return;
+        }
+
+        String base = frontendBaseUrl();
+        String link = base + "/challenges/" + challengeId;
+        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
+        String safeTitle = HtmlUtils.htmlEscape(challengeTitle != null ? challengeTitle : "New challenge");
+
+        String html = """
+                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">New challenge in API Arena</h1>
+                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
+                  <p style="line-height:1.5;margin:0 0 20px;">A new challenge is available: <strong style="color:#a78bfa;">%s</strong></p>
+                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Open challenge</a>
+                  <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">You received this because you enabled new-challenge email alerts in the Challenges page. You can turn this off anytime from your profile settings on the same page.</p>
+                </div>
+                """.formatted(safeName, safeTitle, link);
+
+        postResend(toEmail, "[API Arena] New challenge: " + (challengeTitle != null ? challengeTitle : "published"), html);
+    }
+
+    /**
      * Mirrors in-app notifications to email (same title and body as the bell).
      */
     public void sendNotificationAlertEmail(

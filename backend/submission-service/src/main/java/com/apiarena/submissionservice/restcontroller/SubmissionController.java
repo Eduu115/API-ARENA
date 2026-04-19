@@ -1,9 +1,17 @@
 package com.apiarena.submissionservice.restcontroller;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -25,6 +33,7 @@ import com.apiarena.submissionservice.model.dto.LogsResponse;
 import com.apiarena.submissionservice.model.dto.ReplayTimelineResponse;
 import com.apiarena.submissionservice.model.dto.SubmissionDTO;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
+import com.apiarena.submissionservice.model.dto.SubmissionZipDownload;
 import com.apiarena.submissionservice.model.services.ISubmissionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -118,6 +127,75 @@ public class SubmissionController {
         return ResponseEntity.ok(submissions);
     }
 
+    @GetMapping("/teacher/students/{studentId}")
+    @PreAuthorize("hasRole('TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get teacher-visible submissions for a student",
+            description = "List submissions made by a student in challenges created by the current teacher")
+    public ResponseEntity<List<SubmissionSummaryDTO>> getTeacherStudentSubmissions(@PathVariable Long studentId) {
+        Long teacherId = extractUserIdFromAuthentication();
+        if (teacherId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.getTeacherStudentSubmissions(teacherId, studentId));
+    }
+
+    @GetMapping("/teacher/students/counts")
+    @PreAuthorize("hasRole('TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get teacher-visible submission counts per student",
+            description = "Count submissions by student, limited to challenges created by the current teacher")
+    public ResponseEntity<Map<Long, Long>> getTeacherStudentsSubmissionCounts(
+            @RequestParam(name = "studentIds") List<Long> studentIds) {
+        Long teacherId = extractUserIdFromAuthentication();
+        if (teacherId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.getTeacherStudentsSubmissionCounts(teacherId, studentIds));
+    }
+
+    @GetMapping("/teacher/challenges/{challengeId}/submissions")
+    @PreAuthorize("hasRole('TEACHER')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "List all submissions for a teacher-owned challenge",
+            description = "Returns every submission for the challenge from any user, only if the current teacher created the challenge")
+    public ResponseEntity<List<SubmissionSummaryDTO>> getTeacherChallengeSubmissions(
+            @PathVariable Long challengeId) {
+        Long teacherId = extractUserIdFromAuthentication();
+        if (teacherId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.getTeacherChallengeSubmissions(teacherId, challengeId));
+    }
+
+    @GetMapping("/{id}/download")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Download submission ZIP",
+            description = "Download uploaded ZIP for own submission, admin, or teacher owner of the challenge")
+    public ResponseEntity<Resource> downloadSubmissionZip(@PathVariable Long id) throws IOException {
+        Long userId = extractUserIdFromAuthentication();
+        boolean isAdmin = hasRole("ROLE_ADMIN");
+        boolean isTeacher = hasRole("ROLE_TEACHER");
+
+        SubmissionZipDownload zd = submissionService.prepareZipDownload(id, userId, isAdmin, isTeacher);
+        Path zipPath = zd.path();
+        Resource resource = new UrlResource(zipPath.toUri());
+        if (!resource.exists()) {
+            throw new IllegalArgumentException("Submission ZIP file not found");
+        }
+
+        String filename = zipPath.getFileName() != null ? zipPath.getFileName().toString() : ("submission-" + id + ".zip");
+        var builder = ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentLength(Files.size(zipPath));
+        if (zd.expiresAtIso() != null && !zd.expiresAtIso().isBlank()) {
+            builder = builder.header("X-Zip-Download-Expires-At", zd.expiresAtIso());
+        }
+        return builder.body(resource);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "bearerAuth")
@@ -142,7 +220,14 @@ public class SubmissionController {
     }
 
     private boolean hasAdminOrTeacherRole() {
-        return SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_TEACHER".equals(a.getAuthority()));
+        return hasRole("ROLE_ADMIN") || hasRole("ROLE_TEACHER");
+    }
+
+    private boolean hasRole(String role) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+        return authentication.getAuthorities().stream().anyMatch(a -> role.equals(a.getAuthority()));
     }
 }

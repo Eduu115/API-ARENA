@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_legacy BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS total_development_seconds BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS total_browsing_seconds BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS new_challenge_email_alerts BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- ===========================================
 -- Tabla: refresh_tokens

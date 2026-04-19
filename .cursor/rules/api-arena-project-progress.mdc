@@ -9,9 +9,9 @@ alwaysApply: true
 
 | Servicio | Puerto | Estado | Notas |
 |----------|--------|--------|-------|
-| **auth-service** | 8081 | ✅ Completo | JWT, registro, login, refresh, **verificación de email** (Resend + token 48h; **solo** email de verificación en registro); **tras verificar**: email bienvenida beta/legacy + “First steps” + creación notificación in-app vía notification-service; **mirror** a email solo notificaciones **IMPORTANT** (`POST /internal/users/{id}/notification-email`), flag `beta_legacy`, perfiles públicos, grupos de profesor, amistades, `/internal/users/{id}/reward`, logros, tiempo desarrollo/navegación |
-| **challenge-service** | 8082 | ✅ Completo | CRUD challenges, categorías, featured, legacy/community, slug, `xpReward`, `timeLimitMinutes` |
-| **submission-service** | 8083 | ✅ Completo | Upload ZIP, pipeline async (sandbox build → testing HTTP → COMPLETED), scores, logs, métricas, WebSocket, XP+ELO (HTTP a auth/challenge), **Kafka producer** `apiarena.submissions.completed`, **anti-farm**, **replay** en Postgres + **espejo MongoDB** (`replay_archives`, opt-in `REPLAY_MONGODB_ENABLED`), **InfluxDB 2** medición `submission_pipeline` (opt-in `INFLUX_ENABLED`), `GET /api/submissions/{id}/replay`, retención programada |
+| **auth-service** | 8081 | ✅ Completo | JWT, registro, login, refresh, **verificación de email** (Resend + token 48h; **solo** email de verificación en registro); **tras verificar**: email bienvenida beta/legacy + “First steps” + creación notificación in-app vía notification-service; **mirror** a email solo notificaciones **IMPORTANT** (`POST /internal/users/{id}/notification-email`), flag `beta_legacy`, perfiles públicos, grupos de profesor, amistades, `/internal/users/{id}/reward`, logros, tiempo desarrollo/navegación; **opt-in alumnos** `new_challenge_email_alerts` + `PUT /api/auth/me` con `newChallengeEmailAlerts`; **`POST /internal/challenges/new-published`** (token `X-Internal-Token` / `services.internal-token`) envía email vía Resend a estudiantes verificados suscritos (excluye autor) |
+| **challenge-service** | 8082 | ✅ Completo | CRUD challenges, categorías, featured, legacy/community, slug, `xpReward`, `timeLimitMinutes`; **vista pública** `GET /api/challenges/{id}/preview` (sin specs técnicas); **specs completas** `GET /api/challenges/{id}/specs` (JWT) para flujo submit; `GET /api/challenges` por ID sigue devolviendo DTO completo para servicios internos; **nuevos challenges creados como borrador** (`isActive=false`); al pasar a activo (`update`) notifica async a auth para emails de “nuevo challenge”; `SERVICES_AUTH_URL` + `SERVICES_INTERNAL_TOKEN` en Docker |
+| **submission-service** | 8083 | ✅ Completo | Upload ZIP, pipeline async (sandbox build → testing HTTP → COMPLETED), scores, logs, métricas, WebSocket, XP+ELO (HTTP a auth/challenge), **Kafka producer** `apiarena.submissions.completed`, **anti-farm**, **replay** en Postgres + **espejo MongoDB** (`replay_archives`, opt-in `REPLAY_MONGODB_ENABLED`), **InfluxDB 2** medición `submission_pipeline` (opt-in `INFLUX_ENABLED`), `GET /api/submissions/{id}/replay`, **endpoints teacher-scoped** para listar/contar entregas por alumno en challenges propios, **`GET /api/submissions/teacher/challenges/{challengeId}/submissions`** (todas las entregas del challenge si el profesor es autor) y descarga ZIP por entrega, retención programada; listados incluyen `zipDownloadExpiresAt` (informativo, `submission.zip-availability-days`) y descarga expone cabecera `X-Zip-Download-Expires-At`; resumen con `submitterUsername` cuando aplica; **ELO** penaliza repetir por debajo de tu mejor nota en el mismo challenge, evita cambio 0 cuando sigues por debajo de lo esperado, y suma castigo extra si la nota es muy baja (`docs/xp-elo-system.md`) |
 | **sandbox-service** | 8084 | ✅ Operativo | Runner dual por flag `sandbox.runner.mode=process|dind`. En `dind`: **contenedor por submission** en red **interna** `apiarena-candidate` (sin salida a Internet ni a DB), cleanup contenedor+imagen, readiness HTTP, token interno, hardening (`--init`, `--ulimit nofile`, caps, read-only, tmpfs `/tmp`) |
 | **testing-service** | 8085 | ✅ Operativo | **Tests HTTP reales** (`RestTemplate`) contra la URL del candidato: funcionales (según `testSuite` del challenge), rendimiento y diseño; puntuación agregada. No sustituye tests unitarios dentro del ZIP del alumno — es caja negra contra la API levantada |
 | **leaderboard-service** | 8087 | ✅ Completo | Rankings globales y por challenge; **consumer Kafka** actualiza entradas al completar submission |
@@ -42,8 +42,8 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/login` | Login | ✅ |
 | `/register` | Register | ✅ |
 | `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
-| `/challenges` | Challenges | ✅ |
-| `/challenges/:id` | ChallengeDetail | ✅ |
+| `/challenges` | Challenges | ✅ Sidebar **Email alerts** (solo STUDENT): checkbox “New challenges” → `newChallengeEmailAlerts` vía `PUT /api/auth/me` |
+| `/challenges/:id` | ChallengeDetail | ✅ Resumen público (`/preview`); specs técnicas solo en submit |
 | `/challenges/:id/submit` | ChallengeSubmit | ✅ Timer en tiempo real (`deadlineAt`), límites de intentos visibles, sesión persistida, banner “challenge in progress” |
 | `/dashboard` | Dashboard | ✅ |
 | `/submissions` | MySubmissions | ✅ (título del challenge vía `challengeTitle` en `GET /api/submissions/my`) |
@@ -56,7 +56,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/docs` + `/docs/:docId` | DocsHub | ✅ Mini-routing de documentos (sidebar), guías extensas (incl. preconfiguración), feedback por sección/documento y resumen global |
 | `/replay` | Replay | ✅ Timeline real; filtros etapa + HTTP/tests; salto a fallo; flechas; metadata JSON por evento; índice `testIndex` |
 | `/multiplayer` | MultiplayerHub | ⚠️ Parcial / mock |
-| `/teacher/*` | Teacher area | ✅ |
+| `/teacher/*` | Teacher area | ✅ Groups: botón `x entregas` por alumno + vista de entregas en challenges del profesor con acciones `View`, `Results`, `Download ZIP` (cuenta atrás de retención ZIP + deshabilitar si caducó); **dashboard** `/teacher`: challenges reales + acordeón “All submissions” (todas las entregas del mundo a ese challenge, mismo patrón de acciones) |
 
 ## Flujo end-to-end verificado
 
@@ -96,6 +96,9 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - BI-ready baseline: tabla `product_events` + endpoint de ingestión y export CSV/JSON por ventana temporal para conectar con BI apps/GA pipelines.
 - Backlog priorizado (local): `docs/BACKLOG-NEXT-ITERATION.md`; Grafana pipeline dashboard; export BI programado; DinD `--init` + ulimit.
 - Operativa: **Alertmanager** + reglas Prometheus; red candidato **internal**; **Mongo replay** + **Influx pipeline** + Grafana Influx datasource; replay UI mejorada.
+- Teacher groups v2: en `/teacher/groups` cada miembro muestra `x entregas` (solo challenges del profesor), panel de historial por alumno y descarga del ZIP entregado.
+- Cooldown UX: en ficha del challenge no se entra a `/submit` con cuenta atrás visible; modal con tiempo restante; pantalla submit bloqueada con el mismo modal y sin arrancar timer/sesión hasta que la política permita.
+- Challenge público vs specs: ficha `/challenges/:id` solo preview (nombre, descripción, stats, teaser); endpoints/tests/hints solo vía `GET .../specs` en pantalla submit autenticada.
 
 ## Lo que falta (priorizado) y orden de magnitud
 

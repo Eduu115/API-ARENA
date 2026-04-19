@@ -1,9 +1,19 @@
 ---
-description: Commits, PRs y mensajes técnicos del repo en inglés.
+description: Commits, PRs y mensajes técnicos del repo en inglés. PROHIBIDO atribución Cursor/IA en git.
 alwaysApply: true
 ---
 
 # Language: commits and technical messages
+
+## STOP — Git history must stay human-only (hard rule)
+
+**Do not** suggest, generate, or run `git commit` with **any** of the following. The maintainer explicitly rejects tooling attribution in version control:
+
+- Trailers: `Made-with: Cursor`, `Co-authored-by: Cursor`, `Generated-by: …`, `🤖`, or **any** line naming Cursor, ChatGPT, Copilot, Claude, “AI”, etc.
+- Flags like `--trailer` / `prepare-commit-msg` hooks that inject vendor branding.
+- Footers in the commit body such as “Written with Cursor” or similar.
+
+If the user asks for a commit message, output **only** a normal `feat:` / `fix:` style subject and optional body — **no trailers, no sign-offs from tools.**
 
 ## Prohibited in Git commits (non-negotiable)
 

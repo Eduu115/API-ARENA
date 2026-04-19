@@ -74,6 +74,118 @@
   transform: translateY(-1px);
 }
 
+.chd-btn-start:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  filter: grayscale(0.35);
+}
+
+.chd-btn-start:disabled:hover {
+  opacity: 0.45;
+  transform: none;
+}
+
+/* Looks locked but remains clickable to open cooldown / limit details */
+.chd-btn-start.chd-btn-start--blocked {
+  opacity: 0.55;
+  cursor: pointer;
+  filter: grayscale(0.25);
+  box-shadow: inset 0 0 0 1px rgba(255, 176, 32, 0.35);
+}
+
+.chd-btn-start.chd-btn-start--blocked:hover {
+  opacity: 0.75;
+  transform: translateY(-1px);
+}
+
+.chd-policy-banner {
+  margin: -12px 0 24px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 176, 32, 0.06);
+}
+
+.chd-policy-banner-title {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--warn);
+}
+
+.chd-policy-banner-count {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cyan);
+  letter-spacing: 0.04em;
+}
+
+.chd-policy-banner-copy {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.chd-policy-banner-actions {
+  margin-top: 12px;
+}
+
+.chd-policy-banner-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.chd-policy-banner-link:hover {
+  color: var(--text);
+}
+
+.chd-specs-teaser {
+  margin-top: 28px;
+  padding: 22px 24px;
+  border: 1px solid rgba(0, 217, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(0, 217, 255, 0.04);
+}
+
+.chd-specs-teaser-title {
+  margin: 0 0 12px;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.chd-specs-teaser-copy {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.chd-specs-teaser-foot {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.03em;
+}
+
 .chd-hero {
   background: linear-gradient(135deg, rgba(0, 217, 255, 0.06) 0%, rgba(178, 75, 243, 0.04) 100%);
   border: 1px solid rgba(0, 217, 255, 0.2);

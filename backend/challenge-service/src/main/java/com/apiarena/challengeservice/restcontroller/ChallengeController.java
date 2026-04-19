@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 import com.apiarena.challengeservice.model.dto.ChallengeDTO;
+import com.apiarena.challengeservice.model.dto.ChallengePreviewDTO;
 import com.apiarena.challengeservice.model.dto.ChallengeSummaryDTO;
 import com.apiarena.challengeservice.model.dto.CreateChallengeRequest;
 import com.apiarena.challengeservice.model.dto.UpdateChallengeRequest;
@@ -52,15 +53,38 @@ public class ChallengeController {
         return ResponseEntity.ok(challenges);
     }
 
+    @GetMapping("/{id}/preview")
+    @Operation(summary = "Get challenge preview by ID",
+            description = "Public summary without technical specs (endpoints, test suite, hints).")
+    public ResponseEntity<ChallengePreviewDTO> getChallengePreviewById(@PathVariable Long id) {
+        return ResponseEntity.ok(challengeService.getChallengePreviewById(id));
+    }
+
+    @GetMapping("/{id}/specs")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Get full challenge specs by ID",
+            description = "Full challenge including endpoints and test suite — authenticated users only (e.g. submit flow).")
+    public ResponseEntity<ChallengeDTO> getChallengeSpecsById(@PathVariable Long id) {
+        ChallengeDTO challenge = challengeService.getChallengeById(id);
+        return ResponseEntity.ok(challenge);
+    }
+
     @GetMapping("/{id}")
-    @Operation(summary = "Get challenge by ID", description = "Get challenge details by ID")
+    @Operation(summary = "Get challenge by ID", description = "Get full challenge details by ID (internal / legacy clients)")
     public ResponseEntity<ChallengeDTO> getChallengeById(@PathVariable Long id) {
         ChallengeDTO challenge = challengeService.getChallengeById(id);
         return ResponseEntity.ok(challenge);
     }
 
+    @GetMapping("/slug/{slug}/preview")
+    @Operation(summary = "Get challenge preview by slug", description = "Public summary without technical specs")
+    public ResponseEntity<ChallengePreviewDTO> getChallengePreviewBySlug(@PathVariable String slug) {
+        return ResponseEntity.ok(challengeService.getChallengePreviewBySlug(slug));
+    }
+
     @GetMapping("/slug/{slug}")
-    @Operation(summary = "Get challenge by slug", description = "Get challenge details by slug")
+    @Operation(summary = "Get challenge by slug", description = "Get full challenge details by slug (internal / legacy clients)")
     public ResponseEntity<ChallengeDTO> getChallengeBySlug(@PathVariable String slug) {
         ChallengeDTO challenge = challengeService.getChallengeBySlug(slug);
         return ResponseEntity.ok(challenge);

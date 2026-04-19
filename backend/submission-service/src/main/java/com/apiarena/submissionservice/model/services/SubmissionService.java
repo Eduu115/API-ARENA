@@ -2,11 +2,14 @@ package com.apiarena.submissionservice.model.services;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.Optional;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -45,6 +48,7 @@ import com.apiarena.submissionservice.model.dto.SubmissionStatusCacheDTO;
 import com.apiarena.submissionservice.kafka.SubmissionCompletedEvent;
 import com.apiarena.submissionservice.kafka.SubmissionKafkaPublisher;
 import com.apiarena.submissionservice.model.dto.SubmissionSummaryDTO;
+import com.apiarena.submissionservice.model.dto.SubmissionZipDownload;
 import com.apiarena.submissionservice.model.entities.ReplayEvent;
 import com.apiarena.submissionservice.model.entities.Submission;
 import com.apiarena.submissionservice.repository.ReplayEventRepository;
@@ -104,6 +108,9 @@ public class SubmissionService implements ISubmissionService {
 
     @Value("${apiarena.submission.max-attempts-per-day-per-challenge:3}")
     private int maxAttemptsPerDayPerChallenge;
+
+    @Value("${submission.zip-availability-days:90}")
+    private int zipAvailabilityDays;
 
     @Value("${services.internal-token:}")
     private String internalToken;
@@ -655,6 +662,13 @@ public class SubmissionService implements ISubmissionService {
     private static final Map<String, Double> DIFFICULTY_ELO_MULTIPLIER = Map.of(
             "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8);
     private static final int MIN_RANKED_CHALLENGES = 3;
+    /** Extra ELO weight when a repeat completion scores below the player's previous best on this challenge. */
+    private static final double ELO_REPEAT_REGRESSION_WEIGHT = 0.35;
+    /** Minimum loss when score is below expectation but base formula rounds to zero. */
+    private static final int ELO_MIN_UNDERPERFORM_PENALTY = 4;
+    private static final double ELO_VERY_BAD_SCORE_THRESHOLD = 0.32;
+    private static final double ELO_VERY_BAD_EXTRA_WEIGHT = 1.75;
+    private static final int ELO_CHANGE_FLOOR_PER_SUBMISSION = -90;
 
     @SuppressWarnings("unchecked")
     private void calculateAndApplyRewards(Long submissionId) {
@@ -703,6 +717,28 @@ public class SubmissionService implements ISubmissionService {
                 int K = totalChallenges < 10 ? 48 : 32;
                 double expected = 1.0 / (1.0 + Math.pow(10.0, (challengeRating - currentElo) / 400.0));
                 eloChange = (int) Math.round(K * eloMultiplier * (scoreRatio - expected));
+
+                // Worse than your own previous best on this challenge (repeat) — extra ELO downside
+                if (!isFirst && totalScore + 1e-6 < prevBestVal) {
+                    double regression = (prevBestVal - totalScore) / 1000.0;
+                    int repeatPenalty = (int) Math.round(K * eloMultiplier * ELO_REPEAT_REGRESSION_WEIGHT * regression);
+                    eloChange -= Math.max(3, repeatPenalty);
+                }
+
+                // Base formula can round to 0 while still below expectation — keep a small guaranteed loss
+                if (scoreRatio + 1e-9 < expected && eloChange >= 0) {
+                    eloChange = -Math.max(ELO_MIN_UNDERPERFORM_PENALTY,
+                            (int) Math.round(K * eloMultiplier * 0.09));
+                }
+
+                // Very low score / "muy mal": additional penalty (applies to repeats as well)
+                if (scoreRatio < ELO_VERY_BAD_SCORE_THRESHOLD) {
+                    double gap = ELO_VERY_BAD_SCORE_THRESHOLD - scoreRatio;
+                    int veryBadExtra = (int) Math.round(K * eloMultiplier * ELO_VERY_BAD_EXTRA_WEIGHT * gap);
+                    eloChange -= Math.max(0, veryBadExtra);
+                }
+
+                eloChange = Math.max(ELO_CHANGE_FLOOR_PER_SUBMISSION, eloChange);
             }
 
             sub.setXpEarned(xpEarned);
@@ -876,8 +912,129 @@ public class SubmissionService implements ISubmissionService {
             }
         }
         return submissions.stream()
-                .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId())))
+                .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId()),
+                        zipDownloadExpiresAtIso(s)))
                 .toList();
+    }
+
+    @Override
+    public List<SubmissionSummaryDTO> getTeacherStudentSubmissions(Long teacherId, Long studentId) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (studentId == null) {
+            throw new IllegalArgumentException("Student ID is required");
+        }
+
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(studentId);
+        Map<Long, Map<String, Object>> challengeCache = new HashMap<>();
+
+        List<SubmissionSummaryDTO> result = new ArrayList<>();
+        for (Submission submission : submissions) {
+            Map<String, Object> challengeData = fetchChallengeDataCached(submission.getChallengeId(), challengeCache);
+            if (!isTeacherOwnerOfChallenge(teacherId, challengeData)) {
+                continue;
+            }
+            String title = challengeData.get("title") != null ? Objects.toString(challengeData.get("title")) : null;
+            result.add(SubmissionSummaryDTO.fromEntity(submission, title, zipDownloadExpiresAtIso(submission), null));
+        }
+        return result;
+    }
+
+    @Override
+    public List<SubmissionSummaryDTO> getTeacherChallengeSubmissions(Long teacherId, Long challengeId) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (challengeId == null) {
+            throw new IllegalArgumentException("Challenge ID is required");
+        }
+        Map<String, Object> challengeData = fetchChallengeData(challengeId);
+        if (!isTeacherOwnerOfChallenge(teacherId, challengeData)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this challenge");
+        }
+        String title = challengeData.get("title") != null ? Objects.toString(challengeData.get("title")) : null;
+        List<Submission> submissions = submissionRepository.findByChallengeIdOrderByCreatedAtDesc(challengeId);
+        Map<Long, String> usernameCache = new HashMap<>();
+        List<SubmissionSummaryDTO> result = new ArrayList<>(submissions.size());
+        for (Submission submission : submissions) {
+            Long uid = submission.getUserId();
+            String username = uid != null ? usernameCache.computeIfAbsent(uid, this::fetchUsername) : null;
+            result.add(SubmissionSummaryDTO.fromEntity(submission, title, zipDownloadExpiresAtIso(submission), username));
+        }
+        return result;
+    }
+
+    @Override
+    public Map<Long, Long> getTeacherStudentsSubmissionCounts(Long teacherId, List<Long> studentIds) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        if (studentIds == null || studentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> normalizedStudentIds = studentIds.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (normalizedStudentIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Long> counts = new LinkedHashMap<>();
+        for (Long studentId : normalizedStudentIds) {
+            counts.put(studentId, 0L);
+        }
+
+        List<Submission> submissions = submissionRepository.findByUserIdInOrderByCreatedAtDesc(normalizedStudentIds);
+        Map<Long, Map<String, Object>> challengeCache = new HashMap<>();
+        for (Submission submission : submissions) {
+            if (!counts.containsKey(submission.getUserId())) {
+                continue;
+            }
+            Map<String, Object> challengeData = fetchChallengeDataCached(submission.getChallengeId(), challengeCache);
+            if (!isTeacherOwnerOfChallenge(teacherId, challengeData)) {
+                continue;
+            }
+            counts.computeIfPresent(submission.getUserId(), (key, value) -> value + 1);
+        }
+        return counts;
+    }
+
+    @Override
+    public SubmissionZipDownload prepareZipDownload(Long id, Long userId, boolean isAdmin, boolean isTeacher) {
+        Submission submission = submissionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Submission not found with id: " + id));
+
+        if (!canAccessSubmission(submission, userId, isAdmin, isTeacher)) {
+            throw new SecurityException("You are not allowed to download this submission");
+        }
+
+        if (submission.getZipFilePath() == null || submission.getZipFilePath().isBlank()) {
+            throw new IllegalArgumentException("Submission ZIP path is not available");
+        }
+
+        Path zipPath = uploadStorageService.getZipPath(submission.getZipFilePath()).toAbsolutePath().normalize();
+        if (!Files.exists(zipPath)) {
+            throw new IllegalArgumentException("Submission ZIP file not found");
+        }
+        return new SubmissionZipDownload(zipPath, zipDownloadExpiresAtIso(submission));
+    }
+
+    private String zipDownloadExpiresAtIso(Submission submission) {
+        if (submission.getZipFilePath() == null || submission.getZipFilePath().isBlank()) {
+            return null;
+        }
+        if (submission.getCreatedAt() == null) {
+            return null;
+        }
+        int days = Math.max(1, zipAvailabilityDays);
+        return submission.getCreatedAt()
+                .plusDays(days)
+                .atZone(ZoneId.of("UTC"))
+                .toInstant()
+                .toString();
     }
 
     @Override
@@ -955,5 +1112,51 @@ public class SubmissionService implements ISubmissionService {
 
         statusCacheService.cacheStatus(submission);
         webSocketService.sendCompleted(submissionId, SubmissionStatusCacheDTO.fromEntity(submission));
+    }
+
+    private Map<String, Object> fetchChallengeDataCached(Long challengeId, Map<Long, Map<String, Object>> cache) {
+        if (challengeId == null) {
+            return Map.of();
+        }
+        return cache.computeIfAbsent(challengeId, this::fetchChallengeData);
+    }
+
+    private boolean isTeacherOwnerOfChallenge(Long teacherId, Map<String, Object> challengeData) {
+        if (teacherId == null || challengeData == null || challengeData.isEmpty()) {
+            return false;
+        }
+        Long createdBy = asLong(challengeData.get("createdBy"));
+        return createdBy != null && teacherId.equals(createdBy);
+    }
+
+    private boolean canAccessSubmission(Submission submission, Long userId, boolean isAdmin, boolean isTeacher) {
+        if (submission == null) {
+            return false;
+        }
+        if (isAdmin) {
+            return true;
+        }
+        if (submission.getUserId() != null && submission.getUserId().equals(userId)) {
+            return true;
+        }
+        if (isTeacher && userId != null) {
+            Map<String, Object> challengeData = fetchChallengeData(submission.getChallengeId());
+            return isTeacherOwnerOfChallenge(userId, challengeData);
+        }
+        return false;
+    }
+
+    private Long asLong(Object value) {
+        if (value instanceof Number n) {
+            return n.longValue();
+        }
+        if (value instanceof String s) {
+            try {
+                return Long.parseLong(s);
+            } catch (NumberFormatException ignored) {
+                return null;
+            }
+        }
+        return null;
     }
 }

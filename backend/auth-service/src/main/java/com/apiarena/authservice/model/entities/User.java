@@ -106,6 +106,10 @@ public class User {
     @Column(name = "beta_legacy", nullable = false)
     private Boolean betaLegacy = true;
 
+    /** Student opt-in: transactional email when a new challenge is published (verified email only). */
+    @Column(name = "new_challenge_email_alerts", nullable = false)
+    private Boolean newChallengeEmailAlerts = false;
+
     public User(String username, String email, String passwordHash, Role role) {
         this.username = username;
         this.email = email;
@@ -121,6 +125,7 @@ public class User {
         this.isActive = true;
         this.emailVerified = false;
         this.betaLegacy = true;
+        this.newChallengeEmailAlerts = false;
     }
 
     public enum Role {

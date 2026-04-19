@@ -29,4 +29,7 @@ public interface IUserService extends UserDetailsService {
     void addDevelopmentTimeSeconds(Long userId, int seconds);
 
     void addBrowsingTimeSeconds(Long userId, int seconds);
+
+    /** Send new-challenge email to opted-in verified students (internal; excludes creator). */
+    void notifyNewChallengeEmailSubscribers(Long challengeId, String challengeTitle, Long createdByUserId);
 }

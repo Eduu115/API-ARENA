@@ -146,6 +146,18 @@ Donde:
 - Si `actual < expected` -> el jugador rindio peor de lo esperado -> **ELO baja**.
 - Si `actual == expected` -> rendimiento exacto al esperado -> **ELO no cambia**.
 
+### Repeticiones y rendimiento muy malo (submission-service)
+
+Ademas de la formula base, el backend aplica:
+
+1. **Penalizacion por regresion en el mismo challenge**: si no es la primera completion y la nota es **inferior a tu mejor nota previa** en ese challenge, se resta ELO extra (proporcional a cuanto empeoras respecto a ese mejor intento). Asi repetir y hacerlo peor **si** impacta el rating.
+
+2. **Anti-cero al quedar por debajo de lo esperado**: si `actual < expected` pero el redondeo del termino principal daria **0**, se aplica una **perdida minima** para que siempre haya algo de ELO en contra cuando rindes por debajo de lo esperado.
+
+3. **Rendimiento muy bajo** (`actual` por debajo de ~0,32): penalizacion adicional acorde a lo lejos que estas de ese umbral (sigue valiendo en reintentos).
+
+4. **Tope de seguridad** por envio: el cambio de ELO de una sola submission no baja de **-90** puntos en un unico paso.
+
 ### Ejemplos practicos
 
 **Ejemplo 1: Jugador con ELO 1400 hace un challenge MEDIUM (rating 1200)**
