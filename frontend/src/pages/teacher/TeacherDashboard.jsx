@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TeacherLayout from "./TeacherLayout";
-import { MOCK_CORRECTIONS } from "./teacher.mock";
+import { formatTeacherDate } from "./teacher.mock";
 import * as groupsApi from "../../lib/groupsApi";
 import * as challengesApi from "../../lib/challengesApi";
 import * as submissionsApi from "../../lib/submissionsApi";
@@ -17,10 +17,31 @@ export default function TeacherDashboard() {
   const [challengeSubsLoading, setChallengeSubsLoading] = useState({});
   const [challengeSubsError, setChallengeSubsError] = useState({});
   const [downloadingSubmissionId, setDownloadingSubmissionId] = useState(null);
-  const loadedChallengeIdsRef = useRef(new Set());
+  const [correctionQueue, setCorrectionQueue] = useState([]);
+  const [correctionQueueLoading, setCorrectionQueueLoading] = useState(true);
 
   useEffect(() => {
     groupsApi.getMyGroups().then((data) => setGroups(Array.isArray(data) ? data : [])).catch(() => {});
+  }, []);
+
+  async function refreshCorrectionQueue() {
+    try {
+      const data = await submissionsApi.getTeacherCorrectionsQueue(60);
+      setCorrectionQueue(Array.isArray(data) ? data : []);
+    } catch {
+      setCorrectionQueue([]);
+    } finally {
+      setCorrectionQueueLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refreshCorrectionQueue();
+    const onVis = () => {
+      if (!document.hidden) refreshCorrectionQueue();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
   }, []);
 
   useEffect(() => {
@@ -42,13 +63,11 @@ export default function TeacherDashboard() {
   }, []);
 
   async function loadChallengeSubmissionsIfNeeded(challengeId) {
-    if (loadedChallengeIdsRef.current.has(challengeId)) return;
     setChallengeSubsLoading((m) => ({ ...m, [challengeId]: true }));
     setChallengeSubsError((m) => ({ ...m, [challengeId]: null }));
     try {
       const data = await submissionsApi.getTeacherChallengeSubmissions(challengeId);
       setChallengeSubmissions((m) => ({ ...m, [challengeId]: Array.isArray(data) ? data : [] }));
-      loadedChallengeIdsRef.current.add(challengeId);
     } catch (err) {
       setChallengeSubsError((m) => ({
         ...m,
@@ -67,6 +86,7 @@ export default function TeacherDashboard() {
     }
     setExpandedChallengeId(challengeId);
     await loadChallengeSubmissionsIfNeeded(challengeId);
+    refreshCorrectionQueue();
   }
 
   async function handleDownloadSubmission(submissionId) {
@@ -88,13 +108,16 @@ export default function TeacherDashboard() {
     }
   }
 
-  const pending = MOCK_CORRECTIONS.filter((c) => c.status !== "GRADED").length;
+  const pendingCorrectionsCount = useMemo(
+    () => correctionQueue.filter((r) => !r.teacherCorrectionComplete).length,
+    [correctionQueue],
+  );
   const groupCount = groups.length;
   const challengeCount = challenges.length;
   const publishedCount = challenges.filter((c) => c?.isActive !== false).length;
 
   const kpis = [
-    { icon: "◎", label: "Pending corrections", value: String(pending), color: "var(--warn)", barWidth: "70%" },
+    { icon: "◎", label: "Pending corrections", value: String(pendingCorrectionsCount), color: "var(--warn)", barWidth: "70%" },
     { icon: "◇", label: "Groups", value: String(groupCount), color: "var(--cyan)", barWidth: "45%" },
     { icon: "⊕", label: "Challenges created", value: String(challengeCount), color: "var(--purple)", barWidth: "55%" },
     { icon: "✓", label: "Published", value: String(publishedCount), color: "var(--green)", barWidth: "40%" },
@@ -222,20 +245,42 @@ export default function TeacherDashboard() {
                                 (sub.submitterUsername && String(sub.submitterUsername).trim()) ||
                                 (sub.userId != null ? `user #${sub.userId}` : "—");
                               const score = Number(sub.totalScore) || 0;
+                              const corrected = Boolean(sub.teacherCorrectionComplete);
                               return (
                                 <div
                                   key={sub.id}
+                                  className={`td-submission-row ${
+                                    corrected ? "td-submission-row--corrected" : "td-submission-row--pending"
+                                  }`}
                                   style={{
                                     display: "grid",
                                     gridTemplateColumns: "1fr auto",
                                     gap: 8,
-                                    padding: "8px 0",
+                                    padding: "8px 6px",
+                                    marginBottom: 6,
                                     borderBottom: "1px solid var(--dim)",
                                   }}
                                 >
                                   <div>
-                                    <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" }}>
-                                      @{who}
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                        flexWrap: "wrap",
+                                        fontFamily: "var(--font-mono)",
+                                        fontSize: 12,
+                                        color: "var(--text)",
+                                      }}
+                                    >
+                                      <span
+                                        className={`td-correction-pill ${
+                                          corrected ? "td-correction-pill--ok" : "td-correction-pill--todo"
+                                        }`}
+                                      >
+                                        {corrected ? "CORRECTED" : "TODO"}
+                                      </span>
+                                      <span>@{who}</span>
                                     </div>
                                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted)", marginTop: 3 }}>
                                       #{sub.id} · {sub.status} · score {score > 0 ? score.toFixed(1) : "—"}
@@ -359,22 +404,56 @@ export default function TeacherDashboard() {
               </Link>
             </div>
 
-            {MOCK_CORRECTIONS.slice(0, 6).map((c) => (
-              <div key={c.id} className="db-activity-row">
-                <div className="db-row-dot" style={{ background: "var(--warn)", boxShadow: "0 0 5px var(--warn)" }} />
-                <div className="db-row-info">
-                  <div className="db-row-title">{c.challenge}</div>
-                  <div className="db-row-meta">
-                    <span>@{c.student}</span>
-                    <span style={{ color: "var(--dim)" }}>·</span>
-                    <span>{c.status}</span>
-                  </div>
+            <div style={{ padding: "4px 0 10px" }}>
+              {correctionQueueLoading ? (
+                <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
+                  Loading recent submissions…
                 </div>
-                <div className="db-row-status" style={{ color: "var(--warn)" }}>
-                  {c.score == null ? "—" : `${c.score}`}
+              ) : correctionQueue.length === 0 ? (
+                <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
+                  No completed submissions on your challenges yet.
                 </div>
-              </div>
-            ))}
+              ) : (
+                correctionQueue.slice(0, 6).map((c) => {
+                  const done = Boolean(c.teacherCorrectionComplete);
+                  const who =
+                    (c.submitterUsername && String(c.submitterUsername).trim()) ||
+                    (c.userId != null ? `user #${c.userId}` : "—");
+                  const title = c.challengeTitle || `Challenge #${c.challengeId}`;
+                  const score = Number(c.totalScore) || 0;
+                  const when = c.completedAt || c.createdAt;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`db-activity-row ${done ? "db-activity-row--corrected" : "db-activity-row--pending"}`}
+                      onClick={() => navigate(`/submissions/${c.id}`)}
+                    >
+                      <div
+                        className="db-row-dot"
+                        style={{
+                          background: done ? "var(--green)" : "var(--warn)",
+                          boxShadow: done ? "0 0 6px var(--green)" : "0 0 5px var(--warn)",
+                        }}
+                      />
+                      <div className="db-row-info">
+                        <div className="db-row-title">{title}</div>
+                        <div className="db-row-meta">
+                          <span>@{who}</span>
+                          <span style={{ color: "var(--dim)" }}>·</span>
+                          <span>{done ? "CORRECTED" : "NEEDS REVIEW"}</span>
+                          <span style={{ color: "var(--dim)" }}>·</span>
+                          <span>{formatTeacherDate(when)}</span>
+                        </div>
+                      </div>
+                      <div className="db-row-status" style={{ color: done ? "var(--green)" : "var(--warn)" }}>
+                        {score > 0 ? score.toFixed(1) : "—"}
+                      </div>
+                    </button>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>

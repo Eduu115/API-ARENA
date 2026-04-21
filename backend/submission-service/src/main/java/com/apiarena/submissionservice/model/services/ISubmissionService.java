@@ -38,6 +38,12 @@ public interface ISubmissionService {
 
     List<SubmissionSummaryDTO> getTeacherChallengeSubmissions(Long teacherId, Long challengeId);
 
+    /**
+     * Recent completed submissions across challenges created by the teacher (same scope as {@code GET /api/challenges/mine}).
+     * Requires forwarding the caller's {@code Authorization: Bearer} header so challenge-service can authorize the list.
+     */
+    List<SubmissionSummaryDTO> getTeacherCorrectionsQueue(Long teacherId, String authorizationHeader, int limit);
+
     Map<Long, Long> getTeacherStudentsSubmissionCounts(Long teacherId, List<Long> studentIds);
 
     SubmissionZipDownload prepareZipDownload(Long id, Long userId, boolean isAdmin, boolean isTeacher);

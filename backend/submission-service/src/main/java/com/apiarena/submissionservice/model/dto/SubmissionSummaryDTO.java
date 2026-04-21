@@ -2,7 +2,10 @@ package com.apiarena.submissionservice.model.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 import com.apiarena.submissionservice.model.entities.Submission;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +32,13 @@ public class SubmissionSummaryDTO {
     /** Public username when resolved (e.g. teacher challenge-wide submission list); may be null. */
     private String submitterUsername;
 
+    /**
+     * When listing for teachers: true if the teacher has applied manual grading, penalties, review notes,
+     * structured feedback, or score bonuses on this submission. Omitted for student-only lists.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean teacherCorrectionComplete;
+
     public static SubmissionSummaryDTO fromEntity(Submission entity) {
         return fromEntity(entity, null, null, null);
     }
@@ -53,7 +63,8 @@ public class SubmissionSummaryDTO {
                 entity.getCompletedAt(),
                 challengeTitle,
                 zipDownloadExpiresAt,
-                submitterUsername
+                submitterUsername,
+                null
         );
     }
 }

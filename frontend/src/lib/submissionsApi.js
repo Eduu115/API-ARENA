@@ -64,6 +64,14 @@ export async function getTeacherChallengeSubmissions(challengeId) {
   return request(`/api/submissions/teacher/challenges/${challengeId}/submissions`);
 }
 
+/** Teacher: recent completed submissions across your challenges (includes teacherCorrectionComplete). */
+export async function getTeacherCorrectionsQueue(limit = 40) {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  const qs = params.toString();
+  return request(`/api/submissions/teacher/corrections-queue${qs ? `?${qs}` : ""}`);
+}
+
 /** Teacher: count submissions by student IDs limited to teacher-owned challenges. */
 export async function getTeacherStudentsSubmissionCounts(studentIds) {
   if (!Array.isArray(studentIds) || studentIds.length === 0) return {};
