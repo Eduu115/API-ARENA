@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
@@ -177,6 +178,22 @@ public class SubmissionController {
             throw new IllegalArgumentException("User ID not found in token.");
         }
         return ResponseEntity.ok(submissionService.getTeacherChallengeSubmissions(teacherId, challengeId));
+    }
+
+    @GetMapping("/teacher/corrections-queue")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Teacher corrections queue",
+            description = "Recent COMPLETED submissions for challenges you own (same scope as GET /api/challenges/mine). "
+                    + "Forwards your Authorization header to challenge-service. Each row includes teacherCorrectionComplete.")
+    public ResponseEntity<List<SubmissionSummaryDTO>> getTeacherCorrectionsQueue(
+            @RequestParam(name = "limit", defaultValue = "40") int limit,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
+        Long teacherId = extractUserIdFromAuthentication();
+        if (teacherId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.getTeacherCorrectionsQueue(teacherId, authorization, limit));
     }
 
     @PostMapping("/{id}/teacher/penalty")

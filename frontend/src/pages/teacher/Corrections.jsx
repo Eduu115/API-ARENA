@@ -1,37 +1,106 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import TeacherLayout from "./TeacherLayout";
-import { MOCK_CORRECTIONS, formatTeacherDate } from "./teacher.mock";
+import "../submissions/submissions.css";
+import { formatTeacherDate } from "./teacher.mock";
 import * as groupsApi from "../../lib/groupsApi";
-
-const STATUS_COLOR = {
-  PENDING: "var(--warn)",
-  NEEDS_REVIEW: "var(--purple)",
-  GRADED: "var(--green)",
-};
+import * as submissionsApi from "../../lib/submissionsApi";
 
 export default function Corrections() {
+  const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState("all");
   const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
+  const [queue, setQueue] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [memberUserIds, setMemberUserIds] = useState(null);
+  const [groupMembersLoading, setGroupMembersLoading] = useState(false);
 
   useEffect(() => {
     groupsApi.getMyGroups().then((data) => setGroups(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const data = await submissionsApi.getTeacherCorrectionsQueue(120);
+        if (!cancelled) setQueue(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (!cancelled) {
+          setQueue([]);
+          setLoadError(e?.message || "Could not load corrections queue");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (groupId === "all") {
+      setMemberUserIds(null);
+      setGroupMembersLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setGroupMembersLoading(true);
+    groupsApi
+      .getGroupById(groupId)
+      .then((g) => {
+        if (cancelled) return;
+        const ids = new Set(
+          (Array.isArray(g?.members) ? g.members : [])
+            .map((m) => m?.userId)
+            .filter((id) => id != null),
+        );
+        setMemberUserIds(ids);
+      })
+      .catch(() => {
+        if (!cancelled) setMemberUserIds(new Set());
+      })
+      .finally(() => {
+        if (!cancelled) setGroupMembersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [groupId]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return MOCK_CORRECTIONS.filter((c) => {
-      if (groupId !== "all" && c.groupId !== groupId) return false;
-      if (status !== "all" && c.status !== status) return false;
-      if (!q) return true;
-      return (
-        c.student.toLowerCase().includes(q) ||
-        c.challenge.toLowerCase().includes(q) ||
-        c.id.toLowerCase().includes(q)
-      );
-    }).sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-  }, [groupId, status, query]);
+    return queue
+      .filter((row) => {
+        if (groupId !== "all") {
+          if (groupMembersLoading || memberUserIds == null) return false;
+          if (memberUserIds.size === 0) return false;
+          if (!memberUserIds.has(Number(row.userId))) return false;
+        }
+        const uiStatus = row.teacherCorrectionComplete ? "CORRECTED" : "PENDING";
+        if (status !== "all" && uiStatus !== status) return false;
+        if (!q) return true;
+        const who = (row.submitterUsername && String(row.submitterUsername)) || "";
+        const title = (row.challengeTitle && String(row.challengeTitle)) || "";
+        return (
+          who.toLowerCase().includes(q) ||
+          title.toLowerCase().includes(q) ||
+          String(row.id).includes(q) ||
+          String(row.userId || "").includes(q)
+        );
+      })
+      .sort((a, b) => {
+        const ta = new Date(a.completedAt || a.createdAt).getTime();
+        const tb = new Date(b.completedAt || b.createdAt).getTime();
+        return tb - ta;
+      });
+  }, [queue, groupId, status, query, memberUserIds, groupMembersLoading]);
 
   return (
     <TeacherLayout>
@@ -47,15 +116,15 @@ export default function Corrections() {
             <option value="all">GROUP: ALL</option>
             {groups.map((g) => (
               <option key={g.id} value={g.id}>
-                GROUP: {g.name.toUpperCase()}{g.shared ? " · SHARED" : ""}
+                GROUP: {g.name.toUpperCase()}
+                {g.shared ? " · SHARED" : ""}
               </option>
             ))}
           </select>
           <select className="ch-sort-select" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="all">STATUS: ALL</option>
-            <option value="PENDING">STATUS: PENDING</option>
-            <option value="NEEDS_REVIEW">STATUS: NEEDS_REVIEW</option>
-            <option value="GRADED">STATUS: GRADED</option>
+            <option value="PENDING">STATUS: NEEDS REVIEW</option>
+            <option value="CORRECTED">STATUS: CORRECTED</option>
           </select>
         </div>
       </div>
@@ -76,12 +145,40 @@ export default function Corrections() {
         </span>
       </div>
 
+      {loadError && (
+        <div
+          style={{
+            marginTop: 12,
+            padding: "10px 14px",
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            color: "var(--red)",
+            border: "1px solid rgba(255,80,80,0.35)",
+            borderRadius: 6,
+          }}
+        >
+          {loadError}
+        </div>
+      )}
+
       <div className="db-panel" style={{ marginTop: 14 }}>
         <div className="db-panel-head">
-          <div className="db-panel-title">List</div>
-          <div className="db-panel-action" style={{ cursor: "default" }}>
-            // mock data
-          </div>
+          <div className="db-panel-title">Completed submissions</div>
+          <button
+            type="button"
+            className="db-panel-action"
+            style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }}
+            onClick={() => {
+              setLoading(true);
+              submissionsApi
+                .getTeacherCorrectionsQueue(120)
+                .then((data) => setQueue(Array.isArray(data) ? data : []))
+                .catch(() => {})
+                .finally(() => setLoading(false));
+            }}
+          >
+            Refresh →
+          </button>
         </div>
 
         <div className="sub-table" style={{ border: "none" }}>
@@ -90,39 +187,76 @@ export default function Corrections() {
             <div className="sub-th">Student</div>
             <div className="sub-th">Challenge</div>
             <div className="sub-th">Status</div>
+            <div className="sub-th sub-th-right">Score</div>
             <div className="sub-th sub-th-right">Date</div>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading || (groupId !== "all" && groupMembersLoading) ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-              No submissions for these filters
+              Loading…
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
+              {groupId !== "all" && memberUserIds && memberUserIds.size === 0
+                ? "This group has no students yet."
+                : "No submissions for these filters"}
             </div>
           ) : (
-            filtered.map((c) => {
-              const color = STATUS_COLOR[c.status] ?? "var(--muted)";
+            filtered.map((row) => {
+              const done = Boolean(row.teacherCorrectionComplete);
+              const uiStatus = done ? "CORRECTED" : "PENDING";
+              const who =
+                (row.submitterUsername && String(row.submitterUsername).trim()) ||
+                (row.userId != null ? `user #${row.userId}` : "—");
+              const title = row.challengeTitle || `Challenge #${row.challengeId}`;
+              const score = Number(row.totalScore) || 0;
+              const when = row.completedAt || row.createdAt;
               return (
-                <div key={c.id} className="sub-row">
-                  <div className="sub-row-id">#{c.id}</div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" }}>@{c.student}</div>
+                <div
+                  key={row.id}
+                  className={`sub-row ${done ? "sub-row-corrected" : "sub-row-needs-review"}`}
+                  style={{ cursor: "pointer" }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/submissions/${row.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      navigate(`/submissions/${row.id}`);
+                    }
+                  }}
+                >
+                  <div className="sub-row-id">#{row.id}</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" }}>@{who}</div>
                   <div style={{ minWidth: 0 }}>
-                    <div className="sub-row-challenge-title">{c.challenge}</div>
+                    <div className="sub-row-challenge-title">{title}</div>
                     <div className="sub-row-challenge-meta">
-                      <span style={{ color: "var(--muted)" }}>group</span>
+                      <span style={{ color: "var(--muted)" }}>challenge</span>
                       <span style={{ color: "var(--dim)" }}>·</span>
-                      <span>{groups.find((g) => String(g.id) === String(c.groupId))?.name ?? c.groupId}</span>
+                      <span>#{row.challengeId}</span>
                     </div>
                   </div>
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color }}>
-                    {c.status}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", minWidth: 0 }}>
+                    <span className={`td-correction-pill ${done ? "td-correction-pill--ok" : "td-correction-pill--todo"}`}>
+                      {uiStatus}
+                    </span>
                   </div>
-                  <div className="sub-row-time">{formatTeacherDate(c.submittedAt)}</div>
+                  <div className="sub-row-time" style={{ textAlign: "right" }}>
+                    {score > 0 ? score.toFixed(1) : "—"}
+                  </div>
+                  <div className="sub-row-time">{formatTeacherDate(when)}</div>
                 </div>
               );
             })
           )}
         </div>
       </div>
+
+      <div style={{ marginTop: 16, textAlign: "center" }}>
+        <Link to="/teacher" className="db-panel-action">
+          ← Teacher dashboard
+        </Link>
+      </div>
     </TeacherLayout>
   );
 }
-

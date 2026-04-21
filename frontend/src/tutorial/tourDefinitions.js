@@ -99,8 +99,8 @@ export const TOUR_CHALLENGE_SUBMIT = [
 ];
 
 export const DOCS_PATHS = {
-  landing: "/docs/platform-navigation",
-  dashboard: "/docs/platform-navigation",
+  landing: "/docs/guia-para-empezar",
+  dashboard: "/docs/guia-para-empezar",
   challenges: "/docs/challenges-catalog",
   challengeDetail: "/docs/challenge-workspace",
   challengeSubmit: "/docs/submitting-a-challenge",

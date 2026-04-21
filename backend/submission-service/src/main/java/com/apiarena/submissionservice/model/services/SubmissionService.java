@@ -25,11 +25,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -961,7 +964,7 @@ public class SubmissionService implements ISubmissionService {
                 continue;
             }
             String title = challengeData.get("title") != null ? Objects.toString(challengeData.get("title")) : null;
-            result.add(SubmissionSummaryDTO.fromEntity(submission, title, zipDownloadExpiresAtIso(submission), null));
+            result.add(toTeacherSubmissionSummary(submission, title, null));
         }
         return result;
     }
@@ -985,9 +988,131 @@ public class SubmissionService implements ISubmissionService {
         for (Submission submission : submissions) {
             Long uid = submission.getUserId();
             String username = uid != null ? usernameCache.computeIfAbsent(uid, this::fetchUsername) : null;
-            result.add(SubmissionSummaryDTO.fromEntity(submission, title, zipDownloadExpiresAtIso(submission), username));
+            result.add(toTeacherSubmissionSummary(submission, title, username));
         }
         return result;
+    }
+
+    @Override
+    public List<SubmissionSummaryDTO> getTeacherCorrectionsQueue(Long teacherId, String authorizationHeader, int limit) {
+        if (teacherId == null) {
+            throw new IllegalArgumentException("Teacher ID is required");
+        }
+        int cap = Math.min(Math.max(limit, 1), 200);
+        List<Map<String, Object>> mine = fetchMyChallengesAsMaps(authorizationHeader);
+        if (mine.isEmpty()) {
+            return List.of();
+        }
+        List<Long> challengeIds = mine.stream()
+                .map(m -> asLong(m.get("id")))
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        if (challengeIds.isEmpty()) {
+            return List.of();
+        }
+        Map<Long, String> titleByChallengeId = new HashMap<>();
+        for (Map<String, Object> m : mine) {
+            Long id = asLong(m.get("id"));
+            if (id == null) {
+                continue;
+            }
+            Object t = m.get("title");
+            if (t != null) {
+                titleByChallengeId.put(id, Objects.toString(t));
+            }
+        }
+        List<Submission> rows = submissionRepository.findByChallengeIdInAndStatusOrderByCompletedAtDescIdDesc(
+                challengeIds, Submission.Status.COMPLETED, PageRequest.of(0, cap));
+        Map<Long, String> usernameCache = new HashMap<>();
+        List<SubmissionSummaryDTO> out = new ArrayList<>(rows.size());
+        for (Submission submission : rows) {
+            String title = titleByChallengeId.get(submission.getChallengeId());
+            if (title == null) {
+                Map<String, Object> ch = fetchChallengeData(submission.getChallengeId());
+                title = ch != null && ch.get("title") != null ? Objects.toString(ch.get("title")) : null;
+            }
+            Long uid = submission.getUserId();
+            String username = uid != null ? usernameCache.computeIfAbsent(uid, this::fetchUsername) : null;
+            out.add(toTeacherSubmissionSummary(submission, title, username));
+        }
+        return out;
+    }
+
+    private SubmissionSummaryDTO toTeacherSubmissionSummary(Submission submission, String challengeTitle,
+            String submitterUsername) {
+        SubmissionSummaryDTO dto = SubmissionSummaryDTO.fromEntity(
+                submission, challengeTitle, zipDownloadExpiresAtIso(submission), submitterUsername);
+        dto.setTeacherCorrectionComplete(computeTeacherCorrectionComplete(submission));
+        return dto;
+    }
+
+    private boolean computeTeacherCorrectionComplete(Submission s) {
+        if (Boolean.TRUE.equals(s.getTeacherManualGrading())) {
+            return true;
+        }
+        if (s.getTeacherPenalties() != null && !s.getTeacherPenalties().isEmpty()) {
+            return true;
+        }
+        if (s.getTeacherPersonalNote() != null && !s.getTeacherPersonalNote().isBlank()) {
+            return true;
+        }
+        if (s.getTeacherZoneNotes() != null) {
+            for (String v : s.getTeacherZoneNotes().values()) {
+                if (v != null && !v.isBlank()) {
+                    return true;
+                }
+            }
+        }
+        if (hasMeaningfulStructuredTeacherFeedback(s.getTeacherStructuredFeedback())) {
+            return true;
+        }
+        if (s.getTeacherScoreBonuses() != null && !s.getTeacherScoreBonuses().isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean hasMeaningfulStructuredTeacherFeedback(Map<String, Object> raw) {
+        if (raw == null || raw.isEmpty()) {
+            return false;
+        }
+        Object summary = raw.get("summary");
+        if (summary instanceof String s && !s.isBlank()) {
+            return true;
+        }
+        Object strengths = raw.get("strengths");
+        if (strengths instanceof List<?> list && !list.isEmpty()) {
+            return true;
+        }
+        Object suggestions = raw.get("suggestions");
+        if (suggestions instanceof List<?> list2 && !list2.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> fetchMyChallengesAsMaps(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            log.warn("Missing Bearer token for teacher corrections queue");
+            return List.of();
+        }
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, authorizationHeader.trim());
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
+                    challengeServiceUrl + "/api/challenges/mine?includeInactive=true",
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> body = response.getBody();
+            return body != null ? body : List.of();
+        } catch (Exception e) {
+            log.warn("Could not list teacher challenges for corrections queue: {}", e.getMessage());
+            return List.of();
+        }
     }
 
     @Override

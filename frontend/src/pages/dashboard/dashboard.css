@@ -272,6 +272,66 @@
   background: rgba(255,255,255,0.02); 
 }
 
+button.db-activity-row {
+  width: 100%;
+  appearance: none;
+  background: transparent;
+  border: none;
+  margin: 0;
+  text-align: left;
+  color: inherit;
+  font-family: inherit;
+}
+
+.db-activity-row--corrected {
+  border-left: 3px solid var(--green);
+  padding-left: 15px;
+}
+
+.db-activity-row--pending {
+  border-left: 3px solid var(--warn);
+  padding-left: 15px;
+}
+
+.td-submission-row {
+  border-radius: 6px;
+}
+
+.td-submission-row--corrected {
+  background: rgba(0, 255, 163, 0.09);
+  outline: 1px solid rgba(0, 255, 163, 0.35);
+  outline-offset: -1px;
+}
+
+.td-submission-row--pending {
+  background: rgba(255, 184, 0, 0.07);
+  outline: 1px solid rgba(255, 184, 0, 0.35);
+  outline-offset: -1px;
+}
+
+.td-correction-pill {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.td-correction-pill--ok {
+  color: var(--green);
+  border: 1px solid rgba(0, 255, 163, 0.45);
+  background: rgba(0, 255, 163, 0.1);
+}
+
+.td-correction-pill--todo {
+  color: var(--warn);
+  border: 1px solid rgba(255, 184, 0, 0.45);
+  background: rgba(255, 184, 0, 0.1);
+}
+
 .db-row-dot {
   width: 6px; height: 6px;
   border-radius: 50%;

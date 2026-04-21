@@ -9,6 +9,16 @@ import "../challenges/challenges.css";
 import "./docsHub.css";
 import { DOC_BY_ID, DOC_DOCUMENTS } from "./docsContent";
 
+function getNextDocCtaLabel(currentDoc, nextDoc) {
+  if (currentDoc?.id === "guia-para-empezar" && nextDoc?.id === "primeros-pasos") {
+    return "Go to First Steps";
+  }
+  if (currentDoc?.id === "primeros-pasos" && nextDoc?.id === "preconfiguracion-proyecto") {
+    return "Continue to Preconfigure Project";
+  }
+  return `Next: ${nextDoc.title}`;
+}
+
 function SectionVisual({ visual }) {
   if (!visual?.type) return null;
 
@@ -96,6 +106,11 @@ export default function DocsHub() {
     () => DOC_BY_ID[docId] || DOC_DOCUMENTS[0],
     [docId]
   );
+  const docIndex = useMemo(() => DOC_DOCUMENTS.findIndex((d) => d.id === activeDoc.id), [activeDoc.id]);
+  const nextDoc = useMemo(() => {
+    if (docIndex < 0 || docIndex >= DOC_DOCUMENTS.length - 1) return null;
+    return DOC_DOCUMENTS[docIndex + 1];
+  }, [docIndex]);
   const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const [savingId, setSavingId] = useState(null);
   const [feedbackDone, setFeedbackDone] = useState({});
@@ -103,6 +118,7 @@ export default function DocsHub() {
 
   useEffect(() => {
     if (!docId) {
+      navigate(`/docs/${DOC_DOCUMENTS[0].id}`, { replace: true });
       return;
     }
     if (!DOC_BY_ID[docId]) {
@@ -253,6 +269,39 @@ export default function DocsHub() {
                       Could be improved
                     </button>
                   </div>
+
+                  <nav className="docs-doc-nav" aria-label="Continue reading">
+                    {nextDoc ? (
+                      <div className="docs-doc-nav-inner">
+                        <span className="docs-doc-nav-eyebrow">Continue learning</span>
+                        <Link to={`/docs/${nextDoc.id}`} className="docs-doc-nav-primary">
+                          <span>{getNextDocCtaLabel(activeDoc, nextDoc)}</span>
+                          <span className="docs-doc-nav-arrow" aria-hidden="true">
+                            →
+                          </span>
+                        </Link>
+                        <p className="docs-doc-nav-hint">
+                          Up next: <strong>{nextDoc.title}</strong>
+                          {nextDoc.readTime ? ` · ${nextDoc.readTime}` : null}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="docs-doc-nav-inner docs-doc-nav-inner--end">
+                        <span className="docs-doc-nav-eyebrow">End of the learning track</span>
+                        <p className="docs-doc-nav-hint">
+                          You finished the last guide in this list. Jump back to the start or open the catalog.
+                        </p>
+                        <div className="docs-doc-nav-actions">
+                          <Link to={`/docs/${DOC_DOCUMENTS[0].id}`} className="docs-doc-nav-secondary">
+                            Back to Getting Started
+                          </Link>
+                          <Link to="/challenges" className="docs-doc-nav-secondary">
+                            Go to Challenges
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </nav>
                 </article>
               </div>
             </div>

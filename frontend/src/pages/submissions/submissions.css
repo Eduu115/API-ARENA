@@ -124,6 +124,16 @@
 .sub-row:last-child { border-bottom: none; }
 .sub-row:hover { background: rgba(255,255,255,0.02); }
 
+.sub-row-corrected {
+  box-shadow: inset 4px 0 0 var(--green);
+  background: rgba(0, 255, 163, 0.07);
+}
+
+.sub-row-needs-review {
+  box-shadow: inset 4px 0 0 var(--warn);
+  background: rgba(255, 184, 0, 0.06);
+}
+
 .sub-row-id {
   font-family: var(--font-mono);
   font-size: 14px;

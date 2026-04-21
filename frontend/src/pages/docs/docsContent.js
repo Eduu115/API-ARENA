@@ -1,5 +1,197 @@
 export const DOC_DOCUMENTS = [
   {
+    id: "guia-para-empezar",
+    title: "Getting Started Guide",
+    summary: "Mindset, work strategy, and delivery rhythm to progress fast without burning out.",
+    readTime: "9 min",
+    sections: [
+      {
+        id: "enfoque",
+        heading: "Recommended approach to improve consistently",
+        paragraphs: [
+          "API Arena does not reward only final outcomes: it rewards consistent progress and your ability to iterate with technical judgment. If you start with a complex challenge before mastering build, test, and submission flow, frustration usually comes quickly.",
+          "For most students, the most effective strategy is simple: stack small wins in EASY and MEDIUM challenges, internalize the pipeline, and then scale difficulty on top of a stable base."
+        ],
+        bullets: [
+          "Work in 20-40 minute goals: one endpoint, one validation, or one test block.",
+          "Submit incrementally: if something measurable improved, validate it before overcomplicating.",
+          "Track recurring failures (status codes, payloads, headers) and turn them into your personal checklist."
+        ]
+      },
+      {
+        id: "flujo-estudio",
+        heading: "Recommended study and practice flow",
+        paragraphs: [
+          "Before writing code, spend a few minutes reading the challenge carefully and separating mandatory requirements from optional improvements.",
+          "When implementing, prioritize observable behavior over internal perfection. If an endpoint does not respond as expected, clean architecture alone will not pass functional tests."
+        ],
+        bullets: [
+          "Step 1: review required endpoints and expected HTTP codes.",
+          "Step 2: boot a minimal API with health + first working endpoint.",
+          "Step 3: implement the main CRUD or domain flow.",
+          "Step 4: tighten validations and error handling.",
+          "Step 5: optimize performance and design details."
+        ],
+        visual: {
+          type: "flow",
+          title: "Visual workflow map",
+          steps: [
+            { label: "Read challenge", hint: "Endpoints + codes + constraints" },
+            { label: "Implement baseline", hint: "Health + routing + JSON" },
+            { label: "Complete core behavior", hint: "Main CRUD + validations" },
+            { label: "Verify HTTP contract", hint: "Status + payload + errors" },
+            { label: "Submit and measure", hint: "Logs + score + next iteration" }
+          ]
+        }
+      },
+      {
+        id: "evitar-bloqueos",
+        heading: "How to avoid beginner bottlenecks",
+        paragraphs: [
+          "When something fails, do not change ten things at once. Make small changes, verify impact, then continue.",
+          "If you are stuck for 25-30 minutes, stop and return to a stable baseline. In API work, going back to basics often unblocks faster than forcing a complex fix."
+        ],
+        bullets: [
+          "Track issue, hypothesis, applied change, and outcome.",
+          "Use intentional local checkpoints (e.g. fix-404-books, validate-input-auth).",
+          "If you cannot explain an error, reduce it to a minimal reproducible case."
+        ]
+      }
+    ]
+  },
+  {
+    id: "primeros-pasos",
+    title: "First Steps",
+    summary: "Practical checklist to prepare your first challenge from start to finish.",
+    readTime: "11 min",
+    sections: [
+      {
+        id: "antes-codificar",
+        heading: "Before coding: prepare the ground",
+        paragraphs: [
+          "Your first challenge does not begin with controllers. It begins with technical reading and local environment validation.",
+          "Define a minimum architecture up front: layers, entities, validations, and error handling. A clear starting structure avoids accidental debt."
+        ],
+        bullets: [
+          "Verify Java and Maven versions are compatible with your project.",
+          "Ensure packaging produces a runnable JAR.",
+          "Confirm API port and context do not depend on exotic local settings."
+        ]
+      },
+      {
+        id: "implementacion-minima",
+        heading: "Minimum viable implementation for an early submission",
+        paragraphs: [
+          "Do not solve everything at once. Build a stable backbone first: routing, JSON serialization, basic validation, and coherent HTTP responses.",
+          "The goal of your first submission is not a perfect score. It is proving the full pipeline works with your foundation."
+        ],
+        bullets: [
+          "Start with required GET endpoints to validate response structures.",
+          "Then add POST/PUT/DELETE with essential validation.",
+          "Handle 404, 400, and 500 consistently."
+        ]
+      },
+      {
+        id: "primera-entrega",
+        heading: "First submission: what to verify before uploading ZIP",
+        paragraphs: [
+          "Most first-submission failures are not business-logic issues but packaging and project-structure issues. ZIP pre-check is mandatory.",
+          "Assume evaluator environments are strict and know nothing about your local machine."
+        ],
+        bullets: [
+          "ZIP must contain `pom.xml` at the root, not inside nested folders.",
+          "Avoid undeclared local dependencies.",
+          "Do not upload unnecessary artifacts (heavy target output, temp files, credentials)."
+        ]
+      }
+    ]
+  },
+
+  {
+    id: "preconfiguracion-proyecto",
+    title: "Preconfigure Project for Challenges",
+    summary: "Complete technical guide for prerequisites, minimum structure, and pre-submission validation.",
+    readTime: "14 min",
+    sections: [
+      {
+        id: "estructura-base",
+        heading: "Base project structure requirements",
+        paragraphs: [
+          "For API Arena to compile and run your submission, keep a predictable standard Maven structure. If the build system cannot find expected files, it fails before tests run.",
+          "Treat your project as a portable package: any environment should unzip, compile, and start it without manual help."
+        ],
+        bullets: [
+          "ZIP root: `pom.xml`, `src/`, and required config files.",
+          "Main code in `src/main/java`, resources in `src/main/resources` when needed.",
+          "No absolute paths or scripts tied to your local machine."
+        ],
+        visual: {
+          type: "tree",
+          title: "Recommended ZIP structure",
+          lines: [
+            "my-challenge-api.zip",
+            "├── pom.xml",
+            "├── src/",
+            "│   ├── main/java/com/yourapp/...",
+            "│   └── main/resources/application.properties",
+            "└── README.md (optional)"
+          ]
+        }
+      },
+      {
+        id: "pom-dependencias",
+        heading: "Maven configuration and dependencies",
+        paragraphs: [
+          "Your `pom.xml` is the challenge build contract. Missing dependencies or misconfigured plugins can break sandbox execution.",
+          "A clean and explicit POM reduces variability and improves reproducibility."
+        ],
+        bullets: [
+          "Declare compatible Java version and compiler plugin.",
+          "Include only required web, serialization, and validation dependencies.",
+          "Avoid unnecessary dependencies that increase build time or conflict."
+        ]
+      },
+      {
+        id: "arranque-api",
+        heading: "API startup conditions",
+        paragraphs: [
+          "Your API must start autonomously and respond in a reasonable time. If startup is too slow or fails, tests cannot execute reliably.",
+          "Use safe defaults for evaluation environments and do not block startup on optional variables."
+        ],
+        bullets: [
+          "Provide a health endpoint or minimum response endpoint.",
+          "Do not require external services just to boot.",
+          "Handle initialization failures with clear logs."
+        ]
+      },
+      {
+        id: "checklist-envio",
+        heading: "Final checklist before submit",
+        paragraphs: [
+          "This checklist often separates a valid submission from a failed packaging attempt. Always run it, even with experience.",
+          "If you fail here, score reflects delivery issues, not real technical ability."
+        ],
+        bullets: [
+          "Compile locally with `mvn clean package` without extra manual steps.",
+          "Validate required endpoints and expected HTTP status codes.",
+          "Generate final ZIP and manually inspect internal structure.",
+          "Review logs once more and remove secrets/credentials."
+        ],
+        visual: {
+          type: "checklist",
+          title: "Quick pre-submit checklist",
+          items: [
+            { label: "Build local OK", status: "ok" },
+            { label: "pom.xml at ZIP root", status: "ok" },
+            { label: "Required endpoints covered", status: "ok" },
+            { label: "Correct HTTP status codes", status: "ok" },
+            { label: "No secrets inside bundle", status: "warn" }
+          ]
+        }
+      }
+    ]
+  },
+  {
     id: "platform-navigation",
     title: "Platform navigation",
     summary:
@@ -177,197 +369,6 @@ export const DOC_DOCUMENTS = [
           "UTC is authoritative for daily resets — check the copy on the limit banner for exact times.",
           "If you are blocked, use the wait time to read Docs or improve tests locally."
         ]
-      }
-    ]
-  },
-  {
-    id: "guia-para-empezar",
-    title: "Getting Started Guide",
-    summary: "Mindset, work strategy, and delivery rhythm to progress fast without burning out.",
-    readTime: "9 min",
-    sections: [
-      {
-        id: "enfoque",
-        heading: "Recommended approach to improve consistently",
-        paragraphs: [
-          "API Arena does not reward only final outcomes: it rewards consistent progress and your ability to iterate with technical judgment. If you start with a complex challenge before mastering build, test, and submission flow, frustration usually comes quickly.",
-          "For most students, the most effective strategy is simple: stack small wins in EASY and MEDIUM challenges, internalize the pipeline, and then scale difficulty on top of a stable base."
-        ],
-        bullets: [
-          "Work in 20-40 minute goals: one endpoint, one validation, or one test block.",
-          "Submit incrementally: if something measurable improved, validate it before overcomplicating.",
-          "Track recurring failures (status codes, payloads, headers) and turn them into your personal checklist."
-        ]
-      },
-      {
-        id: "flujo-estudio",
-        heading: "Recommended study and practice flow",
-        paragraphs: [
-          "Before writing code, spend a few minutes reading the challenge carefully and separating mandatory requirements from optional improvements.",
-          "When implementing, prioritize observable behavior over internal perfection. If an endpoint does not respond as expected, clean architecture alone will not pass functional tests."
-        ],
-        bullets: [
-          "Step 1: review required endpoints and expected HTTP codes.",
-          "Step 2: boot a minimal API with health + first working endpoint.",
-          "Step 3: implement the main CRUD or domain flow.",
-          "Step 4: tighten validations and error handling.",
-          "Step 5: optimize performance and design details."
-        ],
-        visual: {
-          type: "flow",
-          title: "Visual workflow map",
-          steps: [
-            { label: "Read challenge", hint: "Endpoints + codes + constraints" },
-            { label: "Implement baseline", hint: "Health + routing + JSON" },
-            { label: "Complete core behavior", hint: "Main CRUD + validations" },
-            { label: "Verify HTTP contract", hint: "Status + payload + errors" },
-            { label: "Submit and measure", hint: "Logs + score + next iteration" }
-          ]
-        }
-      },
-      {
-        id: "evitar-bloqueos",
-        heading: "How to avoid beginner bottlenecks",
-        paragraphs: [
-          "When something fails, do not change ten things at once. Make small changes, verify impact, then continue.",
-          "If you are stuck for 25-30 minutes, stop and return to a stable baseline. In API work, going back to basics often unblocks faster than forcing a complex fix."
-        ],
-        bullets: [
-          "Track issue, hypothesis, applied change, and outcome.",
-          "Use intentional local checkpoints (e.g. fix-404-books, validate-input-auth).",
-          "If you cannot explain an error, reduce it to a minimal reproducible case."
-        ]
-      }
-    ]
-  },
-  {
-    id: "primeros-pasos",
-    title: "First Steps",
-    summary: "Practical checklist to prepare your first challenge from start to finish.",
-    readTime: "11 min",
-    sections: [
-      {
-        id: "antes-codificar",
-        heading: "Before coding: prepare the ground",
-        paragraphs: [
-          "Your first challenge does not begin with controllers. It begins with technical reading and local environment validation.",
-          "Define a minimum architecture up front: layers, entities, validations, and error handling. A clear starting structure avoids accidental debt."
-        ],
-        bullets: [
-          "Verify Java and Maven versions are compatible with your project.",
-          "Ensure packaging produces a runnable JAR.",
-          "Confirm API port and context do not depend on exotic local settings."
-        ]
-      },
-      {
-        id: "implementacion-minima",
-        heading: "Minimum viable implementation for an early submission",
-        paragraphs: [
-          "Do not solve everything at once. Build a stable backbone first: routing, JSON serialization, basic validation, and coherent HTTP responses.",
-          "The goal of your first submission is not a perfect score. It is proving the full pipeline works with your foundation."
-        ],
-        bullets: [
-          "Start with required GET endpoints to validate response structures.",
-          "Then add POST/PUT/DELETE with essential validation.",
-          "Handle 404, 400, and 500 consistently."
-        ]
-      },
-      {
-        id: "primera-entrega",
-        heading: "First submission: what to verify before uploading ZIP",
-        paragraphs: [
-          "Most first-submission failures are not business-logic issues but packaging and project-structure issues. ZIP pre-check is mandatory.",
-          "Assume evaluator environments are strict and know nothing about your local machine."
-        ],
-        bullets: [
-          "ZIP must contain `pom.xml` at the root, not inside nested folders.",
-          "Avoid undeclared local dependencies.",
-          "Do not upload unnecessary artifacts (heavy target output, temp files, credentials)."
-        ]
-      }
-    ]
-  },
-  {
-    id: "preconfiguracion-proyecto",
-    title: "Preconfigure Project for Challenges",
-    summary: "Complete technical guide for prerequisites, minimum structure, and pre-submission validation.",
-    readTime: "14 min",
-    sections: [
-      {
-        id: "estructura-base",
-        heading: "Base project structure requirements",
-        paragraphs: [
-          "For API Arena to compile and run your submission, keep a predictable standard Maven structure. If the build system cannot find expected files, it fails before tests run.",
-          "Treat your project as a portable package: any environment should unzip, compile, and start it without manual help."
-        ],
-        bullets: [
-          "ZIP root: `pom.xml`, `src/`, and required config files.",
-          "Main code in `src/main/java`, resources in `src/main/resources` when needed.",
-          "No absolute paths or scripts tied to your local machine."
-        ],
-        visual: {
-          type: "tree",
-          title: "Recommended ZIP structure",
-          lines: [
-            "my-challenge-api.zip",
-            "├── pom.xml",
-            "├── src/",
-            "│   ├── main/java/com/yourapp/...",
-            "│   └── main/resources/application.properties",
-            "└── README.md (optional)"
-          ]
-        }
-      },
-      {
-        id: "pom-dependencias",
-        heading: "Maven configuration and dependencies",
-        paragraphs: [
-          "Your `pom.xml` is the challenge build contract. Missing dependencies or misconfigured plugins can break sandbox execution.",
-          "A clean and explicit POM reduces variability and improves reproducibility."
-        ],
-        bullets: [
-          "Declare compatible Java version and compiler plugin.",
-          "Include only required web, serialization, and validation dependencies.",
-          "Avoid unnecessary dependencies that increase build time or conflict."
-        ]
-      },
-      {
-        id: "arranque-api",
-        heading: "API startup conditions",
-        paragraphs: [
-          "Your API must start autonomously and respond in a reasonable time. If startup is too slow or fails, tests cannot execute reliably.",
-          "Use safe defaults for evaluation environments and do not block startup on optional variables."
-        ],
-        bullets: [
-          "Provide a health endpoint or minimum response endpoint.",
-          "Do not require external services just to boot.",
-          "Handle initialization failures with clear logs."
-        ]
-      },
-      {
-        id: "checklist-envio",
-        heading: "Final checklist before submit",
-        paragraphs: [
-          "This checklist often separates a valid submission from a failed packaging attempt. Always run it, even with experience.",
-          "If you fail here, score reflects delivery issues, not real technical ability."
-        ],
-        bullets: [
-          "Compile locally with `mvn clean package` without extra manual steps.",
-          "Validate required endpoints and expected HTTP status codes.",
-          "Generate final ZIP and manually inspect internal structure.",
-          "Review logs once more and remove secrets/credentials."
-        ],
-        visual: {
-          type: "checklist",
-          title: "Quick pre-submit checklist",
-          items: [
-            { label: "Build local OK", status: "ok" },
-            { label: "pom.xml at ZIP root", status: "ok" },
-            { label: "Required endpoints covered", status: "ok" },
-            { label: "Correct HTTP status codes", status: "ok" },
-            { label: "No secrets inside bundle", status: "warn" }
-          ]
-        }
       }
     ]
   },
