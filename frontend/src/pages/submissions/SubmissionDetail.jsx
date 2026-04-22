@@ -611,7 +611,9 @@ export default function SubmissionDetail() {
             {!isProcessing && (
               <div className="sd-score-grid" style={{ marginBottom: 20 }}>
                 {scoreBreakdown.map(s => {
-                  const pct = s.max > 0 ? (s.value / s.max) * 100 : 0;
+                  const denom = Math.max(1, Number(s.max) || 0);
+                  const rawPct = (Number(s.value) || 0) / denom * 100;
+                  const pct = Math.max(0, Math.min(100, rawPct));
                   return (
                     <div key={s.label} className="sd-score-cell">
                       <div className="sd-score-cell-val" style={{ color: s.color }}>{s.value.toFixed(1)}</div>

@@ -40,13 +40,18 @@ public class SandboxService {
     private static final int MAVEN_TIMEOUT_MIN = 12;
     private static final int STARTUP_WAIT_SEC = 90;
 
-    /** First successful GET 200 on any of these paths means the JVM is serving HTTP (challenge-agnostic). */
+    /** Any HTTP response (even 4xx/5xx) on these paths means the JVM is serving HTTP. */
     private static final String[] READINESS_PATHS = {
+            "/actuator/health",
             "/api/items",
             "/api/books",
             "/api/todos",
             "/api/products",
+            "/api/tasks",
+            "/api/messages",
+            "/api/cache",
             "/ping",
+            "/",
     };
 
     private static final Object BUILD_LOCK = new Object();
@@ -263,7 +268,8 @@ public class SandboxService {
             if (pomOpt.isEmpty()) {
                 return failExecution(execution, "[BUILD] No pom.xml in ZIP", "No pom.xml in ZIP");
             }
-            Path dockerfile = workDir.resolve("Dockerfile.apiarena");
+            Path projectRoot = pomOpt.get().getParent();
+            Path dockerfile = projectRoot.resolve("Dockerfile.apiarena");
             String dockerfileBody = request.getDockerfile() != null && !request.getDockerfile().isBlank()
                     ? request.getDockerfile()
                     : defaultCandidateDockerfile();
@@ -276,8 +282,8 @@ public class SandboxService {
             }
 
             CommandResult buildResult = runDockerCommand(
-                    List.of("docker", "build", "-t", imageName, "-f", dockerfile.toString(), workDir.toString()),
-                    workDir,
+                    List.of("docker", "build", "-t", imageName, "-f", dockerfile.toString(), projectRoot.toString()),
+                    projectRoot,
                     MAVEN_TIMEOUT_MIN * 60,
                     true);
             buildLog.append(buildResult.output());
@@ -324,6 +330,18 @@ public class SandboxService {
 
             boolean ready = waitForCandidateReady(containerName, dindContainerPort);
             if (!ready) {
+                try {
+                    CommandResult logs = runDockerCommand(List.of("docker", "logs", "--tail", "200", containerName),
+                            workDir, 10, true);
+                    if (logs.output() != null && !logs.output().isBlank()) {
+                        buildLog.append("\n[BUILD] Candidate logs (tail)\n").append(logs.output()).append("\n");
+                    }
+                    buildLog.append("[BUILD] Readiness paths tried: ")
+                            .append(String.join(", ", READINESS_PATHS))
+                            .append("\n");
+                } catch (Exception ignored) {
+                    // best-effort only
+                }
                 runDockerCommand(List.of("docker", "rm", "-f", containerName), workDir, 10, false);
                 runDockerCommand(List.of("docker", "rmi", "-f", imageName), workDir, 10, false);
                 buildLog.append("[BUILD] Candidate not ready in time\n");
@@ -371,7 +389,9 @@ public class SandboxService {
                             .GET()
                             .build();
                     HttpResponse<String> resp = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
-                    if (resp.statusCode() == 200) {
+                    int code = resp.statusCode();
+                    if (code > 0) {
+                        log.info("Candidate ready on {} — HTTP {}", path, code);
                         return true;
                     }
                 } catch (Exception e) {
@@ -392,7 +412,9 @@ public class SandboxService {
         return """
                 FROM maven:3.9-eclipse-temurin-21-alpine AS build
                 WORKDIR /src
-                COPY . .
+                COPY pom.xml .
+                RUN mvn -B -DskipTests dependency:go-offline
+                COPY src ./src
                 RUN mvn -B -DskipTests package
                 FROM eclipse-temurin:21-jre-alpine
                 WORKDIR /app
