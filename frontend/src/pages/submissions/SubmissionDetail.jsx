@@ -16,6 +16,22 @@ import CustomCursor from '../../components/CustomCursor';
 import '../challenges/challenges.css';
 import './submissions.css';
 
+function IconBuildLogsTitle() {
+  return (
+    <svg className="sd-panel-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="m6.75 7.5 3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0 0 21 18V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v12a2.25 2.25 0 0 0 2.25 2.25Z" />
+    </svg>
+  );
+}
+
+function IconTestLogsTitle() {
+  return (
+    <svg className="sd-panel-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 4.5h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 4.5h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+    </svg>
+  );
+}
+
 const TIMELINE_STEPS = ['PENDING', 'BUILDING', 'TESTING', 'COMPLETED'];
 
 const TEACHER_PENALTY_PRESETS = [
@@ -1197,7 +1213,10 @@ export default function SubmissionDetail() {
                 {buildLogs && (
                   <div className="sd-panel">
                     <div className="sd-panel-head">
-                      <div className="sd-panel-title">🔨 Build Logs</div>
+                      <div className="sd-panel-title">
+                        <IconBuildLogsTitle />
+                        Build Logs
+                      </div>
                     </div>
                     <div className="sd-panel-body">
                       <div className="sd-logs">{buildLogs}</div>
@@ -1207,7 +1226,10 @@ export default function SubmissionDetail() {
                 {testLogs && (
                   <div className="sd-panel">
                     <div className="sd-panel-head">
-                      <div className="sd-panel-title">🧪 Test Logs</div>
+                      <div className="sd-panel-title">
+                        <IconTestLogsTitle />
+                        Test Logs
+                      </div>
                     </div>
                     <div className="sd-panel-body">
                       <div className="sd-logs">{testLogs}</div>

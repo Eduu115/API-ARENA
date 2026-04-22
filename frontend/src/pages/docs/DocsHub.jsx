@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
@@ -125,6 +125,10 @@ export default function DocsHub() {
       navigate(`/docs/${DOC_DOCUMENTS[0].id}`, { replace: true });
     }
   }, [docId, navigate]);
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeDoc.id]);
 
   useEffect(() => {
     if (!isAdmin) {
@@ -270,38 +274,33 @@ export default function DocsHub() {
                     </button>
                   </div>
 
-                  <nav className="docs-doc-nav" aria-label="Continue reading">
+                  <footer className="docs-doc-footer" aria-label="Next document">
                     {nextDoc ? (
-                      <div className="docs-doc-nav-inner">
-                        <span className="docs-doc-nav-eyebrow">Continue learning</span>
-                        <Link to={`/docs/${nextDoc.id}`} className="docs-doc-nav-primary">
-                          <span>{getNextDocCtaLabel(activeDoc, nextDoc)}</span>
-                          <span className="docs-doc-nav-arrow" aria-hidden="true">
+                      <div className="docs-next-row">
+                        <span className="docs-feedback-label">Next document</span>
+                        <Link to={`/docs/${nextDoc.id}`} className="docs-next-btn">
+                          {getNextDocCtaLabel(activeDoc, nextDoc)}
+                          <span className="docs-next-btn-arrow" aria-hidden="true">
                             →
                           </span>
                         </Link>
-                        <p className="docs-doc-nav-hint">
-                          Up next: <strong>{nextDoc.title}</strong>
-                          {nextDoc.readTime ? ` · ${nextDoc.readTime}` : null}
-                        </p>
+                        <span className="docs-next-meta">
+                          {nextDoc.title}
+                          {nextDoc.readTime ? ` · ${nextDoc.readTime}` : ""}
+                        </span>
                       </div>
                     ) : (
-                      <div className="docs-doc-nav-inner docs-doc-nav-inner--end">
-                        <span className="docs-doc-nav-eyebrow">End of the learning track</span>
-                        <p className="docs-doc-nav-hint">
-                          You finished the last guide in this list. Jump back to the start or open the catalog.
-                        </p>
-                        <div className="docs-doc-nav-actions">
-                          <Link to={`/docs/${DOC_DOCUMENTS[0].id}`} className="docs-doc-nav-secondary">
-                            Back to Getting Started
-                          </Link>
-                          <Link to="/challenges" className="docs-doc-nav-secondary">
-                            Go to Challenges
-                          </Link>
-                        </div>
+                      <div className="docs-next-row docs-next-row--end">
+                        <span className="docs-feedback-label">End of this learning track</span>
+                        <Link to={`/docs/${DOC_DOCUMENTS[0].id}`} className="docs-feedback-btn">
+                          Back to Getting Started
+                        </Link>
+                        <Link to="/challenges" className="docs-feedback-btn">
+                          Go to Challenges
+                        </Link>
                       </div>
                     )}
-                  </nav>
+                  </footer>
                 </article>
               </div>
             </div>
