@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
@@ -101,6 +102,10 @@ public class SubmissionService implements ISubmissionService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    @Qualifier("aiRestTemplate")
+    private RestTemplate aiRestTemplate;
 
     @Autowired
     private SubmissionKafkaPublisher submissionKafkaPublisher;
@@ -597,7 +602,7 @@ public class SubmissionService implements ISubmissionService {
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
             @SuppressWarnings("unchecked")
-            Map<String, Object> review = restTemplate.postForObject(
+            Map<String, Object> review = aiRestTemplate.postForObject(
                     aiReviewServiceUrl + "/internal/ai-review/analyze",
                     entity,
                     Map.class);
@@ -651,13 +656,42 @@ public class SubmissionService implements ISubmissionService {
             int perfWeighted = (int) Math.round(300.0 * Math.max(0, performance) / sum);
             int designWeighted = (int) Math.round(200.0 * Math.max(0, design) / sum);
 
+            corrWeighted = Math.max(0, Math.min(300, corrWeighted));
+            perfWeighted = Math.max(0, Math.min(300, perfWeighted));
+            designWeighted = Math.max(0, Math.min(200, designWeighted));
+
             int technicalTotal = corrWeighted + perfWeighted + designWeighted;
-            int delta = 800 - technicalTotal;
-            if (delta != 0) {
-                designWeighted = Math.max(0, designWeighted + delta);
-                technicalTotal = corrWeighted + perfWeighted + designWeighted;
+            int remaining = 800 - technicalTotal;
+            if (remaining > 0) {
+                int corrRoom = 300 - corrWeighted;
+                int perfRoom = 300 - perfWeighted;
+                int designRoom = 200 - designWeighted;
+                int totalRoom = corrRoom + perfRoom + designRoom;
+                if (totalRoom > 0) {
+                    int addCorr = (int) Math.floor((double) remaining * corrRoom / totalRoom);
+                    int addPerf = (int) Math.floor((double) remaining * perfRoom / totalRoom);
+                    int addDesign = Math.min(remaining - addCorr - addPerf, designRoom);
+
+                    corrWeighted += Math.min(addCorr, corrRoom);
+                    perfWeighted += Math.min(addPerf, perfRoom);
+                    designWeighted += Math.min(addDesign, designRoom);
+
+                    int used = addCorr + addPerf + addDesign;
+                    int leftover = remaining - used;
+                    while (leftover > 0) {
+                        boolean applied = false;
+                        if (corrWeighted < 300) { corrWeighted++; leftover--; applied = true; }
+                        if (leftover <= 0) break;
+                        if (perfWeighted < 300) { perfWeighted++; leftover--; applied = true; }
+                        if (leftover <= 0) break;
+                        if (designWeighted < 200) { designWeighted++; leftover--; applied = true; }
+                        if (!applied) break;
+                    }
+                }
             }
-            return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, Math.max(0, technicalTotal));
+
+            technicalTotal = corrWeighted + perfWeighted + designWeighted;
+            return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, Math.max(0, Math.min(800, technicalTotal)));
         }
         int technicalTotal = Math.max(0, Math.min(800, (int) Math.round(Math.max(0, total) * 0.8)));
         int corrWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
