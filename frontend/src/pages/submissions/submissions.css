@@ -1024,3 +1024,93 @@
 .sd-teacher-feedback-panel .sd-panel-title {
   color: var(--purple);
 }
+
+/* ── Light theme ── */
+[data-theme="light"] .sub-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .sd-teacher-panel {
+  border: 1px solid rgba(18, 32, 64, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+[data-theme="light"] .sd-teacher-panel .sd-panel-head {
+  background: #eceff4;
+  border-bottom-color: rgba(18, 32, 64, 0.14);
+}
+
+[data-theme="light"] .sd-teacher-panel .sd-panel-body {
+  background: #f1f4f8;
+  color: #000;
+}
+
+[data-theme="light"] .sd-teacher-panel .sd-panel-title,
+[data-theme="light"] .sd-teacher-section-title {
+  color: #000;
+}
+
+[data-theme="light"] .sd-teacher-hint {
+  color: #000;
+}
+
+[data-theme="light"] .sd-teacher-hint strong {
+  color: #d89a1b;
+}
+
+[data-theme="light"] .sd-teacher-label {
+  color: #000;
+}
+
+[data-theme="light"] .sd-teacher-input,
+[data-theme="light"] .sd-teacher-select,
+[data-theme="light"] .sd-teacher-textarea {
+  background: #aab0ba;
+  border-color: #969da8;
+  color: #000;
+}
+
+[data-theme="light"] .sd-teacher-input::placeholder,
+[data-theme="light"] .sd-teacher-textarea::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] .sd-teacher-select option {
+  color: #000;
+  background: #edf1f6;
+}
+
+[data-theme="light"] .sd-teacher-primary-btn--secondary,
+[data-theme="light"] .sd-teacher-primary-btn {
+  background: #0d1224;
+  border: 1px solid rgba(8, 145, 178, 0.35);
+  color: #000;
+  box-shadow: none;
+}
+
+[data-theme="light"] .sd-teacher-primary-btn:hover:not(:disabled) {
+  box-shadow: 0 10px 30px rgba(8, 145, 178, 0.24);
+}
+
+[data-theme="light"] .sd-teacher-draft-row {
+  background: #edf1f6;
+  border-color: rgba(18, 32, 64, 0.16);
+}
+
+[data-theme="light"] .sd-teacher-draft-text {
+  color: #000;
+}
+
+[data-theme="light"] .sd-teacher-ghost-btn {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #dc4c4c;
+}
+
+[data-theme="light"] .sd-teacher-applied-row {
+  border-bottom-color: rgba(18, 32, 64, 0.1);
+}
+
+[data-theme="light"] .sd-teacher-lock-hint {
+  color: #7a8495;
+}

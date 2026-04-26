@@ -268,3 +268,8 @@
   .lb-row-name { font-size: 15px; }
   .lb-row-rating { font-size: 16px; }
 }
+
+/* ── Light theme ── */
+[data-theme="light"] .lb-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
