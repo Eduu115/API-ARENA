@@ -122,6 +122,7 @@ public class SecurityConfig {
          * Exact setAllowedOrigins alone caused 403 when Origin did not match (e.g. :4173, 192.168.x.x).
          */
         configuration.setAllowedOriginPatterns(List.of(
+                "https://apiarena.net",
                 "http://localhost:*",
                 "http://127.0.0.1:*",
                 "http://[::1]:*",

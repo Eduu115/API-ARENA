@@ -1,0 +1,78 @@
+services:
+  # Production-style: don't expose internal ports publicly.
+  # Use Nginx Proxy Manager (running on the same Docker host) to route traffic to these containers.
+  auth-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION:-604800000}
+      APP_EMAIL_FRONTEND_BASE_URL: ${APP_EMAIL_FRONTEND_BASE_URL:-https://apiarena.net}
+
+  challenge-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+
+  submission-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+      AI_REVIEW_ENABLED: ${AI_REVIEW_ENABLED:-true}
+      REPLAY_MONGODB_ENABLED: ${REPLAY_MONGODB_ENABLED:-true}
+      INFLUX_ENABLED: ${INFLUX_ENABLED:-true}
+
+  sandbox-service:
+    ports: []
+
+  testing-service:
+    ports: []
+
+  leaderboard-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+
+  notification-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+
+  metrics-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+
+  frontend:
+    ports: []
+
+  # Optional: keep observability private (recommended). Don't publish these ports in prod by default.
+  grafana:
+    ports: []
+
+  prometheus:
+    ports: []
+
+  alertmanager:
+    ports: []
+
+  # Datastores should never be exposed publicly.
+  postgres:
+    ports: []
+  redis:
+    ports: []
+  mongodb:
+    ports: []
+  influxdb:
+    ports: []
+  kafka:
+    ports: []
+  zookeeper:
+    ports: []
+
