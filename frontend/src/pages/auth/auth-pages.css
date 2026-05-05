@@ -512,3 +512,8 @@
   display: block;
 }
 
+
+/* Desactivar ruido de fondo en light */
+[data-theme="light"] .auth-page-root::after {
+  opacity: 0;
+}

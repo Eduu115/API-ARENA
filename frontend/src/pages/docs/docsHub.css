@@ -284,6 +284,44 @@
   background: var(--warn);
 }
 
+[data-theme="light"] .docs-visual {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(8, 145, 178, 0.28);
+}
+
+[data-theme="light"] .docs-visual-title {
+  color: #0e7490;
+}
+
+[data-theme="light"] .docs-flow-step {
+  border-color: rgba(8, 145, 178, 0.24);
+  background: rgba(8, 145, 178, 0.08);
+}
+
+[data-theme="light"] .docs-flow-step-index {
+  border-color: rgba(8, 145, 178, 0.5);
+  color: #0e7490;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .docs-flow-step-label {
+  color: var(--text);
+}
+
+[data-theme="light"] .docs-flow-step-hint {
+  color: var(--muted);
+}
+
+[data-theme="light"] .docs-tree {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(8, 145, 178, 0.2);
+}
+
+[data-theme="light"] .docs-score-track {
+  background: rgba(8, 145, 178, 0.12);
+  border-color: rgba(8, 145, 178, 0.25);
+}
+
 .docs-score-bars {
   display: grid;
   gap: 10px;

@@ -38,35 +38,37 @@
 }
 
 [data-theme="light"] {
-  --arena-primary: #0095B3;
-  --arena-primary-dark: #007a94;
-  --arena-primary-5: rgba(0, 149, 179, 0.08);
-  --arena-primary-10: rgba(0, 149, 179, 0.12);
-  --arena-primary-15: rgba(0, 149, 179, 0.18);
-  --arena-primary-20: rgba(0, 149, 179, 0.25);
-  --arena-primary-30: rgba(0, 149, 179, 0.35);
-  --arena-primary-40: rgba(0, 149, 179, 0.45);
-  --arena-primary-50: rgba(0, 149, 179, 0.55);
-  --arena-secondary: #8B3DD9;
-  --arena-accent: #00C97C;
-  --arena-bg-primary: #F0F4F8;
-  --arena-bg-secondary: #FFFFFF;
-  --arena-bg-tertiary: #E2E8F0;
-  --arena-text-primary: #0A0E27;
-  --arena-text-secondary: #475569;
-  --arena-text-muted: #64748B;
-  --arena-success: #00C97C;
-  --arena-success-10: rgba(0, 201, 124, 0.12);
-  --arena-success-30: rgba(0, 201, 124, 0.3);
-  --arena-warning: #E6A800;
-  --arena-warning-10: rgba(230, 168, 0, 0.12);
-  --arena-warning-30: rgba(230, 168, 0, 0.3);
-  --arena-error: #E62E52;
-  --arena-error-10: rgba(230, 46, 82, 0.12);
-  --arena-error-30: rgba(230, 46, 82, 0.3);
-  --arena-info: #0095B3;
-  --arena-info-10: rgba(0, 149, 179, 0.12);
-  --arena-info-30: rgba(0, 149, 179, 0.3);
+  /* ── Futuristic Light: Whitesmoke + Gris claro ── */
+  --arena-primary: #0891B2;
+  --arena-primary-dark: #0E7490;
+  --arena-primary-5: rgba(8, 145, 178, 0.05);
+  --arena-primary-10: rgba(8, 145, 178, 0.10);
+  --arena-primary-15: rgba(8, 145, 178, 0.15);
+  --arena-primary-20: rgba(8, 145, 178, 0.22);
+  --arena-primary-30: rgba(8, 145, 178, 0.32);
+  --arena-primary-40: rgba(8, 145, 178, 0.42);
+  --arena-primary-50: rgba(8, 145, 178, 0.55);
+  --arena-secondary: #7C3AED;
+  --arena-accent: #10B981;
+  /* whitesmoke principal, gris claro cards, gris medio bordes */
+  --arena-bg-primary: #F5F5F5;
+  --arena-bg-secondary: #EAEEF2;
+  --arena-bg-tertiary: #D8DEE6;
+  --arena-text-primary: #1A1F36;
+  --arena-text-secondary: #4A5568;
+  --arena-text-muted: #718096;
+  --arena-success: #10B981;
+  --arena-success-10: rgba(16, 185, 129, 0.10);
+  --arena-success-30: rgba(16, 185, 129, 0.30);
+  --arena-warning: #F59E0B;
+  --arena-warning-10: rgba(245, 158, 11, 0.10);
+  --arena-warning-30: rgba(245, 158, 11, 0.30);
+  --arena-error: #EF4444;
+  --arena-error-10: rgba(239, 68, 68, 0.10);
+  --arena-error-30: rgba(239, 68, 68, 0.30);
+  --arena-info: #0891B2;
+  --arena-info-10: rgba(8, 145, 178, 0.10);
+  --arena-info-30: rgba(8, 145, 178, 0.30);
 }
 
 @layer base {

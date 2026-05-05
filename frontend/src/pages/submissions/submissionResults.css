@@ -421,3 +421,9 @@
   .sr-actions { flex-direction: column; }
   .sr-btn-primary, .sr-btn-secondary { width: 100%; }
 }
+
+/* ── Light theme ── */
+[data-theme="light"] .sr-elo-unranked-tooltip,
+[data-theme="light"] .sr-elo-help-pop {
+  background: var(--bg2);
+}

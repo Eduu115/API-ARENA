@@ -19,6 +19,10 @@
   overflow: visible;
 }
 
+[data-theme="light"] .arena-navbar {
+  background: #066178;
+}
+
 /* Single row: logo | route links | profile (full width inside the bar) */
 .arena-navbar__inner {
   box-sizing: border-box;
@@ -122,6 +126,9 @@
 }
 .arena-nav-link:hover {
   color: var(--text);
+}
+[data-theme="light"] .arena-nav-link {
+  color: #c5cfdf;
 }
 .arena-nav-link--active {
   color: var(--cyan);
@@ -329,6 +336,15 @@
   background: rgba(0, 229, 255, 0.14);
   border-color: rgba(0, 229, 255, 0.5);
 }
+[data-theme="light"] .arena-navbar__theme {
+  border-color: rgba(197, 207, 223, 0.6);
+  background: rgba(197, 207, 223, 0.14);
+  color: #c5cfdf;
+}
+[data-theme="light"] .arena-navbar__theme:hover {
+  border-color: rgba(197, 207, 223, 0.85);
+  background: rgba(197, 207, 223, 0.22);
+}
 .arena-navbar__theme-ico {
   display: flex;
   width: 20px;
@@ -407,4 +423,7 @@
 }
 .arena-navbar__login:hover {
   opacity: 0.85;
+}
+[data-theme="light"] .arena-navbar__login {
+  color: #c5cfdf;
 }

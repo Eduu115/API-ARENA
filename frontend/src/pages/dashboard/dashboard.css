@@ -790,3 +790,13 @@ button.db-activity-row {
   .db-page-title { font-size: 28px; }
   .db-page-sub   { font-size: 12px; }
 }
+
+/* ── Light theme ── */
+[data-theme="light"] .db-activity-row:hover,
+[data-theme="light"] .db-lb-row:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="light"] .db-kpi-card:hover,
+[data-theme="light"] .db-rec-card:hover {
+  border-color: var(--dim);
+}
