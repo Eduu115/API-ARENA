@@ -34,6 +34,8 @@ public interface ISubmissionService {
 
     List<SubmissionSummaryDTO> getMySubmissions(Long userId);
 
+    List<SubmissionSummaryDTO> getPublicUserSubmissions(Long userId, int limit);
+
     List<SubmissionSummaryDTO> getTeacherStudentSubmissions(Long teacherId, Long studentId);
 
     List<SubmissionSummaryDTO> getTeacherChallengeSubmissions(Long teacherId, Long challengeId);

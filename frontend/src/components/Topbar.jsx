@@ -49,6 +49,9 @@ export default function Topbar({
     pathname === "/perfil" ||
     pathname.startsWith("/perfil/") ||
     accountMenuOpen;
+  const notifActive =
+    pathname === "/notifications" ||
+    pathname.startsWith("/notifications/");
 
   useEffect(() => {
     setAccountMenuOpen(false);
@@ -189,16 +192,15 @@ export default function Topbar({
 
             <Link
               to="/notifications"
-              className="arena-navbar__notif"
+              className={`arena-nav-icon-btn${notifActive ? " arena-nav-icon-btn--active" : ""}`}
               aria-label="Notifications"
               title="Notifications"
             >
-              <span className="arena-navbar__notif-ico" aria-hidden>
+              <span className="arena-nav-icon-btn__ico" aria-hidden>
                 <IconBell />
               </span>
-              <span className="arena-navbar__notif-txt">Alerts</span>
               {unreadNotifications > 0 && (
-                <span className="arena-navbar__notif-badge">
+                <span className="arena-nav-icon-btn__badge">
                   {unreadNotifications > 99 ? "99+" : unreadNotifications}
                 </span>
               )}
@@ -206,32 +208,29 @@ export default function Topbar({
 
             <button
               type="button"
-              className="arena-navbar__theme"
+              className="arena-nav-icon-btn"
               onClick={toggleTheme}
               title={isDark ? "Switch to light mode" : "Switch to dark mode"}
               aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
-              <span className="arena-navbar__theme-ico" aria-hidden>
+              <span className="arena-nav-icon-btn__ico" aria-hidden>
                 {isDark ? <IconSun /> : <IconMoon />}
-              </span>
-              <span className="arena-navbar__theme-txt">
-                {isDark ? "Light mode" : "Dark mode"}
               </span>
             </button>
 
             <button
               type="button"
-              className={`arena-navbar__profile${profileActive ? " arena-navbar__profile--on" : ""}`}
+              className={`arena-nav-icon-btn${profileActive ? " arena-nav-icon-btn--active" : ""}`}
               onClick={() => setAccountMenuOpen((o) => !o)}
               aria-expanded={accountMenuOpen}
               aria-haspopup="dialog"
               aria-controls="profile-account-menu"
-              title="Profile menu"
+              aria-label="Profile menu"
+              title="Profile"
             >
-              <span className="arena-navbar__profile-ico" aria-hidden>
+              <span className="arena-nav-icon-btn__ico" aria-hidden>
                 <NavIcon name="profile" />
               </span>
-              <span className="arena-navbar__profile-txt">Profile</span>
             </button>
           </div>
           ) : (
@@ -241,16 +240,13 @@ export default function Topbar({
               </Link>
               <button
                 type="button"
-                className="arena-navbar__theme"
+                className="arena-nav-icon-btn"
                 onClick={toggleTheme}
                 title={isDark ? "Switch to light mode" : "Switch to dark mode"}
                 aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
               >
-                <span className="arena-navbar__theme-ico" aria-hidden>
+                <span className="arena-nav-icon-btn__ico" aria-hidden>
                   {isDark ? <IconSun /> : <IconMoon />}
-                </span>
-                <span className="arena-navbar__theme-txt">
-                  {isDark ? "Light mode" : "Dark mode"}
                 </span>
               </button>
             </div>

@@ -8,6 +8,8 @@ import * as challengesApi from '../../lib/challengesApi';
 import '../challenges/challenges.css';
 import './dashboard.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
+import WeeklyStreakPanel from '../../components/WeeklyStreakPanel';
+import * as authApi from '../../lib/authApi';
 import { DOCS_PATHS, TOUR_DASHBOARD } from '../../tutorial/tourDefinitions';
 
 const DIFF_COLOR = { easy: 'var(--green)', medium: 'var(--warn)', hard: 'var(--red)', expert: 'var(--purple)' };
@@ -21,6 +23,15 @@ export default function Dashboard() {
   const [featured, setFeatured] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loadingChallenges, setLoadingChallenges] = useState(true);
+  const [weeklyStreak, setWeeklyStreak] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    authApi.getMyWeeklyStreak()
+      .then((data) => { if (!cancelled) setWeeklyStreak(data); })
+      .catch(() => { if (!cancelled) setWeeklyStreak(null); });
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,6 +166,11 @@ export default function Dashboard() {
                 <div className="db-qs-label">Tests</div>
               </div>
             </div>
+          </div>
+
+          <div className="ch-sidebar-section">
+            <div className="ch-sidebar-label">Weekly Streak</div>
+            <WeeklyStreakPanel streak={weeklyStreak} compact />
           </div>
 
           <div className="ch-sidebar-section">
@@ -309,6 +325,13 @@ export default function Dashboard() {
             </div>
 
             <div className="db-right-stack">
+              <div className="db-panel">
+                <div className="db-panel-head">
+                  <div className="db-panel-title">Weekly Streak</div>
+                </div>
+                <WeeklyStreakPanel streak={weeklyStreak} />
+              </div>
+
               <div className="db-panel">
                 <div className="db-panel-head">
                   <div className="db-panel-title">Your Stats</div>

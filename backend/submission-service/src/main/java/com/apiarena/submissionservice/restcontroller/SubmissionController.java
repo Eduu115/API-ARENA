@@ -139,6 +139,14 @@ public class SubmissionController {
         return ResponseEntity.ok(submissions);
     }
 
+    @GetMapping("/public/users/{userId}")
+    @Operation(summary = "Public recent submissions", description = "List a user's latest completed submissions (no auth required)")
+    public ResponseEntity<List<SubmissionSummaryDTO>> getPublicUserSubmissions(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "8") int limit) {
+        return ResponseEntity.ok(submissionService.getPublicUserSubmissions(userId, limit));
+    }
+
     @GetMapping("/teacher/students/{studentId}")
     @PreAuthorize("hasRole('TEACHER')")
     @SecurityRequirement(name = "bearerAuth")

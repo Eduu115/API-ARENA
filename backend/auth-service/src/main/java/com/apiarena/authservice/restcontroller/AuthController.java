@@ -32,9 +32,11 @@ import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UsageDeltaRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
+import com.apiarena.authservice.model.dto.WeeklyStreakDTO;
 import com.apiarena.authservice.model.services.AchievementService;
 import com.apiarena.authservice.model.services.IAuthService;
 import com.apiarena.authservice.model.services.IUserService;
+import com.apiarena.authservice.model.services.WeeklyStreakService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -52,6 +54,8 @@ public class AuthController {
     private IUserService userService;
     @Autowired
     private AchievementService achievementService;
+    @Autowired
+    private WeeklyStreakService weeklyStreakService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account. No tokens are returned; use /login to get access and refresh tokens.")
@@ -118,12 +122,27 @@ public class AuthController {
         return ResponseEntity.ok(profile);
     }
 
+    @GetMapping("/users/{id}/achievements")
+    @Operation(summary = "Get public achievements", description = "List achievement unlock status for a user (no auth required)")
+    public ResponseEntity<List<AchievementDTO>> getPublicAchievements(@PathVariable Long id) {
+        return ResponseEntity.ok(achievementService.listForUserId(id));
+    }
+
     @GetMapping("/me/achievements")
     @Operation(summary = "List achievements for current user", description = "All definitions with unlock status; syncs grants from profile stats.")
     public ResponseEntity<List<AchievementDTO>> getMyAchievements() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
         return ResponseEntity.ok(achievementService.listForCurrentUserEmail(email));
+    }
+
+    @GetMapping("/me/streak")
+    @Operation(summary = "Weekly streak progress", description = "ISO week streak state and progress toward weekly goals.")
+    public ResponseEntity<WeeklyStreakDTO> getMyWeeklyStreak() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserDTO user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(weeklyStreakService.getStreakForUser(user.getId()));
     }
 
     @PostMapping("/me/usage")

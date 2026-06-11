@@ -447,6 +447,11 @@ public class SubmissionService implements ISubmissionService {
             BigDecimal designBd = BigDecimal.valueOf(technical.design()).setScale(2, RoundingMode.HALF_UP);
 
             updateScores(submissionId, totalBd, corrBd, perfBd, designBd);
+            Submission scored = submissionRepository.findById(submissionId).orElse(null);
+            if (scored != null && scored.getPipelineTotalScore() == null) {
+                scored.setPipelineTotalScore(totalBd);
+                submissionRepository.save(scored);
+            }
             recordReplay(submissionId, "RESULT", "SCORE_FINALIZED", "info",
                     "Scores finalized with AI review",
                     Map.of("totalScore", totalBd,
@@ -839,10 +844,15 @@ public class SubmissionService implements ISubmissionService {
                             completionSeconds));
 
             try {
+                int pipelineScoreInt = sub.getPipelineTotalScore() != null
+                        ? sub.getPipelineTotalScore().intValue()
+                        : (sub.getTotalScore() != null ? sub.getTotalScore().intValue() : 0);
                 Map<String, Object> rewardBody = Map.of(
                         "xpEarned", xpEarned,
                         "eloChange", eloChange,
-                        "isFirstCompletion", isFirst
+                        "isFirstCompletion", isFirst,
+                        "challengeId", sub.getChallengeId(),
+                        "pipelineTotalScore", pipelineScoreInt
                 );
                 restTemplate.postForEntity(
                         authServiceUrl + "/internal/users/" + sub.getUserId() + "/reward",
@@ -979,6 +989,33 @@ public class SubmissionService implements ISubmissionService {
         return submissions.stream()
                 .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId()),
                         zipDownloadExpiresAtIso(s)))
+                .toList();
+    }
+
+    @Override
+    public List<SubmissionSummaryDTO> getPublicUserSubmissions(Long userId, int limit) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID is required");
+        }
+        int safeLimit = Math.max(1, Math.min(limit, 20));
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Submission> completed = submissions.stream()
+                .filter(s -> s.getStatus() == Submission.Status.COMPLETED)
+                .limit(safeLimit)
+                .toList();
+        Set<Long> challengeIds = completed.stream()
+                .map(Submission::getChallengeId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> titleByChallengeId = new HashMap<>();
+        for (Long cid : challengeIds) {
+            Map<String, Object> ch = fetchChallengeData(cid);
+            if (ch != null && ch.get("title") != null) {
+                titleByChallengeId.put(cid, Objects.toString(ch.get("title")));
+            }
+        }
+        return completed.stream()
+                .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId())))
                 .toList();
     }
 

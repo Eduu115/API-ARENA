@@ -41,6 +41,7 @@ public class SecurityConfig {
                             "/actuator/prometheus",
                             "/ws/**",
                             "/internal/**",
+                            "/api/submissions/public/**",
                             "/error"
                     ).permitAll()
                     .anyRequest().authenticated()

@@ -549,6 +549,61 @@ button.db-activity-row {
   text-transform: uppercase;
 }
 
+.ws-status-line {
+  margin-top: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
+.ws-goals {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ws-progress-row {}
+.ws-progress-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.ws-progress-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ws-progress-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+}
+.ws-progress-track {
+  height: 4px;
+  background: var(--bg3);
+  border: 1px solid var(--dim);
+}
+.ws-progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+.ws-best {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+}
+.ws-muted {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+}
+.db-streak-body.ws-compact .ws-goals { display: none; }
+
 .db-rec-head {
   display: flex;
   align-items: baseline;

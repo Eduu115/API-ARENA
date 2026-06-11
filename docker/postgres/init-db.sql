@@ -242,6 +242,7 @@ ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_personal_note TEXT;
 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_zone_notes JSONB DEFAULT '{}'::jsonb;
 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_structured_feedback JSONB;
 ALTER TABLE submissions ADD COLUMN IF NOT EXISTS teacher_score_bonuses JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE submissions ADD COLUMN IF NOT EXISTS pipeline_total_score DECIMAL(6,2);
 
 CREATE TABLE IF NOT EXISTS replay_events (
     id BIGSERIAL PRIMARY KEY,
@@ -753,6 +754,41 @@ CREATE TABLE IF NOT EXISTS user_achievements (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);
+
+-- Weekly streak (auth-service)
+CREATE TABLE IF NOT EXISTS user_streak_state (
+    user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    current_streak_weeks INT NOT NULL DEFAULT 0,
+    longest_streak_weeks INT NOT NULL DEFAULT 0,
+    last_qualified_iso_year INT,
+    last_qualified_iso_week INT,
+    last_processed_iso_year INT,
+    last_processed_iso_week INT
+);
+
+CREATE TABLE IF NOT EXISTS user_weekly_progress (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    iso_year INT NOT NULL,
+    iso_week INT NOT NULL,
+    xp_earned INT NOT NULL DEFAULT 0,
+    qualifying_distinct_count INT NOT NULL DEFAULT 0,
+    qualified BOOLEAN NOT NULL DEFAULT FALSE,
+    qualified_via VARCHAR(8),
+    CONSTRAINT uq_user_weekly_progress_user_week UNIQUE (user_id, iso_year, iso_week)
+);
+
+CREATE TABLE IF NOT EXISTS user_weekly_streak_challenges (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    iso_year INT NOT NULL,
+    iso_week INT NOT NULL,
+    challenge_id BIGINT NOT NULL,
+    CONSTRAINT uq_user_weekly_streak_challenge UNIQUE (user_id, iso_year, iso_week, challenge_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_weekly_progress_user ON user_weekly_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_weekly_streak_challenges_user ON user_weekly_streak_challenges(user_id);
 
 -- Verificacion
 SELECT 'Database initialized successfully!' as status;

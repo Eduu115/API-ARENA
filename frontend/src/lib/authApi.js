@@ -639,6 +639,11 @@ export async function getMyAchievements() {
     return request("/api/auth/me/achievements", { method: "GET" });
 }
 
+/** ISO weekly streak progress for current user. */
+export async function getMyWeeklyStreak() {
+    return request("/api/auth/me/streak", { method: "GET" });
+}
+
 
 /** Report active browsing seconds (visible tab, not idle). Server caps per request (120s). */
 export async function postBrowsingUsage(browsingSecondsDelta) {
@@ -708,6 +713,13 @@ export function hasStoredSession() {
 export async function getUserPublicProfile(userId) {
     const base = getBaseUrl();
     const res = await fetch(`${base}/api/auth/users/${userId}/profile`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function getUserPublicAchievements(userId) {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/auth/users/${userId}/achievements`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
 }

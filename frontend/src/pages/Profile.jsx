@@ -6,6 +6,7 @@ import * as authApi from '../lib/authApi';
 import Topbar from '../components/Topbar';
 import BottomNav from '../components/BottomNav';
 import CustomCursor from '../components/CustomCursor';
+import WeeklyStreakPanel from '../components/WeeklyStreakPanel';
 import './challenges/challenges.css';
 import './dashboard/dashboard.css';
 import './Profile.css';
@@ -56,6 +57,7 @@ export default function Profile() {
   });
   const [achievements, setAchievements] = useState([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
+  const [weeklyStreak, setWeeklyStreak] = useState(null);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -86,6 +88,15 @@ export default function Profile() {
     return () => {
       cancelled = true;
     };
+  }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    let cancelled = false;
+    authApi.getMyWeeklyStreak()
+      .then((data) => { if (!cancelled) setWeeklyStreak(data); })
+      .catch(() => { if (!cancelled) setWeeklyStreak(null); });
+    return () => { cancelled = true; };
   }, [isAuthenticated, user]);
 
   const initials = useMemo(() => {
@@ -306,6 +317,11 @@ export default function Profile() {
                 <div className="db-qs-label">Tests</div>
               </div>
             </div>
+          </div>
+
+          <div className="ch-sidebar-section">
+            <div className="ch-sidebar-label">Weekly streak</div>
+            <WeeklyStreakPanel streak={weeklyStreak} compact />
           </div>
 
           <div className="ch-sidebar-section">

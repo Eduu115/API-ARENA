@@ -59,6 +59,30 @@ public class AchievementService {
         return out;
     }
 
+    @Transactional
+    public List<AchievementDTO> listForUserId(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+        syncAchievements(user);
+        List<AchievementDefinition> defs = definitionRepository.findAllByOrderBySortOrderAsc();
+        List<AchievementDTO> out = new ArrayList<>(defs.size());
+        for (AchievementDefinition def : defs) {
+            var ua = userAchievementRepository.findByUser_IdAndAchievement_Id(user.getId(), def.getId());
+            boolean unlocked = ua.isPresent();
+            out.add(AchievementDTO.builder()
+                    .code(def.getCode())
+                    .title(def.getTitle())
+                    .description(def.getDescription())
+                    .iconKey(def.getIconKey())
+                    .tier(def.getTier())
+                    .sortOrder(def.getSortOrder() != null ? def.getSortOrder() : 0)
+                    .unlocked(unlocked)
+                    .unlockedAt(unlocked ? ua.get().getUnlockedAt() : null)
+                    .build());
+        }
+        return out;
+    }
+
     private void syncAchievements(User u) {
         tryGrant(u, "JOINED_ARENA", () -> true);
         tryGrant(u, "FIRST_CLEAR", () -> n(u.getTotalChallengesCompleted()) > 0);
@@ -67,6 +91,16 @@ public class AchievementService {
         tryGrant(u, "ALPHA_WAVE", () -> u.getCreatedAt() != null && u.getCreatedAt().isBefore(ALPHA_SEASON_END));
         tryGrant(u, "TEN_TESTS", () -> n(u.getTotalTestsPassed()) >= 10);
         tryGrant(u, "LEVEL_FIVE", () -> n(u.getLevel()) >= 5);
+    }
+
+    @Transactional
+    public void tryGrantWeeklyStreakAchievements(Long userId, int currentStreakWeeks) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return;
+        }
+        tryGrant(user, "WEEKLY_STREAK_4", () -> currentStreakWeeks >= 4);
+        tryGrant(user, "WEEKLY_STREAK_12", () -> currentStreakWeeks >= 12);
     }
 
     private static int n(Integer v) {
