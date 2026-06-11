@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import './challenges.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
 import { DOCS_PATHS, TOUR_CHALLENGES } from '../../tutorial/tourDefinitions';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 function mapApiToCard(api) {
   const diff = (api.difficulty || 'EASY').toLowerCase();
@@ -143,6 +144,12 @@ function ChallengeCard({ challenge }) {
 }
 
 export default function Challenges() {
+  usePageMeta({
+    title: 'API Challenges Catalog',
+    description:
+      'Browse real backend challenges: CRUD APIs, JWT auth, rate limiters, caching, WebSockets and more. Submit your Spring Boot project and get scored by real HTTP tests.',
+    path: '/challenges',
+  });
   const { user, isAuthenticated, loadUser } = useAuth();
   const [alertsSaving, setAlertsSaving] = useState(false);
   const [search, setSearch]           = useState('');

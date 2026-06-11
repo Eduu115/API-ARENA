@@ -5,6 +5,7 @@ import CustomCursor from '../components/CustomCursor';
 import UserProfileCard from '../components/UserProfileCard';
 import { useAuth } from '../context/AuthContext';
 import * as leaderboardApi from '../lib/leaderboardApi';
+import { usePageMeta } from '../lib/usePageMeta';
 import './challenges/challenges.css';
 import './leaderboard.css';
 
@@ -24,6 +25,12 @@ function getRankClass(rank) {
 }
 
 export default function Leaderboard() {
+  usePageMeta({
+    title: 'Leaderboard — Top API Developers',
+    description:
+      'Global rankings of API Arena players by score and ELO. See who builds the best APIs and where you stand.',
+    path: '/leaderboard',
+  });
   const [tab, setTab] = useState('score');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [players, setPlayers] = useState([]);

@@ -38,7 +38,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 | Ruta | Componente | Estado |
 |------|------------|--------|
-| `/` | Landing | ✅ Tour guiado 1ª visita (skip + enlace Docs) |
+| `/` | Landing | ✅ Sin tour (tours solo tras login + email verificado, 1ª visita por cuenta) |
 | `/login` | Login | ✅ |
 | `/register` | Register | ✅ |
 | `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
@@ -91,7 +91,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Automatización alta prioridad: `scripts/e2e-smoke.sh`, `scripts/load-submissions.sh`, workflow CI `.github/workflows/e2e-smoke.yml`.
 - AI review v2 ready: rúbrica final **800 técnico + 200 IA** en `submission-service`, proveedor configurable en `ai-review-service` y wiring de variables para API key en `.env` / Compose.
 - Docs learning hub: mini-routing `/docs/:docId`, contenido largo por documento, guía de preconfiguración, bloque visual tipo markdown y captura de feedback para decisiones de contenido.
-- Tours UI (overlay, highlight `data-tutorial`, skip, Open Docs): landing, dashboard, catálogo, ficha challenge, submit; persistencia `localStorage` por `tourKey`; submit tras modal primer envío.
+- Tours UI (overlay, highlight `data-tutorial`, skip, Open Docs): dashboard, catálogo, ficha challenge, submit (solo usuario autenticado y email verificado; `localStorage` por `tourKey` + user id); submit tras modal primer envío.
 - Onboarding primer challenge: modal de confirmación en submit para primeros envíos con acceso directo a la guía de preconfiguración.
 - Métricas de negocio no públicas: endpoints de consulta en metrics-service protegidos para rol ADMIN; usuarios estándar solo pueden emitir feedback.
 - BI-ready baseline: tabla `product_events` + endpoint de ingestión y export CSV/JSON por ventana temporal para conectar con BI apps/GA pipelines.

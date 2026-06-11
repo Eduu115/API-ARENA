@@ -3,24 +3,6 @@
  * Copy is English (product chrome language).
  */
 
-export const TOUR_LANDING = [
-  {
-    target: "landing-nav",
-    title: "Find your way",
-    body: "Use the top bar to open Challenges, Leaderboard, and Docs. Sign in or create an account from Enter Arena when you are ready to compete.",
-  },
-  {
-    target: "landing-hero-cta",
-    title: "Start here",
-    body: "Register to track scores and ELO, or browse challenges first. Everything runs on real builds and HTTP tests against your API.",
-  },
-  {
-    target: "landing-hero-content",
-    title: "What API Arena does",
-    body: "You ship a Maven project as a ZIP, we build it in a sandbox, run the challenge test suite, and score correctness, performance, design, and AI review.",
-  },
-];
-
 export const TOUR_DASHBOARD = [
   {
     target: "topbar",
@@ -99,7 +81,6 @@ export const TOUR_CHALLENGE_SUBMIT = [
 ];
 
 export const DOCS_PATHS = {
-  landing: "/docs/guia-para-empezar",
   dashboard: "/docs/guia-para-empezar",
   challenges: "/docs/challenges-catalog",
   challengeDetail: "/docs/challenge-workspace",

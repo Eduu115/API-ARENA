@@ -215,15 +215,16 @@ npm run dev
 
 - Swagger UI por servicio (`/swagger-ui.html`).
 - Colección Postman: `backend/API-ARENA_Postman_Collection.json`.
-- Smoke E2E automatizado local: `./scripts/e2e-smoke.sh`.
+- Smoke E2E automatizado local: `./scripts/e2e-smoke.sh` (stack en marcha; por defecto `todo-crud` + `examples/todo-crud-api.zip`).
 - Carga concurrente básica: `./scripts/load-submissions.sh`.
 
 ## CI / automatización
 
 - Workflow de smoke E2E: `.github/workflows/e2e-smoke.yml`
-  - permite ejecución manual (`workflow_dispatch`)
-  - incluye ejecución programada diaria
-  - levanta stack, corre E2E, y adjunta logs si falla
+  - **Qué valida**: flujo real registro → verificación email → login → envío ZIP → pipeline sandbox/testing → `COMPLETED`, replay, leaderboard (Kafka) y notificaciones.
+  - **Para qué sirve**: detectar regresiones de integración entre microservicios sin UI (útil tras cambios en auth, submission, sandbox, Kafka, etc.).
+  - **Cuándo corre**: manual (`workflow_dispatch`) y cron diario (06:00 UTC); no se dispara en cada push/PR (el stack completo tarda ~15–40 min).
+  - Copia `.env.example` → `.env`, levanta Docker Compose, espera health de auth/submission, ejecuta el script y sube logs si falla.
 
 ## Transparencia de despliegue y límites actuales
 
