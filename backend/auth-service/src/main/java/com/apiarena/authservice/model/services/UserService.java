@@ -28,6 +28,12 @@ public class UserService implements IUserService {
     @Autowired
     private EmailDispatchService emailDispatchService;
 
+    @Autowired
+    private IRefreshTokenService refreshTokenService;
+
+    @Autowired
+    private SubmissionPurgeDispatchService submissionPurgeDispatchService;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
@@ -185,5 +191,66 @@ public class UserService implements IUserService {
             }
             emailDispatchService.sendNewChallengePublishedEmail(u.getEmail(), u.getUsername(), title, challengeId);
         }
+    }
+
+    @Override
+    public java.util.Map<String, Object> exportUserData(String email) {
+        User u = getUserEntityByEmail(email);
+
+        java.util.Map<String, Object> account = new java.util.LinkedHashMap<>();
+        account.put("id", u.getId());
+        account.put("username", u.getUsername());
+        account.put("email", u.getEmail());
+        account.put("role", u.getRole() != null ? u.getRole().name() : null);
+        account.put("dateOfBirth", u.getDateOfBirth());
+        account.put("emailVerified", u.getEmailVerified());
+        account.put("betaLegacy", u.getBetaLegacy());
+        account.put("createdAt", u.getCreatedAt());
+        account.put("updatedAt", u.getUpdatedAt());
+        account.put("lastLogin", u.getLastLogin());
+
+        java.util.Map<String, Object> profile = new java.util.LinkedHashMap<>();
+        profile.put("avatarUrl", u.getAvatarUrl());
+        profile.put("bio", u.getBio());
+        profile.put("githubUsername", u.getGithubUsername());
+
+        java.util.Map<String, Object> activity = new java.util.LinkedHashMap<>();
+        activity.put("rating", u.getRating());
+        activity.put("level", u.getLevel());
+        activity.put("experiencePoints", u.getExperiencePoints());
+        activity.put("totalChallengesCompleted", u.getTotalChallengesCompleted());
+        activity.put("totalTestsPassed", u.getTotalTestsPassed());
+        activity.put("totalDevelopmentSeconds", u.getTotalDevelopmentSeconds());
+        activity.put("totalBrowsingSeconds", u.getTotalBrowsingSeconds());
+
+        java.util.Map<String, Object> consent = new java.util.LinkedHashMap<>();
+        consent.put("privacyConsentAt", u.getPrivacyConsentAt());
+        consent.put("privacyConsentVersion", u.getPrivacyConsentVersion());
+        consent.put("newChallengeEmailAlerts", u.getNewChallengeEmailAlerts());
+
+        java.util.Map<String, Object> root = new java.util.LinkedHashMap<>();
+        root.put("exportedAt", LocalDateTime.now().toString());
+        root.put("account", account);
+        root.put("profile", profile);
+        root.put("activity", activity);
+        root.put("consent", consent);
+        root.put("note", "Submissions and uploaded files are available from the Submissions area of the app.");
+        return root;
+    }
+
+    @Override
+    @Transactional
+    public void deleteAccount(String email) {
+        User user = getUserEntityByEmail(email);
+        Long userId = user.getId();
+
+        // Best-effort cross-service erasure of submissions, ZIPs and replays.
+        submissionPurgeDispatchService.purgeUserData(userId);
+
+        // Invalidate sessions, then delete the account. Postgres ON DELETE CASCADE removes
+        // refresh tokens, friendships, notifications, achievements, leaderboard entries and
+        // group memberships linked to this user.
+        refreshTokenService.revokeAllUserTokens(user);
+        userRepository.delete(user);
     }
 }

@@ -3,6 +3,10 @@ Allow: /
 Allow: /challenges
 Allow: /leaderboard
 Allow: /docs
+Allow: /aviso-legal
+Allow: /privacidad
+Allow: /cookies
+Allow: /terminos
 
 # Private / authenticated areas — no SEO value
 Disallow: /dashboard

@@ -20,6 +20,7 @@ import com.apiarena.metricsservice.model.services.MetricsAggregationService;
 import com.apiarena.metricsservice.model.services.MetricsAccessService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 
 @RestController
@@ -30,6 +31,9 @@ public class MetricsController {
 
     private final MetricsAggregationService metricsAggregationService;
     private final MetricsAccessService metricsAccessService;
+
+    @Value("${services.internal-token:}")
+    private String internalToken;
 
     @GetMapping("/overview")
     public ResponseEntity<Map<String, Object>> getOverview(
@@ -66,7 +70,10 @@ public class MetricsController {
     }
 
     @PostMapping("/events")
-    public ResponseEntity<Map<String, Object>> submitProductEvent(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<String, Object>> submitProductEvent(
+            @RequestHeader(value = "X-Internal-Token", required = false) String internal,
+            @RequestBody Map<String, Object> payload) {
+        requireInternal(internal);
         String eventName = payload.get("eventName") != null ? String.valueOf(payload.get("eventName")) : null;
         String eventType = payload.get("eventType") != null ? String.valueOf(payload.get("eventType")) : "PRODUCT";
         String source = payload.get("source") != null ? String.valueOf(payload.get("source")) : "frontend";
@@ -137,6 +144,16 @@ public class MetricsController {
     private void requireAdmin(String authorizationHeader) {
         if (!metricsAccessService.isAdminAuthorized(authorizationHeader)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required");
+        }
+    }
+
+    /**
+     * Product-event ingestion is server-to-server only. Without a configured token the
+     * endpoint stays closed (fail-safe) to avoid open data injection.
+     */
+    private void requireInternal(String token) {
+        if (internalToken == null || internalToken.isBlank() || !internalToken.equals(token)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
     }
 }

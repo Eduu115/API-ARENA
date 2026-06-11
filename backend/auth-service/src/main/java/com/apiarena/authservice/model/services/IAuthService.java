@@ -19,4 +19,8 @@ public interface IAuthService {
     VerifyEmailResponseDTO verifyEmail(String token);
 
     void resendVerificationEmail(String email);
+
+    void requestPasswordReset(String email);
+
+    void resetPassword(String token, String newPassword);
 }

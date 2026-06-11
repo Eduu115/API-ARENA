@@ -32,4 +32,10 @@ public interface IUserService extends UserDetailsService {
 
     /** Send new-challenge email to opted-in verified students (internal; excludes creator). */
     void notifyNewChallengeEmailSubscribers(Long challengeId, String challengeTitle, Long createdByUserId);
+
+    /** GDPR portability: structured snapshot of the user's personal data. */
+    java.util.Map<String, Object> exportUserData(String email);
+
+    /** GDPR right to erasure: delete the account and associated personal data. */
+    void deleteAccount(String email);
 }

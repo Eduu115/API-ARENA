@@ -1,4 +1,13 @@
+import { Link } from 'react-router-dom';
 import { FOOTER_LINKS } from '../landing.data';
+import { openConsentManager } from '../../../lib/cookieConsent';
+
+const LEGAL_LINKS = [
+  { label: 'Aviso Legal', to: '/aviso-legal' },
+  { label: 'Privacidad', to: '/privacidad' },
+  { label: 'Cookies', to: '/cookies' },
+  { label: 'Términos', to: '/terminos' },
+];
 
 export default function LandingFooter() {
   return (
@@ -15,13 +24,19 @@ export default function LandingFooter() {
         </strong>
         <br />
         © 2025 · Compete. Build. Conquer.<br />
-        Proyecto TFG · Universidad
+        Proyecto TFG · Ciclo Formativo de Grado Superior
       </div>
 
       <div className="footer-right">
         {FOOTER_LINKS.map(({ label, href }) => (
           <a key={label} href={href}>{label}</a>
         ))}
+        {LEGAL_LINKS.map(({ label, to }) => (
+          <Link key={label} to={to}>{label}</Link>
+        ))}
+        <button type="button" onClick={openConsentManager}>
+          Cookie preferences
+        </button>
       </div>
     </footer>
   );

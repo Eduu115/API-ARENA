@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { hasPreferenceConsent } from "../lib/cookieConsent";
 
 const STORAGE_KEY = "apiarena_theme";
 
@@ -12,9 +13,12 @@ export function ThemeProvider({ children }) {
 
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
-        try {
-            localStorage.setItem(STORAGE_KEY, theme);
-        } catch (_) {}
+        // Theme is a preference: only persist it if the user consented.
+        if (hasPreferenceConsent()) {
+            try {
+                localStorage.setItem(STORAGE_KEY, theme);
+            } catch (_) {}
+        }
     }, [theme]);
 
     const toggleTheme = useCallback(() => {

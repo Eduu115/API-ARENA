@@ -981,8 +981,9 @@ footer {
   letter-spacing: 2px;
   line-height: 2;
 }
-.footer-right { display: flex; gap: 32px; }
-.footer-right a {
+.footer-right { display: flex; flex-wrap: wrap; gap: 32px; }
+.footer-right a,
+.footer-right button {
   font-family: 'Share Tech Mono', monospace;
   font-size: 12px;
   letter-spacing: 2px;
@@ -991,7 +992,14 @@ footer {
   text-transform: uppercase;
   transition: color 0.2s;
 }
-.footer-right a:hover { color: var(--cyan); }
+.footer-right button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.footer-right a:hover,
+.footer-right button:hover { color: var(--cyan); }
 
 /* Responsive tweaks for leaderboard strip on small screens */
 @media (max-width: 600px) {

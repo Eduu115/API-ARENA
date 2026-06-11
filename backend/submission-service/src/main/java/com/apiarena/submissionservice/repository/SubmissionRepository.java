@@ -18,6 +18,8 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
 
     List<Submission> findByUserIdOrderByCreatedAtDesc(Long userId);
 
+    List<Submission> findByZipFilePathIsNotNullAndCreatedAtBefore(LocalDateTime cutoff);
+
     List<Submission> findByUserIdInOrderByCreatedAtDesc(List<Long> userIds);
 
     List<Submission> findByUserIdAndChallengeIdOrderByCreatedAtDesc(Long userId, Long challengeId);

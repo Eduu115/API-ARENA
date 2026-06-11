@@ -124,6 +124,7 @@ services:
       APP_EMAIL_RESEND_API_KEY: ${RESEND_API_KEY:-}
       APP_EMAIL_FROM: ${APP_EMAIL_FROM:-API Arena <onboarding@resend.dev>}
       SERVICES_NOTIFICATION_URL: http://apiarena-notification:8090
+      SERVICES_SUBMISSION_URL: http://apiarena-submission:8083
       SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
@@ -338,6 +339,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SERVICES_AUTH_URL: http://apiarena-auth:8081
+      SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
       JWT_SECRET: ${JWT_SECRET:-myjwtsecretkey123456789abcdefghijklmnopqrstuvwxyz}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus

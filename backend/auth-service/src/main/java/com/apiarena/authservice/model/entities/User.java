@@ -1,5 +1,6 @@
 package com.apiarena.authservice.model.entities;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -102,6 +103,12 @@ public class User {
     @Column(name = "email_verification_expires_at")
     private LocalDateTime emailVerificationExpiresAt;
 
+    @Column(name = "password_reset_token", length = 64, unique = true)
+    private String passwordResetToken;
+
+    @Column(name = "password_reset_expires_at")
+    private LocalDateTime passwordResetExpiresAt;
+
     /** Beta-phase signups: marked as legacy (early supporter) for product recognition. */
     @Column(name = "beta_legacy", nullable = false)
     private Boolean betaLegacy = true;
@@ -109,6 +116,18 @@ public class User {
     /** Student opt-in: transactional email when a new challenge is published (verified email only). */
     @Column(name = "new_challenge_email_alerts", nullable = false)
     private Boolean newChallengeEmailAlerts = false;
+
+    /** Date of birth: required at registration for the +14 age gate (LOPDGDD art. 7). */
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    /** Timestamp when the user accepted the Privacy Policy and Terms at registration. */
+    @Column(name = "privacy_consent_at")
+    private LocalDateTime privacyConsentAt;
+
+    /** Version of the Privacy Policy / Terms accepted, to keep proof of consent. */
+    @Column(name = "privacy_consent_version", length = 20)
+    private String privacyConsentVersion;
 
     public User(String username, String email, String passwordHash, Role role) {
         this.username = username;

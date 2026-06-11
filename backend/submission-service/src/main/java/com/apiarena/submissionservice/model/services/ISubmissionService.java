@@ -50,6 +50,8 @@ public interface ISubmissionService {
 
     void deleteSubmission(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
+    int purgeUserData(Long userId);
+
     SubmissionDTO applyTeacherPenalty(Long submissionId, Long teacherId, TeacherPenaltyApplyRequest request);
 
     SubmissionDTO confirmTeacherPenalties(Long submissionId, Long teacherId, TeacherPenaltiesBatchConfirmRequest request);

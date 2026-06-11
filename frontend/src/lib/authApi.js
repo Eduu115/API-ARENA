@@ -41,7 +41,9 @@ function isPublicAuthPath(path) {
         p === "/api/auth/login" ||
         p === "/api/auth/refresh" ||
         p === "/api/auth/verify-email" ||
-        p === "/api/auth/resend-verification"
+        p === "/api/auth/resend-verification" ||
+        p === "/api/auth/forgot-password" ||
+        p === "/api/auth/reset-password"
     );
 }
 
@@ -370,6 +372,12 @@ export async function register(payload) {
             role: payload.role ?? null,
 
 
+            dateOfBirth: payload.dateOfBirth ?? null,
+
+
+            acceptTerms: payload.acceptTerms ?? false,
+
+
         }),
 
 
@@ -442,6 +450,40 @@ export async function resendVerificationEmail(email) {
     });
 
 
+}
+
+/**
+ * Request a password reset link. Always resolves the same way for privacy.
+ */
+export async function forgotPassword(email) {
+    return request("/api/auth/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ email: email?.trim() }),
+    });
+}
+
+/**
+ * Set a new password using the token from the reset email.
+ */
+export async function resetPassword(token, newPassword) {
+    return request("/api/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token, newPassword }),
+    });
+}
+
+/**
+ * GDPR portability: fetch the current user's data as a JSON object.
+ */
+export async function exportMyData() {
+    return request("/api/auth/me/export", { method: "GET" });
+}
+
+/**
+ * GDPR right to erasure: permanently delete the current account.
+ */
+export async function deleteMyAccount() {
+    return request("/api/auth/me", { method: "DELETE" });
 }
 
 

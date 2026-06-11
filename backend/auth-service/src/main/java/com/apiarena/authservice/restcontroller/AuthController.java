@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Map;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,9 @@ import java.util.List;
 
 import com.apiarena.authservice.model.dto.AchievementDTO;
 import com.apiarena.authservice.model.dto.AuthResponse;
+import com.apiarena.authservice.model.dto.ForgotPasswordRequest;
 import com.apiarena.authservice.model.dto.LoginRequest;
+import com.apiarena.authservice.model.dto.ResetPasswordRequest;
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
@@ -93,6 +96,21 @@ public class AuthController {
                 "message", "If an account exists with this email, a verification link has been sent."));
     }
 
+    @PostMapping("/forgot-password")
+    @Operation(summary = "Request password reset", description = "Sends a reset link if the email exists (always returns the same message for privacy)")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "message", "If an account exists with this email, a password reset link has been sent."));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password", description = "Sets a new password using the token from the reset link")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Password updated. You can now log in."));
+    }
+
     @GetMapping("/users/{id}/profile")
     @Operation(summary = "Get public profile", description = "Get a user's public profile by ID (no auth required)")
     public ResponseEntity<PublicProfileDTO> getPublicProfile(@PathVariable Long id) {
@@ -135,5 +153,25 @@ public class AuthController {
         UserDTO currentUser = userService.getUserByEmail(email);
         UserDTO updatedUser = userService.updateProfile(currentUser.getId(), request);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @GetMapping("/me/export")
+    @Operation(summary = "Export my data", description = "GDPR portability: download a JSON snapshot of the current user's personal data")
+    public ResponseEntity<Map<String, Object>> exportMyData() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Map<String, Object> data = userService.exportUserData(email);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"api-arena-my-data.json\"")
+                .body(data);
+    }
+
+    @DeleteMapping("/me")
+    @Operation(summary = "Delete my account", description = "GDPR right to erasure: permanently deletes the current user's account and associated personal data")
+    public ResponseEntity<Void> deleteMyAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        userService.deleteAccount(email);
+        return ResponseEntity.noContent().build();
     }
 }

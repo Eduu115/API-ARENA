@@ -6,11 +6,25 @@ import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
+function getAge(isoDate) {
+  const dob = new Date(isoDate);
+  if (Number.isNaN(dob.getTime())) return 0;
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
 export default function Register() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [fieldError, setFieldError] = useState(null);
   const { register: doRegister, error, clearError } = useAuth();
@@ -30,8 +44,23 @@ export default function Register() {
       setFieldError("Password must be at least 6 characters long.");
       return;
     }
+    if (!dateOfBirth) {
+      setFieldError("Please enter your date of birth.");
+      return;
+    }
+    if (getAge(dateOfBirth) < 14) {
+      setFieldError("You must be at least 14 years old to register.");
+      return;
+    }
+    if (!acceptTerms) {
+      setFieldError("You must accept the Privacy Policy and Terms to continue.");
+      return;
+    }
     setSubmitting(true);
-    const result = await doRegister(username, email, password, null);
+    const result = await doRegister(username, email, password, null, {
+      dateOfBirth,
+      acceptTerms,
+    });
     setSubmitting(false);
     if (result?.needsVerification) {
       navigate("/verify-email", { replace: true, state: { email: email.trim() } });
@@ -174,6 +203,43 @@ export default function Register() {
                       />
                     </div>
                   </div>
+
+                  <div>
+                    <label htmlFor="register-dob" className="auth-label">
+                      Date of birth
+                    </label>
+                    <input
+                      id="register-dob"
+                      type="date"
+                      className="auth-input"
+                      autoComplete="bday"
+                      value={dateOfBirth}
+                      max={TODAY_ISO}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      required
+                    />
+                    <p className="auth-help-text">You must be at least 14 years old to register.</p>
+                  </div>
+
+                  <label className="auth-consent">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={(e) => setAcceptTerms(e.target.checked)}
+                      required
+                    />
+                    <span>
+                      I have read and accept the{" "}
+                      <Link to="/privacidad" target="_blank" rel="noopener noreferrer">
+                        Privacy Policy
+                      </Link>{" "}
+                      and the{" "}
+                      <Link to="/terminos" target="_blank" rel="noopener noreferrer">
+                        Terms of Use
+                      </Link>
+                      .
+                    </span>
+                  </label>
                 </div>
 
                 <button type="submit" className="auth-submit" disabled={submitting}>
