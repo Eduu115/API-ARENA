@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { finishTutorial, isTutorialDone } from "../../lib/tutorialStorage";
 import "./tutorial.css";
 
@@ -28,7 +29,13 @@ export default function TutorialTour({
   steps = [],
   docsHref = "/docs",
   when = true,
+  requireAuth = true,
 }) {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const userId = user?.id ?? null;
+  const authReady = !requireAuth || (!isLoading && isAuthenticated && user?.emailVerified !== false);
+  const canRun = when && authReady;
+
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [hole, setHole] = useState(null);
@@ -76,11 +83,15 @@ export default function TutorialTour({
   }, [step]);
 
   useEffect(() => {
-    if (!when || steps.length === 0) return;
-    if (isTutorialDone(tourKey)) return;
+    if (!canRun || steps.length === 0) return;
+    if (isTutorialDone(tourKey, userId)) return;
     const t = setTimeout(() => setOpen(true), 500);
     return () => clearTimeout(t);
-  }, [when, tourKey, steps.length]);
+  }, [canRun, tourKey, userId, steps.length]);
+
+  useEffect(() => {
+    if (!canRun) setOpen(false);
+  }, [canRun]);
 
   useEffect(() => {
     if (!open) return;
@@ -95,13 +106,13 @@ export default function TutorialTour({
   }, [open, stepIndex, updatePositions]);
 
   function handleSkip() {
-    finishTutorial(tourKey, "skip");
+    finishTutorial(tourKey, "skip", userId);
     setOpen(false);
   }
 
   function handleNext() {
     if (last) {
-      finishTutorial(tourKey, "done");
+      finishTutorial(tourKey, "done", userId);
       setOpen(false);
       return;
     }
@@ -155,7 +166,7 @@ export default function TutorialTour({
               to={docsHref}
               className="tutorial-btn tutorial-btn-docs"
               onClick={() => {
-                finishTutorial(tourKey, "skip");
+                finishTutorial(tourKey, "skip", userId);
                 setOpen(false);
               }}
             >

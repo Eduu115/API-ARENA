@@ -14,24 +14,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare environment file
+        run: cp .env.example .env
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Start stack
         run: docker compose up -d --build
 
-      - name: Wait for baseline health
+      - name: Wait for core services
         run: |
-          for i in {1..40}; do
+          set -euo pipefail
+          for i in $(seq 1 60); do
             docker compose ps
-            if docker compose ps | grep -q "apiarena-submission" && docker compose ps | grep -q "healthy"; then
-              break
+            auth_ok=0
+            sub_ok=0
+            curl -fsS http://localhost:8081/actuator/health >/dev/null 2>&1 && auth_ok=1 || true
+            curl -fsS http://localhost:8083/actuator/health >/dev/null 2>&1 && sub_ok=1 || true
+            if [ "$auth_ok" = "1" ] && [ "$sub_ok" = "1" ]; then
+              echo "Auth and submission-service are healthy"
+              exit 0
             fi
             sleep 5
           done
+          echo "Timed out waiting for auth/submission health" >&2
+          exit 1
 
       - name: Run e2e smoke script
-        run: ./scripts/e2e-smoke.sh
+        run: chmod +x ./scripts/e2e-smoke.sh && ./scripts/e2e-smoke.sh
 
       - name: Dump logs on failure
         if: failure()
