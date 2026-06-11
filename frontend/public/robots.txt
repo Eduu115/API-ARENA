@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /challenges
+Allow: /leaderboard
+Allow: /docs
+
+# Private / authenticated areas — no SEO value
+Disallow: /dashboard
+Disallow: /submissions
+Disallow: /perfil
+Disallow: /profile
+Disallow: /friends
+Disallow: /notifications
+Disallow: /replay
+Disallow: /teacher
+Disallow: /verify-email
+Disallow: /login
+Disallow: /register
+Disallow: /multiplayer
+
+Sitemap: https://apiarena.net/sitemap.xml
+
+# LLM crawlers (llms.txt standard)
+# https://apiarena.net/llms.txt

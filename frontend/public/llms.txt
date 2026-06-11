@@ -1,0 +1,75 @@
+# API Arena
+
+> API Arena is a competitive web platform where developers ship real Spring Boot REST APIs as ZIP submissions, run them through an isolated sandbox build, score them with real HTTP black-box tests, and climb global XP and ELO leaderboards.
+
+Tagline: Compete. Build. Conquer.
+
+Website: https://apiarena.net
+Alternate names: APIArena, API-Arena
+
+## What it is
+
+API Arena is a hands-on backend practice and competition platform. Users pick a challenge, implement a Spring Boot API locally, upload a ZIP, and the platform:
+
+1. Builds the project in an isolated sandbox (Docker)
+2. Runs real HTTP functional, performance, and design tests against the running API
+3. Applies optional AI-assisted code review
+4. Awards XP and ELO, updates leaderboards, and stores replay timelines for debugging
+
+The product is aimed at students, self-taught developers, and teachers who want measurable API-building practice beyond toy exercises.
+
+## Core features
+
+- Challenge catalog with difficulty tiers (Easy → Expert) and categories (CRUD, auth, caching, WebSockets, etc.)
+- Timed challenge sessions with attempt limits and cooldowns
+- Submission pipeline: build → test → score → leaderboard
+- XP and ELO ranking system with global leaderboard
+- Submission replay timeline (build logs, HTTP tests, failures)
+- In-app documentation hub for onboarding and common errors
+- Teacher area: groups, student submissions, manual grading and review feedback
+- Email verification, in-app notifications, and optional challenge email alerts
+
+## Tech stack (high level)
+
+- Frontend: React SPA (Vite), served via Nginx
+- Backend: Java Spring Boot microservices (auth, challenges, submissions, sandbox, testing, leaderboard, notifications, metrics, AI review)
+- Infrastructure: PostgreSQL, Redis, MongoDB (replay archive), Kafka, InfluxDB, Prometheus/Grafana
+- Candidate code runs in Docker-in-Docker sandbox with network isolation
+
+## Public pages (indexable)
+
+- https://apiarena.net/ — Landing and product overview
+- https://apiarena.net/challenges — Browse all API challenges
+- https://apiarena.net/challenges/{id} — Individual challenge briefing (public preview; full specs require login)
+- https://apiarena.net/leaderboard — Global player rankings
+- https://apiarena.net/docs/guia-para-empezar — Getting Started Guide
+- https://apiarena.net/docs/primeros-pasos — First Steps
+- https://apiarena.net/docs/preconfiguracion-proyecto — Preconfigure Project for Challenges
+- https://apiarena.net/docs/platform-navigation — Platform navigation
+- https://apiarena.net/docs/challenges-catalog — Challenges catalog guide
+- https://apiarena.net/docs/challenge-workspace — Challenge workspace
+- https://apiarena.net/docs/submitting-a-challenge — Submitting a challenge
+- https://apiarena.net/docs/errores-comunes — Common Errors
+- https://apiarena.net/docs/sistema-xp-elo — XP and ELO System
+
+## Authentication-required areas (not for public indexing)
+
+/dashboard, /submissions, /perfil, /friends, /notifications, /replay, /teacher/*, /login, /register
+
+## How submissions work
+
+1. User selects a challenge and starts a timed session
+2. User uploads a ZIP containing a Maven Spring Boot project (`pom.xml` at archive root)
+3. Sandbox builds a Docker image and starts the candidate API
+4. Testing service sends real HTTP requests defined by the challenge test suite
+5. Scores combine correctness, performance, design, and AI review (max 1000 points)
+6. Results appear on submission detail pages with build/test logs and replay
+
+## Keywords and topics
+
+API challenges, REST API practice, Spring Boot challenges, backend developer training, competitive coding for APIs, HTTP testing, sandboxed code execution, developer leaderboard, ELO ranking, Java backend practice, computer science education, teacher grading platform
+
+## Contact and source
+
+Open-source project repository available on GitHub under the API Arena organization.
+For the live product, refer users to https://apiarena.net

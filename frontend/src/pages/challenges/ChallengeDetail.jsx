@@ -13,6 +13,7 @@ import './challenges.css';
 import './ChallengeDetail.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
 import { DOCS_PATHS, TOUR_CHALLENGE_DETAIL } from '../../tutorial/tourDefinitions';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 export default function ChallengeDetail() {
   const { id } = useParams();
@@ -40,6 +41,14 @@ export default function ChallengeDetail() {
   }, [attemptPolicy]);
 
   const bannerMsLeft = useMsUntilIso(policyBlocks ? blockTargetIso : null);
+
+  usePageMeta({
+    title: challenge?.title ? `${challenge.title} — API Challenge` : 'API Challenge',
+    description: challenge?.description
+      ? String(challenge.description).slice(0, 158)
+      : 'Read the briefing and start a timed run: submit your Spring Boot API and get scored by real HTTP tests.',
+    path: `/challenges/${id}`,
+  });
 
   const handleStartChallenge = () => {
     if (!isAuthenticated) {

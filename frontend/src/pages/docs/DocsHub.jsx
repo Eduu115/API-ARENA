@@ -8,6 +8,7 @@ import { getDocsFeedbackSummary, submitDocsFeedback } from "../../lib/docsMetric
 import "../challenges/challenges.css";
 import "./docsHub.css";
 import { DOC_BY_ID, DOC_DOCUMENTS } from "./docsContent";
+import { usePageMeta } from "../../lib/usePageMeta";
 
 function getNextDocCtaLabel(currentDoc, nextDoc) {
   if (currentDoc?.id === "guia-para-empezar" && nextDoc?.id === "primeros-pasos") {
@@ -106,6 +107,11 @@ export default function DocsHub() {
     () => DOC_BY_ID[docId] || DOC_DOCUMENTS[0],
     [docId]
   );
+  usePageMeta({
+    title: `${activeDoc.title} — Docs`,
+    description: activeDoc.summary,
+    path: `/docs/${activeDoc.id}`,
+  });
   const docIndex = useMemo(() => DOC_DOCUMENTS.findIndex((d) => d.id === activeDoc.id), [activeDoc.id]);
   const nextDoc = useMemo(() => {
     if (docIndex < 0 || docIndex >= DOC_DOCUMENTS.length - 1) return null;
