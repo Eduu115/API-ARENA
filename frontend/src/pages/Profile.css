@@ -1,5 +1,25 @@
 /* Profile — aligned with dashboard + challenges tokens; minimal motion */
 
+.profile-privacy-text {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+.profile-privacy-text a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.profile-privacy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+
 .profile-page .profile-main {
   min-height: calc(100vh - var(--ch-topbar-h, 72px));
   padding: 0 0 100px;

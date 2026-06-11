@@ -121,9 +121,9 @@ export default function Login() {
                       required
                     />
                     <div className="auth-forgot-wrap">
-                      <button type="button" className="auth-link-inline" onClick={() => {}}>
+                      <Link to="/forgot-password" className="auth-link-inline">
                         Forgot your password?
-                      </button>
+                      </Link>
                       <Link to="/verify-email" className="auth-link-inline" style={{ marginLeft: 12 }}>
                         Verify email
                       </Link>

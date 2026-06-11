@@ -65,10 +65,10 @@ export function AuthProvider({ children }) {
   );
 
   const register = useCallback(
-    async (username, email, password, role = null) => {
+    async (username, email, password, role = null, extra = {}) => {
       setError(null);
       try {
-        const data = await authApi.register({ username, email, password, role });
+        const data = await authApi.register({ username, email, password, role, ...extra });
         if (data?.user && !data?.accessToken && data.user.emailVerified === false) {
           return { success: true, data, needsVerification: true };
         }

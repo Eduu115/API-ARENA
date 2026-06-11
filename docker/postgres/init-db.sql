@@ -36,6 +36,13 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_legacy BOOLEAN NOT NULL DEFAULT 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS total_development_seconds BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS total_browsing_seconds BIGINT NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS new_challenge_email_alerts BOOLEAN NOT NULL DEFAULT FALSE;
+-- GDPR/LOPDGDD: +14 age gate and proof of consent (Privacy Policy / Terms)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS date_of_birth DATE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent_version VARCHAR(20);
+-- Password recovery tokens
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(64) UNIQUE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires_at TIMESTAMP;
 
 -- ===========================================
 -- Tabla: refresh_tokens

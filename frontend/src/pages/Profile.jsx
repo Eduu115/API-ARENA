@@ -57,6 +57,10 @@ export default function Profile() {
   const [achievements, setAchievements] = useState([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [privacyError, setPrivacyError] = useState(null);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
@@ -218,6 +222,41 @@ export default function Profile() {
   const handleSwitchAccount = async () => {
     await logout();
     navigate('/login', { replace: true });
+  };
+
+  const handleExportData = async () => {
+    setPrivacyError(null);
+    setExporting(true);
+    try {
+      const data = await authApi.exportMyData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'api-arena-my-data.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setPrivacyError(e?.message || 'Could not export your data.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setPrivacyError(null);
+    setDeleting(true);
+    try {
+      await authApi.deleteMyAccount();
+      await logout();
+      navigate('/', { replace: true });
+    } catch (e) {
+      setPrivacyError(e?.message || 'Could not delete your account.');
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   };
 
   return (
@@ -482,6 +521,40 @@ export default function Profile() {
                 </div>
               </dl>
             </section>
+
+            <section className="profile-block profile-block--meta" aria-labelledby="privacy-heading">
+              <div className="profile-block-head">
+                <h2 id="privacy-heading" className="profile-block-title">
+                  Privacy &amp; data
+                </h2>
+              </div>
+              <p className="profile-privacy-text">
+                You can download a copy of your personal data, or permanently delete your account.
+                See our <Link to="/privacidad">Privacy Policy</Link>.
+              </p>
+              {privacyError && (
+                <div className="auth-alert" role="alert" style={{ marginBottom: 12 }}>
+                  {privacyError}
+                </div>
+              )}
+              <div className="profile-privacy-actions">
+                <button
+                  type="button"
+                  className="profile-btn-ghost"
+                  onClick={handleExportData}
+                  disabled={exporting}
+                >
+                  {exporting ? 'Preparing…' : 'Export my data'}
+                </button>
+                <button
+                  type="button"
+                  className="profile-btn-logout"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  Delete my account
+                </button>
+              </div>
+            </section>
           </div>
         </main>
       </div>
@@ -518,6 +591,52 @@ export default function Profile() {
                 </button>
                 <button type="button" className="profile-modal-btn profile-modal-btn--danger" onClick={handleLogout}>
                   Log out
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {confirmDelete &&
+        createPortal(
+          <div
+            className="profile-modal-backdrop"
+            role="presentation"
+            onClick={() => !deleting && setConfirmDelete(false)}
+          >
+            <div
+              className="profile-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="profile-delete-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="profile-modal-header">
+                <h2 id="profile-delete-title">Delete your account?</h2>
+              </div>
+              <div className="profile-modal-body">
+                <p>
+                  This action is <strong>permanent</strong>. It deletes your profile, submissions,
+                  uploaded files and associated personal data. This cannot be undone.
+                </p>
+              </div>
+              <div className="profile-modal-footer">
+                <button
+                  type="button"
+                  className="profile-modal-btn"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="profile-modal-btn profile-modal-btn--danger"
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting…' : 'Delete forever'}
                 </button>
               </div>
             </div>

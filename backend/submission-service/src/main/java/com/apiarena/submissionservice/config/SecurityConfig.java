@@ -40,6 +40,7 @@ public class SecurityConfig {
                             "/actuator/info",
                             "/actuator/prometheus",
                             "/ws/**",
+                            "/internal/**",
                             "/error"
                     ).permitAll()
                     .anyRequest().authenticated()

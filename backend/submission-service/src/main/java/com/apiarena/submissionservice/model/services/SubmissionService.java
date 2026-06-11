@@ -119,6 +119,9 @@ public class SubmissionService implements ISubmissionService {
     @Autowired(required = false)
     private InfluxSubmissionMetricsService influxSubmissionMetricsService;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @Value("${services.auth-url:http://localhost:8081}")
     private String authServiceUrl;
 
@@ -1235,7 +1238,53 @@ public class SubmissionService implements ISubmissionService {
         if (replayMongoArchiveService != null) {
             replayMongoArchiveService.deleteBySubmissionId(id);
         }
+        deleteZipFileQuietly(submission.getZipFilePath());
+        try {
+            jdbcTemplate.update("DELETE FROM sandbox_executions WHERE submission_id = ?", id);
+        } catch (Exception e) {
+            log.warn("Could not delete sandbox_executions for submission {}: {}", id, e.getMessage());
+        }
         submissionRepository.delete(submission);
+    }
+
+    /**
+     * GDPR right to erasure: removes every submission of a user and the files/records
+     * derived from them (ZIPs on disk, Mongo replays, sandbox execution logs).
+     * Guarded by the internal token at the controller level.
+     */
+    @Override
+    @Transactional
+    public int purgeUserData(Long userId) {
+        List<Submission> subs = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        for (Submission s : subs) {
+            Long sid = s.getId();
+            statusCacheService.evictStatus(sid);
+            if (replayMongoArchiveService != null) {
+                replayMongoArchiveService.deleteBySubmissionId(sid);
+            }
+            deleteZipFileQuietly(s.getZipFilePath());
+            try {
+                jdbcTemplate.update("DELETE FROM sandbox_executions WHERE submission_id = ?", sid);
+            } catch (Exception e) {
+                log.warn("Could not delete sandbox_executions for submission {}: {}", sid, e.getMessage());
+            }
+        }
+        if (!subs.isEmpty()) {
+            submissionRepository.deleteAll(subs);
+        }
+        log.info("Purged {} submission(s) for user {}", subs.size(), userId);
+        return subs.size();
+    }
+
+    private void deleteZipFileQuietly(String zipFilePath) {
+        if (zipFilePath == null || zipFilePath.isBlank()) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Path.of(zipFilePath));
+        } catch (Exception e) {
+            log.warn("Could not delete ZIP file {}: {}", zipFilePath, e.getMessage());
+        }
     }
 
     @Override

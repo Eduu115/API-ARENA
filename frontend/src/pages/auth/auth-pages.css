@@ -400,6 +400,49 @@
   border-bottom-color: var(--cyan);
 }
 
+.auth-alert--ok {
+  border-color: var(--green, #22c55e);
+  color: var(--green, #22c55e);
+}
+
+.auth-help-text {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.auth-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.auth-consent input[type="checkbox"] {
+  margin-top: 2px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+.auth-consent a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.auth-consent a:hover {
+  color: var(--text);
+  text-decoration: underline;
+}
+
 .auth-link-inline {
   font-family: var(--font-mono);
   font-size: 12px;

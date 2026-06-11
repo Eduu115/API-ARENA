@@ -12,10 +12,13 @@ import NotFound from "../pages/NotFound";
 import Profile from "../pages/Profile";
 import Register from "../pages/auth/Register";
 import VerifyEmail from "../pages/auth/VerifyEmail";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import SubmissionDetail from "../pages/submissions/SubmissionDetail";
 import SubmissionResults from "../pages/submissions/SubmissionResults";
 import Replay from "../pages/Replay";
 import DocsHub from "../pages/docs/DocsHub";
+import LegalPage from "../pages/legal/LegalPage";
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import Corrections from "../pages/teacher/Corrections";
 import TeacherChallenges from "../pages/teacher/TeacherChallenges";
@@ -28,17 +31,21 @@ import Friends from "../pages/friends/Friends";
 import Notifications from "../pages/Notifications";
 import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
 import BrowsingTimeTracker from "../components/BrowsingTimeTracker";
+import CookieConsent from "../components/CookieConsent";
 
 export default function RoutesConfig() {
   return (
     <BrowserRouter>
       <BrowsingTimeTracker />
       <ActiveChallengeSessionBanner />
+      <CookieConsent />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/challenges" element={<Challenges />} />
         <Route path="/challenges/:id" element={<ChallengeDetail />} />
@@ -47,6 +54,11 @@ export default function RoutesConfig() {
         <Route path="/multiplayer" element={<MultiplayerHub />} />
         <Route path="/docs" element={<DocsHub />} />
         <Route path="/docs/:docId" element={<DocsHub />} />
+
+        <Route path="/aviso-legal" element={<LegalPage />} />
+        <Route path="/privacidad" element={<LegalPage />} />
+        <Route path="/cookies" element={<LegalPage />} />
+        <Route path="/terminos" element={<LegalPage />} />
 
         <Route element={<ProtectedLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
