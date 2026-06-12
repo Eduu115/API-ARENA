@@ -34,7 +34,7 @@ function mapApiToCard(api) {
   };
 }
 
-function ChallengeCard({ challenge }) {
+function ChallengeCard({ challenge, spotlight = false }) {
   const navigate = useNavigate();
   const {
     id, title, difficulty, category, isNew,
@@ -56,7 +56,7 @@ function ChallengeCard({ challenge }) {
 
   return (
     <div
-      className={`ch-card ${glow} ${status === 'completed' ? 'ch-completed' : ''} ${featured ? 'ch-card-featured' : ''}`}
+      className={`ch-card ${glow} ${status === 'completed' ? 'ch-completed' : ''}${spotlight ? ' ch-card--spotlight' : ''}`}
       style={{ '--accent-color': accentColor }}
       onClick={() => navigate(`/challenges/${id}`)}
     >
@@ -228,6 +228,13 @@ export default function Challenges() {
     if (statusFilter !== 'all') list = list.filter(c => (c.status ?? 'unsolved') === statusFilter);
 
     switch (sortBy) {
+      case 'featured':
+        return [...list].sort((a, b) => {
+          const af = a.featured ? 1 : 0;
+          const bf = b.featured ? 1 : 0;
+          if (bf !== af) return bf - af;
+          return (b.points ?? 0) - (a.points ?? 0);
+        });
       case 'newest':   return [...list].reverse();
       case 'hardest':  return [...list].sort((a, b) => {
         const order = { expert: 4, hard: 3, medium: 2, easy: 1 };
@@ -238,6 +245,22 @@ export default function Challenges() {
       default: return list;
     }
   }, [challenges, statusFilter, sortBy]);
+
+  const { featuredItems, catalogItems } = useMemo(() => {
+    const featured = [];
+    const rest = [];
+    for (const c of filtered) {
+      if (c.featured) featured.push(c);
+      else rest.push(c);
+    }
+    return { featuredItems: featured, catalogItems: rest };
+  }, [filtered]);
+
+  const featuredGridClass = featuredItems.length === 1
+    ? 'ch-featured-grid ch-featured-grid--solo'
+    : featuredItems.length === 2
+      ? 'ch-featured-grid ch-featured-grid--duo'
+      : 'ch-featured-grid';
 
   const diffLabel = diffFilter === 'all'
     ? 'ALL DIFFICULTIES'
@@ -474,13 +497,15 @@ export default function Challenges() {
             </span>
           </div>
 
-          <div className="ch-challenges-grid">
-            {loading ? (
+          {loading ? (
+            <div className="ch-challenges-grid">
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">...</div>
                 <div className="ch-empty-text">Loading challenges...</div>
               </div>
-            ) : error ? (
+            </div>
+          ) : error ? (
+            <div className="ch-challenges-grid">
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">!</div>
                 <div className="ch-empty-text">{error}</div>
@@ -488,15 +513,54 @@ export default function Challenges() {
                   Make sure challenge-service is running at http://localhost:8082
                 </div>
               </div>
-            ) : filtered.length === 0 ? (
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="ch-challenges-grid">
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">404</div>
                 <div className="ch-empty-text">No challenges match your filters</div>
               </div>
-            ) : (
-              filtered.map(c => <ChallengeCard key={c.id} challenge={c} />)
-            )}
-          </div>
+            </div>
+          ) : (
+            <>
+              {featuredItems.length > 0 && (
+                <section className="ch-featured-section" aria-labelledby="ch-featured-heading">
+                  <div className="ch-featured-section-head">
+                    <div className="ch-featured-section-eyebrow">// Spotlight</div>
+                    <h2 id="ch-featured-heading" className="ch-featured-section-title">
+                      Featured<em>Challenges</em>
+                    </h2>
+                  </div>
+                  <div className={featuredGridClass}>
+                    {featuredItems.map((c) => (
+                      <ChallengeCard key={c.id} challenge={c} spotlight />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {catalogItems.length > 0 && (
+                <section
+                  className="ch-catalog-section"
+                  aria-labelledby={featuredItems.length > 0 ? 'ch-catalog-heading' : undefined}
+                >
+                  {featuredItems.length > 0 && (
+                    <div className="ch-catalog-section-head">
+                      <div className="ch-catalog-section-eyebrow">// Catalog</div>
+                      <h2 id="ch-catalog-heading" className="ch-catalog-section-title">
+                        All<em>Challenges</em>
+                      </h2>
+                    </div>
+                  )}
+                  <div className="ch-challenges-grid">
+                    {catalogItems.map((c) => (
+                      <ChallengeCard key={c.id} challenge={c} />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </>
+          )}
 
         </main>
       </div>

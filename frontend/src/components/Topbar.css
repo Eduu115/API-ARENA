@@ -349,3 +349,101 @@
 [data-theme="light"] .arena-navbar__login {
   color: #c5cfdf;
 }
+
+/* Live push toast (WebSocket NEW_NOTIFICATION) */
+.arena-push-toast {
+  position: fixed;
+  top: calc(var(--ch-topbar-h, 72px) + 12px);
+  right: 16px;
+  z-index: 10001;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  width: min(360px, calc(100vw - 32px));
+  background: var(--bg1);
+  border: 1px solid var(--dim);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  animation: arena-push-toast-in 0.28s ease;
+}
+
+@keyframes arena-push-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.arena-push-toast__accent {
+  width: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--cyan), var(--purple));
+}
+
+.arena-push-toast__content {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 12px 14px 14px;
+}
+
+.arena-push-toast__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.arena-push-toast__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.arena-push-toast__body {
+  margin: 0 0 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.arena-push-toast__link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+.arena-push-toast__link:hover {
+  opacity: 0.85;
+}
+
+.arena-push-toast__close {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin: 8px 8px 0 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.arena-push-toast__close:hover {
+  color: var(--white);
+}

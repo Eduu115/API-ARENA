@@ -50,6 +50,9 @@ public class AuthService implements IAuthService {
     @Autowired
     private WelcomeNotificationDispatchService welcomeNotificationDispatchService;
 
+    @Autowired
+    private AchievementService achievementService;
+
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     /** Minimum age to give valid consent on your own in Spain (LOPDGDD art. 7). */
@@ -210,6 +213,7 @@ public class AuthService implements IAuthService {
         emailDispatchService.sendWelcomeBetaLegacyEmail(user.getEmail(), user.getUsername());
         emailDispatchService.sendFirstStepsBetaEmail(user.getEmail(), user.getUsername());
         welcomeNotificationDispatchService.sendWelcome(user.getId(), user.getUsername());
+        achievementService.syncForUserId(user.getId());
 
         return new VerifyEmailResponseDTO(true, "Email verified. You can log in.");
     }

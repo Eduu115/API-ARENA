@@ -1,6 +1,8 @@
 package com.apiarena.authservice.config;
 
 import com.apiarena.authservice.model.services.UserService;
+import com.apiarena.authservice.security.AuthenticatedRateLimitFilter;
+import com.apiarena.authservice.security.PublicRateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +43,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserService userService;
+    private final PublicRateLimitFilter publicRateLimitFilter;
+    private final AuthenticatedRateLimitFilter authenticatedRateLimitFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -100,7 +104,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(publicRateLimitFilter, JwtAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(authenticatedRateLimitFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

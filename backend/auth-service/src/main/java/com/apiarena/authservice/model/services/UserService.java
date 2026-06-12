@@ -37,6 +37,9 @@ public class UserService implements IUserService {
     @Autowired
     private WeeklyStreakService weeklyStreakService;
 
+    @Autowired
+    private AchievementService achievementService;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
@@ -94,6 +97,7 @@ public class UserService implements IUserService {
         }
 
         User savedUser = userRepository.save(user);
+        achievementService.syncForUserId(userId);
         return UserDTO.fromEntity(savedUser);
     }
 
@@ -134,6 +138,7 @@ public class UserService implements IUserService {
 
         int pipelineScore = request.getPipelineTotalScore() != null ? request.getPipelineTotalScore() : 0;
         weeklyStreakService.recordActivity(userId, xp, request.getChallengeId(), pipelineScore);
+        achievementService.syncForUserId(userId);
     }
 
     private int calculateLevel(int totalXp) {
@@ -167,6 +172,7 @@ public class UserService implements IUserService {
         long cur = user.getTotalDevelopmentSeconds() != null ? user.getTotalDevelopmentSeconds() : 0L;
         user.setTotalDevelopmentSeconds(cur + capped);
         userRepository.save(user);
+        achievementService.syncForUserId(userId);
     }
 
     @Override
@@ -181,6 +187,7 @@ public class UserService implements IUserService {
         long cur = user.getTotalBrowsingSeconds() != null ? user.getTotalBrowsingSeconds() : 0L;
         user.setTotalBrowsingSeconds(cur + capped);
         userRepository.save(user);
+        achievementService.syncForUserId(userId);
     }
 
     @Override

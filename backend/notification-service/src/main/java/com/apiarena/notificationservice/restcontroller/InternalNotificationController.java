@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apiarena.notificationservice.model.dto.InternalAchievementUnlockedRequest;
 import com.apiarena.notificationservice.model.dto.InternalTeacherSubmissionReviewRequest;
 import com.apiarena.notificationservice.model.dto.InternalWelcomeRequest;
 import com.apiarena.notificationservice.model.services.NotificationService;
@@ -31,6 +32,12 @@ public class InternalNotificationController {
     @PostMapping("/teacher-submission-review")
     public ResponseEntity<Void> teacherSubmissionReview(@Valid @RequestBody InternalTeacherSubmissionReviewRequest body) {
         notificationService.createTeacherSubmissionReviewNotification(body);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/achievement-unlocked")
+    public ResponseEntity<Void> achievementUnlocked(@Valid @RequestBody InternalAchievementUnlockedRequest body) {
+        notificationService.createAchievementUnlockedNotification(body);
         return ResponseEntity.accepted().build();
     }
 }
