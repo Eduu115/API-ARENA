@@ -18,12 +18,12 @@ alwaysApply: true
 | **ai-review-service** | 8086 | ✅ Operativo (v2 ready) | Endpoint interno `POST /internal/ai-review/analyze`, provider configurable (`heuristic|gemini`), fallback automático a heurístico, `aiScore` 0-200 + feedback estructurado; listo para API key por entorno |
 | **multiplayer-service** | 8088 | ❌ No creado | |
 | **metrics-service** | 8089 | ✅ Operativo | Agregados (`/api/metrics/overview`, `/api/metrics/submissions/daily`), feedback docs, **eventos de producto** (`POST /api/metrics/events`, **protegido con `X-Internal-Token`**: ingesta solo servidor-a-servidor, 401 sin token), **BI summary/export** (`/api/metrics/bi/summary`, `/api/metrics/bi/export?format=json|csv`), **export CSV programado (opt-in)** `METRICS_BI_EXPORT_ENABLED` + volumen `/app/bi-exports`, Prometheus; lectura de negocio restringida a ADMIN |
-| **notification-service** | 8090 | ✅ Completo | In-app + **WebSocket** `/ws/notifications` (JWT query); Kafka incl. **challengeTitle**; REST JWT; **importancia** `INFO|REMINDER|ALERTS|IMPORTANT`; **solo** `IMPORTANT` → email vía auth (mismo título/cuerpo); bienvenida in-app tras verificar email (auth → `POST /internal/notifications/welcome`); **revisión docente** submission-service → `POST /internal/notifications/teacher-submission-review` (tipo `TEACHER_SUBMISSION_REVIEW`, INFO + push WS); query `minImportance`; frontend: `/notifications` |
+| **notification-service** | 8090 | ✅ Completo | In-app + **WebSocket** `/ws/notifications` (JWT query); Kafka incl. **challengeTitle**; REST JWT; **importancia** `INFO|REMINDER|ALERTS|IMPORTANT`; **solo** `IMPORTANT` → email vía auth (mismo título/cuerpo); bienvenida in-app tras verificar email (auth → `POST /internal/notifications/welcome`); **achievement unlocked** auth → `POST /internal/notifications/achievement-unlocked` (tipo `ACHIEVEMENT_UNLOCKED`, push WS + toast frontend); revisión docente submission-service → `POST /internal/notifications/teacher-submission-review` (tipo `TEACHER_SUBMISSION_REVIEW`, INFO + push WS); query `minImportance`; frontend: `/notifications` + push toast global en topbar | |
 
 ## Infraestructura Docker
 
 - **PostgreSQL**: ✅ `init-db.sql` (seed, friendships, etc.)
-- **Redis**: ✅ (auth + submission cache)
+- **Redis**: ✅ (auth rate-limit + submission cache)
 - **MongoDB**: ✅ **integrado** en submission-service (archivo de replay `replay_archives`; lectura si Postgres vacío tras retención)
 - **InfluxDB**: ✅ **integrado** en submission-service (serie `submission_pipeline`: duración, score, estado)
 - **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`)
@@ -92,6 +92,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Email verification: Resend (opcional vía `RESEND_API_KEY`), tokens en `users`, frontend `/verify-email`, login bloqueado hasta verificar.  
 - Achievements v1: auth-service (definiciones + concesión por stats/cohort), perfil con lista y tiers.  
 - Achievements v2: catálogo ampliado (~24 defs: clears, XP/ELO, perfil, tiempo coding/browsing, streaks); preview en `/perfil` + página `/perfil/achievements` con filtros.
+- **Rate limiting HTTP (Redis)**: auth-service (login/register/refresh/forgot/reset/verify + perfiles públicos por IP; friend-request + usage heartbeat por usuario); submission-service burst en `POST /api/submissions` (IP + usuario, staff bypass); metrics docs-feedback 10/min por IP in-process.
 - Hardening P1: runner DinD con fallback por flag, replay estructurado persistido y stack metrics/prometheus/grafana.
 - Automatización alta prioridad: `scripts/e2e-smoke.sh`, `scripts/load-submissions.sh`, workflow CI `.github/workflows/e2e-smoke.yml`.
 - AI review v2 ready: rúbrica final **800 técnico + 200 IA** en `submission-service`, proveedor configurable en `ai-review-service` y wiring de variables para API key en `.env` / Compose.
@@ -105,6 +106,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Teacher groups v2: en `/teacher/groups` cada miembro muestra `x entregas` (solo challenges del profesor), panel de historial por alumno y descarga del ZIP entregado.
 - Teacher submission review: `PUT /api/submissions/{id}/teacher/submission-review` + UI en `/submissions/:id`; notificación in-app `TEACHER_SUBMISSION_REVIEW` (notification-service).
 - Teacher corrections queue: `GET /api/submissions/teacher/corrections-queue` + dashboard “Recent corrections” y `/teacher/corrections` sin mock; `teacherCorrectionComplete` en listados teacher.
+- Public profile **last seen**: columna `users.last_seen_at` (login + heartbeat navegación throttled 2 min); `lastSeenAt` en `GET /api/auth/users/{id}/profile`; modal perfil público “Online now” / “Last online …”.
 - Cooldown UX: en ficha del challenge no se entra a `/submit` con cuenta atrás visible; modal con tiempo restante; pantalla submit bloqueada con el mismo modal y sin arrancar timer/sesión hasta que la política permita.
 - Challenge público vs specs: ficha `/challenges/:id` solo preview (nombre, descripción, stats, teaser); endpoints/tests/hints solo vía `GET .../specs` en pantalla submit autenticada.
 
@@ -123,7 +125,7 @@ Estimaciones **muy orientativas** (1 dev familiarizado con el repo; dependen de 
 | **MongoDB** logs / replay storage | ✅ Archivo `replay_archives` + retención alineada; ampliar índices/TTL según carga | **0.5–1 semana** |
 | **ai-review-service** (LLM) | ✅ Base v2 lista (falta calibración fina de prompts/rúbrica por challenge y control de costes) | **2–6 días** |
 | **multiplayer-service** | BONUS, WebSocket + salas | **3–6 semanas** |
-| **Achievements (ampliar)** | ✅ v2 catálogo + preview perfil; faltan notificación al desbloquear, iconos asset | **2–4 días** |
+| **Achievements (ampliar)** | ✅ v2 catálogo + preview perfil + notificación in-app/WS al desbloquear; faltan iconos asset | **1–2 días** |
 
 **Núcleo “MVP producto estable”** (Kafka ya hecho, límites hechos, listado de submissions con título de challenge, verificación de email con Resend, métricas mínimas): del orden de **~3–6 semanas** de trabajo enfocado.  
 **Con BONUS** (AI review + multiplayer + replay fuerte): **varios meses** adicionales en paralelo o secuencial.

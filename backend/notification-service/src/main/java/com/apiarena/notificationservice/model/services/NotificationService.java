@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.apiarena.notificationservice.kafka.SubmissionCompletedEvent;
+import com.apiarena.notificationservice.model.dto.InternalAchievementUnlockedRequest;
 import com.apiarena.notificationservice.model.dto.InternalTeacherSubmissionReviewRequest;
 import com.apiarena.notificationservice.model.dto.NotificationDTO;
 import com.apiarena.notificationservice.model.entities.Notification;
@@ -27,6 +28,8 @@ public class NotificationService {
     public static final String TYPE_WELCOME = "WELCOME";
 
     public static final String TYPE_TEACHER_SUBMISSION_REVIEW = "TEACHER_SUBMISSION_REVIEW";
+
+    public static final String TYPE_ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED";
 
     private final NotificationRepository notificationRepository;
     private final ObjectMapper objectMapper;
@@ -169,6 +172,54 @@ public class NotificationService {
         n.setBody(String.format("Open the submission to read notes, structured feedback, and any score bonuses for %s.", challengeLabel));
         n.setMetadataJson(metadataJson);
         n.setSourceSubmissionId(body.submissionId());
+
+        notificationRepository.save(n);
+        NotificationDTO dto = toDto(n);
+        long unread = notificationRepository.countByUserIdAndReadAtIsNull(body.userId());
+        notificationPushService.pushNewNotification(body.userId(), dto, unread);
+        notificationEmailDispatchService.mirrorNotificationToEmail(n);
+    }
+
+    /**
+     * In-app + WebSocket push when the user unlocks an achievement (one notification per achievement code).
+     */
+    @Transactional
+    public void createAchievementUnlockedNotification(InternalAchievementUnlockedRequest body) {
+        if (body == null || body.userId() == null || body.achievementCode() == null || body.achievementCode().isBlank()) {
+            return;
+        }
+        String code = body.achievementCode().trim();
+        String dedupeFragment = "\"achievementCode\":\"" + code + "\"";
+        if (notificationRepository.existsByUserIdAndTypeAndMetadataJsonContaining(
+                body.userId(), TYPE_ACHIEVEMENT_UNLOCKED, dedupeFragment)) {
+            return;
+        }
+
+        String title = body.achievementTitle() != null && !body.achievementTitle().isBlank()
+                ? body.achievementTitle().trim()
+                : code;
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("achievementCode", code);
+        meta.put("achievementTitle", title);
+        if (body.tier() != null && !body.tier().isBlank()) {
+            meta.put("tier", body.tier().trim());
+        }
+
+        String metadataJson;
+        try {
+            metadataJson = objectMapper.writeValueAsString(meta);
+        } catch (Exception e) {
+            metadataJson = "{}";
+        }
+
+        Notification n = new Notification();
+        n.setUserId(body.userId());
+        n.setType(TYPE_ACHIEVEMENT_UNLOCKED);
+        n.setImportance(NotificationImportance.INFO);
+        n.setTitle("\"" + title + "\" unlocked");
+        n.setBody("Achievement unlocked. See more →");
+        n.setMetadataJson(metadataJson);
+        n.setSourceSubmissionId(null);
 
         notificationRepository.save(n);
         NotificationDTO dto = toDto(n);

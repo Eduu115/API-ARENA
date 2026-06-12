@@ -26,14 +26,25 @@ public class AchievementService {
     private final UserRepository userRepository;
     private final AchievementDefinitionRepository definitionRepository;
     private final UserAchievementRepository userAchievementRepository;
+    private final AchievementNotificationDispatchService achievementNotificationDispatchService;
 
     public AchievementService(
             UserRepository userRepository,
             AchievementDefinitionRepository definitionRepository,
-            UserAchievementRepository userAchievementRepository) {
+            UserAchievementRepository userAchievementRepository,
+            AchievementNotificationDispatchService achievementNotificationDispatchService) {
         this.userRepository = userRepository;
         this.definitionRepository = definitionRepository;
         this.userAchievementRepository = userAchievementRepository;
+        this.achievementNotificationDispatchService = achievementNotificationDispatchService;
+    }
+
+    @Transactional
+    public void syncForUserId(Long userId) {
+        if (userId == null) {
+            return;
+        }
+        userRepository.findById(userId).ifPresent(this::syncAchievements);
     }
 
     @Transactional
@@ -149,5 +160,10 @@ public class AchievementService {
         ua.setAchievement(def);
         ua.setUnlockedAt(LocalDateTime.now(ZoneOffset.UTC));
         userAchievementRepository.save(ua);
+        achievementNotificationDispatchService.notifyUnlocked(
+                user.getId(),
+                def.getCode(),
+                def.getTitle(),
+                def.getTier());
     }
 }

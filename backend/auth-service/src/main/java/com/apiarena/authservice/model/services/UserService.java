@@ -1,5 +1,6 @@
 package com.apiarena.authservice.model.services;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +23,8 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserService implements IUserService {
 
+    private static final Duration LAST_SEEN_TOUCH_INTERVAL = Duration.ofMinutes(2);
+
     @Autowired
     private UserRepository userRepository;
 
@@ -36,6 +39,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private WeeklyStreakService weeklyStreakService;
+
+    @Autowired
+    private AchievementService achievementService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -94,6 +100,7 @@ public class UserService implements IUserService {
         }
 
         User savedUser = userRepository.save(user);
+        achievementService.syncForUserId(userId);
         return UserDTO.fromEntity(savedUser);
     }
 
@@ -102,7 +109,9 @@ public class UserService implements IUserService {
     public void updateLastLogin(String email) {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
-        user.setLastLogin(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        user.setLastLogin(now);
+        user.setLastSeenAt(now);
         userRepository.save(user);
     }
 
@@ -134,6 +143,7 @@ public class UserService implements IUserService {
 
         int pipelineScore = request.getPipelineTotalScore() != null ? request.getPipelineTotalScore() : 0;
         weeklyStreakService.recordActivity(userId, xp, request.getChallengeId(), pipelineScore);
+        achievementService.syncForUserId(userId);
     }
 
     private int calculateLevel(int totalXp) {
@@ -167,6 +177,7 @@ public class UserService implements IUserService {
         long cur = user.getTotalDevelopmentSeconds() != null ? user.getTotalDevelopmentSeconds() : 0L;
         user.setTotalDevelopmentSeconds(cur + capped);
         userRepository.save(user);
+        achievementService.syncForUserId(userId);
     }
 
     @Override
@@ -180,7 +191,17 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
         long cur = user.getTotalBrowsingSeconds() != null ? user.getTotalBrowsingSeconds() : 0L;
         user.setTotalBrowsingSeconds(cur + capped);
+        touchLastSeenIfDue(user);
         userRepository.save(user);
+        achievementService.syncForUserId(userId);
+    }
+
+    private void touchLastSeenIfDue(User user) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime previous = user.getLastSeenAt();
+        if (previous == null || previous.isBefore(now.minus(LAST_SEEN_TOUCH_INTERVAL))) {
+            user.setLastSeenAt(now);
+        }
     }
 
     @Override
@@ -215,6 +236,7 @@ public class UserService implements IUserService {
         account.put("createdAt", u.getCreatedAt());
         account.put("updatedAt", u.getUpdatedAt());
         account.put("lastLogin", u.getLastLogin());
+        account.put("lastSeenAt", u.getLastSeenAt());
 
         java.util.Map<String, Object> profile = new java.util.LinkedHashMap<>();
         profile.put("avatarUrl", u.getAvatarUrl());

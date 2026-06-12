@@ -10,6 +10,7 @@ import {
   markAllNotificationsRead,
 } from "../lib/notificationsApi";
 import { connectNotificationsWs } from "../lib/notificationsWs";
+import { notificationActionLabel, notificationActionPath } from "../lib/notificationDisplay";
 import "./challenges/challenges.css";
 import "./notifications.css";
 
@@ -197,7 +198,9 @@ export default function Notifications() {
           {!loading && items.length > 0 && (
             <ul className="notif-list">
               {items.map((n) => {
-                const sid = n.metadata?.submissionId;
+                const actionPath = notificationActionPath(n);
+                const actionLabel = notificationActionLabel(n);
+                const showAction = actionPath !== "/notifications" || n.type === "ACHIEVEMENT_UNLOCKED";
                 return (
                   <li key={n.id} className={`notif-card${n.read ? " notif-read" : ""}`}>
                     <div className="notif-card-head">
@@ -221,9 +224,9 @@ export default function Notifications() {
                           Mark read
                         </button>
                       )}
-                      {sid != null && (
-                        <Link className="notif-link" to={`/submissions/${sid}`}>
-                          View submission →
+                      {showAction && (
+                        <Link className="notif-link" to={actionPath}>
+                          {actionLabel}
                         </Link>
                       )}
                     </div>

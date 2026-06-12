@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import TerminalWindow from '../../../components/landing/TerminalWindow';
+import AlphaBadge from '../../../components/landing/AlphaBadge';
 import ArrowRightIcon from '../../../components/icons/ArrowRightIcon';
 import { HERO_STATS } from '../landing.data';
 
@@ -11,12 +12,17 @@ export default function HeroSection() {
       <div className="hero-glow-2" />
 
       <div className="hero-content" data-tutorial="landing-hero-content">
-        <div className="hero-eyebrow">Season 01 · Open Beta Active</div>
-        <h1 className="hero-title">
-          <span className="line-1">Code</span>
-          <span className="line-2">Faster.</span>
-          <span className="line-3">Win.</span>
-        </h1>
+        <p className="hero-eyebrow">Season 01 · Real builds · Real tests</p>
+
+        <div className="hero-title-row">
+          <h1 className="hero-title">
+            <span className="line-1">Code</span>
+            <span className="line-2">Faster.</span>
+            <span className="line-3">Win.</span>
+          </h1>
+          <AlphaBadge size="hero" className="hero-alpha-badge" />
+        </div>
+
         <p className="hero-sub">
           The first competitive arena for <strong>APIs</strong>.<br />
           Submit your code. Pass the tests.{' '}

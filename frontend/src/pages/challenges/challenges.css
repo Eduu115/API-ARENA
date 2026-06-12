@@ -605,6 +605,84 @@
   gap: 16px;
 }
 
+/* Featured spotlight block — separate from catalog grid (no full-row span holes) */
+.ch-featured-section {
+  margin-bottom: 32px;
+}
+
+.ch-featured-section-head,
+.ch-catalog-section-head {
+  margin-bottom: 16px;
+}
+
+.ch-featured-section-eyebrow,
+.ch-catalog-section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.ch-featured-section-title,
+.ch-catalog-section-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 0.95;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+.ch-featured-section-title em,
+.ch-catalog-section-title em {
+  font-style: normal;
+  color: var(--cyan);
+}
+
+.ch-featured-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+
+.ch-featured-grid--solo {
+  grid-template-columns: 1fr;
+}
+
+.ch-featured-grid--duo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ch-catalog-section {
+  margin-top: 4px;
+}
+
+.ch-card--spotlight {
+  border-color: rgba(255, 184, 0, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255, 184, 0, 0.05) 0%, transparent 42%),
+    var(--bg2);
+  box-shadow: 0 0 0 1px rgba(255, 184, 0, 0.06), 0 12px 36px rgba(0, 0, 0, 0.28);
+}
+
+.ch-card--spotlight::before {
+  opacity: 0.55;
+  background: linear-gradient(90deg, var(--warn), var(--accent-color, var(--cyan)));
+}
+
+.ch-card--spotlight .ch-card-title {
+  font-size: clamp(22px, 2.8vw, 30px);
+}
+
+.ch-card--spotlight:hover {
+  border-color: rgba(255, 184, 0, 0.45);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38), 0 0 24px rgba(255, 184, 0, 0.08);
+}
+
 .ch-card {
   background: var(--bg2);
   border: 1px solid var(--dim);
@@ -810,18 +888,7 @@
   text-align: right;
 }
 
-.ch-card-featured { grid-column: 1 / -1; }
-
-.ch-card-featured .ch-card-inner {
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 28px;
-  align-items: start;
-}
-.ch-card-featured .ch-card-title {
-  font-size: 36px;
-  margin-bottom: 10px;
-}
+/* Legacy featured full-row layout removed — use .ch-card--spotlight in .ch-featured-grid */
 
 .ch-card-right {
   background: var(--bg3);
@@ -1122,7 +1189,6 @@
     box-shadow: 8px 0 48px rgba(0, 0, 0, 0.7);
   }
 
-  .ch-card-featured .ch-card-inner { grid-template-columns: 1fr; }
   .ch-card-right { display: none; }
 
   .ch-layout .arena-navbar__menu {
@@ -1200,7 +1266,10 @@
   .ch-results-count { flex-shrink: 0; }
 
   .ch-card-inner    { padding: 14px 14px 14px 18px; }
-  .ch-card-featured { margin-bottom: 0; }
+
+  .ch-featured-grid--duo {
+    grid-template-columns: 1fr;
+  }
 
   .ch-sort-select { font-size: 12px; }
 }
@@ -1210,7 +1279,7 @@
 
   .ch-page-title  { font-size: 28px; }
   .ch-card-title  { font-size: 18px; }
-  .ch-card-featured .ch-card-title { font-size: 22px; }
+  .ch-card--spotlight .ch-card-title { font-size: 20px; }
   .ch-card-desc   { font-size: 12px; }
 
   .ch-challenges-grid { grid-template-columns: 1fr; }

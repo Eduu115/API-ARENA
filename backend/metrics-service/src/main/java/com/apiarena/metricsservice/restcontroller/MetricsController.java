@@ -18,7 +18,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.apiarena.metricsservice.model.services.MetricsAggregationService;
 import com.apiarena.metricsservice.model.services.MetricsAccessService;
+import com.apiarena.metricsservice.security.LocalIpRateLimiter;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -31,9 +33,13 @@ public class MetricsController {
 
     private final MetricsAggregationService metricsAggregationService;
     private final MetricsAccessService metricsAccessService;
+    private final LocalIpRateLimiter localIpRateLimiter;
 
     @Value("${services.internal-token:}")
     private String internalToken;
+
+    @Value("${apiarena.rate-limit.docs-feedback-per-ip-per-minute:10}")
+    private int docsFeedbackPerIpPerMinute;
 
     @GetMapping("/overview")
     public ResponseEntity<Map<String, Object>> getOverview(
@@ -51,7 +57,10 @@ public class MetricsController {
     }
 
     @PostMapping("/docs-feedback")
-    public ResponseEntity<Map<String, Object>> submitDocsFeedback(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<Map<String, Object>> submitDocsFeedback(
+            @RequestBody Map<String, Object> payload,
+            HttpServletRequest request) {
+        enforceDocsFeedbackRateLimit(request);
         String sectionKey = payload.get("sectionKey") != null ? String.valueOf(payload.get("sectionKey")) : null;
         boolean helpful = Boolean.parseBoolean(String.valueOf(payload.getOrDefault("helpful", false)));
         String sourcePath = payload.get("sourcePath") != null ? String.valueOf(payload.get("sourcePath")) : "/docs";
@@ -155,5 +164,26 @@ public class MetricsController {
         if (internalToken == null || internalToken.isBlank() || !internalToken.equals(token)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
+    }
+
+    private void enforceDocsFeedbackRateLimit(HttpServletRequest request) {
+        String ip = clientIp(request);
+        String bucket = "docs-feedback:" + ip;
+        if (!localIpRateLimiter.tryConsume(bucket, docsFeedbackPerIpPerMinute)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                    "Too many feedback submissions. Please try again later.");
+        }
+    }
+
+    private static String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) {
+            return realIp.trim();
+        }
+        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "unknown";
     }
 }

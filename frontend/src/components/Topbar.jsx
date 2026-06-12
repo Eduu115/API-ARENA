@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import ProfileAccountMenu from "./ProfileAccountMenu";
 import { getUnreadNotificationCount } from "../lib/notificationsApi";
 import { connectNotificationsWs } from "../lib/notificationsWs";
+import { notificationActionLabel, notificationActionPath } from "../lib/notificationDisplay";
 import { NavIcon, IconBell, IconSun, IconMoon } from "./topbar/TopbarIcons";
 import "./Topbar.css";
 
@@ -38,6 +39,8 @@ export default function Topbar({
   const { user, isAuthenticated, logout } = useAuth();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [pushToasts, setPushToasts] = useState([]);
+  const pushDismissRef = useRef(null);
   const navItems = isAuthenticated ? NAV_ITEMS_AUTH : NAV_ITEMS_GUEST;
   const { isDark, toggleTheme } = useTheme();
   const rating = user?.rating ?? 1000;
@@ -52,6 +55,33 @@ export default function Topbar({
   const notifActive =
     pathname === "/notifications" ||
     pathname.startsWith("/notifications/");
+
+  const dismissPushToast = useCallback(() => {
+    setPushToasts((queue) => queue.slice(1));
+  }, []);
+
+  const enqueuePushToast = useCallback((notification) => {
+    if (!notification?.id) return;
+    setPushToasts((queue) => {
+      if (queue.some((item) => item.id === notification.id)) return queue;
+      return [...queue, notification];
+    });
+  }, []);
+
+  useEffect(() => {
+    if (pushDismissRef.current) {
+      clearTimeout(pushDismissRef.current);
+      pushDismissRef.current = null;
+    }
+    if (pushToasts.length === 0) return undefined;
+    pushDismissRef.current = setTimeout(dismissPushToast, 6500);
+    return () => {
+      if (pushDismissRef.current) {
+        clearTimeout(pushDismissRef.current);
+        pushDismissRef.current = null;
+      }
+    };
+  }, [pushToasts, dismissPushToast]);
 
   useEffect(() => {
     setAccountMenuOpen(false);
@@ -83,10 +113,15 @@ export default function Topbar({
         if (msg?.unreadCount != null) {
           setUnreadNotifications(Number(msg.unreadCount) || 0);
         }
+        if (msg?.event === "NEW_NOTIFICATION" && msg?.notification) {
+          enqueuePushToast(msg.notification);
+        }
       },
     });
     return () => disconnect();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, enqueuePushToast]);
+
+  const activePushToast = pushToasts[0] ?? null;
 
   async function handleLogoutFromMenu() {
     await logout();
@@ -263,6 +298,32 @@ export default function Topbar({
           onLogout={handleLogoutFromMenu}
           onSwitchAccount={handleSwitchAccount}
         />
+      )}
+
+      {isAuthenticated && activePushToast && (
+        <div className="arena-push-toast" role="status" aria-live="polite">
+          <div className="arena-push-toast__accent" aria-hidden />
+          <div className="arena-push-toast__content">
+            <div className="arena-push-toast__eyebrow">Notification</div>
+            <div className="arena-push-toast__title">{activePushToast.title}</div>
+            <p className="arena-push-toast__body">{activePushToast.body}</p>
+            <Link
+              to={notificationActionPath(activePushToast)}
+              className="arena-push-toast__link"
+              onClick={dismissPushToast}
+            >
+              {notificationActionLabel(activePushToast)}
+            </Link>
+          </div>
+          <button
+            type="button"
+            className="arena-push-toast__close"
+            onClick={dismissPushToast}
+            aria-label="Dismiss notification"
+          >
+            ×
+          </button>
+        </div>
       )}
     </>
   );
