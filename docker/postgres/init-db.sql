@@ -43,6 +43,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS privacy_consent_version VARCHAR(20);
 -- Password recovery tokens
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(64) UNIQUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP;
+UPDATE users SET last_seen_at = COALESCE(last_login, updated_at, created_at) WHERE last_seen_at IS NULL;
 
 -- ===========================================
 -- Tabla: refresh_tokens

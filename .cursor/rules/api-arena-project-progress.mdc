@@ -106,6 +106,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Teacher groups v2: en `/teacher/groups` cada miembro muestra `x entregas` (solo challenges del profesor), panel de historial por alumno y descarga del ZIP entregado.
 - Teacher submission review: `PUT /api/submissions/{id}/teacher/submission-review` + UI en `/submissions/:id`; notificación in-app `TEACHER_SUBMISSION_REVIEW` (notification-service).
 - Teacher corrections queue: `GET /api/submissions/teacher/corrections-queue` + dashboard “Recent corrections” y `/teacher/corrections` sin mock; `teacherCorrectionComplete` en listados teacher.
+- Public profile **last seen**: columna `users.last_seen_at` (login + heartbeat navegación throttled 2 min); `lastSeenAt` en `GET /api/auth/users/{id}/profile`; modal perfil público “Online now” / “Last online …”.
 - Cooldown UX: en ficha del challenge no se entra a `/submit` con cuenta atrás visible; modal con tiempo restante; pantalla submit bloqueada con el mismo modal y sin arrancar timer/sesión hasta que la política permita.
 - Challenge público vs specs: ficha `/challenges/:id` solo preview (nombre, descripción, stats, teaser); endpoints/tests/hints solo vía `GET .../specs` en pantalla submit autenticada.
 

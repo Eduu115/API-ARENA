@@ -104,8 +104,8 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(publicRateLimitFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(publicRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(authenticatedRateLimitFilter, JwtAuthenticationFilter.class);
 
         return http.build();

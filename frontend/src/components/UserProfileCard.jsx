@@ -26,6 +26,8 @@ const AVATAR_GRADIENTS = [
 
 const bundleCache = new Map();
 
+const ONLINE_NOW_MS = 3 * 60 * 1000;
+
 function formatDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-US', {
@@ -33,6 +35,40 @@ function formatDate(iso) {
     day: 'numeric',
     year: 'numeric',
   });
+}
+
+function formatLastOnline(iso) {
+  if (!iso) return 'Last online unknown';
+  const seenAt = new Date(iso).getTime();
+  if (Number.isNaN(seenAt)) return 'Last online unknown';
+
+  const diffMs = Date.now() - seenAt;
+  if (diffMs < ONLINE_NOW_MS) return 'Online now';
+
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const seconds = Math.round(diffMs / 1000);
+  if (seconds < 60) return 'Last online just now';
+
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `Last online ${rtf.format(-minutes, 'minute')}`;
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `Last online ${rtf.format(-hours, 'hour')}`;
+
+  const days = Math.round(hours / 24);
+  if (days < 30) return `Last online ${rtf.format(-days, 'day')}`;
+
+  const months = Math.round(days / 30);
+  if (months < 12) return `Last online ${rtf.format(-months, 'month')}`;
+
+  const years = Math.round(months / 12);
+  return `Last online ${rtf.format(-years, 'year')}`;
+}
+
+function isOnlineNow(iso) {
+  if (!iso) return false;
+  const seenAt = new Date(iso).getTime();
+  return Number.isFinite(seenAt) && Date.now() - seenAt < ONLINE_NOW_MS;
 }
 
 function formatScore(score) {
@@ -133,6 +169,7 @@ export default function UserProfileCard({ userId, onClose }) {
   const untilRanked = profile ? challengesUntilRanked(profile.totalChallengesCompleted) : MIN_RANKED_CHALLENGES;
   const solved = profile?.totalChallengesCompleted ?? 0;
   const rankProgress = Math.min(100, (solved / MIN_RANKED_CHALLENGES) * 100);
+  const onlineNow = profile ? isOnlineNow(profile.lastSeenAt) : false;
 
   return (
     <div className="upc-overlay" ref={overlayRef} onClick={handleOverlayClick}>
@@ -175,6 +212,10 @@ export default function UserProfileCard({ userId, onClose }) {
                       <span className="upc-name-user">{profile.username}</span>
                       <span className="upc-name-level">· Lvl {profile.level ?? 1}</span>
                     </h2>
+                    <p className={`upc-last-online${onlineNow ? ' upc-last-online--now' : ''}`}>
+                      {onlineNow && <span className="upc-last-online-dot" aria-hidden />}
+                      {formatLastOnline(profile.lastSeenAt)}
+                    </p>
                     <div className="upc-badges">
                       <span className="upc-badge upc-badge--role">{profile.role}</span>
                       {profile.betaLegacy && (

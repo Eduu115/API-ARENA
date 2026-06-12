@@ -91,6 +91,10 @@ public class User {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    /** Last authenticated activity (login + throttled browsing heartbeat). Shown on public profiles. */
+    @Column(name = "last_seen_at")
+    private LocalDateTime lastSeenAt;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

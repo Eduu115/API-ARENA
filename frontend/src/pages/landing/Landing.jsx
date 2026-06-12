@@ -38,7 +38,7 @@ function useLandingCursor() {
     document.addEventListener('mousemove', onMouseMove);
 
     const hoverEls = document.querySelectorAll(
-      'button, a, .bento-cell, .lb-row, .metric-bar-item',
+      'button, a, .bento-cell, .lb-row, .metric-bar-item, .alpha-badge',
     );
     const onEnter = () => {
       cursor.style.transform = 'translate(-50%, -50%) scale(2)';

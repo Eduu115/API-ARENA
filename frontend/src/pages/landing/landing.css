@@ -10,6 +10,7 @@
   --bg3: #1A2040;
   --text: #E8EAF6;
   --muted: #5A6080;
+  --landing-nav-h: 78px;
 }
 
 html { scroll-behavior: smooth; }
@@ -150,9 +151,15 @@ nav {
 .nav-cta:hover::before { left: 0; }
 
 .hero {
-  min-height: 100vh;
+  min-height: 100svh;
+  height: 100svh;
+  max-height: 100svh;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+  grid-template-areas: "copy terminal";
+  align-items: center;
   position: relative;
   overflow: hidden;
 }
@@ -192,21 +199,228 @@ nav {
 }
 
 .hero-content {
-  padding: 160px 60px 80px;
+  grid-area: copy;
+  padding: calc(var(--landing-nav-h) + 12px) 48px 32px 60px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  align-self: center;
   position: relative;
   z-index: 2;
+  min-height: 0;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px 8px;
+  margin-bottom: 22px;
+}
+
+.hero-title-row .hero-title {
+  margin-bottom: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.hero-alpha-badge {
+  flex-shrink: 0;
+  align-self: center;
+  margin-left: 4px;
+}
+
+.hero-alpha-badge .alpha-badge__stack {
+  transform: rotate(-4deg) scale(0.78);
+  transform-origin: center center;
+}
+
+/* ── Alpha badge: retro cartoon stamp × arena neon ── */
+.alpha-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.alpha-badge__stack {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: 10px 14px;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.45));
+}
+
+.alpha-badge__burst {
+  position: absolute;
+  width: 148%;
+  height: 148%;
+  left: -24%;
+  top: -24%;
+  background: conic-gradient(
+    from 12deg,
+    var(--warning) 0deg,
+    #ff8c42 45deg,
+    var(--warning) 90deg,
+    #ffd166 140deg,
+    var(--warning) 200deg,
+    #ff8c42 260deg,
+    var(--warning) 360deg
+  );
+  clip-path: polygon(
+    50% 0%,
+    63% 28%,
+    98% 35%,
+    72% 58%,
+    82% 94%,
+    50% 74%,
+    18% 94%,
+    28% 58%,
+    2% 35%,
+    37% 28%
+  );
+  opacity: 0.92;
+  filter: drop-shadow(0 0 16px rgba(255, 184, 0, 0.5));
+  animation: alphaBurstPulse 3.2s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes alphaBurstPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.alpha-badge__ring {
+  position: absolute;
+  inset: 2px 6px;
+  border: 3px solid var(--cyan);
+  border-radius: 52% / 44%;
+  box-shadow:
+    5px 5px 0 var(--purple),
+    0 0 28px rgba(0, 217, 255, 0.35),
+    inset 0 0 22px rgba(0, 217, 255, 0.07);
+  background: rgba(8, 11, 30, 0.94);
+  z-index: 1;
+}
+
+.alpha-badge__core {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 26px 10px;
+  text-align: center;
+}
+
+.alpha-badge__title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 4.2vw, 2.65rem);
+  line-height: 0.82;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow:
+    3px 3px 0 var(--purple),
+    4px 4px 0 rgba(0, 0, 0, 0.55),
+    0 0 30px rgba(0, 217, 255, 0.75),
+    0 0 10px rgba(0, 255, 163, 0.45);
+  -webkit-text-stroke: 1px rgba(0, 217, 255, 0.4);
+}
+
+.alpha-badge__ribbon {
+  margin-top: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--bg0);
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+  padding: 4px 12px;
+  transform: rotate(-2deg);
+  box-shadow: 2px 2px 0 var(--purple);
+  clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%);
+  white-space: nowrap;
+}
+
+.alpha-badge__spark {
+  position: absolute;
+  font-family: 'Share Tech Mono', monospace;
+  line-height: 1;
+  z-index: 3;
+  animation: alphaSparkBlink 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.alpha-badge__spark--a {
+  top: -4px;
+  right: -2px;
+  font-size: 15px;
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan);
+}
+
+.alpha-badge__spark--b {
+  bottom: 0;
+  left: -8px;
+  font-size: 12px;
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+  animation-delay: 0.75s;
+}
+
+.alpha-badge__spark--c {
+  top: 42%;
+  right: -14px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--warning);
+  text-shadow: 0 0 8px var(--warning);
+  animation-delay: 1.3s;
+}
+
+@keyframes alphaSparkBlink {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(12deg);
+  }
+}
+
+.alpha-badge--compact .alpha-badge__stack {
+  transform: rotate(-3deg) scale(0.52);
+  transform-origin: left center;
+  padding: 6px 8px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
+}
+
+.alpha-badge--compact .alpha-badge__core {
+  padding: 8px 18px 6px;
+}
+
+.alpha-badge--compact .alpha-badge__title {
+  font-size: 1.85rem;
 }
 
 .hero-eyebrow {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 13px;
-  letter-spacing: 5px;
+  font-size: 12px;
+  letter-spacing: 4px;
   color: var(--green);
   text-transform: uppercase;
-  margin-bottom: 28px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -221,11 +435,11 @@ nav {
 
 .hero-title {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: clamp(72px, 9vw, 120px);
+  font-size: clamp(56px, 7.2vw, 96px);
   font-weight: 900;
-  line-height: 0.9;
+  line-height: 0.88;
   text-transform: uppercase;
-  margin-bottom: 32px;
+  margin-bottom: 0;
   letter-spacing: -2px;
 }
 .hero-title .line-1 { display: block; color: white; }
@@ -244,11 +458,11 @@ nav {
 
 .hero-sub {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 15px;
-  line-height: 1.8;
+  font-size: 14px;
+  line-height: 1.65;
   color: var(--muted);
   max-width: 420px;
-  margin-bottom: 48px;
+  margin-bottom: 28px;
   letter-spacing: 0.5px;
 }
 .hero-sub strong { color: var(--cyan); font-weight: 400; }
@@ -261,10 +475,10 @@ nav {
 
 .btn-primary {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  padding: 16px 40px;
+  padding: 14px 32px;
   background: linear-gradient(135deg, var(--cyan), var(--green));
   color: var(--bg0);
   border: none;
@@ -283,10 +497,10 @@ nav {
 
 .btn-secondary {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  padding: 16px 32px;
+  padding: 14px 28px;
   background: transparent;
   color: var(--muted);
   border: none;
@@ -303,14 +517,14 @@ nav {
 
 .hero-stats {
   display: flex;
-  gap: 48px;
-  margin-top: 64px;
-  padding-top: 32px;
+  gap: 40px;
+  margin-top: 40px;
+  padding-top: 24px;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 .stat-num {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 36px;
+  font-size: 30px;
   font-weight: 900;
   color: var(--cyan);
   display: block;
@@ -325,11 +539,16 @@ nav {
 }
 
 .hero-visual {
+  grid-area: terminal;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: calc(var(--landing-nav-h) + 12px) 40px 32px 0;
+  min-height: 0;
+  z-index: 2;
+  align-self: center;
 }
 .hero-visual::before {
   content: '';
@@ -343,7 +562,8 @@ nav {
 }
 
 .terminal-window {
-  width: 520px;
+  width: min(480px, 92%);
+  align-self: center;
   background: var(--bg2);
   border: 1px solid rgba(0,217,255,0.15);
   position: relative;
@@ -389,10 +609,10 @@ nav {
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
 .terminal-body {
-  padding: 24px;
+  padding: 20px;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 14px;
-  line-height: 2;
+  font-size: 13px;
+  line-height: 1.85;
 }
 .t-line { display: flex; gap: 10px; align-items: baseline; }
 .t-prompt { color: var(--purple); }
@@ -1000,6 +1220,55 @@ footer {
 }
 .footer-right a:hover,
 .footer-right button:hover { color: var(--cyan); }
+
+@media (max-height: 820px) {
+  .hero-content {
+    padding-top: calc(var(--landing-nav-h) + 8px);
+    padding-bottom: 20px;
+  }
+
+  .hero-title {
+    font-size: clamp(48px, 6.5vw, 72px);
+  }
+
+  .hero-alpha-badge .alpha-badge__stack {
+    transform: rotate(-4deg) scale(0.68);
+  }
+
+  .hero-sub {
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+
+  .hero-stats {
+    margin-top: 28px;
+    padding-top: 18px;
+    gap: 28px;
+  }
+
+  .stat-num {
+    font-size: 26px;
+  }
+
+  .hero-visual {
+    padding-top: calc(var(--landing-nav-h) + 8px);
+    padding-bottom: 20px;
+  }
+
+  .terminal-body {
+    padding: 16px;
+    font-size: 12px;
+    line-height: 1.75;
+  }
+}
+
+@media (max-width: 1100px) {
+  .hero-title-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px 12px;
+  }
+}
 
 /* Responsive tweaks for leaderboard strip on small screens */
 @media (max-width: 600px) {

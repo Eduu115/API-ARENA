@@ -28,7 +28,7 @@ export default function CtaSection() {
           <button className="cta-btn">Join Arena</button>
         </div>
 
-        <p className="cta-fine">312 developers already in the arena · Free during beta</p>
+        <p className="cta-fine">312 developers already in the arena · Free during alpha</p>
       </div>
     </section>
   );

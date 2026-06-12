@@ -30,6 +30,7 @@ public class PublicProfileDTO {
     private Boolean betaLegacy;
     private Integer weeklyStreakCurrent;
     private Integer weeklyStreakLongest;
+    private LocalDateTime lastSeenAt;
 
     public static PublicProfileDTO fromEntity(User user) {
         return fromEntity(user, null);
@@ -52,6 +53,7 @@ public class PublicProfileDTO {
                 .betaLegacy(Boolean.TRUE.equals(user.getBetaLegacy()))
                 .weeklyStreakCurrent(streakState != null ? streakState.getCurrentStreakWeeks() : 0)
                 .weeklyStreakLongest(streakState != null ? streakState.getLongestStreakWeeks() : 0)
+                .lastSeenAt(user.getLastSeenAt() != null ? user.getLastSeenAt() : user.getLastLogin())
                 .build();
     }
 }
