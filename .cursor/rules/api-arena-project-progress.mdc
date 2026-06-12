@@ -53,7 +53,8 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/submissions/:id` | SubmissionDetail | ✅ |
 | `/submissions/:id/results` | SubmissionResults | ✅ |
 | `/leaderboard` | Leaderboard | ✅ |
-| `/perfil` | Profile | ✅ KPI estilo dashboard + lista de logros (tiers), edición de bio/GitHub; **Privacy & data**: exportar datos (descarga JSON) y eliminar cuenta (modal de confirmación); **racha semanal** en sidebar |
+| `/perfil` | Profile | ✅ Hero identidad (avatar/bio primero), KPIs, **achievements preview** (4 recientes + View all), racha minimal, bio/GitHub, **Privacy & data** |
+| `/perfil/achievements` | ProfileAchievements | ✅ Catálogo completo con filtros All / Unlocked / Locked |
 | `/friends` | Friends | ✅ |
 | `/notifications` | Notifications | ✅ Campana en topbar + WebSocket + lista |
 | `/docs` + `/docs/:docId` | DocsHub | ✅ Mini-routing, feedback; orden de guías: **Getting Started** → **First Steps** → **Preconfigure Project** → resto; CTA “Continue learning” al pie; `/docs` redirige al primer documento; tours `DOCS_PATHS` apuntan a Getting Started |
@@ -90,6 +91,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Challenge submit: sesión localStorage con deadline en tiempo real; banner global; UI de límites destacada; fix doble file picker.  
 - Email verification: Resend (opcional vía `RESEND_API_KEY`), tokens en `users`, frontend `/verify-email`, login bloqueado hasta verificar.  
 - Achievements v1: auth-service (definiciones + concesión por stats/cohort), perfil con lista y tiers.  
+- Achievements v2: catálogo ampliado (~24 defs: clears, XP/ELO, perfil, tiempo coding/browsing, streaks); preview en `/perfil` + página `/perfil/achievements` con filtros.
 - Hardening P1: runner DinD con fallback por flag, replay estructurado persistido y stack metrics/prometheus/grafana.
 - Automatización alta prioridad: `scripts/e2e-smoke.sh`, `scripts/load-submissions.sh`, workflow CI `.github/workflows/e2e-smoke.yml`.
 - AI review v2 ready: rúbrica final **800 técnico + 200 IA** en `submission-service`, proveedor configurable en `ai-review-service` y wiring de variables para API key en `.env` / Compose.
@@ -121,7 +123,7 @@ Estimaciones **muy orientativas** (1 dev familiarizado con el repo; dependen de 
 | **MongoDB** logs / replay storage | ✅ Archivo `replay_archives` + retención alineada; ampliar índices/TTL según carga | **0.5–1 semana** |
 | **ai-review-service** (LLM) | ✅ Base v2 lista (falta calibración fina de prompts/rúbrica por challenge y control de costes) | **2–6 días** |
 | **multiplayer-service** | BONUS, WebSocket + salas | **3–6 semanas** |
-| **Achievements (ampliar)** | Más reglas, iconos asset, notificación al desbloquear | **0.5–2 semanas** |
+| **Achievements (ampliar)** | ✅ v2 catálogo + preview perfil; faltan notificación al desbloquear, iconos asset | **2–4 días** |
 
 **Núcleo “MVP producto estable”** (Kafka ya hecho, límites hechos, listado de submissions con título de challenge, verificación de email con Resend, métricas mínimas): del orden de **~3–6 semanas** de trabajo enfocado.  
 **Con BONUS** (AI review + multiplayer + replay fuerte): **varios meses** adicionales en paralelo o secuencial.

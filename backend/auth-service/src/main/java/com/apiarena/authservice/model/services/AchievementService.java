@@ -86,11 +86,29 @@ public class AchievementService {
     private void syncAchievements(User u) {
         tryGrant(u, "JOINED_ARENA", () -> true);
         tryGrant(u, "FIRST_CLEAR", () -> n(u.getTotalChallengesCompleted()) > 0);
+        tryGrant(u, "THREE_CLEARS", () -> n(u.getTotalChallengesCompleted()) >= 3);
+        tryGrant(u, "FIVE_CLEARS", () -> n(u.getTotalChallengesCompleted()) >= 5);
+        tryGrant(u, "TEN_CLEARS", () -> n(u.getTotalChallengesCompleted()) >= 10);
         tryGrant(u, "INBOX_VERIFIED", () -> Boolean.TRUE.equals(u.getEmailVerified()));
         tryGrant(u, "BETA_PIONEER", () -> Boolean.TRUE.equals(u.getBetaLegacy()));
         tryGrant(u, "ALPHA_WAVE", () -> u.getCreatedAt() != null && u.getCreatedAt().isBefore(ALPHA_SEASON_END));
         tryGrant(u, "TEN_TESTS", () -> n(u.getTotalTestsPassed()) >= 10);
+        tryGrant(u, "FIFTY_TESTS", () -> n(u.getTotalTestsPassed()) >= 50);
+        tryGrant(u, "HUNDRED_TESTS", () -> n(u.getTotalTestsPassed()) >= 100);
         tryGrant(u, "LEVEL_FIVE", () -> n(u.getLevel()) >= 5);
+        tryGrant(u, "LEVEL_TEN", () -> n(u.getLevel()) >= 10);
+        tryGrant(u, "LEVEL_TWENTY", () -> n(u.getLevel()) >= 20);
+        tryGrant(u, "XP_1K", () -> n(u.getExperiencePoints()) >= 1_000);
+        tryGrant(u, "XP_5K", () -> n(u.getExperiencePoints()) >= 5_000);
+        tryGrant(u, "ELO_1200", () -> n(u.getRating()) >= 1_200);
+        tryGrant(u, "ELO_1500", () -> n(u.getRating()) >= 1_500);
+        tryGrant(u, "GITHUB_LINKED", () -> hasText(u.getGithubUsername()));
+        tryGrant(u, "OPERATOR_BIO", () -> hasText(u.getBio()));
+        tryGrant(u, "AVATAR_SET", () -> hasText(u.getAvatarUrl()));
+        tryGrant(u, "FOCUS_HOUR", () -> l(u.getTotalDevelopmentSeconds()) >= 3_600L);
+        tryGrant(u, "CODE_MARATHON", () -> l(u.getTotalDevelopmentSeconds()) >= 36_000L);
+        tryGrant(u, "ARENA_REGULAR", () -> l(u.getTotalBrowsingSeconds()) >= 3_600L);
+        tryGrant(u, "DEEP_ARENA", () -> l(u.getTotalBrowsingSeconds()) >= 36_000L);
     }
 
     @Transactional
@@ -105,6 +123,14 @@ public class AchievementService {
 
     private static int n(Integer v) {
         return v != null ? v : 0;
+    }
+
+    private static long l(Long v) {
+        return v != null ? v : 0L;
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private void tryGrant(User user, String code, Supplier<Boolean> condition) {

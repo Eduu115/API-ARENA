@@ -7,6 +7,12 @@ import {
   challengesUntilRanked,
   MIN_RANKED_CHALLENGES,
 } from '../lib/rankConstants';
+import {
+  TIER_LABEL,
+  TIER_STYLE,
+  achievementIcon,
+  achievementTierVars,
+} from '../lib/achievementDisplay';
 import '../pages/challenges/challenges.css';
 import './UserProfileCard.css';
 
@@ -18,29 +24,7 @@ const AVATAR_GRADIENTS = [
   'linear-gradient(135deg, var(--cyan), var(--green))',
 ];
 
-const TIER_LABEL = { COMMON: 'Common', RARE: 'Rare', EPIC: 'Epic', LEGEND: 'Legend' };
-const TIER_STYLE = {
-  COMMON: { color: 'var(--muted)', accent: 'rgba(255,255,255,0.14)' },
-  RARE: { color: 'var(--cyan)', accent: 'rgba(0,255,255,0.45)' },
-  EPIC: { color: 'var(--purple)', accent: 'rgba(168,85,247,0.5)' },
-  LEGEND: { color: 'var(--warn)', accent: 'rgba(255,200,0,0.55)' },
-};
-const ACH_ICON = {
-  gate: '⬡',
-  target: '◎',
-  mail: '✉',
-  flame: '⌁',
-  star: '★',
-  bolt: '⚡',
-  crown: '♔',
-};
-
 const bundleCache = new Map();
-
-function achievementIcon(iconKey) {
-  if (iconKey && ACH_ICON[iconKey]) return ACH_ICON[iconKey];
-  return '◆';
-}
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -127,6 +111,14 @@ export default function UserProfileCard({ userId, onClose }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   const unlockedAchievements = useMemo(
     () => achievements.filter((a) => a.unlocked),
     [achievements]
@@ -179,7 +171,10 @@ export default function UserProfileCard({ userId, onClose }) {
                   </div>
                   <div className="upc-identity-text">
                     <div className="ch-page-eyebrow">// Public profile</div>
-                    <h2 className="upc-name">{profile.username}</h2>
+                    <h2 className="upc-name">
+                      <span className="upc-name-user">{profile.username}</span>
+                      <span className="upc-name-level">· Lvl {profile.level ?? 1}</span>
+                    </h2>
                     <div className="upc-badges">
                       <span className="upc-badge upc-badge--role">{profile.role}</span>
                       {profile.betaLegacy && (
@@ -218,10 +213,6 @@ export default function UserProfileCard({ userId, onClose }) {
             </header>
 
             <div className="upc-kpi-strip">
-              <div className="upc-kpi" style={{ '--kpi-color': 'var(--cyan)' }}>
-                <span className="upc-kpi-val">{profile.level ?? 1}</span>
-                <span className="upc-kpi-lbl">Level</span>
-              </div>
               <div className="upc-kpi" style={{ '--kpi-color': 'var(--purple)' }}>
                 <span className="upc-kpi-val">{profile.experiencePoints?.toLocaleString() ?? 0}</span>
                 <span className="upc-kpi-lbl">XP</span>
@@ -282,12 +273,19 @@ export default function UserProfileCard({ userId, onClose }) {
                       return (
                         <div
                           key={a.code}
-                          className={`upc-ach${locked ? ' upc-ach--locked' : ''}`}
-                          style={{ '--ach-accent': ts.accent }}
+                          className={[
+                            'upc-ach',
+                            locked ? 'upc-ach--locked' : 'upc-ach--unlocked',
+                          ].join(' ')}
+                          style={achievementTierVars(tier)}
                           title={locked ? a.description : undefined}
                         >
-                          <span className="upc-ach-glyph" style={{ color: ts.color }} aria-hidden>
-                            {locked ? '·' : achievementIcon(a.iconKey)}
+                          <span
+                            className={`upc-ach-glyph${locked ? ' upc-ach-glyph--locked' : ''}`}
+                            style={locked ? undefined : { color: ts.color }}
+                            aria-hidden
+                          >
+                            {locked ? '◌' : achievementIcon(a.iconKey)}
                           </span>
                           <div className="upc-ach-body">
                             <span className="upc-ach-tier" style={{ color: ts.color }}>

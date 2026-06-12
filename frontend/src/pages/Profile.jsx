@@ -7,40 +7,20 @@ import Topbar from '../components/Topbar';
 import BottomNav from '../components/BottomNav';
 import CustomCursor from '../components/CustomCursor';
 import WeeklyStreakPanel from '../components/WeeklyStreakPanel';
+import AchievementList from '../components/AchievementList';
+import { recentUnlockedAchievements } from '../lib/achievementDisplay';
 import './challenges/challenges.css';
 import './dashboard/dashboard.css';
 import './Profile.css';
 
 
-const TIER_LABEL = { COMMON: 'Common', RARE: 'Rare', EPIC: 'Epic', LEGEND: 'Legend' };
-
-const TIER_STYLE = {
-  COMMON: { color: 'var(--muted)', accent: 'rgba(255,255,255,0.14)' },
-  RARE: { color: 'var(--cyan)', accent: 'rgba(0,255,255,0.45)' },
-  EPIC: { color: 'var(--purple)', accent: 'rgba(168,85,247,0.5)' },
-  LEGEND: { color: 'var(--warn)', accent: 'rgba(255,200,0,0.55)' },
-};
-
-const ACH_ICON = {
-  gate: '⬡',
-  target: '◎',
-  mail: '✉',
-  flame: '⌁',
-  star: '★',
-  bolt: '⚡',
-  crown: '♔',
-};
+const PROFILE_ACH_PREVIEW = 4;
 
 function formatTimeStat(seconds) {
   const s = Number(seconds) || 0;
   if (s < 3600) return `${Math.max(0, Math.round(s / 60))} min`;
   const h = s / 3600;
   return `${h.toFixed(1)} h`;
-}
-
-function achievementIcon(iconKey) {
-  if (iconKey && ACH_ICON[iconKey]) return ACH_ICON[iconKey];
-  return '◆';
 }
 
 export default function Profile() {
@@ -134,20 +114,6 @@ export default function Profile() {
         barWidth: `${Math.min((browseSeconds / 36000) * 100, 100)}%`,
       },
       {
-        icon: '★',
-        label: 'Rating (ELO)',
-        value: elo.toLocaleString(),
-        color: 'var(--warn)',
-        barWidth: `${Math.min((elo / 3000) * 100, 100)}%`,
-      },
-      {
-        icon: '◇',
-        label: 'Level',
-        value: String(level),
-        color: 'var(--cyan)',
-        barWidth: `${Math.min((level / 50) * 100, 100)}%`,
-      },
-      {
         icon: '⊕',
         label: 'Experience',
         value: xp.toLocaleString(),
@@ -170,10 +136,15 @@ export default function Profile() {
       },
     ];
     },
-    [user, elo, level, xp, solved, testsPassed]
+    [user, xp, solved, testsPassed]
   );
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
+  const previewAchievements = useMemo(
+    () => recentUnlockedAchievements(achievements, PROFILE_ACH_PREVIEW),
+    [achievements]
+  );
+  const showViewAllAchievements = !achievementsLoading && achievements.length > 0;
 
   if (isLoading) {
     return (
@@ -288,7 +259,13 @@ export default function Profile() {
 
         <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`}>
           <div className="db-profile-wrap">
-            <div className="db-avatar">{initials}</div>
+            <div className="db-avatar profile-sidebar-avatar">
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="" className="profile-sidebar-avatar-img" />
+              ) : (
+                initials
+              )}
+            </div>
             <div className="db-profile-name">{user.username}</div>
             <div className="db-profile-sub">{userRoleLabel(user)}</div>
             <div className="db-elo-badge">
@@ -300,10 +277,6 @@ export default function Profile() {
           <div className="ch-sidebar-section" style={{ paddingBottom: 0 }}>
             <div className="ch-sidebar-label">Combat stats</div>
             <div className="db-quick-stats">
-              <div className="db-qs-cell">
-                <div className="db-qs-val" style={{ color: 'var(--cyan)' }}>{level}</div>
-                <div className="db-qs-label">Level</div>
-              </div>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: 'var(--green)' }}>{solved}</div>
                 <div className="db-qs-label">Solved</div>
@@ -320,11 +293,6 @@ export default function Profile() {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Weekly streak</div>
-            <WeeklyStreakPanel streak={weeklyStreak} compact />
-          </div>
-
-          <div className="ch-sidebar-section">
             <div className="ch-sidebar-label">Achievements</div>
             <div className="profile-sidebar-ach">
               {achievementsLoading
@@ -336,24 +304,10 @@ export default function Profile() {
 
         <main className="ch-main profile-main">
           <div className="profile-main-inner">
-            <div className="ch-page-header profile-page-head">
-              <div>
-                <Link to="/dashboard" className="profile-back-link">
-                  ← Dashboard
-                </Link>
-                <div className="db-page-eyebrow">// Operator file</div>
-                <h1 className="db-page-title">
-                  <em>{user.username}</em>
-                </h1>
-                <div className="db-page-sub">
-                  {user.email}
-                  {' · '}
-                  {user.role}
-                  {user.emailVerified && (
-                    <span className="profile-inline-verified"> · Verified</span>
-                  )}
-                </div>
-              </div>
+            <div className="profile-top-bar">
+              <Link to="/dashboard" className="profile-back-link">
+                ← Dashboard
+              </Link>
               <div className="profile-head-actions">
                 <button type="button" className="profile-btn-ghost" onClick={handleSwitchAccount}>
                   Switch account
@@ -368,8 +322,109 @@ export default function Profile() {
               </div>
             </div>
 
+            <section className="profile-identity-hero" aria-labelledby="profile-identity-heading">
+              <div className="profile-identity-visual">
+                <div className="profile-hero-avatar" aria-hidden>
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="profile-hero-avatar-img" />
+                  ) : (
+                    <span className="profile-hero-avatar-initials">{initials}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="profile-identity-body">
+                <div className="profile-identity-eyebrow">// Operator file</div>
+                <h1 id="profile-identity-heading" className="profile-identity-name">
+                  <span className="profile-identity-name-user">{user.username}</span>
+                  <span className="profile-identity-name-level">· Lvl {level}</span>
+                </h1>
+                <div className="profile-identity-meta">
+                  <span>{user.email}</span>
+                  <span className="profile-identity-sep" aria-hidden>·</span>
+                  <span>{user.role}</span>
+                  {user.emailVerified && (
+                    <>
+                      <span className="profile-identity-sep" aria-hidden>·</span>
+                      <span className="profile-inline-verified">Verified</span>
+                    </>
+                  )}
+                </div>
+
+                {!editing ? (
+                  <div className="profile-identity-content">
+                    <div className="profile-hero-bio-wrap">
+                      {user.bio ? (
+                        <p className="profile-hero-bio">{user.bio}</p>
+                      ) : (
+                        <p className="profile-hero-bio profile-hero-bio--empty">
+                          No bio yet — tell the arena who you are.
+                        </p>
+                      )}
+                    </div>
+                    {user.githubUsername && (
+                      <p className="profile-hero-github">
+                        <a
+                          href={`https://github.com/${user.githubUsername}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          github.com/{user.githubUsername}
+                        </a>
+                      </p>
+                    )}
+                    <button type="button" className="profile-btn-edit profile-btn-edit--hero" onClick={handleEdit}>
+                      Edit profile
+                    </button>
+                  </div>
+                ) : (
+                  <form className="profile-form profile-form--hero" onSubmit={handleSave}>
+                    {error && <div className="profile-error">{error}</div>}
+                    <div className="profile-form-group">
+                      <label htmlFor="avatarUrl">Avatar URL</label>
+                      <input
+                        id="avatarUrl"
+                        type="url"
+                        value={form.avatarUrl}
+                        onChange={(e) => setForm((f) => ({ ...f, avatarUrl: e.target.value }))}
+                        placeholder="https://…"
+                      />
+                    </div>
+                    <div className="profile-form-group">
+                      <label htmlFor="bio">Bio</label>
+                      <textarea
+                        id="bio"
+                        rows={4}
+                        value={form.bio}
+                        onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                        placeholder="Short intro…"
+                      />
+                    </div>
+                    <div className="profile-form-group">
+                      <label htmlFor="githubUsername">GitHub username</label>
+                      <input
+                        id="githubUsername"
+                        type="text"
+                        value={form.githubUsername}
+                        onChange={(e) => setForm((f) => ({ ...f, githubUsername: e.target.value }))}
+                      />
+                    </div>
+                    <div className="profile-form-actions">
+                      <button type="submit" className="profile-btn-save" disabled={saving}>
+                        {saving ? 'Saving…' : 'Save'}
+                      </button>
+                      <button type="button" className="profile-btn-cancel" onClick={handleCancel}>
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </section>
+
             <section className="profile-strip" aria-label="Performance">
-              <div className="db-kpi-grid profile-kpi-grid">
+              <div className="db-section-eyebrow">Combat overview</div>
+              <div className="db-kpi-grid profile-kpi-grid db-kpi-grid--secondary">
                 {kpiCards.map((card) => (
                   <div
                     key={card.label}
@@ -387,7 +442,7 @@ export default function Profile() {
               </div>
             </section>
 
-            <section className="profile-block" aria-labelledby="ach-heading">
+            <section className="profile-block profile-block--ach-preview" aria-labelledby="ach-heading">
               <div className="profile-block-head">
                 <h2 id="ach-heading" className="profile-block-title">
                   Achievements
@@ -399,117 +454,36 @@ export default function Profile() {
                 </span>
               </div>
               <p className="profile-block-lead">
-                Milestones sync from your account stats and cohort flags.
+                Latest milestones — synced from your stats and streaks.
               </p>
-              <div className="profile-ach-grid">
-                {achievements.map((a) => {
-                  const tier = a.tier || 'COMMON';
-                  const ts = TIER_STYLE[tier] || TIER_STYLE.COMMON;
-                  const locked = !a.unlocked;
-                  return (
-                    <div
-                      key={a.code}
-                      className={`profile-ach${locked ? ' profile-ach--locked' : ''}`}
-                      style={{ borderLeftColor: ts.accent }}
-                    >
-                      <div className="profile-ach-glyph" aria-hidden style={{ color: ts.color }}>
-                        {locked ? '·' : achievementIcon(a.iconKey)}
-                      </div>
-                      <div className="profile-ach-main">
-                        <div className="profile-ach-top">
-                          <span className="profile-ach-tier" style={{ color: ts.color }}>
-                            {TIER_LABEL[tier] || tier}
-                          </span>
-                          {a.unlocked && a.unlockedAt && (
-                            <time className="profile-ach-when" dateTime={a.unlockedAt}>
-                              {new Date(a.unlockedAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric',
-                              })}
-                            </time>
-                          )}
-                        </div>
-                        <div className="profile-ach-name">{a.title}</div>
-                        <p className="profile-ach-desc">{a.description}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              {achievementsLoading ? (
+                <div className="profile-loading profile-loading--inline">Loading achievements…</div>
+              ) : previewAchievements.length > 0 ? (
+                <AchievementList achievements={previewAchievements} />
+              ) : (
+                <p className="profile-ach-empty">
+                  No achievements unlocked yet. Complete a challenge or verify your email to start.
+                </p>
+              )}
+              {showViewAllAchievements && !achievementsLoading && (
+                <div className="profile-ach-view-all-wrap">
+                  <Link to="/perfil/achievements" className="profile-ach-view-all">
+                    View all achievements →
+                  </Link>
+                </div>
+              )}
             </section>
 
-            <section className="profile-block" aria-labelledby="info-heading">
+            <section className="profile-block profile-block--streak" aria-labelledby="streak-heading">
               <div className="profile-block-head">
-                <h2 id="info-heading" className="profile-block-title">
-                  Profile
+                <h2 id="streak-heading" className="profile-block-title">
+                  Weekly streak
                 </h2>
+                <Link to="/dashboard" className="profile-streak-link">
+                  Full view →
+                </Link>
               </div>
-
-              {!editing ? (
-                <div className="profile-info-display">
-                  {user.bio && <p className="profile-bio">{user.bio}</p>}
-                  {user.githubUsername && (
-                    <p className="profile-github">
-                      GitHub:{' '}
-                      <a
-                        href={`https://github.com/${user.githubUsername}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        @{user.githubUsername}
-                      </a>
-                    </p>
-                  )}
-                  {!user.bio && !user.githubUsername && (
-                    <p className="profile-empty">No bio or links yet.</p>
-                  )}
-                  <button type="button" className="profile-btn-edit" onClick={handleEdit}>
-                    Edit profile
-                  </button>
-                </div>
-              ) : (
-                <form className="profile-form" onSubmit={handleSave}>
-                  {error && <div className="profile-error">{error}</div>}
-                  <div className="profile-form-group">
-                    <label htmlFor="avatarUrl">Avatar URL</label>
-                    <input
-                      id="avatarUrl"
-                      type="url"
-                      value={form.avatarUrl}
-                      onChange={(e) => setForm((f) => ({ ...f, avatarUrl: e.target.value }))}
-                      placeholder="https://…"
-                    />
-                  </div>
-                  <div className="profile-form-group">
-                    <label htmlFor="bio">Bio</label>
-                    <textarea
-                      id="bio"
-                      rows={3}
-                      value={form.bio}
-                      onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-                      placeholder="Short intro…"
-                    />
-                  </div>
-                  <div className="profile-form-group">
-                    <label htmlFor="githubUsername">GitHub username</label>
-                    <input
-                      id="githubUsername"
-                      type="text"
-                      value={form.githubUsername}
-                      onChange={(e) => setForm((f) => ({ ...f, githubUsername: e.target.value }))}
-                    />
-                  </div>
-                  <div className="profile-form-actions">
-                    <button type="submit" className="profile-btn-save" disabled={saving}>
-                      {saving ? 'Saving…' : 'Save'}
-                    </button>
-                    <button type="button" className="profile-btn-cancel" onClick={handleCancel}>
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
+              <WeeklyStreakPanel streak={weeklyStreak} variant="minimal" />
             </section>
 
             <section className="profile-block profile-block--meta" aria-labelledby="account-heading">
@@ -519,10 +493,6 @@ export default function Profile() {
                 </h2>
               </div>
               <dl className="profile-meta-dl">
-                <div className="profile-meta-row">
-                  <dt>User ID</dt>
-                  <dd>{user.id}</dd>
-                </div>
                 <div className="profile-meta-row">
                   <dt>Joined</dt>
                   <dd>{formatDate(user.createdAt)}</dd>

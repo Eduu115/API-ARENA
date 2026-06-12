@@ -10,6 +10,7 @@
   background: rgba(5, 6, 14, 0.82);
   backdrop-filter: blur(10px);
   animation: upc-fade-in 0.2s ease;
+  overscroll-behavior: contain;
 }
 
 @keyframes upc-fade-in {
@@ -171,6 +172,10 @@
 }
 
 .upc-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 12px;
   font-family: var(--font-display);
   font-weight: 900;
   font-size: clamp(2rem, 5vw, 2.75rem);
@@ -180,6 +185,22 @@
   margin: 4px 0 12px;
   letter-spacing: 0.02em;
   word-break: break-word;
+}
+
+.upc-name-user {
+  min-width: 0;
+}
+
+.upc-name-level {
+  font-family: var(--font-mono);
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-bottom: 0.12em;
 }
 
 .upc-badges {
@@ -413,22 +434,60 @@
   align-items: flex-start;
   padding: 12px 14px;
   border: 1px solid var(--dim);
-  border-left: 3px solid var(--ach-accent, var(--dim));
+  border-left-width: 4px;
   background: var(--bg2);
   min-height: 72px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.upc-ach--unlocked {
+  border-left-color: var(--ach-accent, var(--cyan));
+  border-color: color-mix(in srgb, var(--ach-accent, var(--cyan)) 28%, var(--dim));
+  background:
+    linear-gradient(105deg, var(--ach-bg, rgba(0, 229, 255, 0.05)) 0%, transparent 55%),
+    var(--bg2);
+  box-shadow: none;
 }
 
 .upc-ach--locked {
-  opacity: 0.45;
-  filter: grayscale(0.6);
+  border-left-color: var(--dim);
+  border-left-style: dashed;
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.16);
+  box-shadow: none;
 }
 
 .upc-ach-glyph {
-  font-size: 1.25rem;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  width: 24px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.15rem;
+  line-height: 1;
   text-align: center;
+  font-family: var(--font-mono);
+}
+
+.upc-ach--unlocked .upc-ach-glyph {
+  background: var(--ach-bg, rgba(0, 229, 255, 0.06));
+  border: 1px solid color-mix(in srgb, var(--ach-accent, var(--cyan)) 38%, transparent);
+  box-shadow: none;
+}
+
+.upc-ach--locked .upc-ach-glyph {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+}
+
+.upc-ach--locked .upc-ach-tier {
+  color: var(--muted);
+}
+
+.upc-ach--locked .upc-ach-name {
+  color: color-mix(in srgb, var(--text) 78%, var(--muted));
 }
 
 .upc-ach-body {

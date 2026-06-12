@@ -10,6 +10,7 @@ import MultiplayerHub from "../pages/MultiplayerHub";
 import MySubmissions from "../pages/submissions/MySubmissions";
 import NotFound from "../pages/NotFound";
 import Profile from "../pages/Profile";
+import ProfileAchievements from "../pages/ProfileAchievements";
 import Register from "../pages/auth/Register";
 import VerifyEmail from "../pages/auth/VerifyEmail";
 import ForgotPassword from "../pages/auth/ForgotPassword";
@@ -63,6 +64,7 @@ export default function RoutesConfig() {
         <Route element={<ProtectedLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="perfil" element={<Profile />} />
+          <Route path="perfil/achievements" element={<ProfileAchievements />} />
           <Route path="profile" element={<Navigate to="/perfil" replace />} />
           <Route path="submissions" element={<MySubmissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
