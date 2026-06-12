@@ -34,6 +34,9 @@ public class UserService implements IUserService {
     @Autowired
     private SubmissionPurgeDispatchService submissionPurgeDispatchService;
 
+    @Autowired
+    private WeeklyStreakService weeklyStreakService;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
@@ -56,7 +59,8 @@ public class UserService implements IUserService {
     public PublicProfileDTO getPublicProfile(Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
-        return PublicProfileDTO.fromEntity(user);
+        var streakState = weeklyStreakService.findState(id).orElse(null);
+        return PublicProfileDTO.fromEntity(user, streakState);
     }
 
     @Override
@@ -127,6 +131,9 @@ public class UserService implements IUserService {
         }
 
         userRepository.save(user);
+
+        int pipelineScore = request.getPipelineTotalScore() != null ? request.getPipelineTotalScore() : 0;
+        weeklyStreakService.recordActivity(userId, xp, request.getChallengeId(), pipelineScore);
     }
 
     private int calculateLevel(int totalXp) {

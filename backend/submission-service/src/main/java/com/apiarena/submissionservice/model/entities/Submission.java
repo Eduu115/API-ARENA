@@ -74,6 +74,10 @@ public class Submission {
     @Builder.Default
     private BigDecimal totalScore = BigDecimal.ZERO;
 
+    /** Pipeline score frozen at completion (before teacher penalties/bonuses). */
+    @Column(name = "pipeline_total_score", precision = 6, scale = 2)
+    private BigDecimal pipelineTotalScore;
+
     @Column(name = "correctness_score", precision = 6, scale = 2)
     @Builder.Default
     private BigDecimal correctnessScore = BigDecimal.ZERO;

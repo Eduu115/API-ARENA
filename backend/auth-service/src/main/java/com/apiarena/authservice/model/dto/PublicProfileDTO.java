@@ -3,6 +3,7 @@ package com.apiarena.authservice.model.dto;
 import java.time.LocalDateTime;
 
 import com.apiarena.authservice.model.entities.User;
+import com.apiarena.authservice.model.entities.UserStreakState;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +28,14 @@ public class PublicProfileDTO {
     private Integer totalTestsPassed;
     private LocalDateTime createdAt;
     private Boolean betaLegacy;
+    private Integer weeklyStreakCurrent;
+    private Integer weeklyStreakLongest;
 
     public static PublicProfileDTO fromEntity(User user) {
+        return fromEntity(user, null);
+    }
+
+    public static PublicProfileDTO fromEntity(User user, UserStreakState streakState) {
         return PublicProfileDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -43,6 +50,8 @@ public class PublicProfileDTO {
                 .totalTestsPassed(user.getTotalTestsPassed())
                 .createdAt(user.getCreatedAt())
                 .betaLegacy(Boolean.TRUE.equals(user.getBetaLegacy()))
+                .weeklyStreakCurrent(streakState != null ? streakState.getCurrentStreakWeeks() : 0)
+                .weeklyStreakLongest(streakState != null ? streakState.getLongestStreakWeeks() : 0)
                 .build();
     }
 }

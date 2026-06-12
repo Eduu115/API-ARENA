@@ -34,8 +34,10 @@ export default function TutorialTour({
   const { user, isAuthenticated, isLoading } = useAuth();
   const userId = user?.id ?? null;
   const authReady = !requireAuth || (!isLoading && isAuthenticated && user?.emailVerified !== false);
-  const canRun = when && authReady;
+  const userReady = !requireAuth || userId != null;
+  const canRun = when && authReady && userReady;
 
+  const [dismissed, setDismissed] = useState(() => isTutorialDone(tourKey, userId));
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [hole, setHole] = useState(null);
@@ -43,6 +45,13 @@ export default function TutorialTour({
 
   const step = steps[stepIndex];
   const last = stepIndex >= steps.length - 1;
+
+  useEffect(() => {
+    if (isTutorialDone(tourKey, userId)) {
+      setDismissed(true);
+      setOpen(false);
+    }
+  }, [tourKey, userId]);
 
   const updatePositions = useCallback(() => {
     if (!step?.target) {
@@ -83,11 +92,14 @@ export default function TutorialTour({
   }, [step]);
 
   useEffect(() => {
-    if (!canRun || steps.length === 0) return;
+    if (!canRun || steps.length === 0 || dismissed) return;
     if (isTutorialDone(tourKey, userId)) return;
-    const t = setTimeout(() => setOpen(true), 500);
+    const t = setTimeout(() => {
+      if (isTutorialDone(tourKey, userId)) return;
+      setOpen(true);
+    }, 500);
     return () => clearTimeout(t);
-  }, [canRun, tourKey, userId, steps.length]);
+  }, [canRun, tourKey, userId, steps.length, dismissed]);
 
   useEffect(() => {
     if (!canRun) setOpen(false);
@@ -105,21 +117,25 @@ export default function TutorialTour({
     };
   }, [open, stepIndex, updatePositions]);
 
-  function handleSkip() {
-    finishTutorial(tourKey, "skip", userId);
+  function closeTour(reason) {
+    finishTutorial(tourKey, reason, userId);
+    setDismissed(true);
     setOpen(false);
+  }
+
+  function handleSkip() {
+    closeTour("skip");
   }
 
   function handleNext() {
     if (last) {
-      finishTutorial(tourKey, "done", userId);
-      setOpen(false);
+      closeTour("done");
       return;
     }
     setStepIndex((i) => i + 1);
   }
 
-  if (!open || steps.length === 0) return null;
+  if (!open || steps.length === 0 || dismissed) return null;
 
   const cardInner = (
     <div className="tutorial-root" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
@@ -165,10 +181,7 @@ export default function TutorialTour({
             <Link
               to={docsHref}
               className="tutorial-btn tutorial-btn-docs"
-              onClick={() => {
-                finishTutorial(tourKey, "skip", userId);
-                setOpen(false);
-              }}
+              onClick={() => closeTour("skip")}
             >
               Open Docs
             </Link>

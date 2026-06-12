@@ -54,6 +54,15 @@ export async function getMySubmissions() {
   return request("/api/submissions/my");
 }
 
+/** Public: latest completed submissions for a user (no auth). */
+export async function getPublicUserSubmissions(userId, limit = 8) {
+  const base = getBaseUrl();
+  const params = new URLSearchParams({ limit: String(limit) });
+  const res = await fetch(`${base}/api/submissions/public/users/${userId}?${params}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 /** Teacher: list submissions from one student limited to teacher-owned challenges. */
 export async function getTeacherStudentSubmissions(studentId) {
   return request(`/api/submissions/teacher/students/${studentId}`);
