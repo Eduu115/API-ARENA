@@ -150,6 +150,10 @@
   padding-bottom: 0.1em;
 }
 
+.profile-identity-badges {
+  margin: 12px 0 14px;
+}
+
 .profile-identity-meta {
   display: flex;
   flex-wrap: wrap;

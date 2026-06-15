@@ -2,6 +2,8 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getUserPublicProfile, getUserPublicAchievements } from '../lib/authApi';
 import { getPublicUserSubmissions } from '../lib/submissionsApi';
+import { getGlobalUserRank } from '../lib/leaderboardApi';
+import ProfileBadges from './ProfileBadges';
 import {
   isUnranked,
   challengesUntilRanked,
@@ -81,6 +83,7 @@ export default function UserProfileCard({ userId, onClose }) {
   const [profile, setProfile] = useState(null);
   const [achievements, setAchievements] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [globalRank, setGlobalRank] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const overlayRef = useRef(null);
@@ -98,15 +101,17 @@ export default function UserProfileCard({ userId, onClose }) {
         setProfile(cached.profile);
         setAchievements(cached.achievements);
         setSubmissions(cached.submissions);
+        setGlobalRank(cached.globalRank ?? null);
         setLoading(false);
         return;
       }
 
       try {
-        const [profileRes, achRes, subRes] = await Promise.allSettled([
+        const [profileRes, achRes, subRes, rankRes] = await Promise.allSettled([
           getUserPublicProfile(userId),
           getUserPublicAchievements(userId),
           getPublicUserSubmissions(userId, 8),
+          getGlobalUserRank(userId),
         ]);
 
         if (cancelled) return;
@@ -121,11 +126,13 @@ export default function UserProfileCard({ userId, onClose }) {
           profile: profileRes.value,
           achievements: achRes.status === 'fulfilled' ? achRes.value : [],
           submissions: subRes.status === 'fulfilled' ? subRes.value : [],
+          globalRank: rankRes.status === 'fulfilled' ? rankRes.value : null,
         };
         bundleCache.set(userId, bundle);
         setProfile(bundle.profile);
         setAchievements(bundle.achievements);
         setSubmissions(bundle.submissions);
+        setGlobalRank(bundle.globalRank);
       } catch {
         if (!cancelled) setError(true);
       } finally {
@@ -217,13 +224,13 @@ export default function UserProfileCard({ userId, onClose }) {
                       {formatLastOnline(profile.lastSeenAt)}
                     </p>
                     <div className="upc-badges">
-                      <span className="upc-badge upc-badge--role">{profile.role}</span>
-                      {profile.betaLegacy && (
-                        <span className="upc-badge upc-badge--legacy">Legacy</span>
-                      )}
-                      <span className="upc-badge upc-badge--since">
-                        Since {formatDate(profile.createdAt)}
-                      </span>
+                      <ProfileBadges
+                        profile={profile}
+                        achievements={achievements}
+                        globalRank={globalRank}
+                        showRole
+                        showSince
+                      />
                     </div>
                   </div>
                 </div>
