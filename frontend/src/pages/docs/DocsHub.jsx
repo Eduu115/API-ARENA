@@ -1,24 +1,17 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
 import CustomCursor from "../../components/CustomCursor";
 import { useAuth } from "../../context/AuthContext";
+import { CONSENT_CHANGED_EVENT } from "../../lib/cookieConsent";
 import { getDocsFeedbackSummary, submitDocsFeedback } from "../../lib/docsMetricsApi";
+import { persistDocsLocale, readStoredDocsLocale } from "../../lib/docsLocale";
 import "../challenges/challenges.css";
 import "./docsHub.css";
-import { DOC_BY_ID, DOC_DOCUMENTS } from "./docsContent";
+import { getDocByIdMap, getDocDocuments } from "./docsContent";
+import { getDocsUi, getNextDocCtaLabel } from "./docsUi";
 import { usePageMeta } from "../../lib/usePageMeta";
-
-function getNextDocCtaLabel(currentDoc, nextDoc) {
-  if (currentDoc?.id === "guia-para-empezar" && nextDoc?.id === "primeros-pasos") {
-    return "Go to First Steps";
-  }
-  if (currentDoc?.id === "primeros-pasos" && nextDoc?.id === "preconfiguracion-proyecto") {
-    return "Continue to Preconfigure Project";
-  }
-  return `Next: ${nextDoc.title}`;
-}
 
 function SectionVisual({ visual }) {
   if (!visual?.type) return null;
@@ -103,20 +96,44 @@ export default function DocsHub() {
   const navigate = useNavigate();
   const { docId } = useParams();
   const { user, isAuthenticated } = useAuth();
+  const [locale, setLocale] = useState(() => readStoredDocsLocale() || "en");
+  const docDocuments = useMemo(() => getDocDocuments(locale), [locale]);
+  const docById = useMemo(() => getDocByIdMap(locale), [locale]);
+  const ui = useMemo(() => getDocsUi(locale), [locale]);
   const activeDoc = useMemo(
-    () => DOC_BY_ID[docId] || DOC_DOCUMENTS[0],
-    [docId]
+    () => docById[docId] || docDocuments[0],
+    [docId, docById, docDocuments]
   );
   usePageMeta({
     title: `${activeDoc.title} — Docs`,
     description: activeDoc.summary,
     path: `/docs/${activeDoc.id}`,
   });
-  const docIndex = useMemo(() => DOC_DOCUMENTS.findIndex((d) => d.id === activeDoc.id), [activeDoc.id]);
+  const docIndex = useMemo(
+    () => docDocuments.findIndex((d) => d.id === activeDoc.id),
+    [activeDoc.id, docDocuments]
+  );
   const nextDoc = useMemo(() => {
-    if (docIndex < 0 || docIndex >= DOC_DOCUMENTS.length - 1) return null;
-    return DOC_DOCUMENTS[docIndex + 1];
-  }, [docIndex]);
+    if (docIndex < 0 || docIndex >= docDocuments.length - 1) return null;
+    return docDocuments[docIndex + 1];
+  }, [docIndex, docDocuments]);
+
+  const handleLocaleChange = useCallback((next) => {
+    const normalized = next === "es" ? "es" : "en";
+    setLocale(normalized);
+    persistDocsLocale(normalized);
+  }, []);
+
+  useEffect(() => {
+    const onConsentChanged = () => {
+      const stored = readStoredDocsLocale();
+      if (stored) {
+        setLocale(stored);
+      }
+    };
+    window.addEventListener(CONSENT_CHANGED_EVENT, onConsentChanged);
+    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, onConsentChanged);
+  }, []);
   const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const [savingId, setSavingId] = useState(null);
   const [feedbackDone, setFeedbackDone] = useState({});
@@ -124,13 +141,13 @@ export default function DocsHub() {
 
   useEffect(() => {
     if (!docId) {
-      navigate(`/docs/${DOC_DOCUMENTS[0].id}`, { replace: true });
+      navigate(`/docs/${docDocuments[0].id}`, { replace: true });
       return;
     }
-    if (!DOC_BY_ID[docId]) {
-      navigate(`/docs/${DOC_DOCUMENTS[0].id}`, { replace: true });
+    if (!docById[docId]) {
+      navigate(`/docs/${docDocuments[0].id}`, { replace: true });
     }
-  }, [docId, navigate]);
+  }, [docId, docById, docDocuments, navigate]);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -185,26 +202,53 @@ export default function DocsHub() {
           <div className="docs-hub-wrap">
             <div className="docs-hub-header">
               <div>
-                <div className="ch-page-eyebrow">// Learning Center</div>
+                <div className="ch-page-eyebrow">{ui.learningCenter}</div>
                 <h1 className="ch-page-title">Arena<em>Docs</em></h1>
               </div>
-              <button className="docs-back-btn" onClick={() => navigate("/challenges")}>
-                BACK TO CHALLENGES
-              </button>
+              <div className="docs-hub-header-actions">
+                <div
+                  className="docs-locale-switch"
+                  role="group"
+                  aria-label={locale === "es" ? "Idioma de la documentación" : "Documentation language"}
+                >
+                  <button
+                    type="button"
+                    className={`docs-locale-btn${locale === "en" ? " is-active" : ""}`}
+                    aria-pressed={locale === "en"}
+                    onClick={() => handleLocaleChange("en")}
+                  >
+                    EN
+                  </button>
+                  <span className="docs-locale-divider" aria-hidden="true">
+                    |
+                  </span>
+                  <button
+                    type="button"
+                    className={`docs-locale-btn${locale === "es" ? " is-active" : ""}`}
+                    aria-pressed={locale === "es"}
+                    onClick={() => handleLocaleChange("es")}
+                  >
+                    ES
+                  </button>
+                </div>
+                <button className="docs-back-btn" onClick={() => navigate("/challenges")}>
+                  {ui.backToChallenges}
+                </button>
+              </div>
             </div>
 
             <nav className="docs-breadcrumb" aria-label="Breadcrumb">
-              <Link to="/">Home</Link>
+              <Link to="/">{ui.home}</Link>
               <span>/</span>
-              <Link to={`/docs/${DOC_DOCUMENTS[0].id}`}>Docs</Link>
+              <Link to={`/docs/${docDocuments[0].id}`}>{ui.docs}</Link>
               <span>/</span>
               <span aria-current="page">{activeDoc.title}</span>
             </nav>
 
             <div className="docs-layout">
               <aside className="docs-scrollspy">
-                <div className="docs-scrollspy-title">Documents</div>
-                {DOC_DOCUMENTS.map((doc) => (
+                <div className="docs-scrollspy-title">{ui.documents}</div>
+                {docDocuments.map((doc) => (
                   <Link
                     key={doc.id}
                     to={`/docs/${doc.id}`}
@@ -242,20 +286,20 @@ export default function DocsHub() {
                         <SectionVisual visual={section.visual} />
 
                         <div className="docs-feedback-row">
-                          <span className="docs-feedback-label">Was this section helpful?</span>
+                          <span className="docs-feedback-label">{ui.helpfulSection}</span>
                           <button
                             className={`docs-feedback-btn ${voteState === "helpful" ? "is-selected" : ""}`}
                             onClick={() => handleFeedback(sectionKey, true)}
                             disabled={savingId === sectionKey}
                           >
-                            Well explained
+                            {ui.wellExplained}
                           </button>
                           <button
                             className={`docs-feedback-btn ${voteState === "not_helpful" ? "is-selected" : ""}`}
                             onClick={() => handleFeedback(sectionKey, false)}
                             disabled={savingId === sectionKey}
                           >
-                            Needs improvement
+                            {ui.needsImprovement}
                           </button>
                         </div>
                       </section>
@@ -263,29 +307,29 @@ export default function DocsHub() {
                   })}
 
                   <div className="docs-feedback-row docs-feedback-row-final">
-                    <span className="docs-feedback-label">Was the full document helpful?</span>
+                    <span className="docs-feedback-label">{ui.helpfulDoc}</span>
                     <button
                       className={`docs-feedback-btn ${feedbackDone[activeDoc.id] === "helpful" ? "is-selected" : ""}`}
                       onClick={() => handleFeedback(activeDoc.id, true)}
                       disabled={savingId === activeDoc.id}
                     >
-                      Yes, very useful
+                      {ui.yesUseful}
                     </button>
                     <button
                       className={`docs-feedback-btn ${feedbackDone[activeDoc.id] === "not_helpful" ? "is-selected" : ""}`}
                       onClick={() => handleFeedback(activeDoc.id, false)}
                       disabled={savingId === activeDoc.id}
                     >
-                      Could be improved
+                      {ui.couldImprove}
                     </button>
                   </div>
 
-                  <footer className="docs-doc-footer" aria-label="Next document">
+                  <footer className="docs-doc-footer" aria-label={ui.nextDocument}>
                     {nextDoc ? (
                       <div className="docs-next-row">
-                        <span className="docs-feedback-label">Next document</span>
+                        <span className="docs-feedback-label">{ui.nextDocument}</span>
                         <Link to={`/docs/${nextDoc.id}`} className="docs-next-btn">
-                          {getNextDocCtaLabel(activeDoc, nextDoc)}
+                          {getNextDocCtaLabel(activeDoc, nextDoc, locale)}
                           <span className="docs-next-btn-arrow" aria-hidden="true">
                             →
                           </span>
@@ -297,12 +341,12 @@ export default function DocsHub() {
                       </div>
                     ) : (
                       <div className="docs-next-row docs-next-row--end">
-                        <span className="docs-feedback-label">End of this learning track</span>
-                        <Link to={`/docs/${DOC_DOCUMENTS[0].id}`} className="docs-feedback-btn">
-                          Back to Getting Started
+                        <span className="docs-feedback-label">{ui.endOfTrack}</span>
+                        <Link to={`/docs/${docDocuments[0].id}`} className="docs-feedback-btn">
+                          {ui.backToGettingStarted}
                         </Link>
                         <Link to="/challenges" className="docs-feedback-btn">
-                          Go to Challenges
+                          {ui.goToChallenges}
                         </Link>
                       </div>
                     )}
@@ -313,15 +357,15 @@ export default function DocsHub() {
 
             {isAdmin && (
               <div className="docs-summary">
-                <div className="docs-summary-title">Global docs feedback</div>
+                <div className="docs-summary-title">{ui.globalFeedback}</div>
                 {summary ? (
                   <div className="docs-summary-grid">
-                    <div><span>Total votes:</span> {summary.totalFeedback ?? 0}</div>
-                    <div><span>Helpful votes:</span> {summary.helpfulCount ?? 0}</div>
-                    <div><span>Usefulness rate:</span> {helpfulRate != null ? `${helpfulRate}%` : "—"}</div>
+                    <div><span>{ui.totalVotes}</span> {summary.totalFeedback ?? 0}</div>
+                    <div><span>{ui.helpfulVotes}</span> {summary.helpfulCount ?? 0}</div>
+                    <div><span>{ui.usefulnessRate}</span> {helpfulRate != null ? `${helpfulRate}%` : "—"}</div>
                   </div>
                 ) : (
-                  <div className="docs-summary-empty">No feedback data yet.</div>
+                  <div className="docs-summary-empty">{ui.noFeedback}</div>
                 )}
               </div>
             )}

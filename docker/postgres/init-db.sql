@@ -45,6 +45,9 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(64) UNIQ
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires_at TIMESTAMP;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP;
 UPDATE users SET last_seen_at = COALESCE(last_login, updated_at, created_at) WHERE last_seen_at IS NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_reminder_sent_at TIMESTAMP;
+UPDATE users SET password_changed_at = created_at WHERE password_changed_at IS NULL;
 
 -- ===========================================
 -- Tabla: refresh_tokens
@@ -756,6 +759,31 @@ CREATE TABLE IF NOT EXISTS user_achievements (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);
+
+-- Profile badges (collectible chips; rank badges are computed dynamically)
+CREATE TABLE IF NOT EXISTS profile_badge_definitions (
+    id BIGSERIAL PRIMARY KEY,
+    code VARCHAR(64) NOT NULL,
+    display_label VARCHAR(48) NOT NULL,
+    title VARCHAR(160) NOT NULL,
+    description TEXT,
+    style_key VARCHAR(32) NOT NULL,
+    tier VARCHAR(20) NOT NULL DEFAULT 'COMMON',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT uq_profile_badge_definitions_code UNIQUE (code)
+);
+
+CREATE TABLE IF NOT EXISTS user_profile_badges (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    badge_id BIGINT NOT NULL REFERENCES profile_badge_definitions(id) ON DELETE CASCADE,
+    unlocked_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_user_profile_badges_user_badge UNIQUE (user_id, badge_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_badges_user ON user_profile_badges(user_id);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS displayed_profile_badges TEXT DEFAULT '[]';
 
 -- Weekly streak (auth-service)
 CREATE TABLE IF NOT EXISTS user_streak_state (

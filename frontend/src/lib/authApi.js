@@ -726,6 +726,63 @@ export async function getUserPublicAchievements(userId) {
     return res.json();
 }
 
+/** Global ELO ranking (students with ≥3 completed challenges). */
+export async function getEloLeaderboard() {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/auth/leaderboard/elo`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+/** Global level / XP ranking. */
+export async function getLevelLeaderboard() {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/auth/leaderboard/level`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+/** Collectible profile badges for the current user (unlock + display status). */
+export async function getMyBadges() {
+    const base = getBaseUrl();
+    const tokens = getStoredTokens();
+    const res = await fetch(`${base}/api/auth/me/badges`, {
+        headers: {
+            'Content-Type': 'application/json',
+            ...(tokens?.accessToken ? { Authorization: `Bearer ${tokens.accessToken}` } : {}),
+        },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+/** Update which unlocked badges appear on the public profile (max 5). */
+export async function updateDisplayedBadges(codes) {
+    const base = getBaseUrl();
+    const tokens = getStoredTokens();
+    const res = await fetch(`${base}/api/auth/me/badges/display`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(tokens?.accessToken ? { Authorization: `Bearer ${tokens.accessToken}` } : {}),
+        },
+        body: JSON.stringify({ codes }),
+    });
+    if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message || body?.detail || `HTTP ${res.status}`);
+    }
+    return res.json();
+}
+
+/** Badges a user chose to display on their public profile. */
+export async function getUserPublicBadges(userId) {
+    const base = getBaseUrl();
+    const res = await fetch(`${base}/api/auth/users/${userId}/badges`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
 export {
     getStoredTokens,
     setStoredTokens,

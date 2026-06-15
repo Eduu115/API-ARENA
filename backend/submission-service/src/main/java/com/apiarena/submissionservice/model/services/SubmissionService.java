@@ -43,6 +43,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import com.apiarena.submissionservice.model.dto.BestPerChallengeStatsDTO;
 import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
@@ -990,6 +991,30 @@ public class SubmissionService implements ISubmissionService {
                 .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId()),
                         zipDownloadExpiresAtIso(s)))
                 .toList();
+    }
+
+    @Override
+    public BestPerChallengeStatsDTO getMyBestPerChallengeStats(Long userId) {
+        List<Object[]> rows = submissionRepository.findBestScorePerChallengeByUserId(userId);
+        if (rows.isEmpty()) {
+            return BestPerChallengeStatsDTO.builder()
+                    .averageBestScore(null)
+                    .challengesAttempted(0)
+                    .maxScoreScale(1000)
+                    .build();
+        }
+        double sum = 0;
+        for (Object[] row : rows) {
+            BigDecimal best = row[1] instanceof BigDecimal bd ? bd : null;
+            sum += best != null ? best.doubleValue() : 0.0;
+        }
+        double avg = sum / rows.size();
+        double rounded = Math.round(avg * 10.0) / 10.0;
+        return BestPerChallengeStatsDTO.builder()
+                .averageBestScore(rounded)
+                .challengesAttempted(rows.size())
+                .maxScoreScale(1000)
+                .build();
     }
 
     @Override

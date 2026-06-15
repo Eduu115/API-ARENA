@@ -209,6 +209,84 @@
   gap: 8px;
 }
 
+.upc-friend-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.upc-friend-btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 1px solid var(--dim);
+  background: transparent;
+  color: var(--muted);
+  cursor: none;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  appearance: none;
+}
+
+.upc-friend-btn:hover:not(:disabled) {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.upc-friend-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.upc-friend-btn--primary {
+  border-color: rgba(0, 217, 255, 0.45);
+  background: rgba(0, 217, 255, 0.08);
+  color: var(--cyan);
+}
+
+.upc-friend-btn--primary:hover:not(:disabled) {
+  background: rgba(0, 217, 255, 0.14);
+}
+
+.upc-friend-btn--ghost {
+  border-color: var(--dim);
+  color: var(--muted);
+}
+
+.upc-friend-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 10px;
+  border: 1px solid var(--dim);
+}
+
+.upc-friend-status--pending {
+  color: var(--warn);
+  border-color: rgba(255, 184, 0, 0.35);
+  background: rgba(255, 184, 0, 0.06);
+}
+
+.upc-friend-status--friend {
+  color: var(--green);
+  border-color: rgba(0, 255, 136, 0.35);
+  background: rgba(0, 255, 136, 0.06);
+}
+
+.upc-friend-error {
+  flex: 1 1 100%;
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--red);
+}
+
 .upc-badge {
   font-family: var(--font-mono);
   font-size: 10px;

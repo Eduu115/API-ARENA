@@ -73,6 +73,8 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/users/*/profile",
                                 "/api/auth/users/*/achievements",
+                                "/api/auth/users/*/badges",
+                                "/api/auth/leaderboard/**",
                                 "/internal/**",
                                 "/actuator/health",
                                 "/actuator/info",
@@ -134,9 +136,7 @@ public class SecurityConfig {
                 "https://apiarena.net",
                 "http://localhost:*",
                 "http://127.0.0.1:*",
-                "http://[::1]:*",
-                "http://192.168.*.*:*",
-                "http://10.*.*.*:*"
+                "http://[::1]:*"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));

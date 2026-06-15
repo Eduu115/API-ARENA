@@ -386,6 +386,28 @@
   margin-bottom: 36px;
 }
 
+.profile-strip-hint {
+  margin: -4px 0 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.profile-page .db-kpi-card--private {
+  border-color: rgba(255, 184, 0, 0.28);
+  background: linear-gradient(145deg, rgba(255, 184, 0, 0.05), rgba(255, 255, 255, 0.01));
+}
+
+.profile-page .db-kpi-card--private .db-kpi-label::after {
+  content: ' · you only';
+  color: var(--warn);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .profile-block--ach-preview {
   padding-bottom: 24px;
 }

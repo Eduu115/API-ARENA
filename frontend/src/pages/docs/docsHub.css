@@ -11,6 +11,52 @@
   margin-bottom: 14px;
 }
 
+.docs-hub-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.docs-locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--dim);
+  background: var(--bg1);
+  padding: 4px 8px;
+}
+
+.docs-locale-btn {
+  background: transparent;
+  border: none;
+  appearance: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 6px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.docs-locale-btn:hover {
+  color: var(--white);
+}
+
+.docs-locale-btn.is-active {
+  color: var(--cyan);
+}
+
+.docs-locale-divider {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  user-select: none;
+}
+
 .docs-back-btn {
   background: transparent;
   border: 1px solid var(--dim);

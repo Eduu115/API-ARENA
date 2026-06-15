@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.apiarena.submissionservice.model.dto.BestPerChallengeStatsDTO;
 import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import com.apiarena.submissionservice.model.dto.CreateSubmissionResponse;
 import com.apiarena.submissionservice.model.dto.LogsResponse;
@@ -33,6 +34,8 @@ public interface ISubmissionService {
     ReplayTimelineResponse getReplayTimeline(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
     List<SubmissionSummaryDTO> getMySubmissions(Long userId);
+
+    BestPerChallengeStatsDTO getMyBestPerChallengeStats(Long userId);
 
     List<SubmissionSummaryDTO> getPublicUserSubmissions(Long userId, int limit);
 

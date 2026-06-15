@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.apiarena.submissionservice.model.dto.BestPerChallengeStatsDTO;
 import com.apiarena.submissionservice.model.dto.ChallengeAttemptStatusDTO;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -137,6 +138,18 @@ public class SubmissionController {
         }
         List<SubmissionSummaryDTO> submissions = submissionService.getMySubmissions(userId);
         return ResponseEntity.ok(submissions);
+    }
+
+    @GetMapping("/my/best-per-challenge-stats")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Best-per-challenge average", description = "Private stat: average of the user's best score on each distinct challenge attempted")
+    public ResponseEntity<BestPerChallengeStatsDTO> getMyBestPerChallengeStats() {
+        Long userId = extractUserIdFromAuthentication();
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        return ResponseEntity.ok(submissionService.getMyBestPerChallengeStats(userId));
     }
 
     @GetMapping("/public/users/{userId}")

@@ -34,4 +34,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> searchTeachers(@Param("q") String query, @Param("excludeId") Long excludeId);
 
     List<User> findByRoleAndEmailVerifiedTrueAndNewChallengeEmailAlertsTrue(User.Role role);
+
+    List<User> findByEmailVerifiedTrueAndIsActiveTrue();
+
+    @Query("SELECT u FROM User u WHERE u.role = com.apiarena.authservice.model.entities.User$Role.STUDENT "
+            + "AND u.isActive = true AND u.totalChallengesCompleted >= :minCompleted "
+            + "ORDER BY u.rating DESC, u.experiencePoints DESC, u.id ASC")
+    List<User> findActiveStudentsForEloLeaderboard(@Param("minCompleted") int minCompleted);
+
+    @Query("SELECT u FROM User u WHERE u.role = com.apiarena.authservice.model.entities.User$Role.STUDENT "
+            + "AND u.isActive = true "
+            + "ORDER BY u.level DESC, u.experiencePoints DESC, u.id ASC")
+    List<User> findActiveStudentsForLevelLeaderboard();
 }

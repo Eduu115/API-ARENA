@@ -1,22 +1,11 @@
-/** Alpha cohort cutoff (matches auth-service AchievementService.ALPHA_SEASON_END). */
-export const ALPHA_SEASON_END_MS = Date.parse('2026-07-01T00:00:00');
+/** Profile badge display helpers. */
 
-export function hasAlphaCohort(profile, achievements = []) {
-  if (achievements.some((a) => a.code === 'ALPHA_WAVE' && a.unlocked)) {
-    return true;
-  }
-  if (profile?.createdAt) {
-    const created = Date.parse(profile.createdAt);
-    return Number.isFinite(created) && created < ALPHA_SEASON_END_MS;
-  }
-  return false;
-}
+export const MAX_DISPLAYED_PROFILE_BADGES = 5;
 
-export function hasBetaCohort(profile, achievements = []) {
-  if (profile?.betaLegacy === true) {
-    return true;
-  }
-  return achievements.some((a) => a.code === 'BETA_PIONEER' && a.unlocked);
+/** CSS class for a collectible badge chip from styleKey. */
+export function badgeStyleClass(styleKey) {
+  if (!styleKey) return 'profile-badge--collectible';
+  return `profile-badge--${styleKey}`;
 }
 
 /** Highest global rank tier label, or null if outside top 25. */
@@ -42,4 +31,14 @@ export function formatGlobalRankPosition(rank) {
   const r = Number(rank);
   if (!Number.isFinite(r) || r < 1 || r > 25) return null;
   return `#${r} Global`;
+}
+
+export function countDisplayedBadges(badges) {
+  if (!Array.isArray(badges)) return 0;
+  return badges.filter((b) => b.unlocked && b.displayed).length;
+}
+
+export function displayedBadgeCodes(badges) {
+  if (!Array.isArray(badges)) return [];
+  return badges.filter((b) => b.unlocked && b.displayed).map((b) => b.code);
 }

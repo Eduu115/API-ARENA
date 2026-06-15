@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apiarena.authservice.model.dto.FriendEntryDTO;
+import com.apiarena.authservice.model.dto.FriendRelationshipDTO;
 import com.apiarena.authservice.model.dto.FriendRequestDTO;
 import com.apiarena.authservice.model.dto.FriendSearchResultDTO;
 import com.apiarena.authservice.model.dto.PendingFriendDTO;
@@ -58,6 +59,15 @@ public class FriendController {
     @GetMapping("/search")
     public ResponseEntity<List<FriendSearchResultDTO>> search(@RequestParam String q) {
         return ResponseEntity.ok(friendService.searchUsers(currentUserId(), q));
+    }
+
+    @GetMapping("/status/{userId}")
+    public ResponseEntity<FriendRelationshipDTO> relationship(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(friendService.getRelationship(currentUserId(), userId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping("/request")
