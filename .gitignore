@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# Claude Code — local permission overrides (keep settings.json in repo)
+.claude/settings.local.json
+
 # Backend - Maven/Gradle
 **/target/
 **/.mvn/
