@@ -32,7 +32,7 @@ username="e2e_${timestamp}"
 echo "[E2E] register $email"
 curl -fsS -X POST "$AUTH_URL/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d "{\"username\":\"$username\",\"email\":\"$email\",\"password\":\"$PASSWORD\",\"role\":\"STUDENT\"}" >/tmp/e2e_register.json
+  -d "{\"username\":\"$username\",\"email\":\"$email\",\"password\":\"$PASSWORD\",\"role\":\"STUDENT\",\"dateOfBirth\":\"2000-01-01\",\"acceptTerms\":true}" >/tmp/e2e_register.json
 
 verify_token="$(docker exec apiarena-postgres psql -U "${POSTGRES_USER:-apiarena_user}" -d "${POSTGRES_DB:-apiarena}" -t -A \
   -c "SELECT email_verification_token FROM users WHERE email='$email' ORDER BY id DESC LIMIT 1;")"
