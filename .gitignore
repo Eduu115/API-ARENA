@@ -73,6 +73,11 @@ Thumbs.db
 docs/COMMIT-CONF-SPAIN-PROJECT-BRIEF.md
 docs/TECHNICAL-OVERVIEW.md
 docs/BACKLOG-NEXT-ITERATION.md
+docs/BACKLOG.md
+docs/BACKLOG-I18N-FULL-WEB.md
 docs/postgres-er-diagram.png
 docs/postgres-er-diagram.mmd
 docs/INFORME-FORMAL-API-ARENA.md
+
+# Local Cursor rules (personal backlog / reminders)
+.cursor/rules/api-arena-i18n-reminder.mdc
