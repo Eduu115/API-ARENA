@@ -89,6 +89,7 @@ export function openConsentManager() {
 function clearPreferenceStorage() {
   try {
     localStorage.removeItem(THEME_KEY);
+    localStorage.removeItem("apiarena_docs_locale");
     Object.keys(localStorage).forEach((k) => {
       if (k.startsWith(TUTORIAL_PREFIX)) {
         localStorage.removeItem(k);
