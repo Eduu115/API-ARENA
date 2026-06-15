@@ -1539,6 +1539,7 @@ public class SubmissionService implements ISubmissionService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        applyInternalToken(headers);
         restTemplate.postForEntity(
                 base + "/internal/notifications/teacher-submission-review",
                 new HttpEntity<>(body, headers),

@@ -310,9 +310,10 @@
 
 .arena-navbar__elo-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
-  right: -6px;
-  width: 250px;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  width: min(250px, calc(100vw - 24px));
   background: #0a1026;
   border: 1px solid var(--dim);
   color: var(--text);
@@ -324,13 +325,21 @@
   letter-spacing: 0.02em;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(4px);
+  transform: translateY(-4px);
   transition: opacity 0.16s ease, transform 0.16s ease;
+  z-index: 10001;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .arena-navbar__elo-help-wrap:hover .arena-navbar__elo-tooltip {
   opacity: 1;
   transform: translateY(0);
+}
+
+[data-theme="light"] .arena-navbar__elo-tooltip {
+  background: #0d2840;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .arena-navbar__login {

@@ -1,0 +1,86 @@
+.profile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  line-height: 1.2;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+.profile-badge--role {
+  color: var(--cyan);
+  border-color: rgba(0, 217, 255, 0.35);
+  background: rgba(0, 217, 255, 0.08);
+}
+
+.profile-badge--since {
+  border-color: transparent;
+  background: transparent;
+  padding-left: 0;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+.profile-badge--rank-pos {
+  color: var(--text);
+  border-color: rgba(255, 184, 0, 0.35);
+  background: rgba(255, 184, 0, 0.08);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.profile-badge--top1 {
+  color: #1a1200;
+  border-color: rgba(255, 215, 0, 0.85);
+  background: linear-gradient(135deg, #ffd700, #ffb800 55%, #ffe566);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.35);
+}
+
+.profile-badge--top3 {
+  color: #fff8ef;
+  border-color: rgba(205, 127, 50, 0.75);
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.55), rgba(255, 184, 0, 0.25));
+}
+
+.profile-badge--top10 {
+  color: var(--cyan);
+  border-color: rgba(0, 217, 255, 0.55);
+  background: rgba(0, 217, 255, 0.12);
+}
+
+.profile-badge--top25 {
+  color: var(--purple);
+  border-color: rgba(168, 85, 247, 0.45);
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.profile-badge--alpha {
+  color: #f5e6ff;
+  border-color: rgba(255, 215, 0, 0.45);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(255, 184, 0, 0.18));
+}
+
+.profile-badge--beta {
+  color: var(--purple);
+  border-color: rgba(168, 85, 247, 0.5);
+  background: rgba(168, 85, 247, 0.14);
+}
+
+[data-theme="light"] .profile-badge--top1 {
+  color: #1a1200;
+}
+
+[data-theme="light"] .profile-badge--rank-pos {
+  color: #1a2438;
+}

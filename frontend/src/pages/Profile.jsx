@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
+import { getGlobalUserRank } from '../lib/leaderboardApi';
 import Topbar from '../components/Topbar';
 import BottomNav from '../components/BottomNav';
 import CustomCursor from '../components/CustomCursor';
 import WeeklyStreakPanel from '../components/WeeklyStreakPanel';
 import AchievementList from '../components/AchievementList';
+import ProfileBadges from '../components/ProfileBadges';
 import { recentUnlockedAchievements } from '../lib/achievementDisplay';
 import './challenges/challenges.css';
 import './dashboard/dashboard.css';
@@ -43,6 +45,7 @@ export default function Profile() {
   const [deleting, setDeleting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [privacyError, setPrivacyError] = useState(null);
+  const [globalRank, setGlobalRank] = useState(null);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
@@ -78,6 +81,19 @@ export default function Profile() {
       .catch(() => { if (!cancelled) setWeeklyStreak(null); });
     return () => { cancelled = true; };
   }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return;
+    let cancelled = false;
+    getGlobalUserRank(user.id)
+      .then((data) => {
+        if (!cancelled) setGlobalRank(data);
+      })
+      .catch(() => {
+        if (!cancelled) setGlobalRank(null);
+      });
+    return () => { cancelled = true; };
+  }, [isAuthenticated, user?.id]);
 
   const initials = useMemo(() => {
     const src = user?.username || user?.email || 'U';
@@ -339,6 +355,13 @@ export default function Profile() {
                   <span className="profile-identity-name-user">{user.username}</span>
                   <span className="profile-identity-name-level">· Lvl {level}</span>
                 </h1>
+                <ProfileBadges
+                  profile={user}
+                  achievements={achievements}
+                  globalRank={globalRank}
+                  showRole={false}
+                  className="profile-identity-badges"
+                />
                 <div className="profile-identity-meta">
                   <span>{user.email}</span>
                   <span className="profile-identity-sep" aria-hidden>·</span>

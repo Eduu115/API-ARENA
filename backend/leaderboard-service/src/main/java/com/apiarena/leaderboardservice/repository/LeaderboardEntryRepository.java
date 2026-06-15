@@ -21,6 +21,20 @@ public interface LeaderboardEntryRepository extends JpaRepository<LeaderboardEnt
            "ORDER BY SUM(e.score) DESC")
     List<Object[]> getGlobalLeaderboard();
 
+    @Query(value = """
+            SELECT ranked.rnk, ranked.total_score, ranked.challenges_completed
+            FROM (
+                SELECT e.user_id,
+                       SUM(e.score)::bigint AS total_score,
+                       COUNT(*)::bigint AS challenges_completed,
+                       ROW_NUMBER() OVER (ORDER BY SUM(e.score) DESC)::int AS rnk
+                FROM leaderboard_entries e
+                GROUP BY e.user_id, e.username
+            ) ranked
+            WHERE ranked.user_id = :userId
+            """, nativeQuery = true)
+    List<Object[]> findGlobalRankRowByUserId(@Param("userId") Long userId);
+
     @Query("SELECT e FROM LeaderboardEntry e WHERE e.userId = :userId ORDER BY e.score DESC")
     List<LeaderboardEntry> findByUserIdOrderByScoreDesc(@Param("userId") Long userId);
 

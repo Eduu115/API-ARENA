@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apiarena.leaderboardservice.model.dto.GlobalLeaderboardDTO;
+import com.apiarena.leaderboardservice.model.dto.GlobalUserRankDTO;
 import com.apiarena.leaderboardservice.model.dto.LeaderboardEntryDTO;
 import com.apiarena.leaderboardservice.model.dto.SubmitScoreRequest;
 import com.apiarena.leaderboardservice.model.services.LeaderboardService;
@@ -29,6 +30,13 @@ public class LeaderboardController {
     @GetMapping("/global")
     public ResponseEntity<List<GlobalLeaderboardDTO>> getGlobalLeaderboard() {
         return ResponseEntity.ok(leaderboardService.getGlobalLeaderboard());
+    }
+
+    @GetMapping("/global/user/{userId}")
+    public ResponseEntity<GlobalUserRankDTO> getGlobalUserRank(@PathVariable Long userId) {
+        return leaderboardService.getGlobalUserRank(userId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/challenge/{challengeId}")

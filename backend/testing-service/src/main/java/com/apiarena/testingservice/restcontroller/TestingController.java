@@ -76,9 +76,15 @@ public class TestingController {
         return ResponseEntity.ok(result);
     }
 
+    private static final String DEFAULT_INTERNAL_TOKEN = "apiarena-internal-token";
+
     private void authorizeInternal(String token) {
-        if (internalToken == null || internalToken.isBlank()) return;
-        if (!internalToken.equals(token)) {
+        if (internalToken == null || internalToken.isBlank() || DEFAULT_INTERNAL_TOKEN.equals(internalToken)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Internal token not configured");
+        }
+        if (token == null || !java.security.MessageDigest.isEqual(
+                internalToken.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                token.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
     }

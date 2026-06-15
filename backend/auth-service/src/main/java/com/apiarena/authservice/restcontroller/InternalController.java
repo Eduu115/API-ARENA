@@ -85,11 +85,16 @@ public class InternalController {
         return ResponseEntity.ok(Map.of("inGroup", inGroup));
     }
 
+    private static final String DEFAULT_INTERNAL_TOKEN = "apiarena-internal-token";
+
     private void requireInternalToken(String token) {
-        if (internalServiceToken == null || internalServiceToken.isBlank()) {
+        if (internalServiceToken == null || internalServiceToken.isBlank()
+                || DEFAULT_INTERNAL_TOKEN.equals(internalServiceToken)) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Internal service token is not configured");
         }
-        if (token == null || !internalServiceToken.equals(token.trim())) {
+        if (token == null || !java.security.MessageDigest.isEqual(
+                internalServiceToken.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                token.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
     }

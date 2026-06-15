@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.apiarena.leaderboardservice.model.dto.GlobalLeaderboardDTO;
+import com.apiarena.leaderboardservice.model.dto.GlobalUserRankDTO;
 import com.apiarena.leaderboardservice.model.dto.LeaderboardEntryDTO;
 import com.apiarena.leaderboardservice.model.dto.SubmitScoreRequest;
 import com.apiarena.leaderboardservice.model.entities.LeaderboardEntry;
@@ -47,6 +48,26 @@ public class LeaderboardService {
                     .build());
         }
         return result;
+    }
+
+    public java.util.Optional<GlobalUserRankDTO> getGlobalUserRank(Long userId) {
+        if (userId == null) {
+            return java.util.Optional.empty();
+        }
+        List<Object[]> rows = entryRepository.findGlobalRankRowByUserId(userId);
+        if (rows.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        Object[] row = rows.get(0);
+        int rank = ((Number) row[0]).intValue();
+        int totalScore = ((Number) row[1]).intValue();
+        int challengesCompleted = ((Number) row[2]).intValue();
+        return java.util.Optional.of(GlobalUserRankDTO.builder()
+                .userId(userId)
+                .rank(rank)
+                .totalScore(totalScore)
+                .challengesCompleted(challengesCompleted)
+                .build());
     }
 
     @Transactional

@@ -22,6 +22,9 @@ public class WelcomeNotificationDispatchService {
     @Value("${services.notification-url:http://localhost:8090}")
     private String notificationServiceUrl;
 
+    @Value("${services.internal-token:}")
+    private String internalToken;
+
     public WelcomeNotificationDispatchService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -42,6 +45,9 @@ public class WelcomeNotificationDispatchService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        if (internalToken != null && !internalToken.isBlank()) {
+            headers.set("X-Internal-Token", internalToken.trim());
+        }
 
         try {
             restTemplate.postForEntity(url, new HttpEntity<>(body, headers), Void.class);
