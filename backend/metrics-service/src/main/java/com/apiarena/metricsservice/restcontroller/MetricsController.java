@@ -160,8 +160,15 @@ public class MetricsController {
      * Product-event ingestion is server-to-server only. Without a configured token the
      * endpoint stays closed (fail-safe) to avoid open data injection.
      */
+    private static final String DEFAULT_INTERNAL_TOKEN = "apiarena-internal-token";
+
     private void requireInternal(String token) {
-        if (internalToken == null || internalToken.isBlank() || !internalToken.equals(token)) {
+        if (internalToken == null || internalToken.isBlank() || DEFAULT_INTERNAL_TOKEN.equals(internalToken)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Internal token not configured");
+        }
+        if (token == null || !java.security.MessageDigest.isEqual(
+                internalToken.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                token.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
     }

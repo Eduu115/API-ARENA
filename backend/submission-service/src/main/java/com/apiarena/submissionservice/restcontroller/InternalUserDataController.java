@@ -35,7 +35,12 @@ public class InternalUserDataController {
     public ResponseEntity<Map<String, Object>> purgeUserData(
             @PathVariable Long userId,
             @RequestHeader(value = "X-Internal-Token", required = false) String token) {
-        if (internalToken == null || internalToken.isBlank() || !internalToken.equals(token)) {
+        if (internalToken == null || internalToken.isBlank() || "apiarena-internal-token".equals(internalToken)) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Internal token not configured");
+        }
+        if (token == null || !java.security.MessageDigest.isEqual(
+                internalToken.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                token.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid internal token");
         }
         int removed = submissionService.purgeUserData(userId);
