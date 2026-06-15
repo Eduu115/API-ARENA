@@ -486,6 +486,13 @@
   cursor: not-allowed;
 }
 
+.auth-turnstile {
+  margin-top: 20px;
+  min-height: 65px;
+  display: flex;
+  justify-content: flex-start;
+}
+
 .auth-footer-row {
   margin-top: 28px;
   padding-top: 22px;

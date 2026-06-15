@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "../../components/ThemeToggle";
+import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
+import { isTurnstileEnabled } from "../../lib/turnstile";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
@@ -10,18 +12,35 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState(null);
+  const turnstileRef = useRef(null);
+  const turnstileOn = isTurnstileEnabled();
   const { login, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const redirectTo = location.state?.from?.pathname || "/dashboard";
 
+  const handleTurnstileToken = useCallback((token) => {
+    setTurnstileToken(token);
+  }, []);
+
   async function handleSubmit(e) {
     e.preventDefault();
     clearError();
+    if (turnstileOn && !turnstileToken) {
+      return;
+    }
     setSubmitting(true);
-    const result = await login(email, password);
+    const result = await login(email, password, turnstileToken);
     setSubmitting(false);
-    if (result?.success) navigate(redirectTo, { replace: true });
+    if (result?.success) {
+      navigate(redirectTo, { replace: true });
+      return;
+    }
+    if (turnstileOn) {
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
+    }
   }
 
   return (
@@ -131,7 +150,13 @@ export default function Login() {
                   </div>
                 </div>
 
-                <button type="submit" className="auth-submit" disabled={submitting}>
+                <TurnstileWidget ref={turnstileRef} onToken={handleTurnstileToken} />
+
+                <button
+                  type="submit"
+                  className="auth-submit"
+                  disabled={submitting || (turnstileOn && !turnstileToken)}
+                >
                   {submitting ? "Signing in…" : "Sign in"}
                 </button>
 
