@@ -38,4 +38,7 @@ public class RegisterRequest {
     private LocalDate dateOfBirth;
 
     private boolean acceptTerms;
+
+    /** Cloudflare Turnstile token (required when app.turnstile.secret-key is set). */
+    private String turnstileToken;
 }

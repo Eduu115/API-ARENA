@@ -36,10 +36,12 @@ import com.apiarena.authservice.model.dto.WeeklyStreakDTO;
 import com.apiarena.authservice.model.services.AchievementService;
 import com.apiarena.authservice.model.services.IAuthService;
 import com.apiarena.authservice.model.services.IUserService;
+import com.apiarena.authservice.model.services.TurnstileVerificationService;
 import com.apiarena.authservice.model.services.WeeklyStreakService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -56,17 +58,29 @@ public class AuthController {
     private AchievementService achievementService;
     @Autowired
     private WeeklyStreakService weeklyStreakService;
+    @Autowired
+    private TurnstileVerificationService turnstileVerificationService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account. No tokens are returned; use /login to get access and refresh tokens.")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest) {
+        turnstileVerificationService.requireValidToken(
+                request.getTurnstileToken(),
+                TurnstileVerificationService.resolveClientIp(httpRequest));
         AuthResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
     @Operation(summary = "Login", description = "Authenticate user and get access token")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest) {
+        turnstileVerificationService.requireValidToken(
+                request.getTurnstileToken(),
+                TurnstileVerificationService.resolveClientIp(httpRequest));
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }

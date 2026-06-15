@@ -310,6 +310,7 @@ export async function login(credentials) {
 
 
             password: credentials.password,
+            turnstileToken: credentials.turnstileToken ?? null,
 
 
         }),
@@ -376,6 +377,7 @@ export async function register(payload) {
 
 
             acceptTerms: payload.acceptTerms ?? false,
+            turnstileToken: payload.turnstileToken ?? null,
 
 
         }),

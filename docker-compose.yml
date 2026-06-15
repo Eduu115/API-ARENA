@@ -126,6 +126,7 @@ services:
       SERVICES_NOTIFICATION_URL: http://apiarena-notification:8090
       SERVICES_SUBMISSION_URL: http://apiarena-submission:8083
       SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN:-apiarena-internal-token}
+      APP_TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "${BIND_IP:-0.0.0.0}:${AUTH_HOST_PORT:-8081}:8081"
@@ -417,6 +418,7 @@ services:
         VITE_LEADERBOARD_API_URL: ${VITE_LEADERBOARD_API_URL:-http://localhost:8087}
         VITE_NOTIFICATIONS_API_URL: ${VITE_NOTIFICATIONS_API_URL:-http://localhost:8090}
         VITE_METRICS_API_URL: ${VITE_METRICS_API_URL:-http://localhost:8089}
+        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY:-}
     container_name: apiarena-frontend
     depends_on:
       - auth-service

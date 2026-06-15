@@ -41,10 +41,10 @@ export function AuthProvider({ children }) {
   }, [loadUser]);
 
   const login = useCallback(
-    async (email, password) => {
+    async (email, password, turnstileToken = null) => {
       setError(null);
       try {
-        const data = await authApi.login({ email, password });
+        const data = await authApi.login({ email, password, turnstileToken });
         setUser(data?.user ?? null);
         return { success: true, data };
       } catch (e) {
