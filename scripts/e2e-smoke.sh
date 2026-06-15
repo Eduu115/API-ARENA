@@ -8,6 +8,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZIP_PATH="${ZIP_PATH:-$ROOT_DIR/examples/todo-crud-api.zip}"
 CHALLENGE_SLUG="${E2E_CHALLENGE_SLUG:-todo-crud}"
 PASSWORD="${E2E_PASSWORD:-Arena2025!}"
+# Cloudflare Turnstile dummy token (works with test secret 1x000...AA in CI).
+TURNSTILE_TOKEN="${E2E_TURNSTILE_TOKEN:-XXXX.DUMMY.TOKEN.XXXX}"
 
 AUTH_URL="${AUTH_URL:-http://localhost:8081}"
 CHALLENGE_URL="${CHALLENGE_URL:-http://localhost:8082}"
@@ -32,7 +34,7 @@ username="e2e_${timestamp}"
 echo "[E2E] register $email"
 curl -fsS -X POST "$AUTH_URL/api/auth/register" \
   -H "Content-Type: application/json" \
-  -d "{\"username\":\"$username\",\"email\":\"$email\",\"password\":\"$PASSWORD\",\"role\":\"STUDENT\",\"dateOfBirth\":\"2000-01-01\",\"acceptTerms\":true}" >/tmp/e2e_register.json
+  -d "{\"username\":\"$username\",\"email\":\"$email\",\"password\":\"$PASSWORD\",\"role\":\"STUDENT\",\"dateOfBirth\":\"2000-01-01\",\"acceptTerms\":true,\"turnstileToken\":\"$TURNSTILE_TOKEN\"}" >/tmp/e2e_register.json
 
 verify_token="$(docker exec apiarena-postgres psql -U "${POSTGRES_USER:-apiarena_user}" -d "${POSTGRES_DB:-apiarena}" -t -A \
   -c "SELECT email_verification_token FROM users WHERE email='$email' ORDER BY id DESC LIMIT 1;")"
@@ -47,7 +49,7 @@ curl -fsS "$AUTH_URL/api/auth/verify-email?token=$verify_token" >/tmp/e2e_verify
 echo "[E2E] login"
 access_token="$(curl -fsS -X POST "$AUTH_URL/api/auth/login" \
   -H "Content-Type: application/json" \
-  -d "{\"email\":\"$email\",\"password\":\"$PASSWORD\"}" | jq -r '.accessToken')"
+  -d "{\"email\":\"$email\",\"password\":\"$PASSWORD\",\"turnstileToken\":\"$TURNSTILE_TOKEN\"}" | jq -r '.accessToken')"
 if [ -z "$access_token" ] || [ "$access_token" = "null" ]; then
   echo "Login failed" >&2
   exit 1

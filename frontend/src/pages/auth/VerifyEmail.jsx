@@ -3,6 +3,7 @@ import { Link, useSearchParams, useLocation } from "react-router-dom";
 import ThemeToggle from "../../components/ThemeToggle";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
 import * as authApi from "../../lib/authApi";
+import { usePageMeta } from "../../lib/usePageMeta";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
@@ -19,6 +20,8 @@ export default function VerifyEmail() {
   const [resendBusy, setResendBusy] = useState(false);
   const [resendOk, setResendOk] = useState(false);
   const [resendErr, setResendErr] = useState(null);
+
+  usePageMeta({ title: "Verify email", path: "/verify-email" });
 
   useEffect(() => {
     if (!token) return;
@@ -61,7 +64,10 @@ export default function VerifyEmail() {
     }
   }
 
-  const showResendForm = !token || phase === "bad";
+  const showResendForm = phase === "idle" || phase === "bad";
+
+  const formStatus =
+    phase === "loading" ? "// verifying…" : resendBusy ? "// sending…" : "// ready";
 
   return (
     <div className="auth-page-root challenges-page">
@@ -77,94 +83,125 @@ export default function VerifyEmail() {
         </div>
 
         <div className="auth-page__inner">
-          <div className="auth-page__grid auth-page__grid--register auth-verify-email">
-            <div className="auth-page__col-form auth-form-card auth-verify-email__card">
-              <div className="auth-form__head">
-                <div>
-                  <div className="ch-page-eyebrow">// Email</div>
-                  <div className="auth-title-crt auth-title-crt--sm">
-                    <h2 className="ch-card-title">Verify your email</h2>
-                  </div>
-                </div>
+          <div className="auth-page__grid auth-page__grid--register">
+            <div className="auth-page__col-copy auth-copy-block">
+              <Link to="/" className="auth-brand-row">
+                <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="36" height="36" />
+                <span className="ch-logo-text">
+                  <span className="ch-api">API</span>
+                  <span className="ch-arena">Arena</span>
+                </span>
+              </Link>
+
+              <div className="ch-page-eyebrow">// Verification</div>
+              <div className="auth-title-crt">
+                <h1 className="ch-page-title">
+                  Confirm your
+                  <em>email</em>
+                </h1>
               </div>
+              <p className="ch-card-desc auth-copy-lead">
+                We need a verified inbox before you can sign in and submit challenges. Links expire after 48 hours —{" "}
+                <span className="auth-copy-strong">request a new one anytime below.</span>
+              </p>
 
-              {phase === "loading" && (
-                <p className="ch-card-desc" style={{ fontFamily: "var(--font-mono)", fontSize: 12 }}>
-                  Verifying link…
-                </p>
-              )}
+              <div className="auth-actions">
+                <Link to="/login" className="auth-btn-outline">
+                  Sign in
+                  <ArrowRightIcon width={16} height={16} />
+                </Link>
+                <Link to="/docs/primeros-pasos" className="auth-link-quiet">
+                  First steps →
+                </Link>
+              </div>
+            </div>
 
-              {phase === "ok" && (
-                <>
-                  <div className="auth-alert" role="status" style={{ borderColor: "var(--green)" }}>
-                    {verifyMessage}
+            <div className="auth-page__col-form auth-form-card">
+              <div className="auth-form">
+                <div className="auth-form__head">
+                  <div>
+                    <div className="ch-page-eyebrow">// Inbox</div>
+                    <div className="auth-title-crt auth-title-crt--sm">
+                      <h2 className="ch-card-title">Email verification</h2>
+                    </div>
                   </div>
-                  <Link
-                    to="/login"
-                    className="auth-submit"
-                    style={{ display: "block", textAlign: "center", textDecoration: "none" }}
-                  >
-                    Log in
-                  </Link>
-                </>
-              )}
-
-              {phase === "bad" && token && (
-                <div className="auth-alert" role="alert">
-                  {verifyMessage}
+                  <div className="auth-form__status">{formStatus}</div>
                 </div>
-              )}
 
-              {phase === "idle" && (
-                <p className="ch-card-desc">
-                  We sent a verification link to your inbox. Open it to activate your account. You can resend the email
-                  if needed.
-                </p>
-              )}
+                {phase === "loading" && (
+                  <p className="ch-card-desc auth-verify-lead">
+                    Confirming your verification link…
+                  </p>
+                )}
 
-              {phase === "bad" && token && (
-                <p className="ch-card-desc" style={{ marginTop: 12 }}>
-                  Request a new link below or contact support if the problem continues.
-                </p>
-              )}
-
-              {showResendForm && (
-                <form className="auth-form" onSubmit={handleResend} style={{ marginTop: 16 }}>
-                  <div className="auth-fields">
-                    <div>
-                      <label htmlFor="verify-email" className="auth-label">
-                        Email
-                      </label>
-                      <input
-                        id="verify-email"
-                        type="email"
-                        className="auth-input"
-                        placeholder="you@example.com"
-                        autoComplete="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
+                {phase === "ok" && (
+                  <>
+                    <div className="auth-alert auth-alert--ok" role="status">
+                      {verifyMessage}
                     </div>
-                  </div>
-                  {resendOk && (
-                    <div className="auth-alert" role="status" style={{ borderColor: "var(--green)" }}>
-                      If an account exists with this email, a verification link has been sent.
-                    </div>
-                  )}
-                  {resendErr && (
+                    <Link to="/login" className="auth-submit auth-submit--link">
+                      Log in
+                    </Link>
+                  </>
+                )}
+
+                {phase === "bad" && token && (
+                  <>
                     <div className="auth-alert" role="alert">
-                      {resendErr}
+                      {verifyMessage}
                     </div>
-                  )}
-                  <button type="submit" className="auth-submit" disabled={resendBusy}>
-                    {resendBusy ? "Sending…" : "Resend verification email"}
-                  </button>
-                </form>
-              )}
+                    <p className="ch-card-desc auth-verify-lead">
+                      Request a new link below or contact support if the problem continues.
+                    </p>
+                  </>
+                )}
 
-              <div className="auth-footer-row" style={{ marginTop: 24 }}>
-                <Link to="/login">Back to Log in</Link>
+                {phase === "idle" && (
+                  <p className="ch-card-desc auth-verify-lead">
+                    We sent a verification link to your inbox. Open it to activate your account, or resend the email if
+                    you did not receive it.
+                  </p>
+                )}
+
+                {showResendForm && (
+                  <form className="auth-form auth-form--resend" onSubmit={handleResend}>
+                    <div className="auth-fields">
+                      <div>
+                        <label htmlFor="verify-email" className="auth-label">
+                          Email
+                        </label>
+                        <input
+                          id="verify-email"
+                          type="email"
+                          className="auth-input"
+                          placeholder="you@example.com"
+                          autoComplete="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                    </div>
+                    {resendOk && (
+                      <div className="auth-alert auth-alert--ok" role="status">
+                        If an account exists with this email, a verification link has been sent.
+                      </div>
+                    )}
+                    {resendErr && (
+                      <div className="auth-alert" role="alert">
+                        {resendErr}
+                      </div>
+                    )}
+                    <button type="submit" className="auth-submit" disabled={resendBusy}>
+                      {resendBusy ? "Sending…" : "Resend verification email"}
+                    </button>
+                  </form>
+                )}
+
+                <div className="auth-footer-row">
+                  <p>Already verified?</p>
+                  <Link to="/login">Back to sign in →</Link>
+                </div>
               </div>
             </div>
           </div>

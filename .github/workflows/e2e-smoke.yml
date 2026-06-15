@@ -8,6 +8,9 @@ on:
 # Run the bundled JS actions on Node 24 (silences the Node 20 deprecation warning).
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  # Cloudflare Turnstile test keys — siteverify always succeeds (see Turnstile testing docs).
+  TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA"
+  VITE_TURNSTILE_SITE_KEY: "1x00000000000000000000AA"
 
 jobs:
   smoke:
@@ -19,7 +22,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare environment file
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          # Ensure compose build/runtime use Turnstile test keys (not production secrets).
+          grep -q '^TURNSTILE_SECRET_KEY=' .env && sed -i 's/^TURNSTILE_SECRET_KEY=.*/TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA/' .env || echo 'TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA' >> .env
+          grep -q '^VITE_TURNSTILE_SITE_KEY=' .env && sed -i 's/^VITE_TURNSTILE_SITE_KEY=.*/VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA/' .env || echo 'VITE_TURNSTILE_SITE_KEY=1x00000000000000000000AA' >> .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
