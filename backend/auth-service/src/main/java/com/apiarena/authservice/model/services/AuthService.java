@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.HexFormat;
 import java.security.SecureRandom;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -210,10 +211,15 @@ public class AuthService implements IAuthService {
         user.setEmailVerificationExpiresAt(null);
         userRepository.save(user);
 
-        emailDispatchService.sendWelcomeBetaLegacyEmail(user.getEmail(), user.getUsername());
-        emailDispatchService.sendFirstStepsBetaEmail(user.getEmail(), user.getUsername());
-        welcomeNotificationDispatchService.sendWelcome(user.getId(), user.getUsername());
-        achievementService.syncForUserId(user.getId());
+        Long userId = user.getId();
+        String username = user.getUsername();
+        String email = user.getEmail();
+        CompletableFuture.runAsync(() -> {
+            emailDispatchService.sendWelcomeBetaLegacyEmail(email, username);
+            emailDispatchService.sendFirstStepsBetaEmail(email, username);
+            welcomeNotificationDispatchService.sendWelcome(userId, username);
+            achievementService.syncForUserId(userId);
+        });
 
         return new VerifyEmailResponseDTO(true, "Email verified. You can log in.");
     }

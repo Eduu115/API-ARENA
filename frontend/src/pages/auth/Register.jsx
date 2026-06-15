@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -36,6 +36,11 @@ export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
   const redirectTo = location.state?.from?.pathname || "/dashboard";
+
+  useEffect(() => {
+    clearError();
+    setFieldError(null);
+  }, [clearError]);
 
   const handleTurnstileToken = useCallback((token) => {
     setTurnstileToken(token);

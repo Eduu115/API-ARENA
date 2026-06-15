@@ -12,6 +12,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -259,6 +261,15 @@ public class EmailDispatchService {
         try {
             restTemplate.postForEntity(RESEND_API, new HttpEntity<>(body, headers), Map.class);
             log.info("Email sent via Resend to {} subject={}", toEmail, subject);
+        } catch (HttpStatusCodeException e) {
+            log.error(
+                    "Resend rejected email to {} subject={} status={} body={}",
+                    toEmail,
+                    subject,
+                    e.getStatusCode().value(),
+                    e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            log.error("Resend request failed for {} subject={}: {}", toEmail, subject, e.getMessage());
         } catch (Exception e) {
             log.error("Failed to send email to {} subject={}: {}", toEmail, subject, e.getMessage());
         }
