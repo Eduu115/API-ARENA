@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.apiarena.authservice.model.dto.FriendEntryDTO;
+import com.apiarena.authservice.model.dto.FriendRelationshipDTO;
 import com.apiarena.authservice.model.dto.FriendSearchResultDTO;
 import com.apiarena.authservice.model.dto.PendingFriendDTO;
 import com.apiarena.authservice.model.dto.UserDTO;
@@ -186,5 +187,41 @@ public class FriendService {
                     .build());
         }
         return out;
+    }
+
+    @Transactional(readOnly = true)
+    public FriendRelationshipDTO getRelationship(Long currentUserId, Long targetUserId) {
+        if (targetUserId == null) {
+            throw new IllegalArgumentException("Invalid user");
+        }
+        if (targetUserId.equals(currentUserId)) {
+            return FriendRelationshipDTO.builder().relationship("SELF").build();
+        }
+        userRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        long[] pair = orderedPair(currentUserId, targetUserId);
+        Optional<Friendship> existing = friendshipRepository.findByUserLowIdAndUserHighId(pair[0], pair[1]);
+        if (existing.isEmpty()) {
+            return FriendRelationshipDTO.builder().relationship("NONE").build();
+        }
+
+        Friendship f = existing.get();
+        if (f.getStatus() == FriendshipStatus.ACCEPTED) {
+            return FriendRelationshipDTO.builder()
+                    .relationship("FRIEND")
+                    .friendshipId(f.getId())
+                    .build();
+        }
+        if (f.getRequestedByUserId().equals(currentUserId)) {
+            return FriendRelationshipDTO.builder()
+                    .relationship("PENDING_OUTGOING")
+                    .friendshipId(f.getId())
+                    .build();
+        }
+        return FriendRelationshipDTO.builder()
+                .relationship("PENDING_INCOMING")
+                .friendshipId(f.getId())
+                .build();
     }
 }

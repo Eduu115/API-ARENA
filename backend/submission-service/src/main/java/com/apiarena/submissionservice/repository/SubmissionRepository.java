@@ -40,4 +40,7 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
             @Param("userId") Long userId,
             @Param("challengeId") Long challengeId,
             @Param("excludeId") Long excludeId);
+
+    @Query("SELECT s.challengeId, MAX(s.totalScore) FROM Submission s WHERE s.userId = :userId GROUP BY s.challengeId")
+    List<Object[]> findBestScorePerChallengeByUserId(@Param("userId") Long userId);
 }

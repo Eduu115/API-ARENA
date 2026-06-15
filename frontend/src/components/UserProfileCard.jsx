@@ -1,8 +1,10 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { getUserPublicProfile, getUserPublicAchievements } from '../lib/authApi';
+import { getUserPublicProfile, getUserPublicAchievements, getUserPublicBadges } from '../lib/authApi';
 import { getPublicUserSubmissions } from '../lib/submissionsApi';
 import { getGlobalUserRank } from '../lib/leaderboardApi';
+import * as friendsApi from '../lib/friendsApi';
+import { useAuth } from '../context/AuthContext';
 import ProfileBadges from './ProfileBadges';
 import {
   isUnranked,
@@ -80,13 +82,43 @@ function formatScore(score) {
 }
 
 export default function UserProfileCard({ userId, onClose }) {
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState(null);
   const [achievements, setAchievements] = useState([]);
+  const [displayedBadges, setDisplayedBadges] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [globalRank, setGlobalRank] = useState(null);
+  const [friendRel, setFriendRel] = useState(null);
+  const [friendLoading, setFriendLoading] = useState(false);
+  const [friendBusy, setFriendBusy] = useState(false);
+  const [friendError, setFriendError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const overlayRef = useRef(null);
+
+  const isSelf = currentUser?.id != null && Number(currentUser.id) === Number(userId);
+  const canShowFriendActions = Boolean(profile && !isSelf);
+
+  const refreshFriendStatus = useCallback(async () => {
+    if (!userId || !isAuthenticated || isSelf) {
+      setFriendRel(null);
+      return;
+    }
+    setFriendLoading(true);
+    setFriendError(null);
+    try {
+      const data = await friendsApi.getFriendshipStatus(userId);
+      setFriendRel(data);
+    } catch {
+      setFriendRel({ relationship: 'NONE' });
+    } finally {
+      setFriendLoading(false);
+    }
+  }, [userId, isAuthenticated, isSelf]);
+
+  useEffect(() => {
+    refreshFriendStatus();
+  }, [refreshFriendStatus]);
 
   useEffect(() => {
     if (!userId) return;
@@ -100,6 +132,7 @@ export default function UserProfileCard({ userId, onClose }) {
         const cached = bundleCache.get(userId);
         setProfile(cached.profile);
         setAchievements(cached.achievements);
+        setDisplayedBadges(cached.displayedBadges ?? []);
         setSubmissions(cached.submissions);
         setGlobalRank(cached.globalRank ?? null);
         setLoading(false);
@@ -107,9 +140,10 @@ export default function UserProfileCard({ userId, onClose }) {
       }
 
       try {
-        const [profileRes, achRes, subRes, rankRes] = await Promise.allSettled([
+        const [profileRes, achRes, badgeRes, subRes, rankRes] = await Promise.allSettled([
           getUserPublicProfile(userId),
           getUserPublicAchievements(userId),
+          getUserPublicBadges(userId),
           getPublicUserSubmissions(userId, 8),
           getGlobalUserRank(userId),
         ]);
@@ -125,12 +159,14 @@ export default function UserProfileCard({ userId, onClose }) {
         const bundle = {
           profile: profileRes.value,
           achievements: achRes.status === 'fulfilled' ? achRes.value : [],
+          displayedBadges: badgeRes.status === 'fulfilled' ? badgeRes.value : [],
           submissions: subRes.status === 'fulfilled' ? subRes.value : [],
           globalRank: rankRes.status === 'fulfilled' ? rankRes.value : null,
         };
         bundleCache.set(userId, bundle);
         setProfile(bundle.profile);
         setAchievements(bundle.achievements);
+        setDisplayedBadges(bundle.displayedBadges);
         setSubmissions(bundle.submissions);
         setGlobalRank(bundle.globalRank);
       } catch {
@@ -177,6 +213,155 @@ export default function UserProfileCard({ userId, onClose }) {
   const solved = profile?.totalChallengesCompleted ?? 0;
   const rankProgress = Math.min(100, (solved / MIN_RANKED_CHALLENGES) * 100);
   const onlineNow = profile ? isOnlineNow(profile.lastSeenAt) : false;
+
+  const handleAddFriend = async () => {
+    if (!userId || friendBusy) return;
+    setFriendBusy(true);
+    setFriendError(null);
+    try {
+      await friendsApi.sendFriendRequest(userId);
+      await refreshFriendStatus();
+    } catch (err) {
+      setFriendError(err?.message || 'Could not send friend request.');
+    } finally {
+      setFriendBusy(false);
+    }
+  };
+
+  const handleAcceptFriend = async () => {
+    if (!friendRel?.friendshipId || friendBusy) return;
+    setFriendBusy(true);
+    setFriendError(null);
+    try {
+      await friendsApi.acceptFriendRequest(friendRel.friendshipId);
+      await refreshFriendStatus();
+    } catch {
+      setFriendError('Could not accept request.');
+    } finally {
+      setFriendBusy(false);
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    if (!friendRel?.friendshipId || friendBusy) return;
+    setFriendBusy(true);
+    setFriendError(null);
+    try {
+      await friendsApi.cancelFriendRequest(friendRel.friendshipId);
+      await refreshFriendStatus();
+    } catch {
+      setFriendError('Could not update request.');
+    } finally {
+      setFriendBusy(false);
+    }
+  };
+
+  const handleUnfriend = async () => {
+    if (!userId || friendBusy) return;
+    if (!window.confirm(`Remove ${profile?.username ?? 'this user'} from your friends?`)) return;
+    setFriendBusy(true);
+    setFriendError(null);
+    try {
+      await friendsApi.removeFriend(userId);
+      await refreshFriendStatus();
+    } catch {
+      setFriendError('Could not remove friend.');
+    } finally {
+      setFriendBusy(false);
+    }
+  };
+
+  const renderFriendActions = () => {
+    if (!canShowFriendActions) return null;
+
+    if (!isAuthenticated) {
+      return (
+        <div className="upc-friend-bar">
+          <Link
+            to="/login"
+            state={{ from: { pathname: window.location.pathname } }}
+            className="upc-friend-btn upc-friend-btn--primary"
+          >
+            Log in to add friend
+          </Link>
+        </div>
+      );
+    }
+
+    if (friendLoading) {
+      return (
+        <div className="upc-friend-bar">
+          <span className="upc-friend-status">Checking friendship…</span>
+        </div>
+      );
+    }
+
+    const rel = friendRel?.relationship ?? 'NONE';
+
+    return (
+      <div className="upc-friend-bar">
+        {friendError && (
+          <p className="upc-friend-error" role="alert">{friendError}</p>
+        )}
+        {rel === 'NONE' && (
+          <button
+            type="button"
+            className="upc-friend-btn upc-friend-btn--primary"
+            onClick={handleAddFriend}
+            disabled={friendBusy}
+          >
+            {friendBusy ? 'Sending…' : 'Add friend'}
+          </button>
+        )}
+        {rel === 'PENDING_OUTGOING' && (
+          <>
+            <span className="upc-friend-status upc-friend-status--pending">Request sent</span>
+            <button
+              type="button"
+              className="upc-friend-btn upc-friend-btn--ghost"
+              onClick={handleCancelRequest}
+              disabled={friendBusy}
+            >
+              {friendBusy ? '…' : 'Cancel request'}
+            </button>
+          </>
+        )}
+        {rel === 'PENDING_INCOMING' && (
+          <>
+            <button
+              type="button"
+              className="upc-friend-btn upc-friend-btn--primary"
+              onClick={handleAcceptFriend}
+              disabled={friendBusy}
+            >
+              {friendBusy ? '…' : 'Accept request'}
+            </button>
+            <button
+              type="button"
+              className="upc-friend-btn upc-friend-btn--ghost"
+              onClick={handleCancelRequest}
+              disabled={friendBusy}
+            >
+              Decline
+            </button>
+          </>
+        )}
+        {rel === 'FRIEND' && (
+          <>
+            <span className="upc-friend-status upc-friend-status--friend">Friends</span>
+            <button
+              type="button"
+              className="upc-friend-btn upc-friend-btn--ghost"
+              onClick={handleUnfriend}
+              disabled={friendBusy}
+            >
+              {friendBusy ? '…' : 'Unfriend'}
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="upc-overlay" ref={overlayRef} onClick={handleOverlayClick}>
@@ -226,12 +411,13 @@ export default function UserProfileCard({ userId, onClose }) {
                     <div className="upc-badges">
                       <ProfileBadges
                         profile={profile}
-                        achievements={achievements}
                         globalRank={globalRank}
+                        displayedBadges={displayedBadges}
                         showRole
                         showSince
                       />
                     </div>
+                    {renderFriendActions()}
                   </div>
                 </div>
 

@@ -73,6 +73,8 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/users/*/profile",
                                 "/api/auth/users/*/achievements",
+                                "/api/auth/users/*/badges",
+                                "/api/auth/leaderboard/**",
                                 "/internal/**",
                                 "/actuator/health",
                                 "/actuator/info",

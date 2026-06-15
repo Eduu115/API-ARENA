@@ -66,15 +66,80 @@
 }
 
 .profile-badge--alpha {
-  color: #f5e6ff;
-  border-color: rgba(255, 215, 0, 0.45);
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(255, 184, 0, 0.18));
+  color: #fff8ef;
+  border-color: rgba(255, 215, 0, 0.8);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.78) 0%, rgba(255, 184, 0, 0.48) 52%, rgba(255, 215, 0, 0.32) 100%);
+  box-shadow:
+    0 0 16px rgba(168, 85, 247, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .profile-badge--beta {
-  color: var(--purple);
-  border-color: rgba(168, 85, 247, 0.5);
-  background: rgba(168, 85, 247, 0.14);
+  color: #e8fbff;
+  border-color: rgba(0, 217, 255, 0.82);
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.62) 0%, rgba(168, 85, 247, 0.52) 48%, rgba(0, 120, 255, 0.38) 100%);
+  box-shadow:
+    0 0 16px rgba(0, 217, 255, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.profile-badge--mandatory {
+  position: relative;
+}
+
+.profile-badge--collectible,
+.profile-badge--clear {
+  color: var(--green);
+  border-color: rgba(0, 255, 136, 0.35);
+  background: rgba(0, 255, 136, 0.08);
+}
+
+.profile-badge--verified {
+  color: var(--cyan);
+  border-color: rgba(0, 217, 255, 0.45);
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.profile-badge--level {
+  color: var(--warn);
+  border-color: rgba(255, 184, 0, 0.45);
+  background: rgba(255, 184, 0, 0.1);
+}
+
+.profile-badge--elo {
+  color: #ffe566;
+  border-color: rgba(255, 215, 0, 0.45);
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.profile-badge--streak {
+  color: var(--red);
+  border-color: rgba(255, 80, 80, 0.4);
+  background: rgba(255, 80, 80, 0.1);
+}
+
+.profile-badge--trophy {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.5);
+  background: rgba(255, 215, 0, 0.12);
+}
+
+.profile-badge--link {
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="light"] .profile-badge--alpha {
+  color: #2a1848;
+  text-shadow: none;
+}
+
+[data-theme="light"] .profile-badge--beta {
+  color: #0a3d52;
+  text-shadow: none;
 }
 
 [data-theme="light"] .profile-badge--top1 {

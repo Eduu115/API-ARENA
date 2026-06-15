@@ -4,11 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
 import { getGlobalUserRank } from '../lib/leaderboardApi';
+import { getMyBestPerChallengeStats } from '../lib/submissionsApi';
 import Topbar from '../components/Topbar';
 import BottomNav from '../components/BottomNav';
 import CustomCursor from '../components/CustomCursor';
 import WeeklyStreakPanel from '../components/WeeklyStreakPanel';
 import AchievementList from '../components/AchievementList';
+import BadgeCollection from '../components/BadgeCollection';
 import ProfileBadges from '../components/ProfileBadges';
 import { recentUnlockedAchievements } from '../lib/achievementDisplay';
 import './challenges/challenges.css';
@@ -39,6 +41,9 @@ export default function Profile() {
   });
   const [achievements, setAchievements] = useState([]);
   const [achievementsLoading, setAchievementsLoading] = useState(true);
+  const [badges, setBadges] = useState([]);
+  const [badgesLoading, setBadgesLoading] = useState(true);
+  const [badgesSaving, setBadgesSaving] = useState(false);
   const [weeklyStreak, setWeeklyStreak] = useState(null);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -46,6 +51,8 @@ export default function Profile() {
   const [exporting, setExporting] = useState(false);
   const [privacyError, setPrivacyError] = useState(null);
   const [globalRank, setGlobalRank] = useState(null);
+  const [bestPerChallengeStats, setBestPerChallengeStats] = useState(null);
+  const [bestPerChallengeLoading, setBestPerChallengeLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
@@ -76,6 +83,26 @@ export default function Profile() {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
     let cancelled = false;
+    setBadgesLoading(true);
+    authApi
+      .getMyBadges()
+      .then((data) => {
+        if (!cancelled && Array.isArray(data)) setBadges(data);
+      })
+      .catch(() => {
+        if (!cancelled) setBadges([]);
+      })
+      .finally(() => {
+        if (!cancelled) setBadgesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    let cancelled = false;
     authApi.getMyWeeklyStreak()
       .then((data) => { if (!cancelled) setWeeklyStreak(data); })
       .catch(() => { if (!cancelled) setWeeklyStreak(null); });
@@ -94,6 +121,23 @@ export default function Profile() {
       });
     return () => { cancelled = true; };
   }, [isAuthenticated, user?.id]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    let cancelled = false;
+    setBestPerChallengeLoading(true);
+    getMyBestPerChallengeStats()
+      .then((data) => {
+        if (!cancelled) setBestPerChallengeStats(data);
+      })
+      .catch(() => {
+        if (!cancelled) setBestPerChallengeStats(null);
+      })
+      .finally(() => {
+        if (!cancelled) setBestPerChallengeLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [isAuthenticated, user]);
 
   const initials = useMemo(() => {
     const src = user?.username || user?.email || 'U';
@@ -114,7 +158,29 @@ export default function Profile() {
     () => {
       const devSeconds = user?.totalDevelopmentSeconds ?? 0;
       const browseSeconds = user?.totalBrowsingSeconds ?? 0;
+      const avgBest = bestPerChallengeStats?.averageBestScore;
+      const avgBestLabel = bestPerChallengeLoading
+        ? '…'
+        : avgBest != null
+          ? avgBest.toFixed(1)
+          : '—';
+      const avgBestBar =
+        avgBest != null
+          ? `${Math.min((avgBest / (bestPerChallengeStats?.maxScoreScale ?? 1000)) * 100, 100)}%`
+          : '0%';
       return [
+      {
+        icon: '◈',
+        label: 'Avg best score',
+        value: avgBestLabel,
+        color: 'var(--warn)',
+        barWidth: avgBestBar,
+        privateOnly: true,
+        hint:
+          bestPerChallengeStats?.challengesAttempted > 0
+            ? `Best attempt on each of ${bestPerChallengeStats.challengesAttempted} challenge${bestPerChallengeStats.challengesAttempted !== 1 ? 's' : ''} attempted (private)`
+            : 'Average of your best score per challenge attempted (private)',
+      },
       {
         icon: '⏱',
         label: 'Time coding',
@@ -152,15 +218,30 @@ export default function Profile() {
       },
     ];
     },
-    [user, xp, solved, testsPassed]
+    [user, xp, solved, testsPassed, bestPerChallengeStats, bestPerChallengeLoading]
   );
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
+  const unlockedBadgeCount = badges.filter((b) => b.unlocked).length;
+  const displayedCollectibles = useMemo(
+    () => badges.filter((b) => b.unlocked && b.displayed),
+    [badges]
+  );
   const previewAchievements = useMemo(
     () => recentUnlockedAchievements(achievements, PROFILE_ACH_PREVIEW),
     [achievements]
   );
   const showViewAllAchievements = !achievementsLoading && achievements.length > 0;
+
+  const handleBadgeDisplayUpdate = async (codes) => {
+    setBadgesSaving(true);
+    try {
+      const updated = await authApi.updateDisplayedBadges(codes);
+      setBadges(Array.isArray(updated) ? updated : []);
+    } finally {
+      setBadgesSaving(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -199,6 +280,9 @@ export default function Profile() {
       await authApi.updateProfile(form);
       setEditing(false);
       await loadUser();
+      authApi.getMyBadges().then((data) => {
+        if (Array.isArray(data)) setBadges(data);
+      }).catch(() => {});
     } catch (err) {
       setError(err?.message || 'Could not update profile');
     } finally {
@@ -357,8 +441,8 @@ export default function Profile() {
                 </h1>
                 <ProfileBadges
                   profile={user}
-                  achievements={achievements}
                   globalRank={globalRank}
+                  displayedBadges={displayedCollectibles}
                   showRole={false}
                   className="profile-identity-badges"
                 />
@@ -447,12 +531,16 @@ export default function Profile() {
 
             <section className="profile-strip" aria-label="Performance">
               <div className="db-section-eyebrow">Combat overview</div>
+              <p className="profile-strip-hint">
+                Avg best score is private — your highest attempt per challenge attempted, averaged.
+              </p>
               <div className="db-kpi-grid profile-kpi-grid db-kpi-grid--secondary">
                 {kpiCards.map((card) => (
                   <div
                     key={card.label}
-                    className="db-kpi-card"
+                    className={`db-kpi-card${card.privateOnly ? ' db-kpi-card--private' : ''}`}
                     style={{ '--kpi-color': card.color }}
+                    title={card.hint}
                   >
                     <div className="db-kpi-top">
                       <span className="db-kpi-icon">{card.icon}</span>
@@ -463,6 +551,24 @@ export default function Profile() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            <section className="profile-block profile-block--badges" aria-labelledby="badges-heading">
+              <div className="profile-block-head">
+                <h2 id="badges-heading" className="profile-block-title">
+                  Profile badges
+                </h2>
+                <span className="profile-block-meta">
+                  {badgesLoading ? '…' : `${unlockedBadgeCount} unlocked`}
+                </span>
+              </div>
+              <BadgeCollection
+                badges={badges}
+                loading={badgesLoading}
+                saving={badgesSaving}
+                globalRank={globalRank}
+                onToggleDisplay={handleBadgeDisplayUpdate}
+              />
             </section>
 
             <section className="profile-block profile-block--ach-preview" aria-labelledby="ach-heading">

@@ -94,6 +94,14 @@ public class PublicRateLimitFilter extends OncePerRequestFilter {
             return new RateLimitRule("public-achievements", properties.getPublicProfilePerIpPerMinute(),
                     Duration.ofMinutes(1));
         }
+        if (HttpMethod.GET.matches(method) && pathMatcher.match("/api/auth/users/*/badges", path)) {
+            return new RateLimitRule("public-badges", properties.getPublicProfilePerIpPerMinute(),
+                    Duration.ofMinutes(1));
+        }
+        if (HttpMethod.GET.matches(method) && path.startsWith("/api/auth/leaderboard/")) {
+            return new RateLimitRule("public-leaderboard", properties.getPublicProfilePerIpPerMinute(),
+                    Duration.ofMinutes(1));
+        }
         return null;
     }
 

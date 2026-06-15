@@ -54,6 +54,11 @@ export async function getMySubmissions() {
   return request("/api/submissions/my");
 }
 
+/** Private: average of best score per distinct challenge attempted. */
+export async function getMyBestPerChallengeStats() {
+  return request("/api/submissions/my/best-per-challenge-stats");
+}
+
 /** Public: latest completed submissions for a user (no auth). */
 export async function getPublicUserSubmissions(userId, limit = 8) {
   const base = getBaseUrl();

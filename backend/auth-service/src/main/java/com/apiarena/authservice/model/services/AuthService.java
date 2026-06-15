@@ -118,6 +118,7 @@ public class AuthService implements IAuthService {
         u.setDateOfBirth(dob);
         u.setPrivacyConsentAt(LocalDateTime.now());
         u.setPrivacyConsentVersion(CURRENT_CONSENT_VERSION);
+        u.setPasswordChangedAt(LocalDateTime.now());
 
         User savedUser = userRepository.save(u);
 
@@ -278,6 +279,8 @@ public class AuthService implements IAuthService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordResetToken(null);
         user.setPasswordResetExpiresAt(null);
+        user.setPasswordChangedAt(LocalDateTime.now());
+        user.setLastPasswordReminderSentAt(null);
         userRepository.save(user);
 
         // Invalidate all existing sessions after a password change.

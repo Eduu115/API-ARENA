@@ -101,6 +101,34 @@ public class EmailDispatchService {
     }
 
     /**
+     * Scheduled security reminder: rotate password periodically (every ~2 months).
+     */
+    public void sendPasswordRotationReminderEmail(String toEmail, String username) {
+        String apiKey = emailProperties.getResendApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("RESEND_API_KEY not set; skip password rotation reminder to {}", toEmail);
+            return;
+        }
+
+        String base = frontendBaseUrl();
+        String forgotLink = base + "/forgot-password";
+        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
+
+        String html = """
+                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Time to update your password</h1>
+                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
+                  <p style="line-height:1.5;margin:0 0 16px;">For your security, we recommend changing your API Arena password every two months. If you have not updated it recently, now is a good time.</p>
+                  <p style="line-height:1.5;margin:0 0 24px;">Use the link below to request a secure reset link by email. You will stay signed in on devices where you are already logged in until you complete the reset.</p>
+                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Change my password</a>
+                  <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you recently changed your password, you can ignore this message. We send this reminder about every two months to help keep accounts secure.</p>
+                </div>
+                """.formatted(safeName, forgotLink);
+
+        postResend(toEmail, "API Arena — password security reminder", html);
+    }
+
+    /**
      * Welcome + beta messaging; separate from in-app IMPORTANT notification (no duplicate copy).
      */
     public void sendWelcomeBetaLegacyEmail(String toEmail, String username) {

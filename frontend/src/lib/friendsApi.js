@@ -70,3 +70,8 @@ export function removeFriend(peerUserId) {
     method: "DELETE",
   });
 }
+
+/** Relationship with another user: NONE | FRIEND | PENDING_OUTGOING | PENDING_INCOMING | SELF */
+export function getFriendshipStatus(userId) {
+  return request(`/api/friends/status/${userId}`);
+}
