@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Topbar from '../components/Topbar';
 import BottomNav from '../components/BottomNav';
 import CustomCursor from '../components/CustomCursor';
@@ -36,10 +37,11 @@ function getRankClass(rank) {
 }
 
 export default function Leaderboard() {
+  const { t } = useTranslation('leaderboard');
+
   usePageMeta({
-    title: 'Leaderboard — Top API Developers',
-    description:
-      'Global ELO and level rankings plus per-challenge leaderboards on API Arena.',
+    title: t('pageTitle'),
+    description: t('pageDescription'),
     path: '/leaderboard',
   });
 
@@ -105,7 +107,7 @@ export default function Leaderboard() {
       } catch (err) {
         if (!cancelled) {
           setPlayers([]);
-          setError(err?.message || 'Failed to load leaderboard');
+          setError(err?.message || t('loadError'));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -114,7 +116,7 @@ export default function Leaderboard() {
 
     loadRankings();
     return () => { cancelled = true; };
-  }, [mode, selectedChallengeId]);
+  }, [mode, selectedChallengeId, t]);
 
   const sorted = useMemo(() => {
     const list = [...players];
@@ -126,8 +128,18 @@ export default function Leaderboard() {
 
   const top3 = sorted.slice(0, 3);
   const rest = sorted.slice(3);
-  const columns = getTableColumns(mode);
+  const columns = useMemo(() => getTableColumns(mode, t), [mode, t]);
   const selectedChallenge = challenges.find((c) => String(c.id) === String(selectedChallengeId));
+
+  const modeTabs = useMemo(
+    () =>
+      LEADERBOARD_MODES.map((m) => ({
+        ...m,
+        label: t(`modes.${m.id}`),
+        description: t(`modes.${m.id}Desc`),
+      })),
+    [t]
+  );
 
   const closeProfile = useCallback(() => setSelectedUserId(null), []);
 
@@ -150,14 +162,14 @@ export default function Leaderboard() {
         <main className="ch-main">
           <div className="ch-page-header lb-page-header">
             <div>
-              <div className="ch-page-eyebrow">// Global Rankings</div>
-              <h1 className="ch-page-title">Leader<em>Board</em></h1>
+              <div className="ch-page-eyebrow">{t('eyebrow')}</div>
+              <h1 className="ch-page-title">{t('titleBefore')}<em>{t('titleEm')}</em></h1>
             </div>
           </div>
 
           <div className="lb-controls">
-            <div className="lb-tabs" role="tablist" aria-label="Leaderboard mode">
-              {LEADERBOARD_MODES.map((m) => (
+            <div className="lb-tabs" role="tablist" aria-label={t('modeTabsAria')}>
+              {modeTabs.map((m) => (
                 <button
                   key={m.id}
                   type="button"
@@ -175,7 +187,7 @@ export default function Leaderboard() {
             {mode === 'challenge' && (
               <div className="lb-challenge-filter">
                 <label className="lb-challenge-label" htmlFor="lb-challenge-select">
-                  Challenge
+                  {t('challengeLabel')}
                 </label>
                 <select
                   id="lb-challenge-select"
@@ -185,7 +197,7 @@ export default function Leaderboard() {
                   disabled={challengesLoading}
                 >
                   <option value="">
-                    {challengesLoading ? 'Loading challenges…' : 'Select a challenge…'}
+                    {challengesLoading ? t('selectLoading') : t('selectPlaceholder')}
                   </option>
                   {challenges.map((c) => (
                     <option key={c.id} value={String(c.id)}>
@@ -199,28 +211,28 @@ export default function Leaderboard() {
 
           {mode === 'challenge' && selectedChallenge && (
             <p className="lb-mode-hint">
-              Rankings for <strong>{selectedChallenge.title}</strong> — best score, then fastest time.
+              {t('hintChallengePrefix')} <strong>{selectedChallenge.title}</strong> {t('hintChallengeSuffix')}
             </p>
           )}
           {mode === 'elo' && (
             <p className="lb-mode-hint">
-              ELO ranking includes players with at least 3 completed challenges.
+              {t('hintElo')}
             </p>
           )}
 
           {loading ? (
-            <div className="lb-state-message">Loading rankings…</div>
+            <div className="lb-state-message">{t('loading')}</div>
           ) : error ? (
             <div className="lb-state-message lb-state-error">{error}</div>
           ) : showEmptyChallengePrompt ? (
             <div className="lb-state-message">
-              Select a challenge above to view its leaderboard.
+              {t('selectPrompt')}
             </div>
           ) : showNoEntries ? (
             <div className="lb-state-message">
               {mode === 'challenge'
-                ? 'No submissions for this challenge yet.'
-                : 'No leaderboard entries yet. Complete a challenge to appear here!'}
+                ? t('emptyChallenge')
+                : t('emptyGlobal')}
             </div>
           ) : (
             <>
@@ -229,8 +241,8 @@ export default function Leaderboard() {
                   if (!p) return <div key={`empty-${i}`} />;
                   const rank = i === 0 ? 2 : i === 1 ? 1 : 3;
                   const initials = p.username.slice(0, 2).toUpperCase();
-                  const primary = getPodiumPrimary(p, mode);
-                  const stats = getPodiumStats(p, mode);
+                  const primary = getPodiumPrimary(p, mode, t);
+                  const stats = getPodiumStats(p, mode, t);
                   return (
                     <div
                       key={p.userId}
@@ -271,14 +283,14 @@ export default function Leaderboard() {
                   ))}
                 </div>
                 {rest.length === 0 && top3.length <= 3 ? (
-                  <div className="lb-table-empty">Only podium players so far</div>
+                  <div className="lb-table-empty">{t('podiumOnly')}</div>
                 ) : (
                   rest.map((p, i) => {
                     const rank = p.rank ?? i + 4;
                     const initials = p.username.slice(0, 2).toUpperCase();
                     const isMe = user && p.userId === user.id;
                     const avatarBg = AVATAR_COLORS[i % AVATAR_COLORS.length];
-                    const cells = getRowCells(p, mode);
+                    const cells = getRowCells(p, mode, t);
                     return (
                       <div
                         key={p.userId}

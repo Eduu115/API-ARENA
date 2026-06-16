@@ -1,0 +1,47 @@
+{
+  "pageTitle": "Leaderboard — Top API Developers",
+  "pageDescription": "Global ELO and level rankings plus per-challenge leaderboards on API Arena.",
+  "eyebrow": "// Global Rankings",
+  "titleBefore": "Leader",
+  "titleEm": "Board",
+  "modes": {
+    "elo": "ELO",
+    "eloDesc": "Competitive rating (3+ challenges)",
+    "level": "Level",
+    "levelDesc": "Account level and XP",
+    "challenge": "Challenge",
+    "challengeDesc": "Best score on a challenge"
+  },
+  "modeTabsAria": "Leaderboard mode",
+  "challengeLabel": "Challenge",
+  "selectLoading": "Loading challenges…",
+  "selectPlaceholder": "Select a challenge…",
+  "hintChallengePrefix": "Rankings for",
+  "hintChallengeSuffix": "— best score, then fastest time.",
+  "hintElo": "ELO ranking includes players with at least 3 completed challenges.",
+  "loading": "Loading rankings…",
+  "loadError": "Failed to load leaderboard",
+  "selectPrompt": "Select a challenge above to view its leaderboard.",
+  "emptyChallenge": "No submissions for this challenge yet.",
+  "emptyGlobal": "No leaderboard entries yet. Complete a challenge to appear here!",
+  "podiumOnly": "Only podium players so far",
+  "columns": {
+    "rank": "Rank",
+    "player": "Player",
+    "elo": "ELO",
+    "level": "Level",
+    "solved": "Solved",
+    "xp": "XP",
+    "score": "Score",
+    "time": "Time",
+    "date": "Date",
+    "seconds": "Seconds"
+  },
+  "labels": {
+    "lvl": "LVL",
+    "pts": "PTS",
+    "challengesSub": "{{count}} challenges",
+    "xpTotalSub": "{{xp}} XP total",
+    "bestSubmission": "Best submission"
+  }
+}
