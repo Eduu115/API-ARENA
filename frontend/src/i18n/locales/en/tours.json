@@ -1,0 +1,80 @@
+{
+  "chrome": {
+    "eyebrow": "Quick tour",
+    "welcome": "Welcome",
+    "hint": "You can skip anytime. Full guides live in <1>Docs</1> — bookmark what you need.",
+    "skip": "Skip tour",
+    "openDocs": "Open Docs",
+    "next": "Next",
+    "done": "Done",
+    "stepPill": "{{current}} / {{total}}"
+  },
+  "dashboard": {
+    "steps": [
+      {
+        "title": "Main navigation",
+        "body": "Dashboard, Challenges, Submissions, Friends, Leaderboard, Docs, and Replay are always one click away. Alerts and your profile are on the right."
+      },
+      {
+        "title": "Your stats",
+        "body": "The sidebar shows level, XP, solved challenges, and category breakdown. Use it as a quick read on your progress."
+      },
+      {
+        "title": "Continue from here",
+        "body": "Featured and recommended challenges appear in the main area. Pick one to read the briefing and start a timed run when you are ready."
+      }
+    ]
+  },
+  "challenges": {
+    "steps": [
+      {
+        "title": "Catalog navigation",
+        "body": "The same top bar works on every page. Docs links to guides on ZIP layout, ELO, and troubleshooting."
+      },
+      {
+        "title": "Filter the list",
+        "body": "Search by name, filter by difficulty and status, and sort. Your progress summary is at the bottom of the sidebar."
+      },
+      {
+        "title": "Open a challenge",
+        "body": "Click a card to see the public briefing. After you sign in, Start Challenge opens the full specs and the submit workspace with timer and ZIP upload."
+      }
+    ]
+  },
+  "challengeDetail": {
+    "steps": [
+      {
+        "title": "Start a run",
+        "body": "Back returns to the catalog. Start Challenge begins your timed session: you will see full endpoints, tests, and the ZIP submit screen. Limits (cooldown, daily cap) apply to students."
+      },
+      {
+        "title": "Read the briefing",
+        "body": "Difficulty, category, time limit, and XP reward are shown here. The detailed contract appears only after you start—this page is the overview."
+      },
+      {
+        "title": "Full requirements",
+        "body": "Endpoints, status codes, performance, and hints unlock inside the submit workspace. If you are new, read Docs → First Steps and Preconfigure Project before starting."
+      }
+    ]
+  },
+  "challengeSubmit": {
+    "steps": [
+      {
+        "title": "Fair play rules",
+        "body": "Daily attempts (UTC) and cooldown between runs keep rankings fair. Staff accounts skip these limits."
+      },
+      {
+        "title": "Session timer",
+        "body": "The timer keeps running if you leave the tab. When time is up you cannot submit—plan your implementation before you start."
+      },
+      {
+        "title": "Upload your project",
+        "body": "Only .zip files. Put pom.xml at the root of the archive, include your Spring (or compatible) API, and avoid secrets. Drag and drop or click the zone to browse."
+      },
+      {
+        "title": "Send to the pipeline",
+        "body": "Submit Solution uploads your ZIP to the build and test pipeline. Wait until it finishes—closing the tab can fail the run. See Docs → Submitting a Challenge for the full checklist."
+      }
+    ]
+  }
+}

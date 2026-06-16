@@ -1,21 +1,5 @@
+import { useTranslation } from 'react-i18next';
 import { TERMINAL_SCORE_DIMS } from '../../pages/landing/landing.data';
-
-const TERMINAL_LINES = [
-  { type: 'cmd',     prompt: '$', text: 'arena submit ./my-api --challenge crud-master' },
-  { type: 'output',  text: '→ Building Docker image...' },
-  { type: 'output',  text: '→ Spinning up sandbox...' },
-  { type: 'success', text: '[OK] Container ready on :8080' },
-  { type: 'sep' },
-  { type: 'output',  text: '→ Running functional tests [47/47]' },
-  { type: 'success', text: '[OK] All tests passed - 47/47' },
-  { type: 'output',  text: '→ Performance analysis (1000 RPS)' },
-  { type: 'success', text: '[OK] Avg: 12ms - P99: 28ms' },
-  { type: 'output',  text: '→ REST design analysis...' },
-  { type: 'info',    text: '[i] 2 suggestions - Score: 94/100' },
-  { type: 'output',  text: '→ AI code review...' },
-  { type: 'success', text: '[OK] Claude review: excellent' },
-  { type: 'sep' },
-];
 
 function TerminalLine({ line }) {
   if (line.type === 'sep') return <hr className="t-separator" />;
@@ -32,28 +16,34 @@ function TerminalLine({ line }) {
 }
 
 export default function TerminalWindow() {
+  const { t } = useTranslation('landing');
+  const lines = t('terminal.lines', { returnObjects: true });
+  const scoreLabels = t('terminal.scoreDims', { returnObjects: true });
+
   return (
     <div className="terminal-window">
       <div className="terminal-bar">
         <div className="t-dot" />
         <div className="t-dot" />
         <div className="t-dot" />
-        <span className="t-title">apiarena · submission #2847</span>
+        <span className="t-title">{t('terminal.title')}</span>
         <span className="t-status">
           <span className="t-status-dot" />
-          LIVE
+          {t('terminal.live')}
         </span>
       </div>
 
       <div className="terminal-body">
-        {TERMINAL_LINES.map((line, i) => (
+        {(Array.isArray(lines) ? lines : []).map((line, i) => (
           <TerminalLine key={i} line={line} />
         ))}
 
         <div className="score-panel">
-          {TERMINAL_SCORE_DIMS.map(({ label, pct, value, color, gradient }) => (
-            <div key={label} className="score-row">
-              <span className="score-label">{label}</span>
+          {TERMINAL_SCORE_DIMS.map(({ pct, value, color, gradient }, i) => (
+            <div key={i} className="score-row">
+              <span className="score-label">
+                {Array.isArray(scoreLabels) ? scoreLabels[i] : ''}
+              </span>
               <div className="score-bar-bg">
                 <div
                   className="score-bar-fill"
@@ -67,7 +57,7 @@ export default function TerminalWindow() {
 
         <div className="t-line" style={{ marginTop: '12px' }}>
           <span className="t-success" style={{ padding: 0, fontSize: '13px' }}>
-            ★ TOTAL SCORE: 920 · RANK #3 ↑2
+            {t('terminal.totalScore')}
           </span>
         </div>
       </div>

@@ -13,7 +13,8 @@ import { useMsUntilIso, formatCountdownMs } from '../../lib/challengeAttemptUtil
 import './challenges.css';
 import './ChallengeDetail.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
-import { DOCS_PATHS, TOUR_CHALLENGE_DETAIL } from '../../tutorial/tourDefinitions';
+import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
+import { useTourSteps } from '../../lib/tourSteps';
 import { usePageMeta } from '../../lib/usePageMeta';
 
 export default function ChallengeDetail() {
@@ -29,6 +30,7 @@ export default function ChallengeDetail() {
   const [attemptPolicy, setAttemptPolicy] = useState(null);
   const [policyLoading, setPolicyLoading] = useState(false);
   const [attemptBlockModalOpen, setAttemptBlockModalOpen] = useState(false);
+  const tourSteps = useTourSteps('challengeDetail');
 
   const policyBlocks = useMemo(
     () => !staffBypass && attemptPolicy && attemptPolicy.allowed === false,
@@ -282,7 +284,7 @@ export default function ChallengeDetail() {
       />
       <TutorialTour
         tourKey="challengeDetail"
-        steps={TOUR_CHALLENGE_DETAIL}
+        steps={tourSteps}
         docsHref={DOCS_PATHS.challengeDetail}
         when
       />

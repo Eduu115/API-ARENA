@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { finishTutorial, isTutorialDone } from "../../lib/tutorialStorage";
 import "./tutorial.css";
@@ -31,6 +32,7 @@ export default function TutorialTour({
   when = true,
   requireAuth = true,
 }) {
+  const { t } = useTranslation("tours");
   const { user, isAuthenticated, isLoading } = useAuth();
   const userId = user?.id ?? null;
   const authReady = !requireAuth || (!isLoading && isAuthenticated && user?.emailVerified !== false);
@@ -163,30 +165,30 @@ export default function TutorialTour({
         }}
       >
         <div className="tutorial-card">
-          <div className="tutorial-card-eyebrow">Quick tour</div>
+          <div className="tutorial-card-eyebrow">{t("chrome.eyebrow")}</div>
           <h2 id="tutorial-title" className="tutorial-card-title">
-            {step?.title || "Welcome"}
+            {step?.title || t("chrome.welcome")}
           </h2>
           <p className="tutorial-card-body">{step?.body || ""}</p>
           <p className="tutorial-card-hint">
-            You can skip anytime. Full guides live in <strong>Docs</strong> — bookmark what you need.
+            <Trans i18nKey="chrome.hint" t={t} components={{ 1: <strong /> }} />
           </p>
           <div className="tutorial-card-actions">
             <span className="tutorial-step-pill">
-              {stepIndex + 1} / {steps.length}
+              {t("chrome.stepPill", { current: stepIndex + 1, total: steps.length })}
             </span>
             <button type="button" className="tutorial-btn tutorial-btn-skip" onClick={handleSkip}>
-              Skip tour
+              {t("chrome.skip")}
             </button>
             <Link
               to={docsHref}
               className="tutorial-btn tutorial-btn-docs"
               onClick={() => closeTour("skip")}
             >
-              Open Docs
+              {t("chrome.openDocs")}
             </Link>
             <button type="button" className="tutorial-btn tutorial-btn-next" onClick={handleNext}>
-              {last ? "Done" : "Next"}
+              {last ? t("chrome.done") : t("chrome.next")}
             </button>
           </div>
         </div>

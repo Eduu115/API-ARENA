@@ -13,7 +13,8 @@ import TutorialTour from '../../components/tutorial/TutorialTour';
 import WeeklyStreakPanel from '../../components/WeeklyStreakPanel';
 import * as authApi from '../../lib/authApi';
 import { isUnranked, challengesUntilRanked } from '../../lib/rankConstants';
-import { DOCS_PATHS, TOUR_DASHBOARD } from '../../tutorial/tourDefinitions';
+import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
+import { useTourSteps } from '../../lib/tourSteps';
 import { usePageMeta } from '../../lib/usePageMeta';
 
 const DIFF_COLOR = { easy: 'var(--green)', medium: 'var(--warn)', hard: 'var(--red)', expert: 'var(--purple)' };
@@ -84,6 +85,7 @@ export default function Dashboard() {
   ]), [elo, level, solved, xp, unranked, t]);
 
   const featuredList = useMemo(() => featured.slice(0, 6), [featured]);
+  const tourSteps = useTourSteps('dashboard');
 
   return (
     <div className="challenges-page dashboard-page">
@@ -256,7 +258,7 @@ export default function Dashboard() {
       </div>
 
       <BottomNav />
-      <TutorialTour tourKey="dashboard" steps={TOUR_DASHBOARD} docsHref={DOCS_PATHS.dashboard} when />
+      <TutorialTour tourKey="dashboard" steps={tourSteps} docsHref={DOCS_PATHS.dashboard} when />
     </div>
   );
 }

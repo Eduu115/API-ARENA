@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
 import CustomCursor from "../../components/CustomCursor";
@@ -15,6 +16,7 @@ const TEACHER_NAV = [
 ];
 
 export default function TeacherLayout({ children }) {
+  const { t } = useTranslation("teacher");
   const { pathname } = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -42,10 +44,10 @@ export default function TeacherLayout({ children }) {
 
         <aside className={`ch-sidebar${sidebarOpen ? " open" : ""}`}>
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Teacher</div>
+            <div className="ch-sidebar-label">{t("layout.teacher")}</div>
             <div style={{ padding: "10px 0 2px" }}>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)" }}>
-                // Teacher panel
+                {t("layout.teacherPanel")}
               </div>
               <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
                 <Link
@@ -53,7 +55,7 @@ export default function TeacherLayout({ children }) {
                   className="ch-filter-btn"
                   style={{ justifyContent: "space-between" }}
                 >
-                  <span>Go to dashboard</span>
+                  <span>{t("layout.goToDashboard")}</span>
                   <span className="ch-filter-count">→</span>
                 </Link>
               </div>
@@ -61,7 +63,7 @@ export default function TeacherLayout({ children }) {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Navigation</div>
+            <div className="ch-sidebar-label">{t("layout.navigation")}</div>
             {TEACHER_NAV.map((item) => (
               <Link
                 key={item.path}
@@ -76,19 +78,19 @@ export default function TeacherLayout({ children }) {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Shortcuts</div>
+            <div className="ch-sidebar-label">{t("layout.shortcuts")}</div>
             <div className="db-quick-stats" style={{ marginTop: 10 }}>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: "var(--cyan)" }}>
                   ✓
                 </div>
-                <div className="db-qs-label">Review</div>
+                <div className="db-qs-label">{t("layout.review")}</div>
               </div>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: "var(--green)" }}>
                   +
                 </div>
-                <div className="db-qs-label">Create</div>
+                <div className="db-qs-label">{t("layout.create")}</div>
               </div>
             </div>
           </div>
@@ -101,4 +103,3 @@ export default function TeacherLayout({ children }) {
     </div>
   );
 }
-

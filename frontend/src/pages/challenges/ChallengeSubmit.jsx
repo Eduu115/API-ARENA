@@ -16,7 +16,8 @@ import AttemptPolicyBlockModal from '../../components/AttemptPolicyBlockModal';
 import './challenges.css';
 import './ChallengeSubmit.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
-import { DOCS_PATHS, TOUR_CHALLENGE_SUBMIT } from '../../tutorial/tourDefinitions';
+import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
+import { useTourSteps } from '../../lib/tourSteps';
 
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
@@ -211,6 +212,7 @@ export default function ChallengeSubmit() {
   const fileInputRef = useRef(null);
   const { user } = useAuth();
   const staffBypass = user?.role === 'TEACHER' || user?.role === 'ADMIN';
+  const tourSteps = useTourSteps('challengeSubmit');
 
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -779,7 +781,7 @@ export default function ChallengeSubmit() {
       )}
       <TutorialTour
         tourKey="challengeSubmit"
-        steps={TOUR_CHALLENGE_SUBMIT}
+        steps={tourSteps}
         docsHref={DOCS_PATHS.challengeSubmit}
         when={!showFirstSubmitModal && !policyBlocks}
       />

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Header from '../../components/Header';
 import SlashDivider from '../../components/landing/SlashDivider';
 import HeroSection from './sections/HeroSection';
@@ -68,9 +69,9 @@ function useLandingCursor() {
 
 export default function Landing() {
   useLandingCursor();
+  const { t } = useTranslation('landing');
   usePageMeta({
-    description:
-      'API Arena is a competitive platform where developers ship real Spring Boot APIs, get scored by real builds and HTTP tests, and climb XP and ELO rankings.',
+    description: t('meta.description'),
     path: '/',
   });
 

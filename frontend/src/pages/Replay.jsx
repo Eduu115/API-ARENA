@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Topbar from "../components/Topbar";
 import BottomNav from "../components/BottomNav";
 import CustomCursor from "../components/CustomCursor";
 import { getMySubmissions, getSubmissionReplay } from "../lib/submissionsApi.js";
 import { getChallengePreview } from "../lib/challengesApi.js";
+import { usePageMeta } from "../lib/usePageMeta";
 import "./challenges/challenges.css";
 import "./replay.css";
 
@@ -30,10 +32,11 @@ function formatScore(v) {
   return n.toFixed(1);
 }
 
-function formatDate(iso) {
+function formatDate(iso, locale) {
   if (!iso) return "—";
+  const loc = locale?.startsWith("es") ? "es-ES" : undefined;
   try {
-    return new Date(iso).toLocaleString(undefined, {
+    return new Date(iso).toLocaleString(loc, {
       dateStyle: "short",
       timeStyle: "short",
     });
@@ -91,6 +94,8 @@ function toPlayerEvents(raw) {
 }
 
 export default function Replay() {
+  const { t, i18n } = useTranslation("replay");
+  usePageMeta({ title: t("pageTitle"), path: "/replay" });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState(null);
@@ -145,7 +150,7 @@ export default function Replay() {
         if (!cancelled) setAllSubs(data || []);
       })
       .catch((e) => {
-        if (!cancelled) setListError(e.message || "Could not load submissions");
+        if (!cancelled) setListError(e.message || t("loadListError"));
       })
       .finally(() => {
         if (!cancelled) setListLoading(false);
@@ -178,10 +183,10 @@ export default function Replay() {
 
     getChallengePreview(sub.challengeId)
       .then((c) => {
-        if (!cancelled) setChallengeTitle(c?.title || `Challenge #${sub.challengeId}`);
+        if (!cancelled) setChallengeTitle(c?.title || t("challengeFallback", { id: sub.challengeId }));
       })
       .catch(() => {
-        if (!cancelled) setChallengeTitle(`Challenge #${sub.challengeId}`);
+        if (!cancelled) setChallengeTitle(t("challengeFallback", { id: sub.challengeId }));
       });
 
     getSubmissionReplay(selectedId)
@@ -193,7 +198,7 @@ export default function Replay() {
       })
       .catch((e) => {
         if (!cancelled) {
-          setReplayError(e.message || "Could not load replay timeline");
+          setReplayError(e.message || t("loadReplayError"));
           setRawEvents([]);
         }
       })
@@ -204,7 +209,7 @@ export default function Replay() {
     return () => {
       cancelled = true;
     };
-  }, [selectedId, completedSubs]);
+  }, [selectedId, completedSubs, t]);
 
   const visibleEvents = filteredEvents.slice(0, currentIdx);
   const progress = filteredEvents.length > 0 ? (currentIdx / filteredEvents.length) * 100 : 0;
@@ -271,29 +276,28 @@ export default function Replay() {
           <div className="rp-container">
             <div className="ch-page-header" style={{ marginBottom: 28 }}>
               <div>
-                <div className="ch-page-eyebrow">// Submission Replay</div>
+                <div className="ch-page-eyebrow">{t("eyebrow")}</div>
                 <h1 className="ch-page-title">
-                  Battle<em>Replay</em>
+                  {t("titleBefore")}
+                  <em>{t("titleEm")}</em>
                 </h1>
-                <p className="rp-page-desc">
-                  Real timeline for build, testing, scoring, and cleanup. HTTP/test filters, jump to first failure, arrow keys to step through events, and raw metadata for any line.
-                </p>
+                <p className="rp-page-desc">{t("description")}</p>
               </div>
             </div>
 
             <div className="rp-layout">
-              <aside className="rp-sidebar" aria-label="Available submissions">
+              <aside className="rp-sidebar" aria-label={t("sidebarAria")}>
                 <div className="rp-sidebar-head">
-                  <span className="rp-sidebar-title">Your replays</span>
+                  <span className="rp-sidebar-title">{t("yourReplays")}</span>
                   <span className="rp-sidebar-count">{listLoading ? "…" : completedSubs.length}</span>
                 </div>
                 <div className="rp-sidebar-body">
-                  {listLoading && <p className="rp-sidebar-empty">Loading submissions…</p>}
+                  {listLoading && <p className="rp-sidebar-empty">{t("loadingList")}</p>}
                   {listError && <p className="rp-sidebar-error">{listError}</p>}
                   {!listLoading && !listError && completedSubs.length === 0 && (
                     <div className="rp-sidebar-empty">
-                      <p>No completed submissions yet.</p>
-                      <Link to="/challenges" className="rp-sidebar-link">Go to challenges</Link>
+                      <p>{t("emptyList")}</p>
+                      <Link to="/challenges" className="rp-sidebar-link">{t("goChallenges")}</Link>
                     </div>
                   )}
                   {!listLoading && !listError && completedSubs.map((s) => (
@@ -304,8 +308,8 @@ export default function Replay() {
                       onClick={() => setSelectedId(s.id)}
                     >
                       <span className="rp-sub-id">#{s.id}</span>
-                      <span className="rp-sub-meta">Challenge {s.challengeId} · {formatScore(s.totalScore)} pts</span>
-                      <span className="rp-sub-date">{formatDate(s.completedAt || s.createdAt)}</span>
+                      <span className="rp-sub-meta">{t("challengeMeta", { id: s.challengeId, score: formatScore(s.totalScore) })}</span>
+                      <span className="rp-sub-date">{formatDate(s.completedAt || s.createdAt, i18n.language)}</span>
                     </button>
                   ))}
                 </div>
@@ -316,12 +320,12 @@ export default function Replay() {
                   <div className="rp-player-header">
                     <div className="rp-player-title">
                       {playing && <span className="rp-live-dot" />}
-                      {selectedSub ? <>Submission #{selectedSub.id} · {challengeTitle || "…"}</> : <>Select a submission</>}
+                      {selectedSub ? t("submissionTitle", { id: selectedSub.id, title: challengeTitle || "…" }) : t("selectSubmission")}
                     </div>
                     <div className="rp-player-meta">
-                      <span>Duration: {durationEnd}</span>
-                      <span>Events: {filteredEvents.length}</span>
-                      <span>Score: {selectedSub ? `${formatScore(selectedSub.totalScore)}/1000` : "—"}</span>
+                      <span>{t("duration")} {durationEnd}</span>
+                      <span>{t("events")} {filteredEvents.length}</span>
+                      <span>{t("score")} {selectedSub ? `${formatScore(selectedSub.totalScore)}/1000` : "—"}</span>
                     </div>
                   </div>
 
@@ -342,9 +346,9 @@ export default function Replay() {
                     ))}
                     <span className="rp-control-sep" aria-hidden />
                     {[
-                      { id: "ALL", label: "All events" },
-                      { id: "HTTP", label: "HTTP + tests" },
-                      { id: "TESTS", label: "Tests only" },
+                      { id: "ALL", label: t("filterAll") },
+                      { id: "HTTP", label: t("filterHttp") },
+                      { id: "TESTS", label: t("filterTests") },
                     ].map((f) => (
                       <button
                         key={f.id}
@@ -360,15 +364,15 @@ export default function Replay() {
                       </button>
                     ))}
                     <button type="button" className="rp-speed-btn" onClick={jumpToFailedTest} disabled={filteredEvents.length === 0}>
-                      Jump to failed
+                      {t("jumpFailed")}
                     </button>
                   </div>
 
                   <div className="rp-terminal" ref={termRef}>
-                    {replayLoading && <div style={{ color: "var(--muted)", fontStyle: "italic" }}>Loading replay…</div>}
+                    {replayLoading && <div style={{ color: "var(--muted)", fontStyle: "italic" }}>{t("loadingReplay")}</div>}
                     {replayError && !replayLoading && <div className="rp-terminal-error">{replayError}</div>}
                     {!replayLoading && !replayError && filteredEvents.length === 0 && selectedSub && (
-                      <div style={{ color: "var(--muted)", fontStyle: "italic" }}>No replay events for this submission.</div>
+                      <div style={{ color: "var(--muted)", fontStyle: "italic" }}>{t("noEvents")}</div>
                     )}
                     {!replayLoading && visibleEvents.map((ev, i) => (
                       <button
@@ -412,9 +416,9 @@ export default function Replay() {
                   {detailEvent && (
                     <div className="rp-detail" aria-live="polite">
                       <div className="rp-detail-head">
-                        <span className="rp-detail-title">Event metadata</span>
+                        <span className="rp-detail-title">{t("eventMetadata")}</span>
                         <button type="button" className="rp-speed-btn" onClick={() => setDetailEvent(null)}>
-                          Close
+                          {t("close")}
                         </button>
                       </div>
                       <pre className="rp-detail-pre">
@@ -444,7 +448,7 @@ export default function Replay() {
                       <div className="rp-progress-bar"><div className="rp-progress-fill" style={{ width: `${progress}%` }} /></div>
                       <div className="rp-progress-labels">
                         <span>{currentTs}</span>
-                        <span>{currentIdx} / {filteredEvents.length} events · ← →</span>
+                        <span>{t("progressEvents", { current: currentIdx, total: filteredEvents.length })}</span>
                         <span>{durationEnd}</span>
                       </div>
                     </div>

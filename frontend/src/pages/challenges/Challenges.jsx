@@ -9,7 +9,8 @@ import * as authApi from '../../lib/authApi';
 import { useAuth } from '../../context/AuthContext';
 import './challenges.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
-import { DOCS_PATHS, TOUR_CHALLENGES } from '../../tutorial/tourDefinitions';
+import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
+import { useTourSteps } from '../../lib/tourSteps';
 import { usePageMeta } from '../../lib/usePageMeta';
 
 function mapApiToCard(api) {
@@ -157,6 +158,7 @@ export default function Challenges() {
     path: '/challenges',
   });
   const { user, isAuthenticated, loadUser } = useAuth();
+  const tourSteps = useTourSteps('challenges');
   const [alertsSaving, setAlertsSaving] = useState(false);
   const [search, setSearch]           = useState('');
   const [diffFilter, setDiffFilter]   = useState('all');
@@ -593,7 +595,7 @@ export default function Challenges() {
       </div>
 
       <BottomNav />
-      <TutorialTour tourKey="challenges" steps={TOUR_CHALLENGES} docsHref={DOCS_PATHS.challenges} when={!loading} />
+      <TutorialTour tourKey="challenges" steps={tourSteps} docsHref={DOCS_PATHS.challenges} when={!loading} />
     </div>
   );
 }

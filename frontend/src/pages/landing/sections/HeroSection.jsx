@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import TerminalWindow from '../../../components/landing/TerminalWindow';
 import AlphaBadge from '../../../components/landing/AlphaBadge';
 import ArrowRightIcon from '../../../components/icons/ArrowRightIcon';
 import { HERO_STATS } from '../landing.data';
 
 export default function HeroSection() {
+  const { t } = useTranslation('landing');
+  const statLabels = t('hero.stats', { returnObjects: true });
+
   return (
     <section className="hero">
       <div className="hero-grid" />
@@ -12,37 +16,34 @@ export default function HeroSection() {
       <div className="hero-glow-2" />
 
       <div className="hero-content" data-tutorial="landing-hero-content">
-        <p className="hero-eyebrow">Season 01 · Real builds · Real tests</p>
+        <p className="hero-eyebrow">{t('hero.eyebrow')}</p>
 
         <div className="hero-title-row">
           <h1 className="hero-title">
-            <span className="line-1">Code</span>
-            <span className="line-2">Faster.</span>
-            <span className="line-3">Win.</span>
+            <span className="line-1">{t('hero.title1')}</span>
+            <span className="line-2">{t('hero.title2')}</span>
+            <span className="line-3">{t('hero.title3')}</span>
           </h1>
           <AlphaBadge size="hero" className="hero-alpha-badge" />
         </div>
 
         <p className="hero-sub">
-          The first competitive arena for <strong>APIs</strong>.<br />
-          Submit your code. Pass the tests.{' '}
-          <strong>Own the leaderboard.</strong><br />
-          No simulations. No theory-only drills. Real code in real production conditions.
+          <Trans i18nKey="hero.sub" t={t} components={{ 1: <strong />, 2: <strong /> }} />
         </p>
 
         <div className="hero-actions" data-tutorial="landing-hero-cta">
-          <Link to="/register" className="btn-primary">▶ Start Competing</Link>
+          <Link to="/register" className="btn-primary">{t('hero.ctaPrimary')}</Link>
           <Link to="/challenges" className="btn-secondary">
-            View challenges
+            {t('hero.ctaSecondary')}
             <ArrowRightIcon />
           </Link>
         </div>
 
         <div className="hero-stats">
-          {HERO_STATS.map(({ num, label }) => (
-            <div key={label} className="stat-item">
+          {HERO_STATS.map(({ num }, i) => (
+            <div key={i} className="stat-item">
               <span className="stat-num">{num}</span>
-              <span className="stat-label">{label}</span>
+              <span className="stat-label">{statLabels[i]?.label ?? ''}</span>
             </div>
           ))}
         </div>

@@ -1,0 +1,198 @@
+{
+  "meta": {
+    "description": "API Arena is a competitive platform where developers ship real Spring Boot APIs, get scored by real builds and HTTP tests, and climb XP and ELO rankings."
+  },
+  "alphaAria": "API Arena is in alpha — early access",
+  "alphaTitle": "Alpha",
+  "alphaRibbon": "Early access",
+  "hero": {
+    "eyebrow": "Season 01 · Real builds · Real tests",
+    "title1": "Code",
+    "title2": "Faster.",
+    "title3": "Win.",
+    "sub": "The first competitive arena for <1>APIs</1>.<br/>Submit your code. Pass the tests. <2>Own the leaderboard.</2><br/>No simulations. No theory-only drills. Real code in real production conditions.",
+    "ctaPrimary": "▶ Start Competing",
+    "ctaSecondary": "View challenges",
+    "stats": [
+      { "label": "Submissions" },
+      { "label": "Challenges" },
+      { "label": "Developers" }
+    ]
+  },
+  "ticker": {
+    "items": [
+      "Docker-in-Docker execution",
+      "Real-time leaderboard",
+      "AI code review",
+      "Performance benchmarks",
+      "REST design analysis",
+      "Multiplayer mode",
+      "Replay system",
+      "ELO rating"
+    ]
+  },
+  "about": {
+    "label": "What is API Arena?",
+    "title1": "Not a",
+    "title2": "course.",
+    "titleEm": "It is a battle.",
+    "desc": "Build an API that solves the challenge. Submit your code.<br/>Our system runs it in an isolated sandbox and <1>stress-tests it with automated checks</1>, performance analysis, REST validation, and AI review.<br/><br/>Your score enters the leaderboard. <2>In real time.</2><br/>Improve, resubmit, and climb positions.",
+    "tags": [
+      { "label": "REST APIs", "active": true },
+      { "label": "Spring Boot", "active": true },
+      { "label": "Node.js", "active": false },
+      { "label": "FastAPI", "active": false },
+      { "label": "Go", "active": false },
+      { "label": "Any language", "active": false }
+    ],
+    "metrics": [
+      "Functional",
+      "Performance",
+      "REST Design",
+      "AI Review",
+      "TOTAL SCORE"
+    ]
+  },
+  "how": {
+    "label": "Protocol",
+    "title": "How it",
+    "titleEm": "works",
+    "steps": [
+      {
+        "num": "01",
+        "title1": "Pick",
+        "title2": "the challenge",
+        "desc": "Explore challenges across difficulty levels. CRUD, Auth, Performance, Design. Each includes API specification and hidden tests."
+      },
+      {
+        "num": "02",
+        "title1": "Build",
+        "title2": "your API",
+        "desc": "Use the language and framework you prefer. Spring Boot, Node, Go, Rust. Dockerize it and upload your code."
+      },
+      {
+        "num": "03",
+        "title1": "Sandbox",
+        "title2": "& Tests",
+        "desc": "Your API runs in an isolated container. Automated tests, performance analysis with 1000 RPS, REST validation, and AI review."
+      },
+      {
+        "num": "04",
+        "title1": "Climb",
+        "title2": "the ranking",
+        "desc": "Your score enters the leaderboard in real time. Analyze replay, iterate your API, resubmit, and climb positions."
+      }
+    ]
+  },
+  "features": {
+    "label": "Arsenal",
+    "title1": "Features that",
+    "title2": "matter.",
+    "aside": "Multidimensional evaluation. It is not only whether your API works - it is how well it works.",
+    "items": [
+      {
+        "num": "01",
+        "title": "Isolated Sandbox",
+        "desc": "Docker-in-Docker. Your API runs in a fully isolated environment with CPU and RAM limits. No tricks, no shortcuts.",
+        "wide": true,
+        "badges": [
+          { "label": "CPU Limit", "color": "cyan" },
+          { "label": "RAM Limit", "color": "purple" },
+          { "label": "Network Isolated", "color": "green" }
+        ]
+      },
+      {
+        "num": "02",
+        "title": "AI Review",
+        "desc": "AI analyzes your code: architecture, security, and best practices. Real feedback, not generic output."
+      },
+      {
+        "num": "03",
+        "title": "Replay System",
+        "desc": "Replay every request, every response, every metric. Analyze where it failed step by step."
+      },
+      {
+        "num": "04",
+        "title": "Multiplayer",
+        "desc": "Compete 1v1 in real time. Same challenge, same clock. Best score wins."
+      },
+      {
+        "num": "05",
+        "title": "Real-Time Metrics",
+        "desc": "Integrated InfluxDB + Grafana. P95/P99 response times, throughput, error rates, all while your API runs.",
+        "wide": true,
+        "badges": [
+          { "label": "InfluxDB", "color": "cyan" },
+          { "label": "Grafana", "color": "purple" },
+          { "label": "WebSocket Live", "color": "green" }
+        ]
+      }
+    ]
+  },
+  "leaderboard": {
+    "live": "Live Leaderboard",
+    "colRank": "Rank",
+    "colPlayer": "Player",
+    "colScore": "Score",
+    "colTime": "Time",
+    "label": "Competition",
+    "title1": "Your code",
+    "title2": "vs the world.",
+    "titleEm": "Real time.",
+    "desc": "The leaderboard updates through WebSocket. Every incoming submission and every position change appears instantly, no refresh needed.<br/><br/>The ELO system ensures that climbing one spot in the top 10 matters more than dominating the top 100.",
+    "cta": "View Global Leaderboard"
+  },
+  "cta": {
+    "label": "Season 01 · Early Access",
+    "titleWhite": "Ready to",
+    "titleOutlined": "join?",
+    "sub": "Early access open · No credit card required",
+    "placeholder": "your@email.com",
+    "button": "Join Arena",
+    "fine": "312 developers already in the arena · Free during alpha"
+  },
+  "footer": {
+    "tagline": "© 2025 · Compete. Build. Conquer.",
+    "project": "Proyecto TFG · Ciclo Formativo de Grado Superior",
+    "links": {
+      "github": "GitHub",
+      "docs": "Docs",
+      "api": "API",
+      "status": "Status"
+    },
+    "legal": {
+      "aviso": "Aviso Legal",
+      "privacidad": "Privacidad",
+      "cookies": "Cookies",
+      "terminos": "Términos"
+    },
+    "cookiePrefs": "Cookie preferences"
+  },
+  "terminal": {
+    "title": "apiarena · submission #2847",
+    "live": "LIVE",
+    "totalScore": "★ TOTAL SCORE: 920 · RANK #3 ↑2",
+    "lines": [
+      { "type": "cmd", "text": "arena submit ./my-api --challenge crud-master" },
+      { "type": "output", "text": "→ Building Docker image..." },
+      { "type": "output", "text": "→ Spinning up sandbox..." },
+      { "type": "success", "text": "[OK] Container ready on :8080" },
+      { "type": "sep" },
+      { "type": "output", "text": "→ Running functional tests [47/47]" },
+      { "type": "success", "text": "[OK] All tests passed - 47/47" },
+      { "type": "output", "text": "→ Performance analysis (1000 RPS)" },
+      { "type": "success", "text": "[OK] Avg: 12ms - P99: 28ms" },
+      { "type": "output", "text": "→ REST design analysis..." },
+      { "type": "info", "text": "[i] 2 suggestions - Score: 94/100" },
+      { "type": "output", "text": "→ AI code review..." },
+      { "type": "success", "text": "[OK] Claude review: excellent" },
+      { "type": "sep" }
+    ],
+    "scoreDims": [
+      "CORRECTNESS",
+      "PERFORMANCE",
+      "REST DESIGN",
+      "AI REVIEW"
+    ]
+  }
+}
