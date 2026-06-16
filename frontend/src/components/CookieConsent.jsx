@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   acceptAll,
   getConsent,
@@ -11,6 +12,7 @@ import {
 import "./cookie-consent.css";
 
 export default function CookieConsent() {
+  const { t } = useTranslation("common");
   const [open, setOpen] = useState(false);
   const [customizing, setCustomizing] = useState(false);
   const [prefs, setPrefs] = useState({ preferences: true, analytics: false });
@@ -55,32 +57,30 @@ export default function CookieConsent() {
   };
 
   return (
-    <div className="cc-root" role="dialog" aria-modal="false" aria-label="Cookie and storage preferences">
+    <div className="cc-root" role="dialog" aria-modal="false" aria-label={t("cookieConsent.dialogLabel")}>
       <div className="cc-panel">
-        <div className="cc-eyebrow">// Privacy</div>
-        <h2 className="cc-title">Storage &amp; cookies</h2>
+        <div className="cc-eyebrow">{t("cookieConsent.eyebrow")}</div>
+        <h2 className="cc-title">{t("cookieConsent.title")}</h2>
 
         {!customizing ? (
           <p className="cc-text">
-            API Arena uses first-party browser storage that is strictly necessary to run the
-            service (login session, in-progress challenge timer). We use no third-party tracking,
-            advertising or analytics. Optional storage saves your preferences (theme, tutorials).
-            See our <Link to="/cookies">Cookie Policy</Link>.
+            {t("cookieConsent.intro")}{" "}
+            <Link to="/cookies">{t("cookieConsent.cookiePolicy")}</Link>.
           </p>
         ) : (
           <div className="cc-options">
             <label className="cc-option cc-option--locked">
               <span className="cc-option-info">
-                <span className="cc-option-name">Strictly necessary</span>
-                <span className="cc-option-desc">Login session, challenge timer, tab control. Always on.</span>
+                <span className="cc-option-name">{t("cookieConsent.necessaryName")}</span>
+                <span className="cc-option-desc">{t("cookieConsent.necessaryDesc")}</span>
               </span>
               <input type="checkbox" checked readOnly disabled />
             </label>
 
             <label className="cc-option">
               <span className="cc-option-info">
-                <span className="cc-option-name">Preferences</span>
-                <span className="cc-option-desc">Remembers your theme and which tutorials you've seen.</span>
+                <span className="cc-option-name">{t("cookieConsent.preferencesName")}</span>
+                <span className="cc-option-desc">{t("cookieConsent.preferencesDesc")}</span>
               </span>
               <input
                 type="checkbox"
@@ -91,8 +91,8 @@ export default function CookieConsent() {
 
             <label className="cc-option">
               <span className="cc-option-info">
-                <span className="cc-option-name">Analytics</span>
-                <span className="cc-option-desc">Anonymous product usage to improve the platform (currently not active).</span>
+                <span className="cc-option-name">{t("cookieConsent.analyticsName")}</span>
+                <span className="cc-option-desc">{t("cookieConsent.analyticsDesc")}</span>
               </span>
               <input
                 type="checkbox"
@@ -107,25 +107,25 @@ export default function CookieConsent() {
           {!customizing ? (
             <>
               <button type="button" className="cc-btn cc-btn--ghost" onClick={() => setCustomizing(true)}>
-                Customize
+                {t("cookieConsent.customize")}
               </button>
               <button type="button" className="cc-btn cc-btn--ghost" onClick={handleRejectNonEssential}>
-                Essential only
+                {t("cookieConsent.essentialOnly")}
               </button>
               <button type="button" className="cc-btn cc-btn--primary" onClick={handleAcceptAll}>
-                Accept all
+                {t("cookieConsent.acceptAll")}
               </button>
             </>
           ) : (
             <>
               <button type="button" className="cc-btn cc-btn--ghost" onClick={handleRejectNonEssential}>
-                Essential only
+                {t("cookieConsent.essentialOnly")}
               </button>
               <button type="button" className="cc-btn cc-btn--ghost" onClick={handleSavePrefs}>
-                Save choices
+                {t("cookieConsent.saveChoices")}
               </button>
               <button type="button" className="cc-btn cc-btn--primary" onClick={handleAcceptAll}>
-                Accept all
+                {t("cookieConsent.acceptAll")}
               </button>
             </>
           )}

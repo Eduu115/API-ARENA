@@ -3,5 +3,66 @@
     "switchLabel": "Interface language",
     "en": "EN",
     "es": "ES"
+  },
+  "notFound": {
+    "pageTitle": "Page not found",
+    "eyebrow": "// 404",
+    "titleBefore": "Lost in the",
+    "titleEm": "arena",
+    "description": "The page you requested does not exist or was moved.",
+    "backHome": "Back to home",
+    "browseChallenges": "Browse challenges"
+  },
+  "cookieConsent": {
+    "dialogLabel": "Cookie and storage preferences",
+    "eyebrow": "// Privacy",
+    "title": "Storage & cookies",
+    "intro": "API Arena uses first-party browser storage that is strictly necessary to run the service (login session, in-progress challenge timer). We use no third-party tracking, advertising or analytics. Optional storage saves your preferences (theme, tutorials, language). See our",
+    "cookiePolicy": "Cookie Policy",
+    "necessaryName": "Strictly necessary",
+    "necessaryDesc": "Login session, challenge timer, tab control. Always on.",
+    "preferencesName": "Preferences",
+    "preferencesDesc": "Remembers your theme, tutorials and language choice.",
+    "analyticsName": "Analytics",
+    "analyticsDesc": "Anonymous product usage to improve the platform (currently not active).",
+    "customize": "Customize",
+    "essentialOnly": "Essential only",
+    "acceptAll": "Accept all",
+    "saveChoices": "Save choices"
+  },
+  "sessionBanner": {
+    "title": "Challenge in progress",
+    "timer": "Timer:",
+    "timesUp": "TIME'S UP",
+    "continue": "Continue",
+    "abandon": "Abandon"
+  },
+  "modals": {
+    "login": {
+      "title": "Sign in",
+      "description": "You need to sign in to start this challenge. If you do not have an account yet, you can register.",
+      "signIn": "Sign in",
+      "createAccount": "Create account",
+      "cancel": "Cancel"
+    },
+    "loginChallenge": {
+      "title": "Sign in to compete",
+      "description": "You need to sign in to start this challenge and submit your solution. If you do not have an account yet, you can register in a moment."
+    },
+    "attemptBlock": {
+      "fairPlay": "Fair play",
+      "challengePolicy": "Challenge policy",
+      "dailyTitle": "Daily limit reached",
+      "cooldownTitle": "Cooldown active",
+      "challengeLabel": "Challenge:",
+      "timeUntilReset": "Time until daily reset",
+      "timeRemaining": "Time remaining",
+      "dailyCopy": "You have used all allowed submissions for this challenge today (UTC). You can start a new run after the reset time below.",
+      "cooldownCopy": "You must wait before starting another run for this challenge. Time remaining until your next attempt is allowed:",
+      "exactUtc": "Exact instant (UTC):",
+      "backToChallenge": "Back to challenge",
+      "close": "Close",
+      "backToOverview": "Back to challenge overview"
+    }
   }
 }

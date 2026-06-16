@@ -1,18 +1,20 @@
-import { useMsUntilIso, formatCountdownMs } from '../lib/challengeAttemptUtils';
-import './AttemptPolicyBlockModal.css';
+import { useTranslation } from "react-i18next";
+import { useMsUntilIso, formatCountdownMs } from "../lib/challengeAttemptUtils";
+import "./AttemptPolicyBlockModal.css";
 
-function formatUtcLine(iso) {
-  if (!iso) return '';
+function formatUtcLine(iso, locale) {
+  if (!iso) return "";
   try {
     const d = new Date(iso);
-    return d.toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' }) + ' UTC';
+    const loc = locale?.startsWith("es") ? "es-ES" : "en-GB";
+    return `${d.toLocaleString(loc, { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" })} UTC`;
   } catch {
     return iso;
   }
 }
 
 /**
- * Cooldown / daily-limit gate with live countdown (English UI per product rules).
+ * Cooldown / daily-limit gate with live countdown.
  */
 export default function AttemptPolicyBlockModal({
   open,
@@ -21,19 +23,19 @@ export default function AttemptPolicyBlockModal({
   dailyLimitResetsAtIso,
   challengeTitle,
   onDismiss,
-  primaryLabel = 'Back to challenge',
+  primaryLabelKey = "backToChallenge",
 }) {
-  const targetIso = blockReason === 'DAILY_LIMIT' ? dailyLimitResetsAtIso : cooldownUntilIso;
+  const { t, i18n } = useTranslation("common");
+  const targetIso = blockReason === "DAILY_LIMIT" ? dailyLimitResetsAtIso : cooldownUntilIso;
   const msLeft = useMsUntilIso(open ? targetIso : null);
 
   if (!open || !blockReason) return null;
 
-  const isDaily = blockReason === 'DAILY_LIMIT';
-  const title = isDaily ? 'Daily limit reached' : 'Cooldown active';
-  const eyebrow = isDaily ? 'Fair play' : 'Challenge policy';
-  const copy = isDaily
-    ? `You have used all allowed submissions for this challenge today (UTC). You can start a new run after the reset time below.`
-    : `You must wait before starting another run for this challenge. Time remaining until your next attempt is allowed:`;
+  const isDaily = blockReason === "DAILY_LIMIT";
+  const title = isDaily ? t("modals.attemptBlock.dailyTitle") : t("modals.attemptBlock.cooldownTitle");
+  const eyebrow = isDaily ? t("modals.attemptBlock.fairPlay") : t("modals.attemptBlock.challengePolicy");
+  const copy = isDaily ? t("modals.attemptBlock.dailyCopy") : t("modals.attemptBlock.cooldownCopy");
+  const primaryLabel = t(`modals.attemptBlock.${primaryLabelKey}`);
 
   return (
     <div className="attempt-block-overlay" role="presentation" onClick={onDismiss}>
@@ -50,7 +52,7 @@ export default function AttemptPolicyBlockModal({
         </h2>
         {challengeTitle && (
           <p className="attempt-block-challenge">
-            <span style={{ color: 'var(--dim)' }}>Challenge:</span> {challengeTitle}
+            <span style={{ color: "var(--dim)" }}>{t("modals.attemptBlock.challengeLabel")}</span> {challengeTitle}
           </p>
         )}
         {msLeft != null && (
@@ -59,14 +61,14 @@ export default function AttemptPolicyBlockModal({
               {formatCountdownMs(msLeft)}
             </div>
             <p className="attempt-block-countdown-label">
-              {isDaily ? 'Time until daily reset' : 'Time remaining'}
+              {isDaily ? t("modals.attemptBlock.timeUntilReset") : t("modals.attemptBlock.timeRemaining")}
             </p>
           </>
         )}
         <p className="attempt-block-copy">{copy}</p>
         {targetIso && (
           <p className="attempt-block-utc">
-            Exact instant (UTC): {formatUtcLine(targetIso)}
+            {t("modals.attemptBlock.exactUtc")} {formatUtcLine(targetIso, i18n.language)}
           </p>
         )}
         <div className="attempt-block-actions">

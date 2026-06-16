@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
@@ -35,6 +36,7 @@ function mapApiToCard(api) {
 }
 
 function ChallengeCard({ challenge, spotlight = false }) {
+  const { t } = useTranslation('challenges');
   const navigate = useNavigate();
   const {
     id, title, difficulty, category, isNew,
@@ -64,13 +66,17 @@ function ChallengeCard({ challenge, spotlight = false }) {
       <div className="ch-card-inner">
         <div className="ch-card-head">
           <div className="ch-card-tags">
-            <span className={`ch-badge ${diffBadgeClass}`}>{difficulty}</span>
+            <span className={`ch-badge ${diffBadgeClass}`}>
+              {['easy', 'medium', 'hard', 'expert'].includes(difficulty)
+                ? t(`difficulty.${difficulty}`)
+                : difficulty}
+            </span>
             <span className="ch-badge ch-badge-cat">{category}</span>
             <span className={`ch-badge ${origin === 'COMMUNITY' ? 'ch-badge-community' : 'ch-badge-legacy'}`}>
-              {origin === 'COMMUNITY' ? 'Community' : 'Legacy'}
+              {origin === 'COMMUNITY' ? t('community') : t('legacy')}
             </span>
-            {featured && <span className="ch-badge ch-badge-new">Featured</span>}
-            {isNew && <span className="ch-badge ch-badge-new">New</span>}
+            {featured && <span className="ch-badge ch-badge-new">{t('featuredBadge')}</span>}
+            {isNew && <span className="ch-badge ch-badge-new">{t('new')}</span>}
           </div>
           {statusIcon && (
             <div
@@ -120,7 +126,7 @@ function ChallengeCard({ challenge, spotlight = false }) {
               <span className="ch-meta-icon">◎</span> {submissions ?? 0}
             </div>
             <div className="ch-meta-item">
-              <span className="ch-meta-icon">✓</span> {solved ?? 0} solved
+              <span className="ch-meta-icon">✓</span> {solved ?? 0} {t('solved')}
             </div>
             {avgTime && (
               <div className="ch-meta-item">
@@ -135,7 +141,7 @@ function ChallengeCard({ challenge, spotlight = false }) {
             >
               {(points ?? 0).toLocaleString()}
             </div>
-            <div className="ch-pts-label">POINTS</div>
+            <div className="ch-pts-label">{t('points')}</div>
           </div>
         </div>
       </div>
@@ -144,10 +150,10 @@ function ChallengeCard({ challenge, spotlight = false }) {
 }
 
 export default function Challenges() {
+  const { t } = useTranslation('challenges');
   usePageMeta({
-    title: 'API Challenges Catalog',
-    description:
-      'Browse real backend challenges: CRUD APIs, JWT auth, rate limiters, caching, WebSockets and more. Submit your Spring Boot project and get scored by real HTTP tests.',
+    title: t('pageTitle'),
+    description: t('pageDescription'),
     path: '/challenges',
   });
   const { user, isAuthenticated, loadUser } = useAuth();
@@ -185,7 +191,7 @@ export default function Challenges() {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e?.message || 'Error loading challenges');
+          setError(e?.message || t('loadError'));
           setChallenges([]);
         }
       } finally {
@@ -194,7 +200,39 @@ export default function Challenges() {
     }
     load();
     return () => { cancelled = true; };
-  }, [diffFilter, catFilter, search]);
+  }, [diffFilter, catFilter, search, t]);
+
+  const diffFilterOptions = useMemo(
+    () => [
+      { val: 'all', labelKey: 'difficulty.all', dot: null },
+      { val: 'easy', labelKey: 'difficulty.easy', dot: 'green' },
+      { val: 'medium', labelKey: 'difficulty.medium', dot: 'yellow' },
+      { val: 'hard', labelKey: 'difficulty.hard', dot: 'red' },
+      { val: 'expert', labelKey: 'difficulty.expert', dot: 'purple' },
+    ],
+    [],
+  );
+
+  const statusFilterOptions = useMemo(
+    () => [
+      { val: 'all', labelKey: 'status.all' },
+      { val: 'unsolved', labelKey: 'status.unsolved' },
+      { val: 'attempted', labelKey: 'status.attempted' },
+      { val: 'completed', labelKey: 'status.completed' },
+    ],
+    [],
+  );
+
+  const sortOptions = useMemo(
+    () => [
+      { val: 'featured', labelKey: 'sort.featured' },
+      { val: 'newest', labelKey: 'sort.newest' },
+      { val: 'hardest', labelKey: 'sort.hardest' },
+      { val: 'mostSolved', labelKey: 'sort.mostSolved' },
+      { val: 'highestPts', labelKey: 'sort.highestPts' },
+    ],
+    [],
+  );
 
   const diffCounts = useMemo(() => {
     return {
@@ -262,15 +300,13 @@ export default function Challenges() {
       ? 'ch-featured-grid ch-featured-grid--duo'
       : 'ch-featured-grid';
 
-  const diffLabel = diffFilter === 'all'
-    ? 'ALL DIFFICULTIES'
-    : diffFilter.toUpperCase();
+  const diffLabel =
+    diffFilter === 'all' ? t('difficulty.allTag') : t(`difficulty.${diffFilter}`).toUpperCase();
 
-  const catLabel = catFilter === 'all'
-    ? 'ALL CATEGORIES'
-    : catFilter.toUpperCase();
+  const catLabel = catFilter === 'all' ? t('category.all') : catFilter.toUpperCase();
 
-  const statusLabel = statusFilter === 'all' ? null : statusFilter.toUpperCase();
+  const statusLabel =
+    statusFilter === 'all' ? null : t(`status.${statusFilter}`).toUpperCase();
 
   return (
     <div className="challenges-page">
@@ -291,13 +327,13 @@ export default function Challenges() {
         <aside className={`ch-sidebar${sidebarOpen ? ' open' : ''}`} data-tutorial="challenges-sidebar">
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Search</div>
+            <div className="ch-sidebar-label">{t('sidebar.search')}</div>
             <div className="ch-search-wrap">
               <span className="ch-search-icon">/</span>
               <input
                 type="text"
                 className="ch-search-input"
-                placeholder="challenge name..."
+                placeholder={t('sidebar.searchPlaceholder')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -305,14 +341,8 @@ export default function Challenges() {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Difficulty</div>
-            {[
-              { val: 'all',    label: 'All difficulties', dot: null },
-              { val: 'easy',   label: 'Easy',   dot: 'green' },
-              { val: 'medium', label: 'Medium', dot: 'yellow' },
-              { val: 'hard',   label: 'Hard',   dot: 'red' },
-              { val: 'expert', label: 'Expert', dot: 'purple' },
-            ].map(({ val, label, dot }) => (
+            <div className="ch-sidebar-label">{t('sidebar.difficulty')}</div>
+            {diffFilterOptions.map(({ val, labelKey, dot }) => (
               <button
                 key={val}
                 className={`ch-filter-btn${diffFilter === val ? ' ch-active' : ''}`}
@@ -320,7 +350,7 @@ export default function Challenges() {
               >
                 <span className="ch-filter-label-inner">
                   {dot && <span className={`ch-filter-dot ${dot}`} />}
-                  {label}
+                  {t(labelKey)}
                 </span>
                 <span className="ch-filter-count">{diffCounts[val]}</span>
               </button>
@@ -328,36 +358,32 @@ export default function Challenges() {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Status</div>
-            {[
-              { val: 'all',       label: 'All' },
-              { val: 'unsolved',  label: 'Unsolved' },
-              { val: 'attempted', label: 'Attempted' },
-              { val: 'completed', label: 'Completed' },
-            ].map(({ val, label }) => (
+            <div className="ch-sidebar-label">{t('sidebar.status')}</div>
+            {statusFilterOptions.map(({ val, labelKey }) => (
               <button
                 key={val}
                 className={`ch-filter-btn${statusFilter === val ? ' ch-active' : ''}`}
                 onClick={() => setStatusFilter(val)}
               >
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
                 <span className="ch-filter-count">{statusCounts[val]}</span>
               </button>
             ))}
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Category</div>
+            <div className="ch-sidebar-label">{t('sidebar.category')}</div>
             <div className="ch-cat-grid">
               {categories.map(cat => {
                 const val = cat === 'All' ? 'all' : cat;
+                const displayCat = cat === 'All' ? t('status.all') : cat;
                 return (
                   <button
                     key={cat}
                     className={`ch-cat-tag${catFilter === val ? ' ch-active' : ''}`}
                     onClick={() => setCatFilter(val)}
                   >
-                    {cat}
+                    {displayCat}
                   </button>
                 );
               })}
@@ -365,21 +391,21 @@ export default function Challenges() {
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">My Progress</div>
+            <div className="ch-sidebar-label">{t('sidebar.myProgress')}</div>
             <div className="ch-stat-row">
-              <span className="ch-stat-row-label">Completed</span>
+              <span className="ch-stat-row-label">{t('sidebar.completed')}</span>
               <span className="ch-stat-row-val green">{completedChallenges.length}</span>
             </div>
             <div className="ch-stat-row">
-              <span className="ch-stat-row-label">Attempted</span>
+              <span className="ch-stat-row-label">{t('sidebar.attempted')}</span>
               <span className="ch-stat-row-val warn">{attemptedCount}</span>
             </div>
             <div className="ch-stat-row">
-              <span className="ch-stat-row-label">Best rank</span>
+              <span className="ch-stat-row-label">{t('sidebar.bestRank')}</span>
               <span className="ch-stat-row-val purple">#3</span>
             </div>
             <div className="ch-stat-row">
-              <span className="ch-stat-row-label">Total pts</span>
+              <span className="ch-stat-row-label">{t('sidebar.totalPts')}</span>
               <span className="ch-stat-row-val">{totalPts.toLocaleString()}</span>
             </div>
             <div className="ch-progress-bar-wrap">
@@ -395,7 +421,7 @@ export default function Challenges() {
 
           {isAuthenticated && user?.role === 'STUDENT' && (
             <div className="ch-sidebar-section">
-              <div className="ch-sidebar-label">Email alerts</div>
+              <div className="ch-sidebar-label">{t('sidebar.emailAlerts')}</div>
               <label className="ch-email-alert-row">
                 <input
                   type="checkbox"
@@ -409,19 +435,19 @@ export default function Challenges() {
                       await loadUser();
                     } catch (err) {
                       e.target.checked = !checked;
-                      alert(err?.message || 'Could not update preference');
+                      alert(err?.message || t('sidebar.updatePrefError'));
                     } finally {
                       setAlertsSaving(false);
                     }
                   }}
                 />
                 <span className="ch-email-alert-copy">
-                  <strong>New challenges</strong>
+                  <strong>{t('sidebar.newChallengesEmail')}</strong>
                   {' '}
-                  — email me when a new challenge is published in the catalog.
+                  {t('sidebar.newChallengesEmailDesc')}
                   {!user?.emailVerified ? (
                     <span className="ch-email-alert-verify-note">
-                      Verify your email to enable this option.
+                      {t('sidebar.verifyEmailNote')}
                     </span>
                   ) : null}
                 </span>
@@ -436,10 +462,11 @@ export default function Challenges() {
           <div className="ch-page-header">
             <div>
               <div className="ch-page-eyebrow">
-                // {diffCounts.all} challenges available
+                // {t('header.eyebrow', { count: diffCounts.all })}
               </div>
               <h1 className="ch-page-title">
-                Choose<em>Your Battle</em>
+                {t('header.titleBefore')}
+                <em>{t('header.titleEm')}</em>
               </h1>
             </div>
             <div className="ch-page-controls">
@@ -448,24 +475,22 @@ export default function Challenges() {
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
               >
-                <option value="featured">SORT: FEATURED</option>
-                <option value="newest">SORT: NEWEST</option>
-                <option value="hardest">SORT: HARDEST</option>
-                <option value="mostSolved">SORT: MOST SOLVED</option>
-                <option value="highestPts">SORT: HIGHEST PTS</option>
+                {sortOptions.map(({ val, labelKey }) => (
+                  <option key={val} value={val}>{t(labelKey)}</option>
+                ))}
               </select>
               <div className="ch-view-toggle">
                 <button
                   className={`ch-view-btn${viewMode === 'grid' ? ' ch-active' : ''}`}
                   onClick={() => setViewMode('grid')}
-                  title="Grid view"
+                  title={t('view.grid')}
                 >
                   ⊞
                 </button>
                 <button
                   className={`ch-view-btn${viewMode === 'list' ? ' ch-active' : ''}`}
                   onClick={() => setViewMode('list')}
-                  title="List view"
+                  title={t('view.list')}
                 >
                   ☰
                 </button>
@@ -493,7 +518,7 @@ export default function Challenges() {
               </div>
             )}
             <span className="ch-results-count">
-              <span>{filtered.length}</span> challenges found
+              <span>{t('results', { count: filtered.length })}</span>
             </span>
           </div>
 
@@ -501,7 +526,7 @@ export default function Challenges() {
             <div className="ch-challenges-grid">
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">...</div>
-                <div className="ch-empty-text">Loading challenges...</div>
+                <div className="ch-empty-text">{t('loading')}</div>
               </div>
             </div>
           ) : error ? (
@@ -510,7 +535,7 @@ export default function Challenges() {
                 <div className="ch-empty-glyph">!</div>
                 <div className="ch-empty-text">{error}</div>
                 <div className="ch-empty-text" style={{ fontSize: 12, marginTop: 8 }}>
-                  Make sure challenge-service is running at http://localhost:8082
+                  {t('serviceHint')}
                 </div>
               </div>
             </div>
@@ -518,7 +543,7 @@ export default function Challenges() {
             <div className="ch-challenges-grid">
               <div className="ch-empty-state">
                 <div className="ch-empty-glyph">404</div>
-                <div className="ch-empty-text">No challenges match your filters</div>
+                <div className="ch-empty-text">{t('emptyFilters')}</div>
               </div>
             </div>
           ) : (
@@ -526,9 +551,10 @@ export default function Challenges() {
               {featuredItems.length > 0 && (
                 <section className="ch-featured-section" aria-labelledby="ch-featured-heading">
                   <div className="ch-featured-section-head">
-                    <div className="ch-featured-section-eyebrow">// Spotlight</div>
+                    <div className="ch-featured-section-eyebrow">{t('featured.eyebrow')}</div>
                     <h2 id="ch-featured-heading" className="ch-featured-section-title">
-                      Featured<em>Challenges</em>
+                      {t('featured.titleBefore')}
+                      <em>{t('featured.titleEm')}</em>
                     </h2>
                   </div>
                   <div className={featuredGridClass}>
@@ -546,9 +572,10 @@ export default function Challenges() {
                 >
                   {featuredItems.length > 0 && (
                     <div className="ch-catalog-section-head">
-                      <div className="ch-catalog-section-eyebrow">// Catalog</div>
+                      <div className="ch-catalog-section-eyebrow">{t('catalog.eyebrow')}</div>
                       <h2 id="ch-catalog-heading" className="ch-catalog-section-title">
-                        All<em>Challenges</em>
+                        {t('catalog.titleBefore')}
+                        <em>{t('catalog.titleEm')}</em>
                       </h2>
                     </div>
                   )}

@@ -1,0 +1,111 @@
+{
+  "pageTitle": "API Challenges Catalog",
+  "pageDescription": "Browse real backend challenges: CRUD APIs, JWT auth, rate limiters, caching, WebSockets and more. Submit your Spring Boot project and get scored by real HTTP tests.",
+  "untitled": "Untitled",
+  "community": "Community",
+  "legacy": "Legacy",
+  "featuredBadge": "Featured",
+  "new": "New",
+  "solved": "solved",
+  "points": "POINTS",
+  "sidebar": {
+    "search": "Search",
+    "searchPlaceholder": "challenge name...",
+    "difficulty": "Difficulty",
+    "status": "Status",
+    "category": "Category",
+    "myProgress": "My Progress",
+    "completed": "Completed",
+    "attempted": "Attempted",
+    "bestRank": "Best rank",
+    "totalPts": "Total pts",
+    "emailAlerts": "Email alerts",
+    "newChallengesEmail": "New challenges",
+    "newChallengesEmailDesc": "— email me when a new challenge is published in the catalog.",
+    "verifyEmailNote": "Verify your email to enable this option.",
+    "updatePrefError": "Could not update preference"
+  },
+  "difficulty": {
+    "all": "All difficulties",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "expert": "Expert",
+    "allTag": "ALL DIFFICULTIES"
+  },
+  "status": {
+    "all": "All",
+    "unsolved": "Unsolved",
+    "attempted": "Attempted",
+    "completed": "Completed"
+  },
+  "category": {
+    "all": "ALL CATEGORIES"
+  },
+  "header": {
+    "eyebrow": "{{count}} challenges available",
+    "titleBefore": "Choose",
+    "titleEm": "Your Battle"
+  },
+  "sort": {
+    "featured": "SORT: FEATURED",
+    "newest": "SORT: NEWEST",
+    "hardest": "SORT: HARDEST",
+    "mostSolved": "SORT: MOST SOLVED",
+    "highestPts": "SORT: HIGHEST PTS"
+  },
+  "view": {
+    "grid": "Grid view",
+    "list": "List view"
+  },
+  "results": "{{count}} challenges found",
+  "loading": "Loading challenges...",
+  "loadError": "Error loading challenges",
+  "serviceHint": "Make sure challenge-service is running at http://localhost:8082",
+  "emptyFilters": "No challenges match your filters",
+  "featured": {
+    "eyebrow": "// Spotlight",
+    "titleBefore": "Featured",
+    "titleEm": "Challenges"
+  },
+  "catalog": {
+    "eyebrow": "// Catalog",
+    "titleBefore": "All",
+    "titleEm": "Challenges"
+  },
+  "detail": {
+    "pageTitleChallenge": "API Challenge",
+    "pageTitleSuffix": "— API Challenge",
+    "pageDescription": "Read the briefing and start a timed run: submit your Spring Boot API and get scored by real HTTP tests.",
+    "loading": "Loading challenge...",
+    "notFound": "Challenge not found",
+    "loadError": "Error loading challenge",
+    "backToChallenges": "Back to Challenges",
+    "backToChallengesArrow": "← Back to Challenges",
+    "dailyLimitBanner": "Daily limit active",
+    "cooldownBanner": "Cooldown active",
+    "dailyBannerCopy": "You cannot start a new run until the daily counter resets (UTC).",
+    "cooldownBannerCopy": "You cannot start a new run until the cooldown ends. Full requirements are available only from the submit screen after you can start.",
+    "viewDetails": "View full details",
+    "checkingLimits": "Checking limits…",
+    "dailyLimitBtn": "Daily limit — details",
+    "cooldownBtn": "Cooldown — details",
+    "startChallenge": "Start Challenge",
+    "inactive": "Inactive",
+    "maxPoints": "Max points",
+    "minutes": "Minutes",
+    "xpReward": "XP reward",
+    "attempts": "Attempts",
+    "completed": "Completed",
+    "averageScore": "Average score",
+    "created": "Created:",
+    "updated": "Updated:",
+    "description": "Description",
+    "noDescription": "No description.",
+    "fullRequirements": "Full requirements",
+    "specsTeaser": "Endpoints, HTTP contracts, automated test suite, performance and design criteria, hints, and learning objectives are only revealed inside the challenge once you start and open the submit workspace. Sign in, then use",
+    "startChallengeStrong": "Start Challenge",
+    "specsTeaserAfter": "when you are ready to see everything you need to build and ship your ZIP.",
+    "specsFoot": "Think of this page as the briefing — the arena opens when you enter the timed run."
+  }
+}

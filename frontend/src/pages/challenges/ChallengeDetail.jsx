@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import * as challengesApi from '../../lib/challengesApi';
 import { getChallengeAttemptStatus } from '../../lib/submissionsApi';
 import { useAuth } from '../../context/AuthContext';
@@ -16,6 +17,7 @@ import { DOCS_PATHS, TOUR_CHALLENGE_DETAIL } from '../../tutorial/tourDefinition
 import { usePageMeta } from '../../lib/usePageMeta';
 
 export default function ChallengeDetail() {
+  const { t, i18n } = useTranslation('challenges');
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -43,10 +45,12 @@ export default function ChallengeDetail() {
   const bannerMsLeft = useMsUntilIso(policyBlocks ? blockTargetIso : null);
 
   usePageMeta({
-    title: challenge?.title ? `${challenge.title} — API Challenge` : 'API Challenge',
+    title: challenge?.title
+      ? `${challenge.title} ${t('detail.pageTitleSuffix')}`
+      : t('detail.pageTitleChallenge'),
     description: challenge?.description
       ? String(challenge.description).slice(0, 158)
-      : 'Read the briefing and start a timed run: submit your Spring Boot API and get scored by real HTTP tests.',
+      : t('detail.pageDescription'),
     path: `/challenges/${id}`,
   });
 
@@ -73,7 +77,7 @@ export default function ChallengeDetail() {
         const data = await challengesApi.getChallengePreview(id);
         if (!cancelled) setChallenge(data);
       } catch (e) {
-        if (!cancelled) setError(e?.message || 'Error loading challenge');
+        if (!cancelled) setError(e?.message || t('detail.loadError'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -120,7 +124,7 @@ export default function ChallengeDetail() {
       <div className="challenges-page chd-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
-          <div className="chd-loading">Loading challenge...</div>
+          <div className="chd-loading">{t('detail.loading')}</div>
         </main>
         <BottomNav />
         <CustomCursor />
@@ -133,9 +137,9 @@ export default function ChallengeDetail() {
       <div className="challenges-page chd-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
-          <p className="chd-error">{error || 'Challenge not found'}</p>
+          <p className="chd-error">{error || t('detail.notFound')}</p>
           <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
-            Back to Challenges
+            {t('detail.backToChallenges')}
           </button>
         </main>
         <BottomNav />
@@ -144,7 +148,8 @@ export default function ChallengeDetail() {
     );
   }
 
-  const formatDate = (d) => (d ? new Date(d).toLocaleString('en-US') : '—');
+  const formatDate = (d) =>
+    d ? new Date(d).toLocaleString(i18n.language?.startsWith('es') ? 'es-ES' : 'en-US') : '—';
 
   return (
     <div className="challenges-page chd-page">
@@ -154,24 +159,26 @@ export default function ChallengeDetail() {
           {isAuthenticated && !staffBypass && policyBlocks && bannerMsLeft != null && (
             <div className="chd-policy-banner" role="status">
               <div className="chd-policy-banner-title">
-                {attemptPolicy.blockReason === 'DAILY_LIMIT' ? 'Daily limit active' : 'Cooldown active'}
+                {attemptPolicy.blockReason === 'DAILY_LIMIT'
+                  ? t('detail.dailyLimitBanner')
+                  : t('detail.cooldownBanner')}
               </div>
               <div className="chd-policy-banner-count">{formatCountdownMs(bannerMsLeft)}</div>
               <p className="chd-policy-banner-copy">
                 {attemptPolicy.blockReason === 'DAILY_LIMIT'
-                  ? 'You cannot start a new run until the daily counter resets (UTC).'
-                  : 'You cannot start a new run until the cooldown ends. Full requirements are available only from the submit screen after you can start.'}
+                  ? t('detail.dailyBannerCopy')
+                  : t('detail.cooldownBannerCopy')}
               </p>
               <div className="chd-policy-banner-actions">
                 <button type="button" className="chd-policy-banner-link" onClick={() => setAttemptBlockModalOpen(true)}>
-                  View full details
+                  {t('detail.viewDetails')}
                 </button>
               </div>
             </div>
           )}
           <div className="chd-top-actions" data-tutorial="challenge-detail-actions">
             <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
-              ← Back to Challenges
+              {t('detail.backToChallengesArrow')}
             </button>
             <button
               type="button"
@@ -180,12 +187,12 @@ export default function ChallengeDetail() {
               disabled={isAuthenticated && !staffBypass && policyLoading}
             >
               {policyLoading && isAuthenticated && !staffBypass
-                ? 'Checking limits…'
+                ? t('detail.checkingLimits')
                 : policyBlocks
                   ? attemptPolicy?.blockReason === 'DAILY_LIMIT'
-                    ? 'Daily limit — details'
-                    : 'Cooldown — details'
-                  : 'Start Challenge'}
+                    ? t('detail.dailyLimitBtn')
+                    : t('detail.cooldownBtn')
+                  : t('detail.startChallenge')}
             </button>
           </div>
 
@@ -194,10 +201,14 @@ export default function ChallengeDetail() {
               <span className={`ch-badge ${diffBadgeClass}`}>{challenge.difficulty}</span>
               <span className="ch-badge ch-badge-cat">{challenge.category}</span>
               <span className={`ch-badge ${(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'ch-badge-community' : 'ch-badge-legacy'}`}>
-                {(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'Community' : 'Legacy'}
+                {(challenge.origin || 'LEGACY') === 'COMMUNITY' ? t('community') : t('legacy')}
               </span>
-              {challenge.featured && <span className="ch-badge ch-badge-new">Featured</span>}
-              {challenge.isActive === false && <span className="ch-badge" style={{ background: 'var(--red)' }}>Inactive</span>}
+              {challenge.featured && <span className="ch-badge ch-badge-new">{t('featuredBadge')}</span>}
+              {challenge.isActive === false && (
+                <span className="ch-badge" style={{ background: 'var(--red)' }}>
+                  {t('detail.inactive')}
+                </span>
+              )}
             </div>
             <h1 className="chd-hero-title">{challenge.title}</h1>
             <p className="chd-hero-slug">/{challenge.slug}</p>
@@ -205,54 +216,52 @@ export default function ChallengeDetail() {
             <div className="chd-hero-stats">
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.maxScore ?? 1000}</span>
-                <span className="chd-stat-label">Max points</span>
+                <span className="chd-stat-label">{t('detail.maxPoints')}</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timeLimitMinutes ?? 60}</span>
-                <span className="chd-stat-label">Minutes</span>
+                <span className="chd-stat-label">{t('detail.minutes')}</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.xpReward ?? 200}</span>
-                <span className="chd-stat-label">XP reward</span>
+                <span className="chd-stat-label">{t('detail.xpReward')}</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timesAttempted ?? 0}</span>
-                <span className="chd-stat-label">Attempts</span>
+                <span className="chd-stat-label">{t('detail.attempts')}</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{challenge.timesCompleted ?? 0}</span>
-                <span className="chd-stat-label">Completed</span>
+                <span className="chd-stat-label">{t('detail.completed')}</span>
               </div>
               <div className="chd-stat">
                 <span className="chd-stat-value">{Number(challenge.averageScore ?? 0).toFixed(1)}</span>
-                <span className="chd-stat-label">Average score</span>
+                <span className="chd-stat-label">{t('detail.averageScore')}</span>
               </div>
             </div>
 
             <div className="chd-hero-meta">
               <span>ID: {challenge.id}</span>
-              <span>Created: {formatDate(challenge.createdAt)}</span>
-              <span>Updated: {formatDate(challenge.updatedAt)}</span>
+              <span>{t('detail.created')} {formatDate(challenge.createdAt)}</span>
+              <span>{t('detail.updated')} {formatDate(challenge.updatedAt)}</span>
             </div>
           </header>
 
           <section className="chd-section chd-description">
-            <h2 className="chd-section-title">Description</h2>
-            <p className="chd-description-text">{challenge.description || 'No description.'}</p>
+            <h2 className="chd-section-title">{t('detail.description')}</h2>
+            <p className="chd-description-text">{challenge.description || t('detail.noDescription')}</p>
           </section>
 
           <section className="chd-specs-teaser" aria-labelledby="chd-specs-teaser-title" data-tutorial="challenge-detail-specs-note">
             <h2 id="chd-specs-teaser-title" className="chd-specs-teaser-title">
-              Full requirements
+              {t('detail.fullRequirements')}
             </h2>
             <p className="chd-specs-teaser-copy">
-              Endpoints, HTTP contracts, automated test suite, performance and design criteria, hints, and learning objectives
-              are only revealed inside the challenge once you start and open the submit workspace. Sign in, then use{' '}
-              <strong>Start Challenge</strong> when you are ready to see everything you need to build and ship your ZIP.
+              {t('detail.specsTeaser')}{' '}
+              <strong>{t('detail.startChallengeStrong')}</strong>{' '}
+              {t('detail.specsTeaserAfter')}
             </p>
-            <p className="chd-specs-teaser-foot">
-              Think of this page as the briefing — the arena opens when you enter the timed run.
-            </p>
+            <p className="chd-specs-teaser-foot">{t('detail.specsFoot')}</p>
           </section>
         </div>
       </main>
@@ -260,8 +269,7 @@ export default function ChallengeDetail() {
       <LoginPromptModal
         open={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
-        title="Sign in to compete"
-        description="You need to sign in to start this challenge and submit your solution. If you do not have an account yet, you can register in a moment."
+        variant="challenge"
       />
       <AttemptPolicyBlockModal
         open={attemptBlockModalOpen}
@@ -269,7 +277,7 @@ export default function ChallengeDetail() {
         cooldownUntilIso={attemptPolicy?.cooldownUntilIso}
         dailyLimitResetsAtIso={attemptPolicy?.dailyLimitResetsAtIso}
         challengeTitle={challenge?.title}
-        primaryLabel="Close"
+        primaryLabelKey="close"
         onDismiss={() => setAttemptBlockModalOpen(false)}
       />
       <TutorialTour

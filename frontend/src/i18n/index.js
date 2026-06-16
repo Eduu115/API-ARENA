@@ -4,20 +4,22 @@ import { resolveInitialLocale } from '../lib/locale.js';
 
 import enCommon from './locales/en/common.json';
 import enAuth from './locales/en/auth.json';
+import enChallenges from './locales/en/challenges.json';
 import esCommon from './locales/es/common.json';
 import esAuth from './locales/es/auth.json';
+import esChallenges from './locales/es/challenges.json';
 
 const initialLocale = resolveInitialLocale();
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: { common: enCommon, auth: enAuth },
-    es: { common: esCommon, auth: esAuth },
+    en: { common: enCommon, auth: enAuth, challenges: enChallenges },
+    es: { common: esCommon, auth: esAuth, challenges: esChallenges },
   },
   lng: initialLocale,
   fallbackLng: 'en',
   defaultNS: 'common',
-  ns: ['common', 'auth'],
+  ns: ['common', 'auth', 'challenges'],
   interpolation: { escapeValue: false },
 });
 

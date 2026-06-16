@@ -497,7 +497,7 @@ export default function ChallengeSubmit() {
         cooldownUntilIso={attemptPolicy?.cooldownUntilIso}
         dailyLimitResetsAtIso={attemptPolicy?.dailyLimitResetsAtIso}
         challengeTitle={challenge?.title}
-        primaryLabel="Back to challenge overview"
+        primaryLabelKey="backToOverview"
         onDismiss={() => navigate(`/challenges/${id}`)}
       />
       <main className="chd-main">

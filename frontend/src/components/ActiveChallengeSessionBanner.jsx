@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { clearChallengeSession, getChallengeSession } from "../lib/challengeSessionStorage";
 import "./ActiveChallengeSessionBanner.css";
@@ -11,6 +12,7 @@ function formatTime(seconds) {
 }
 
 export default function ActiveChallengeSessionBanner() {
+  const { t } = useTranslation("common");
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -56,28 +58,28 @@ export default function ActiveChallengeSessionBanner() {
 
   if (!visible || !session) return null;
 
-  const timeLabel = session.timerDone ? "TIME'S UP" : formatTime(session.secondsLeft);
+  const timeLabel = session.timerDone ? t("sessionBanner.timesUp") : formatTime(session.secondsLeft);
 
   return (
     <div className="acs-banner" role="dialog" aria-labelledby="acs-banner-title">
       <div className="acs-banner-inner">
         <div className="acs-banner-text">
           <span id="acs-banner-title" className="acs-banner-title">
-            Challenge in progress
+            {t("sessionBanner.title")}
           </span>
           {session.challengeTitle ? (
             <span className="acs-banner-sub">{session.challengeTitle}</span>
           ) : null}
           <span className="acs-banner-time">
-            Timer: {timeLabel}
+            {t("sessionBanner.timer")} {timeLabel}
           </span>
         </div>
         <div className="acs-banner-actions">
           <button type="button" className="acs-btn acs-btn-primary" onClick={handleContinue}>
-            Continue
+            {t("sessionBanner.continue")}
           </button>
           <button type="button" className="acs-btn acs-btn-ghost" onClick={handleAbandon}>
-            Abandon
+            {t("sessionBanner.abandon")}
           </button>
         </div>
       </div>
