@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import ProfileAccountMenu from "./ProfileAccountMenu";
@@ -38,6 +39,7 @@ export default function Topbar({
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation("common");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [pushToasts, setPushToasts] = useState([]);
@@ -155,13 +157,13 @@ export default function Topbar({
   return (
     <>
       <header className="arena-navbar" role="banner">
-        <nav className="arena-navbar__inner" aria-label="Main">
+        <nav className="arena-navbar__inner" aria-label={t("topbar.mainNav")}>
           <div className="arena-navbar__brand">
             <div className="arena-navbar__logo">
               <div className="arena-navbar__hex">
                 <img
                   src="/icons/logo-hex-sm.svg"
-                  alt="API Arena logo"
+                  alt={t("topbar.logoAlt")}
                   width="28"
                   height="28"
                 />
@@ -177,7 +179,7 @@ export default function Topbar({
                 type="button"
                 className={`arena-navbar__menu${sidebarOpen ? " is-open" : ""}`}
                 onClick={onMenuToggle}
-                aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+                aria-label={sidebarOpen ? t("topbar.closeMenu") : t("topbar.openMenu")}
               >
                 <span className="arena-navbar__menu-icon" />
               </button>
@@ -205,23 +207,23 @@ export default function Topbar({
           {isAuthenticated ? (
           <div className="arena-navbar__actions">
             <LocaleSwitch />
-            <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? undefined : `Rating ${rating}`}>
+            <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? undefined : t("topbar.ratingTitle", { rating })}>
               <span className="arena-navbar__elo-lbl">ELO</span>
               <span className={`arena-navbar__elo-val${isUnranked ? " arena-navbar__elo-val--unranked" : ""}`}>
-                {isUnranked ? "UNRANKED" : rating}
+                {isUnranked ? t("topbar.unranked") : rating}
               </span>
               {isUnranked && (
                 <span className="arena-navbar__elo-help-wrap">
                   <Link
                     to="/docs/sistema-xp-elo"
                     className="arena-navbar__elo-help"
-                    aria-label="Open ELO System documentation"
+                    aria-label={t("topbar.eloDocsAria")}
                   >
                     ?
                   </Link>
                   <span className="arena-navbar__elo-tooltip">
-                    You are unranked until you complete {MIN_RANKED_CHALLENGES} challenges.
-                    {remainingForRank > 0 ? ` ${remainingForRank} left to classify.` : ""}
+                    {t("topbar.unrankedTooltip", { min: MIN_RANKED_CHALLENGES })}
+                    {remainingForRank > 0 ? ` ${t("topbar.unrankedRemaining", { count: remainingForRank })}` : ""}
                   </span>
                 </span>
               )}
@@ -230,8 +232,8 @@ export default function Topbar({
             <Link
               to="/notifications"
               className={`arena-nav-icon-btn${notifActive ? " arena-nav-icon-btn--active" : ""}`}
-              aria-label="Notifications"
-              title="Notifications"
+              aria-label={t("topbar.notifications")}
+              title={t("topbar.notifications")}
             >
               <span className="arena-nav-icon-btn__ico" aria-hidden>
                 <IconBell />
@@ -247,8 +249,8 @@ export default function Topbar({
               type="button"
               className="arena-nav-icon-btn"
               onClick={toggleTheme}
-              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              title={isDark ? t("topbar.lightMode") : t("topbar.darkMode")}
+              aria-label={isDark ? t("topbar.lightMode") : t("topbar.darkMode")}
             >
               <span className="arena-nav-icon-btn__ico" aria-hidden>
                 {isDark ? <IconSun /> : <IconMoon />}
@@ -262,8 +264,8 @@ export default function Topbar({
               aria-expanded={accountMenuOpen}
               aria-haspopup="dialog"
               aria-controls="profile-account-menu"
-              aria-label="Profile menu"
-              title="Profile"
+              aria-label={t("topbar.profileMenu")}
+              title={t("topbar.profile")}
             >
               <span className="arena-nav-icon-btn__ico" aria-hidden>
                 <NavIcon name="profile" />
@@ -280,8 +282,8 @@ export default function Topbar({
                 type="button"
                 className="arena-nav-icon-btn"
                 onClick={toggleTheme}
-                title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-                aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                title={isDark ? t("topbar.lightMode") : t("topbar.darkMode")}
+                aria-label={isDark ? t("topbar.lightMode") : t("topbar.darkMode")}
               >
                 <span className="arena-nav-icon-btn__ico" aria-hidden>
                   {isDark ? <IconSun /> : <IconMoon />}
@@ -307,7 +309,7 @@ export default function Topbar({
         <div className="arena-push-toast" role="status" aria-live="polite">
           <div className="arena-push-toast__accent" aria-hidden />
           <div className="arena-push-toast__content">
-            <div className="arena-push-toast__eyebrow">Notification</div>
+            <div className="arena-push-toast__eyebrow">{t("topbar.pushEyebrow")}</div>
             <div className="arena-push-toast__title">{activePushToast.title}</div>
             <p className="arena-push-toast__body">{activePushToast.body}</p>
             <Link
@@ -322,7 +324,7 @@ export default function Topbar({
             type="button"
             className="arena-push-toast__close"
             onClick={dismissPushToast}
-            aria-label="Dismiss notification"
+            aria-label={t("topbar.dismissNotification")}
           >
             ×
           </button>

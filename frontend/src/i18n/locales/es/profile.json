@@ -82,7 +82,9 @@
     "showTitle": "Clic para mostrar en el perfil",
     "locked": "Bloqueada",
     "onProfile": "En perfil",
-    "unlocked": "Desbloqueada"
+    "unlocked": "Desbloqueada",
+    "mandatoryTitle": "Siempre visible si estás en el top 25",
+    "since": "Desde {{date}}"
   },
   "achievementsPage": {
     "pageTitle": "Logros",
@@ -99,5 +101,36 @@
     "emptyUnlocked": "Nada desbloqueado con este filtro — sigue jugando.",
     "emptyLocked": "Has desbloqueado todos los logros por ahora.",
     "emptyAll": "Aún no hay logros definidos."
+  },
+  "publicCard": {
+    "dialogLabel": "Perfil público",
+    "close": "Cerrar",
+    "loading": "// Cargando ficha del operador",
+    "loadError": "No se pudo cargar el perfil",
+    "eyebrow": "// Perfil público",
+    "level": "Nvl {{n}}",
+    "lastOnlineUnknown": "Última conexión desconocida",
+    "onlineNow": "En línea ahora",
+    "lastOnlineJustNow": "Última conexión hace un momento",
+    "lastOnlineRelative": "Última conexión {{relative}}",
+    "arenaRating": "Rating en la arena",
+    "unranked": "SIN CLASIFICAR",
+    "rankMore_one": "{{count}} challenge más para clasificarte",
+    "rankMore_other": "{{count}} challenges más para clasificarte",
+    "completedProgress": "{{solved}} / {{min}} completados",
+    "eloRating": "Rating ELO",
+    "kpiSolved": "Resueltos",
+    "kpiWeekStreak": "Racha semanal",
+    "kpiTestsPassed": "Tests superados",
+    "about": "Sobre mí",
+    "noBio": "Sin bio todavía.",
+    "achievements": "Logros",
+    "unlockedMeta": "{{count}} desbloqueados",
+    "lockedSuffix": " · {{count}} bloqueados",
+    "noAchievements": "Sin logros que mostrar.",
+    "recentSubmissions": "Entregas recientes",
+    "recentMeta": "Últimas partidas completadas",
+    "noSubmissions": "Sin entregas completadas todavía.",
+    "challengeFallback": "Challenge #{{id}}"
   }
 }

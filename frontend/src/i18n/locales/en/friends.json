@@ -28,5 +28,14 @@
   "errorSend": "Could not send request",
   "errorAccept": "Could not accept request",
   "errorUpdate": "Could not update request",
-  "errorRemove": "Could not remove friend"
+  "errorRemove": "Could not remove friend",
+  "sending": "Sending…",
+  "requestSent": "Request sent",
+  "cancelRequest": "Cancel request",
+  "acceptRequest": "Accept request",
+  "unfriend": "Unfriend",
+  "loginToAddFriend": "Log in to add friend",
+  "checkingFriendship": "Checking friendship…",
+  "confirmUnfriend": "Remove {{name}} from your friends?",
+  "confirmUnfriendFallback": "this user"
 }

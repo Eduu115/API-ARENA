@@ -28,5 +28,14 @@
   "errorSend": "No se pudo enviar la solicitud",
   "errorAccept": "No se pudo aceptar la solicitud",
   "errorUpdate": "No se pudo actualizar la solicitud",
-  "errorRemove": "No se pudo eliminar al amigo"
+  "errorRemove": "No se pudo eliminar al amigo",
+  "sending": "Enviando…",
+  "requestSent": "Solicitud enviada",
+  "cancelRequest": "Cancelar solicitud",
+  "acceptRequest": "Aceptar solicitud",
+  "unfriend": "Eliminar amigo",
+  "loginToAddFriend": "Inicia sesión para añadir amigo",
+  "checkingFriendship": "Comprobando amistad…",
+  "confirmUnfriend": "¿Eliminar a {{name}} de tus amigos?",
+  "confirmUnfriendFallback": "este usuario"
 }

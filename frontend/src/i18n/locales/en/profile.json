@@ -82,7 +82,9 @@
     "showTitle": "Click to show on profile",
     "locked": "Locked",
     "onProfile": "On profile",
-    "unlocked": "Unlocked"
+    "unlocked": "Unlocked",
+    "mandatoryTitle": "Always shown when in top 25",
+    "since": "Since {{date}}"
   },
   "achievementsPage": {
     "pageTitle": "Achievements",
@@ -99,5 +101,36 @@
     "emptyUnlocked": "Nothing unlocked in this filter yet — keep playing.",
     "emptyLocked": "You have unlocked every achievement so far.",
     "emptyAll": "No achievements defined yet."
+  },
+  "publicCard": {
+    "dialogLabel": "Public profile",
+    "close": "Close",
+    "loading": "// Loading operator file",
+    "loadError": "Could not load profile",
+    "eyebrow": "// Public profile",
+    "level": "Lvl {{n}}",
+    "lastOnlineUnknown": "Last online unknown",
+    "onlineNow": "Online now",
+    "lastOnlineJustNow": "Last online just now",
+    "lastOnlineRelative": "Last online {{relative}}",
+    "arenaRating": "Arena rating",
+    "unranked": "UNRANKED",
+    "rankMore_one": "{{count}} more challenge to classify",
+    "rankMore_other": "{{count}} more challenges to classify",
+    "completedProgress": "{{solved}} / {{min}} completed",
+    "eloRating": "ELO rating",
+    "kpiSolved": "Solved",
+    "kpiWeekStreak": "Week streak",
+    "kpiTestsPassed": "Tests passed",
+    "about": "About",
+    "noBio": "No bio yet.",
+    "achievements": "Achievements",
+    "unlockedMeta": "{{count}} unlocked",
+    "lockedSuffix": " · {{count}} locked",
+    "noAchievements": "No achievements to show.",
+    "recentSubmissions": "Recent submissions",
+    "recentMeta": "Latest completed runs",
+    "noSubmissions": "No completed submissions yet.",
+    "challengeFallback": "Challenge #{{id}}"
   }
 }

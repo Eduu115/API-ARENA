@@ -64,5 +64,40 @@
       "close": "Cerrar",
       "backToOverview": "Volver a la ficha del challenge"
     }
+  },
+  "topbar": {
+    "logoAlt": "Logo de API Arena",
+    "mainNav": "Principal",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "ratingTitle": "Rating {{rating}}",
+    "unranked": "SIN CLASIFICAR",
+    "unrankedTooltip": "Estás sin clasificar hasta completar {{min}} challenges.",
+    "unrankedRemaining": "Quedan {{count}} para clasificarte.",
+    "eloDocsAria": "Abrir documentación del sistema ELO",
+    "notifications": "Notificaciones",
+    "lightMode": "Cambiar a modo claro",
+    "darkMode": "Cambiar a modo oscuro",
+    "profileMenu": "Menú de perfil",
+    "profile": "Perfil",
+    "pushEyebrow": "Notificación",
+    "dismissNotification": "Descartar notificación"
+  },
+  "accountMenu": {
+    "closeBackdrop": "Cerrar menú de cuenta",
+    "title": "Menú de cuenta",
+    "close": "Cerrar",
+    "active": "ACTIVO",
+    "eloDash": "• ELO —",
+    "eloRating": "• ELO {{rating}}",
+    "combatStats": "STATS DE COMBATE",
+    "combatStatsAria": "Estadísticas de combate",
+    "level": "NIVEL",
+    "solved": "RESUELTOS",
+    "xp": "XP",
+    "tests": "TESTS",
+    "goToProfile": "Ir al perfil",
+    "switchAccount": "Cambiar cuenta",
+    "logOut": "Cerrar sesión"
   }
 }
