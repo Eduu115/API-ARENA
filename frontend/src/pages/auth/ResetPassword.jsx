@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import * as authApi from "../../lib/authApi";
 import ThemeToggle from "../../components/ThemeToggle";
+import LocaleSwitch from "../../components/LocaleSwitch";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
+import { translateAuthError } from "../../lib/authErrorI18n";
 import { usePageMeta } from "../../lib/usePageMeta";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
 export default function ResetPassword() {
+  const { t } = useTranslation("auth");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
   const navigate = useNavigate();
@@ -18,17 +22,17 @@ export default function ResetPassword() {
   const [error, setError] = useState(null);
   const [done, setDone] = useState(false);
 
-  usePageMeta({ title: "Reset password", path: "/reset-password" });
+  usePageMeta({ title: t("resetPassword.pageTitle"), path: "/reset-password" });
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setError(t("errors.passwordMin"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("errors.passwordMismatch"));
       return;
     }
     setSubmitting(true);
@@ -37,7 +41,12 @@ export default function ResetPassword() {
       setDone(true);
       setTimeout(() => navigate("/login", { replace: true }), 2500);
     } catch (err) {
-      setError(err?.message || "Could not reset password. The link may have expired.");
+      setError(
+        translateAuthError(
+          err?.message || "Could not reset password. The link may have expired.",
+          t
+        )
+      );
     } finally {
       setSubmitting(false);
     }
@@ -50,10 +59,13 @@ export default function ResetPassword() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/login" className="auth-page__back" title="Back to login" aria-label="Back to login">
+          <Link to="/login" className="auth-page__back" title={t("backToLogin")} aria-label={t("backToLogin")}>
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
           </Link>
-          <ThemeToggle />
+          <div className="auth-page__toolbar-actions">
+            <LocaleSwitch />
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="auth-page__inner">
@@ -66,40 +78,40 @@ export default function ResetPassword() {
                   <span className="ch-arena">Arena</span>
                 </span>
               </Link>
-              <div className="ch-page-eyebrow">// Recovery</div>
+              <div className="ch-page-eyebrow">{t("resetPassword.eyebrow")}</div>
               <div className="auth-title-crt">
                 <h1 className="ch-page-title">
-                  Choose a new
-                  <em>password</em>
+                  {t("resetPassword.titleBefore")}
+                  <em>{t("resetPassword.titleEm")}</em>
                 </h1>
               </div>
-              <p className="ch-card-desc auth-copy-lead">
-                Set a new password for your account. For your security, all existing sessions will be signed out.
-              </p>
+              <p className="ch-card-desc auth-copy-lead">{t("resetPassword.lead")}</p>
             </div>
 
             <div className="auth-form-card">
               <form className="auth-form" onSubmit={handleSubmit}>
                 <div className="auth-form__head">
                   <div>
-                    <div className="ch-page-eyebrow">// New password</div>
+                    <div className="ch-page-eyebrow">{t("resetPassword.formEyebrow")}</div>
                     <div className="auth-title-crt auth-title-crt--sm">
-                      <h2 className="ch-card-title">Reset password</h2>
+                      <h2 className="ch-card-title">{t("resetPassword.formTitle")}</h2>
                     </div>
                   </div>
-                  <div className="auth-form__status">{submitting ? "// saving…" : "// ready"}</div>
+                  <div className="auth-form__status">
+                    {submitting ? t("resetPassword.statusSaving") : t("resetPassword.statusReady")}
+                  </div>
                 </div>
 
                 {!token && (
                   <div className="auth-alert" role="alert">
-                    Missing or invalid reset link. Request a new one from{" "}
-                    <Link to="/forgot-password">Forgot password</Link>.
+                    {t("resetPassword.missingTokenBefore")}{" "}
+                    <Link to="/forgot-password">{t("resetPassword.missingTokenLink")}</Link>.
                   </div>
                 )}
 
                 {done ? (
                   <div className="auth-alert auth-alert--ok" role="status">
-                    Password updated. Redirecting you to sign in…
+                    {t("resetPassword.done")}
                   </div>
                 ) : (
                   <>
@@ -111,7 +123,7 @@ export default function ResetPassword() {
                     <div className="auth-fields">
                       <div>
                         <label htmlFor="rp-password" className="auth-label">
-                          New password
+                          {t("resetPassword.newPassword")}
                         </label>
                         <input
                           id="rp-password"
@@ -128,7 +140,7 @@ export default function ResetPassword() {
                       </div>
                       <div>
                         <label htmlFor="rp-confirm" className="auth-label">
-                          Confirm new password
+                          {t("resetPassword.confirmNewPassword")}
                         </label>
                         <input
                           id="rp-confirm"
@@ -145,14 +157,14 @@ export default function ResetPassword() {
                     </div>
 
                     <button type="submit" className="auth-submit" disabled={submitting || !token}>
-                      {submitting ? "Saving…" : "Set new password"}
+                      {submitting ? t("resetPassword.submitting") : t("resetPassword.submit")}
                     </button>
                   </>
                 )}
 
                 <div className="auth-footer-row">
-                  <p>Back to</p>
-                  <Link to="/login">Sign in →</Link>
+                  <p>{t("resetPassword.footerPrompt")}</p>
+                  <Link to="/login">{t("backToSignIn")}</Link>
                 </div>
               </form>
             </div>
