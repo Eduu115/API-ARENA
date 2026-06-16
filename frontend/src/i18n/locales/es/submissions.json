@@ -122,5 +122,149 @@
     "onboardLi3": "Debes cubrir los endpoints y códigos de estado que espera el challenge.",
     "onboardGuide": "VER GUÍA DE PRECONFIGURACIÓN",
     "onboardConfirm": "SÍ, LO ENTIENDO. CONTINUAR"
+  },
+  "detail": {
+    "loading": "Cargando entrega...",
+    "loadError": "Error al cargar la entrega",
+    "notFound": "Entrega no encontrada",
+    "backToSubmissions": "← VOLVER A ENTREGAS",
+    "attemptLabel": "{{name}} · Intento {{n}}",
+    "challengeFallback": "Challenge #{{id}}",
+    "submissionMeta": "Entrega #{{id}}",
+    "createdAt": "Creada {{date}}",
+    "completedAt": "Completada {{date}}",
+    "pointsSuffix": "/ 1000 PUNTOS",
+    "score": {
+      "correctness": "Correctitud",
+      "performance": "Rendimiento",
+      "design": "Diseño",
+      "aiReview": "Revisión IA"
+    },
+    "perf": {
+      "title": "⚡ Métricas de rendimiento",
+      "avgResponse": "Respuesta media",
+      "p95Response": "Respuesta P95",
+      "p99Response": "Respuesta P99",
+      "rps": "Peticiones/seg",
+      "totalRequests": "Peticiones totales",
+      "failedRequests": "Peticiones fallidas",
+      "restCompliance": "Cumplimiento REST"
+    },
+    "teacherAdjustments": {
+      "title": "Ajustes de nota del profesor",
+      "pts": "pts",
+      "notePrefix": "nota:",
+      "removable": "eliminable durante {{time}}",
+      "locked": "bloqueado (ventana de 2 h cerrada)",
+      "remove": "Eliminar"
+    },
+    "teacherGrading": {
+      "title": "Corrección docente",
+      "manualApplied": "Se han aplicado notas manuales a esta entrega (los totales reflejan la corrección del profesor)."
+    },
+    "penalize": {
+      "title": "Penalizar nota",
+      "hint": "Añade incidencias al borrador y elimina cualquier línea antes de confirmar. Una vez confirmada, cada línea solo se puede eliminar durante <strong>2 horas</strong>; después queda bloqueada. Siempre puedes leer el historial arriba.",
+      "issueType": "Tipo de incidencia",
+      "otherOption": "Otro (descripción y puntos personalizados)",
+      "pointsToDeduct": "Puntos a descontar",
+      "pointsExample": "p. ej. 25",
+      "shortDescription": "Descripción breve",
+      "otherPlaceholder": "Qué falló (visible en el registro del ajuste)",
+      "optionalNote": "Nota opcional",
+      "notePlaceholder": "Nota interna (guardada en el registro de penalización)",
+      "addToDraft": "Añadir al borrador",
+      "draftAria": "Borrador de penalizaciones",
+      "confirm_one": "Confirmar 1 penalización",
+      "confirm_other": "Confirmar {{count}} penalizaciones",
+      "draftOther": "Otro (−{{pts}} pts): {{desc}}",
+      "draftPreset": "{{label}} (−{{pts}} pts)",
+      "errOtherPoints": "Introduce un número válido de puntos a descontar para «Otro».",
+      "errOtherDesc": "La descripción breve es obligatoria para «Otro».",
+      "errConfirm": "No se pudieron confirmar las penalizaciones",
+      "errRevoke": "No se pudo eliminar la penalización",
+      "presets": {
+        "WRONG_DELIVERABLE_NAME": "Nombre de entrega / archivo incorrecto",
+        "SPELLING_AND_DOCS": "Ortografía y documentación",
+        "CODE_DISORGANIZATION": "Desorganización / estructura del código",
+        "MISSING_README": "README ausente o incorrecto",
+        "STYLE_AND_NAMING": "Inconsistencias de estilo y nombres"
+      }
+    },
+    "manual": {
+      "title": "Nota manual (alumno del grupo)",
+      "correctness": "Correctitud (0–300)",
+      "performance": "Rendimiento (0–300)",
+      "design": "Diseño (0–200)",
+      "aiReview": "Revisión IA (0–200)",
+      "save": "Guardar notas manuales",
+      "errSave": "No se pudieron guardar las notas manuales"
+    },
+    "review": {
+      "title": "Revisión de entrega y bonus de nota",
+      "hint": "Las notas y el feedback estructurado son visibles para el alumno. Las líneas de bonus suman puntos (máx. 1000 en total); puedes cambiarlas o eliminarlas en cualquier momento — a diferencia de las penalizaciones, no hay bloqueo de 2 horas.",
+      "projectedTotal": "Nota total proyectada:",
+      "personalNote": "Nota personal al alumno",
+      "personalPlaceholder": "Comentario general sobre esta entrega",
+      "zoneCorrectness": "Correctitud (nota)",
+      "zonePerformance": "Rendimiento (nota)",
+      "zoneDesign": "Diseño (nota)",
+      "zoneAi": "Revisión IA (nota)",
+      "zonePlaceholder": "Feedback breve para esta área de puntuación",
+      "summary": "Resumen estructurado",
+      "summaryPlaceholder": "Resumen de alto nivel (similar a la revisión IA)",
+      "strengths": "Fortalezas (una por línea)",
+      "strengthsPlaceholder": "Fortalezas tipo lista",
+      "suggestions": "Sugerencias (una por línea)",
+      "suggestionsPlaceholder": "Qué mejorar a continuación",
+      "bonusLines": "Líneas de bonus positivas (opcional)",
+      "bonusAria": "Líneas de bonus",
+      "bonusPts": "Pts",
+      "bonusLabel": "Etiqueta",
+      "bonusNote": "Nota (opcional)",
+      "addBonusLine": "Añadir línea de bonus",
+      "notifyStudent": "Notificar al alumno en la app al guardar",
+      "save": "Guardar revisión y bonus",
+      "errMaxTotal": "La nota total tras los bonus no puede superar 1000. Reduce los puntos de bonus o elimina líneas.",
+      "errSave": "No se pudo guardar la revisión del profesor"
+    },
+    "ai": {
+      "title": "Revisión IA",
+      "provider": "Proveedor: {{name}}",
+      "score": "NOTA IA",
+      "scoreMax": "/ 200",
+      "noSummary": "No hay resumen de IA disponible para esta entrega.",
+      "strengths": "Fortalezas",
+      "suggestions": "Sugerencias",
+      "noStrengths": "Sin fortalezas indicadas.",
+      "noSuggestions": "Sin sugerencias indicadas."
+    },
+    "teacherReview": {
+      "title": "Revisión del profesor",
+      "zoneCorrectness": "Correctitud",
+      "zonePerformance": "Rendimiento",
+      "zoneDesign": "Diseño",
+      "zoneAi": "Revisión IA",
+      "strengths": "Fortalezas",
+      "suggestions": "Sugerencias",
+      "scoreBonuses": "Bonus de nota",
+      "totalBonus": "Bonus total:"
+    },
+    "tests": {
+      "title": "✓ Resultados de tests",
+      "passed": "{{passed}}/{{total}} superados",
+      "noData": "No hay datos de tests disponibles"
+    },
+    "logs": {
+      "build": "Logs de build",
+      "test": "Logs de tests",
+      "error": "⚠ Error"
+    },
+    "processing": {
+      "pending": "En cola de espera...",
+      "building": "Compilando tu proyecto...",
+      "testing": "Ejecutando tests contra tu API..."
+    },
+    "continue": "CONTINUAR"
   }
 }

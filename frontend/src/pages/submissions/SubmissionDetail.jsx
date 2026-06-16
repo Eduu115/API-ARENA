@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Trans, useTranslation } from 'react-i18next';
 import {
   getMySubmissions,
   getSubmissionById,
@@ -34,17 +35,32 @@ function IconTestLogsTitle() {
 
 const TIMELINE_STEPS = ['PENDING', 'BUILDING', 'TESTING', 'COMPLETED'];
 
-const TEACHER_PENALTY_PRESETS = [
-  { key: 'WRONG_DELIVERABLE_NAME', label: 'Wrong deliverable / archive name', points: 40 },
-  { key: 'SPELLING_AND_DOCS', label: 'Spelling and documentation issues', points: 15 },
-  { key: 'CODE_DISORGANIZATION', label: 'Code disorganization / structure', points: 25 },
-  { key: 'MISSING_README', label: 'Missing or broken README', points: 20 },
-  { key: 'STYLE_AND_NAMING', label: 'Style and naming inconsistencies', points: 15 },
+const PENALTY_PRESET_DEFS = [
+  { key: 'WRONG_DELIVERABLE_NAME', points: 40 },
+  { key: 'SPELLING_AND_DOCS', points: 15 },
+  { key: 'CODE_DISORGANIZATION', points: 25 },
+  { key: 'MISSING_README', points: 20 },
+  { key: 'STYLE_AND_NAMING', points: 15 },
 ];
 
-function formatDate(d) {
+function formatDate(d, locale) {
   if (!d) return '—';
-  return new Date(d).toLocaleString('es-ES');
+  const loc = locale?.startsWith('es') ? 'es-ES' : 'en-GB';
+  return new Date(d).toLocaleDateString(loc, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function buildPenaltyPresets(t) {
+  return PENALTY_PRESET_DEFS.map(({ key, points }) => ({
+    key,
+    points,
+    label: t(`detail.penalize.presets.${key}`),
+  }));
 }
 
 function parseTestLines(testLogs) {
@@ -81,21 +97,21 @@ function formatMsAsCountdown(msLeft) {
   return `${h}h ${m}m`;
 }
 
-function draftLabel(d) {
-  const preset = TEACHER_PENALTY_PRESETS.find((x) => x.key === d.presetKey);
+function draftLabel(d, t, penaltyPresets) {
+  const preset = penaltyPresets.find((x) => x.key === d.presetKey);
   if (d.presetKey === 'OTHER') {
     const pts = d.penaltyPoints != null ? Number(d.penaltyPoints) : '—';
     const desc = (d.customDescription || '').slice(0, 48) || '—';
-    return `Other (−${pts} pts): ${desc}`;
+    return t('detail.penalize.draftOther', { pts, desc });
   }
-  if (preset) return `${preset.label} (−${preset.points} pts)`;
+  if (preset) return t('detail.penalize.draftPreset', { label: preset.label, pts: preset.points });
   return d.presetKey;
 }
 
-function normalizeAiReview(rawSuggestions, aiScoreRaw) {
+function normalizeAiReview(rawSuggestions, aiScoreRaw, t) {
   const aiScore = Number(aiScoreRaw) || 0;
   const source = rawSuggestions && typeof rawSuggestions === 'object' ? rawSuggestions : {};
-  const summary = typeof source.summary === 'string' ? source.summary : 'No AI summary available for this submission.';
+  const summary = typeof source.summary === 'string' ? source.summary : t('detail.ai.noSummary');
   const provider = typeof source.provider === 'string' ? source.provider : 'heuristic';
   const strengths = Array.isArray(source.strengths) ? source.strengths.filter(Boolean) : [];
   const suggestions = Array.isArray(source.suggestions) ? source.suggestions.filter(Boolean) : [];
@@ -110,7 +126,7 @@ function newBonusDraftRow() {
   return { clientKey, id: '', points: '', label: '', note: '' };
 }
 
-function teacherReviewViewFromSubmission(s) {
+function teacherReviewViewFromSubmission(s, t) {
   if (!s) return null;
   const zn = s.teacherZoneNotes && typeof s.teacherZoneNotes === 'object' ? s.teacherZoneNotes : {};
   const sf = s.teacherStructuredFeedback && typeof s.teacherStructuredFeedback === 'object'
@@ -118,10 +134,10 @@ function teacherReviewViewFromSubmission(s) {
     : {};
   const personal = s.teacherPersonalNote && String(s.teacherPersonalNote).trim();
   const zoneList = [
-    { key: 'correctness', label: 'Correctness' },
-    { key: 'performance', label: 'Performance' },
-    { key: 'design', label: 'Design' },
-    { key: 'aiReview', label: 'AI review' },
+    { key: 'correctness', label: t('detail.teacherReview.zoneCorrectness') },
+    { key: 'performance', label: t('detail.teacherReview.zonePerformance') },
+    { key: 'design', label: t('detail.teacherReview.zoneDesign') },
+    { key: 'aiReview', label: t('detail.teacherReview.zoneAi') },
   ]
     .map(({ key, label }) => ({ label, text: zn[key] ? String(zn[key]).trim() : '' }))
     .filter((z) => z.text);
@@ -149,6 +165,9 @@ export default function SubmissionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, i18n } = useTranslation('submissions');
+
+  const penaltyPresets = useMemo(() => buildPenaltyPresets(t), [t]);
 
   const [sub, setSub] = useState(null);
   const [submissionLabel, setSubmissionLabel] = useState('');
@@ -206,13 +225,17 @@ export default function SubmissionDetail() {
             const attempt = idx >= 0 ? idx + 1 : null;
             const challengeName = (
               sameChallenge.find(s => Number(s.id) === Number(detail.id))?.challengeTitle ||
-              `Challenge #${detail.challengeId}`
+              t('detail.challengeFallback', { id: detail.challengeId })
             );
-            setSubmissionLabel(attempt ? `${challengeName} · Attempt ${attempt}` : challengeName);
+            setSubmissionLabel(
+              attempt
+                ? t('detail.attemptLabel', { name: challengeName, n: attempt })
+                : challengeName,
+            );
           })
           .catch(() => {
             if (!cancelled) {
-              setSubmissionLabel(`Challenge #${detail.challengeId}`);
+              setSubmissionLabel(t('detail.challengeFallback', { id: detail.challengeId }));
             }
           });
 
@@ -221,7 +244,7 @@ export default function SubmissionDetail() {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e?.message || 'Failed to load submission');
+          setError(e?.message || t('detail.loadError'));
           setLoading(false);
         }
       }
@@ -229,7 +252,7 @@ export default function SubmissionDetail() {
 
     load();
     return () => { cancelled = true; clearTimeout(pollTimer); };
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (!sub) return;
@@ -241,32 +264,32 @@ export default function SubmissionDetail() {
 
   const tests = useMemo(() => parseTestLines(logs?.testLogs || sub?.testLogs), [logs, sub]);
   const aiReview = useMemo(
-    () => normalizeAiReview(sub?.aiSuggestions, sub?.aiReviewScore),
-    [sub]
+    () => normalizeAiReview(sub?.aiSuggestions, sub?.aiReviewScore, t),
+    [sub, t],
   );
 
   const scoreBreakdown = useMemo(() => {
     if (!sub) return [];
     return [
-      { label: 'Correctness', value: Number(sub.correctnessScore) || 0, max: 300, color: 'var(--green)' },
-      { label: 'Performance', value: Number(sub.performanceScore) || 0, max: 300, color: 'var(--cyan)' },
-      { label: 'Design', value: Number(sub.designScore) || 0, max: 200, color: 'var(--purple)' },
-      { label: 'AI Review', value: aiReview.aiScore, max: 200, color: 'var(--warn)' },
+      { label: t('detail.score.correctness'), value: Number(sub.correctnessScore) || 0, max: 300, color: 'var(--green)' },
+      { label: t('detail.score.performance'), value: Number(sub.performanceScore) || 0, max: 300, color: 'var(--cyan)' },
+      { label: t('detail.score.design'), value: Number(sub.designScore) || 0, max: 200, color: 'var(--purple)' },
+      { label: t('detail.score.aiReview'), value: aiReview.aiScore, max: 200, color: 'var(--warn)' },
     ];
-  }, [sub, aiReview.aiScore]);
+  }, [sub, aiReview.aiScore, t]);
 
   const perfMetrics = useMemo(() => {
     if (!sub) return [];
     return [
-      { label: 'Avg Response', value: sub.avgResponseMs != null ? `${sub.avgResponseMs}ms` : '—' },
-      { label: 'P95 Response', value: sub.p95ResponseMs != null ? `${sub.p95ResponseMs}ms` : '—' },
-      { label: 'P99 Response', value: sub.p99ResponseMs != null ? `${sub.p99ResponseMs}ms` : '—' },
-      { label: 'Requests/sec', value: sub.rps != null ? sub.rps.toLocaleString() : '—' },
-      { label: 'Total Requests', value: sub.totalRequests != null ? sub.totalRequests.toLocaleString() : '—' },
-      { label: 'Failed Requests', value: sub.failedRequests != null ? String(sub.failedRequests) : '—' },
-      { label: 'REST Compliance', value: sub.restComplianceScore != null ? `${Number(sub.restComplianceScore).toFixed(1)}%` : '—' },
+      { label: t('detail.perf.avgResponse'), value: sub.avgResponseMs != null ? `${sub.avgResponseMs}ms` : '—' },
+      { label: t('detail.perf.p95Response'), value: sub.p95ResponseMs != null ? `${sub.p95ResponseMs}ms` : '—' },
+      { label: t('detail.perf.p99Response'), value: sub.p99ResponseMs != null ? `${sub.p99ResponseMs}ms` : '—' },
+      { label: t('detail.perf.rps'), value: sub.rps != null ? sub.rps.toLocaleString(i18n.language) : '—' },
+      { label: t('detail.perf.totalRequests'), value: sub.totalRequests != null ? sub.totalRequests.toLocaleString(i18n.language) : '—' },
+      { label: t('detail.perf.failedRequests'), value: sub.failedRequests != null ? String(sub.failedRequests) : '—' },
+      { label: t('detail.perf.restCompliance'), value: sub.restComplianceScore != null ? `${Number(sub.restComplianceScore).toFixed(1)}%` : '—' },
     ];
-  }, [sub]);
+  }, [sub, t, i18n.language]);
 
   const showTeacherTools = useMemo(() => {
     if (!sub || sub.status !== 'COMPLETED') return false;
@@ -274,7 +297,7 @@ export default function SubmissionDetail() {
     return Boolean(sub.teacherCanEditSubmissionReview);
   }, [sub, user?.role]);
 
-  const teacherReviewReader = useMemo(() => teacherReviewViewFromSubmission(sub), [sub]);
+  const teacherReviewReader = useMemo(() => teacherReviewViewFromSubmission(sub, t), [sub, t]);
 
   const showTeacherReviewReader = useMemo(() => {
     if (!sub || !teacherReviewReader) return false;
@@ -372,11 +395,11 @@ export default function SubmissionDetail() {
     if (penaltyPresetKey === 'OTHER') {
       const pts = Number(otherPenaltyPoints);
       if (!Number.isFinite(pts) || pts <= 0) {
-        setTeacherErr('Enter a valid number of points to deduct for “Other”.');
+        setTeacherErr(t('detail.penalize.errOtherPoints'));
         return;
       }
       if (!otherPenaltyDescription.trim()) {
-        setTeacherErr('Short description is required for “Other”.');
+        setTeacherErr(t('detail.penalize.errOtherDesc'));
         return;
       }
     }
@@ -405,7 +428,7 @@ export default function SubmissionDetail() {
       setSub(updated);
       setPenaltyDrafts([]);
     } catch (err) {
-      setTeacherErr(err?.message || 'Could not confirm penalties');
+      setTeacherErr(err?.message || t('detail.penalize.errConfirm'));
     } finally {
       setTeacherBusy(false);
     }
@@ -419,7 +442,7 @@ export default function SubmissionDetail() {
       const updated = await revokeTeacherPenalty(id, penaltyId);
       setSub(updated);
     } catch (err) {
-      setTeacherErr(err?.message || 'Could not remove penalty');
+      setTeacherErr(err?.message || t('detail.penalize.errRevoke'));
     } finally {
       setTeacherBusy(false);
     }
@@ -446,7 +469,7 @@ export default function SubmissionDetail() {
       });
       setSub(updated);
     } catch (err) {
-      setTeacherErr(err?.message || 'Could not save manual scores');
+      setTeacherErr(err?.message || t('detail.manual.errSave'));
     } finally {
       setTeacherBusy(false);
     }
@@ -512,7 +535,7 @@ export default function SubmissionDetail() {
     if (!id || !sub?.teacherCanEditSubmissionReview) return;
     const projected = reviewProjectedTotal;
     if (projected != null && projected > 1000 + 1e-6) {
-      setTeacherErr('Total score after bonuses cannot exceed 1000. Reduce bonus points or remove lines.');
+      setTeacherErr(t('detail.review.errMaxTotal'));
       return;
     }
     setTeacherErr(null);
@@ -521,7 +544,7 @@ export default function SubmissionDetail() {
       const updated = await saveTeacherSubmissionReview(id, buildTeacherReviewPayload());
       setSub(updated);
     } catch (err) {
-      setTeacherErr(err?.message || 'Could not save teacher review');
+      setTeacherErr(err?.message || t('detail.review.errSave'));
     } finally {
       setTeacherBusy(false);
     }
@@ -536,7 +559,7 @@ export default function SubmissionDetail() {
           <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
           <main className="ch-main">
             <div className="sd-container" style={{ padding: '60px 0', textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>
-              Loading submission...
+              {t('detail.loading')}
             </div>
           </main>
         </div>
@@ -554,8 +577,8 @@ export default function SubmissionDetail() {
           <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
           <main className="ch-main">
             <div className="sd-container">
-              <p style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{error || 'Submission not found'}</p>
-              <button className="sd-back-btn" onClick={() => navigate('/submissions')}>← BACK TO SUBMISSIONS</button>
+              <p style={{ color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{error || t('detail.notFound')}</p>
+              <button className="sd-back-btn" onClick={() => navigate('/submissions')}>{t('detail.backToSubmissions')}</button>
             </div>
           </main>
         </div>
@@ -570,7 +593,7 @@ export default function SubmissionDetail() {
   const totalScore = Number(sub.totalScore) || 0;
   const buildLogs = logs?.buildLogs || '';
   const testLogs = logs?.testLogs || '';
-  const headerLabel = submissionLabel || `Challenge #${sub.challengeId}`;
+  const headerLabel = submissionLabel || t('detail.challengeFallback', { id: sub.challengeId });
 
   return (
     <div className="challenges-page">
@@ -581,7 +604,7 @@ export default function SubmissionDetail() {
         <main className="ch-main">
           <div className="sd-container">
             <button className="sd-back-btn" onClick={() => navigate('/submissions')}>
-              ← BACK TO SUBMISSIONS
+              {t('detail.backToSubmissions')}
             </button>
 
             {/* Timeline */}
@@ -594,7 +617,7 @@ export default function SubmissionDetail() {
                   <Fragment key={step}>
                     <div className="sd-timeline-step">
                       <div className={`sd-timeline-dot ${isDone ? 'done' : ''} ${isActive ? 'active' : ''} ${isFail ? 'failed' : ''}`} />
-                      <span className={`sd-timeline-label ${isDone ? 'done' : ''} ${isActive ? 'active' : ''} ${isFail ? 'failed' : ''}`}>{step}</span>
+                      <span className={`sd-timeline-label ${isDone ? 'done' : ''} ${isActive ? 'active' : ''} ${isFail ? 'failed' : ''}`}>{t(`my.status.${step}`)}</span>
                     </div>
                     {i < TIMELINE_STEPS.length - 1 && (
                       <div className={`sd-timeline-line ${isDone ? 'done' : ''}`} />
@@ -610,15 +633,15 @@ export default function SubmissionDetail() {
                 <div>
                   <h1 className="sd-hero-title">{headerLabel}</h1>
                   <div className="sd-hero-meta">
-                    <span>Submission #{sub.id}</span>
+                    <span>{t('detail.submissionMeta', { id: sub.id })}</span>
                     <span>·</span>
-                    <span>Created {formatDate(sub.createdAt)}</span>
-                    {sub.completedAt && <><span>·</span><span>Completed {formatDate(sub.completedAt)}</span></>}
+                    <span>{t('detail.createdAt', { date: formatDate(sub.createdAt, i18n.language) })}</span>
+                    {sub.completedAt && <><span>·</span><span>{t('detail.completedAt', { date: formatDate(sub.completedAt, i18n.language) })}</span></>}
                   </div>
                 </div>
                 <div className="sd-total-score">
                   <div className="sd-total-score-val">{isProcessing ? '...' : totalScore.toFixed(1)}</div>
-                  <div className="sd-total-score-label">/ 1000 POINTS</div>
+                  <div className="sd-total-score-label">{t('detail.pointsSuffix')}</div>
                 </div>
               </div>
             </div>
@@ -646,7 +669,7 @@ export default function SubmissionDetail() {
             {!isProcessing && Array.isArray(sub.teacherPenalties) && sub.teacherPenalties.length > 0 && (
               <div className="sd-panel" style={{ marginBottom: 20 }}>
                 <div className="sd-panel-head">
-                  <div className="sd-panel-title">Teacher score adjustments</div>
+                  <div className="sd-panel-title">{t('detail.teacherAdjustments.title')}</div>
                 </div>
                 <div className="sd-panel-body" style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
                   <ul className="sd-teacher-applied-list">
@@ -658,20 +681,20 @@ export default function SubmissionDetail() {
                         <li key={p.id || `pen-${idx}`} className="sd-teacher-applied-row">
                           <div className="sd-teacher-applied-main">
                             <span style={{ color: 'var(--warn)' }}>
-                              −{p.pointsDeducted != null ? Number(p.pointsDeducted).toFixed(1) : '—'} pts
+                              −{p.pointsDeducted != null ? Number(p.pointsDeducted).toFixed(1) : '—'} {t('detail.teacherAdjustments.pts')}
                             </span>
                             {' · '}
                             {typeof p.label === 'string' ? p.label : p.presetKey}
                             {p.customDescription ? ` — ${p.customDescription}` : ''}
-                            {p.note ? ` (note: ${p.note})` : ''}
+                            {p.note ? ` (${t('detail.teacherAdjustments.notePrefix')} ${p.note})` : ''}
                             {p.appliedAt ? (
-                              <span style={{ color: 'var(--dim)' }}> · {formatDate(p.appliedAt)}</span>
+                              <span style={{ color: 'var(--dim)' }}> · {formatDate(p.appliedAt, i18n.language)}</span>
                             ) : null}
                             {p.id && end != null && user?.role === 'TEACHER' && sub.teacherCanApplyPenalty && (
                               <span className="sd-teacher-lock-hint">
                                 {canRev
-                                  ? ` · removable for ${formatMsAsCountdown(msLeft)}`
-                                  : ' · locked (2h window ended)'}
+                                  ? ` · ${t('detail.teacherAdjustments.removable', { time: formatMsAsCountdown(msLeft) })}`
+                                  : ` · ${t('detail.teacherAdjustments.locked')}`}
                               </span>
                             )}
                           </div>
@@ -682,7 +705,7 @@ export default function SubmissionDetail() {
                               disabled={teacherBusy}
                               onClick={() => handleRevokePenalty(p.id)}
                             >
-                              Remove
+                              {t('detail.teacherAdjustments.remove')}
                             </button>
                           )}
                         </li>
@@ -696,7 +719,7 @@ export default function SubmissionDetail() {
             {showTeacherTools && (
               <div className="sd-panel sd-teacher-panel" style={{ marginBottom: 20 }}>
                 <div className="sd-panel-head">
-                  <div className="sd-panel-title">Teacher grading</div>
+                  <div className="sd-panel-title">{t('detail.teacherGrading.title')}</div>
                 </div>
                 <div className="sd-panel-body sd-teacher-panel-body">
                   {teacherErr && (
@@ -704,55 +727,53 @@ export default function SubmissionDetail() {
                   )}
                   {sub.teacherManualGrading && (
                     <div className="sd-teacher-warn">
-                      Manual scores have been applied to this submission (totals reflect teacher grading).
+                      {t('detail.teacherGrading.manualApplied')}
                     </div>
                   )}
                   <div className="sd-teacher-grade-shell">
                     {sub.teacherCanApplyPenalty && (
                       <div className="sd-teacher-form">
                         <div className="sd-teacher-section">
-                          <h3 className="sd-teacher-section-title">Penalize score</h3>
+                          <h3 className="sd-teacher-section-title">{t('detail.penalize.title')}</h3>
                           <p className="sd-teacher-hint">
-                            Add issues to your draft and remove any line before you confirm. Once confirmed, each line
-                            can be removed for <strong>2 hours</strong> only; after that it is locked. You can always read the
-                            history above.
+                            <Trans i18nKey="submissions:detail.penalize.hint" components={{ strong: <strong /> }} />
                           </p>
                           <div className="sd-teacher-field">
-                            <span className="sd-teacher-label" id="sd-penalty-type-label">Issue type</span>
+                            <span className="sd-teacher-label" id="sd-penalty-type-label">{t('detail.penalize.issueType')}</span>
                             <select
                               className="sd-teacher-select"
                               aria-labelledby="sd-penalty-type-label"
                               value={penaltyPresetKey}
                               onChange={(e) => setPenaltyPresetKey(e.target.value)}
                             >
-                              {TEACHER_PENALTY_PRESETS.map((p) => (
+                              {penaltyPresets.map((p) => (
                                 <option key={p.key} value={p.key}>
-                                  {p.label} (−{p.points} pts)
+                                  {p.label} (−{p.points} {t('detail.teacherAdjustments.pts')})
                                 </option>
                               ))}
-                              <option value="OTHER">Other (custom description &amp; points)</option>
+                              <option value="OTHER">{t('detail.penalize.otherOption')}</option>
                             </select>
                           </div>
                           {penaltyPresetKey === 'OTHER' && (
                             <div className="sd-teacher-other-grid">
                               <div className="sd-teacher-field">
-                                <span className="sd-teacher-label">Points to deduct</span>
+                                <span className="sd-teacher-label">{t('detail.penalize.pointsToDeduct')}</span>
                                 <input
                                   type="number"
                                   className="sd-teacher-input"
                                   min="0.01"
                                   step="0.01"
                                   max="300"
-                                  placeholder="e.g. 25"
+                                  placeholder={t('detail.penalize.pointsExample')}
                                   value={otherPenaltyPoints}
                                   onChange={(e) => setOtherPenaltyPoints(e.target.value)}
                                 />
                               </div>
                               <div className="sd-teacher-field sd-teacher-field--grow">
-                                <span className="sd-teacher-label">Short description</span>
+                                <span className="sd-teacher-label">{t('detail.penalize.shortDescription')}</span>
                                 <textarea
                                   className="sd-teacher-textarea"
-                                  placeholder="What went wrong (visible on the adjustment record)"
+                                  placeholder={t('detail.penalize.otherPlaceholder')}
                                   value={otherPenaltyDescription}
                                   onChange={(e) => setOtherPenaltyDescription(e.target.value)}
                                   rows={4}
@@ -761,11 +782,11 @@ export default function SubmissionDetail() {
                             </div>
                           )}
                           <div className="sd-teacher-field">
-                            <span className="sd-teacher-label" id="sd-penalty-note-label">Optional note</span>
+                            <span className="sd-teacher-label" id="sd-penalty-note-label">{t('detail.penalize.optionalNote')}</span>
                             <input
                               type="text"
                               className="sd-teacher-input"
-                              placeholder="Internal note (stored on the penalty record)"
+                              placeholder={t('detail.penalize.notePlaceholder')}
                               value={penaltyNote}
                               onChange={(e) => setPenaltyNote(e.target.value)}
                               aria-labelledby="sd-penalty-note-label"
@@ -779,22 +800,22 @@ export default function SubmissionDetail() {
                             disabled={teacherBusy}
                             onClick={handleAddPenaltyDraft}
                           >
-                            Add to draft
+                            {t('detail.penalize.addToDraft')}
                           </button>
                         </div>
                         {penaltyDrafts.length > 0 && (
                           <>
-                            <ul className="sd-teacher-draft-list" aria-label="Penalty draft">
+                            <ul className="sd-teacher-draft-list" aria-label={t('detail.penalize.draftAria')}>
                               {penaltyDrafts.map((d) => (
                                 <li key={d.localId} className="sd-teacher-draft-row">
-                                  <span className="sd-teacher-draft-text">{draftLabel(d)}</span>
+                                  <span className="sd-teacher-draft-text">{draftLabel(d, t, penaltyPresets)}</span>
                                   <button
                                     type="button"
                                     className="sd-teacher-ghost-btn"
                                     disabled={teacherBusy}
                                     onClick={() => handleRemovePenaltyDraft(d.localId)}
                                   >
-                                    Remove
+                                    {t('detail.teacherAdjustments.remove')}
                                   </button>
                                 </li>
                               ))}
@@ -806,9 +827,7 @@ export default function SubmissionDetail() {
                                 disabled={teacherBusy}
                                 onClick={handleConfirmPenaltyDrafts}
                               >
-                                {penaltyDrafts.length === 1
-                                  ? 'Confirm 1 penalty'
-                                  : `Confirm ${penaltyDrafts.length} penalties`}
+                                {t('detail.penalize.confirm', { count: penaltyDrafts.length })}
                               </button>
                             </div>
                           </>
@@ -818,13 +837,13 @@ export default function SubmissionDetail() {
                     {sub.teacherCanManualGrade && (
                       <form className="sd-teacher-form" onSubmit={handleManualSubmit}>
                         <div className={`sd-teacher-section${sub.teacherCanApplyPenalty ? ' sd-teacher-section--divider' : ''}`}>
-                          <h3 className="sd-teacher-section-title">Manual grading (group student)</h3>
+                          <h3 className="sd-teacher-section-title">{t('detail.manual.title')}</h3>
                           <div className="sd-teacher-manual-grid">
                             {[
-                              ['Correctness (0–300)', manualC, setManualC],
-                              ['Performance (0–300)', manualP, setManualP],
-                              ['Design (0–200)', manualD, setManualD],
-                              ['AI review (0–200)', manualA, setManualA],
+                              [t('detail.manual.correctness'), manualC, setManualC],
+                              [t('detail.manual.performance'), manualP, setManualP],
+                              [t('detail.manual.design'), manualD, setManualD],
+                              [t('detail.manual.aiReview'), manualA, setManualA],
                             ].map(([label, val, setVal]) => (
                               <label key={label} className="sd-teacher-field">
                                 <span className="sd-teacher-label">{label}</span>
@@ -846,7 +865,7 @@ export default function SubmissionDetail() {
                             className="sd-teacher-primary-btn sd-teacher-primary-btn--secondary"
                             disabled={teacherBusy}
                           >
-                            Save manual scores
+                            {t('detail.manual.save')}
                           </button>
                         </div>
                       </form>
@@ -860,10 +879,9 @@ export default function SubmissionDetail() {
                               : ''
                           }`}
                         >
-                          <h3 className="sd-teacher-section-title">Submission review &amp; score bonuses</h3>
+                          <h3 className="sd-teacher-section-title">{t('detail.review.title')}</h3>
                           <p className="sd-teacher-hint">
-                            Notes and structured feedback are visible to the student. Bonus lines add points (max 1000
-                            total); you can change or remove lines anytime—unlike penalties, there is no 2-hour lock.
+                            {t('detail.review.hint')}
                           </p>
                           {reviewProjectedTotal != null && (
                             <p
@@ -872,26 +890,26 @@ export default function SubmissionDetail() {
                                 color: reviewProjectedTotal > 1000 ? 'var(--red)' : 'var(--cyan)',
                               }}
                             >
-                              Projected total score:{' '}
+                              {t('detail.review.projectedTotal')}{' '}
                               <strong>{reviewProjectedTotal.toFixed(2)}</strong> / 1000
                             </p>
                           )}
                           <label className="sd-teacher-field">
-                            <span className="sd-teacher-label">Personal note to student</span>
+                            <span className="sd-teacher-label">{t('detail.review.personalNote')}</span>
                             <textarea
                               className="sd-teacher-textarea"
                               rows={4}
                               value={reviewPersonalNote}
                               onChange={(e) => setReviewPersonalNote(e.target.value)}
-                              placeholder="Overall comment for this submission"
+                              placeholder={t('detail.review.personalPlaceholder')}
                             />
                           </label>
                           <div className="sd-teacher-manual-grid">
                             {[
-                              ['Correctness (note)', reviewZoneC, setReviewZoneC],
-                              ['Performance (note)', reviewZoneP, setReviewZoneP],
-                              ['Design (note)', reviewZoneD, setReviewZoneD],
-                              ['AI review (note)', reviewZoneAi, setReviewZoneAi],
+                              [t('detail.review.zoneCorrectness'), reviewZoneC, setReviewZoneC],
+                              [t('detail.review.zonePerformance'), reviewZoneP, setReviewZoneP],
+                              [t('detail.review.zoneDesign'), reviewZoneD, setReviewZoneD],
+                              [t('detail.review.zoneAi'), reviewZoneAi, setReviewZoneAi],
                             ].map(([label, val, setVal]) => (
                               <label key={label} className="sd-teacher-field">
                                 <span className="sd-teacher-label">{label}</span>
@@ -900,44 +918,44 @@ export default function SubmissionDetail() {
                                   rows={3}
                                   value={val}
                                   onChange={(e) => setVal(e.target.value)}
-                                  placeholder="Short feedback for this scoring area"
+                                  placeholder={t('detail.review.zonePlaceholder')}
                                 />
                               </label>
                             ))}
                           </div>
                           <label className="sd-teacher-field">
-                            <span className="sd-teacher-label">Structured summary</span>
+                            <span className="sd-teacher-label">{t('detail.review.summary')}</span>
                             <textarea
                               className="sd-teacher-textarea"
                               rows={3}
                               value={reviewSummary}
                               onChange={(e) => setReviewSummary(e.target.value)}
-                              placeholder="High-level summary (similar to AI review)"
+                              placeholder={t('detail.review.summaryPlaceholder')}
                             />
                           </label>
                           <label className="sd-teacher-field">
-                            <span className="sd-teacher-label">Strengths (one per line)</span>
+                            <span className="sd-teacher-label">{t('detail.review.strengths')}</span>
                             <textarea
                               className="sd-teacher-textarea"
                               rows={4}
                               value={reviewStrengths}
                               onChange={(e) => setReviewStrengths(e.target.value)}
-                              placeholder="Bullet-style strengths"
+                              placeholder={t('detail.review.strengthsPlaceholder')}
                             />
                           </label>
                           <label className="sd-teacher-field">
-                            <span className="sd-teacher-label">Suggestions (one per line)</span>
+                            <span className="sd-teacher-label">{t('detail.review.suggestions')}</span>
                             <textarea
                               className="sd-teacher-textarea"
                               rows={4}
                               value={reviewSuggestions}
                               onChange={(e) => setReviewSuggestions(e.target.value)}
-                              placeholder="What to improve next"
+                              placeholder={t('detail.review.suggestionsPlaceholder')}
                             />
                           </label>
                           <div className="sd-teacher-section" style={{ marginTop: 12 }}>
-                            <span className="sd-teacher-label">Positive score lines (optional)</span>
-                            <ul className="sd-teacher-bonus-list" aria-label="Bonus lines">
+                            <span className="sd-teacher-label">{t('detail.review.bonusLines')}</span>
+                            <ul className="sd-teacher-bonus-list" aria-label={t('detail.review.bonusAria')}>
                               {reviewBonuses.map((row) => (
                                 <li key={row.clientKey} className="sd-teacher-bonus-row">
                                   <input
@@ -946,7 +964,7 @@ export default function SubmissionDetail() {
                                     min="0.01"
                                     max="100"
                                     step="0.01"
-                                    placeholder="Pts"
+                                    placeholder={t('detail.review.bonusPts')}
                                     value={row.points}
                                     onChange={(e) =>
                                       setReviewBonuses((prev) =>
@@ -961,7 +979,7 @@ export default function SubmissionDetail() {
                                   <input
                                     type="text"
                                     className="sd-teacher-input"
-                                    placeholder="Label"
+                                    placeholder={t('detail.review.bonusLabel')}
                                     value={row.label}
                                     onChange={(e) =>
                                       setReviewBonuses((prev) =>
@@ -976,7 +994,7 @@ export default function SubmissionDetail() {
                                   <input
                                     type="text"
                                     className="sd-teacher-input sd-teacher-input--grow"
-                                    placeholder="Note (optional)"
+                                    placeholder={t('detail.review.bonusNote')}
                                     value={row.note}
                                     onChange={(e) =>
                                       setReviewBonuses((prev) =>
@@ -994,7 +1012,7 @@ export default function SubmissionDetail() {
                                     disabled={teacherBusy}
                                     onClick={() => handleRemoveBonusRow(row.clientKey)}
                                   >
-                                    Remove
+                                    {t('detail.teacherAdjustments.remove')}
                                   </button>
                                 </li>
                               ))}
@@ -1006,7 +1024,7 @@ export default function SubmissionDetail() {
                                 disabled={teacherBusy}
                                 onClick={handleAddBonusRow}
                               >
-                                Add bonus line
+                                {t('detail.review.addBonusLine')}
                               </button>
                             </div>
                           </div>
@@ -1017,13 +1035,13 @@ export default function SubmissionDetail() {
                               onChange={(e) => setReviewNotifyStudent(e.target.checked)}
                             />
                             <span className="sd-teacher-label" style={{ marginBottom: 0 }}>
-                              Notify student in-app when saving
+                              {t('detail.review.notifyStudent')}
                             </span>
                           </label>
                         </div>
                         <div className="sd-teacher-actions">
                           <button type="submit" className="sd-teacher-primary-btn" disabled={teacherBusy}>
-                            Save review &amp; bonuses
+                            {t('detail.review.save')}
                           </button>
                         </div>
                       </form>
@@ -1036,34 +1054,34 @@ export default function SubmissionDetail() {
             {!isProcessing && (
               <div className="sd-panel sd-ai-panel">
                 <div className="sd-panel-head">
-                  <div className="sd-panel-title">AI Review</div>
-                  <span className="sd-ai-provider">Provider: {aiReview.provider}</span>
+                  <div className="sd-panel-title">{t('detail.ai.title')}</div>
+                  <span className="sd-ai-provider">{t('detail.ai.provider', { name: aiReview.provider })}</span>
                 </div>
                 <div className="sd-panel-body">
                   <div className="sd-ai-score-wrap">
-                    <div className="sd-ai-score-label">AI SCORE</div>
-                    <div className="sd-ai-score-value">{aiReview.aiScore.toFixed(1)} / 200</div>
+                    <div className="sd-ai-score-label">{t('detail.ai.score')}</div>
+                    <div className="sd-ai-score-value">{aiReview.aiScore.toFixed(1)}{t('detail.ai.scoreMax')}</div>
                   </div>
                   <p className="sd-ai-summary">{aiReview.summary}</p>
                   <div className="sd-ai-columns">
                     <div>
-                      <div className="sd-ai-col-title">Strengths</div>
+                      <div className="sd-ai-col-title">{t('detail.ai.strengths')}</div>
                       {aiReview.strengths.length ? (
                         <ul className="sd-ai-list">
                           {aiReview.strengths.map((item, idx) => <li key={`str-${idx}`}>{item}</li>)}
                         </ul>
                       ) : (
-                        <div className="sd-ai-empty">No strengths provided.</div>
+                        <div className="sd-ai-empty">{t('detail.ai.noStrengths')}</div>
                       )}
                     </div>
                     <div>
-                      <div className="sd-ai-col-title">Suggestions</div>
+                      <div className="sd-ai-col-title">{t('detail.ai.suggestions')}</div>
                       {aiReview.suggestions.length ? (
                         <ul className="sd-ai-list">
                           {aiReview.suggestions.map((item, idx) => <li key={`sug-${idx}`}>{item}</li>)}
                         </ul>
                       ) : (
-                        <div className="sd-ai-empty">No suggestions provided.</div>
+                        <div className="sd-ai-empty">{t('detail.ai.noSuggestions')}</div>
                       )}
                     </div>
                   </div>
@@ -1074,7 +1092,7 @@ export default function SubmissionDetail() {
             {!isProcessing && showTeacherReviewReader && teacherReviewReader && (
               <div className="sd-panel sd-ai-panel sd-teacher-feedback-panel" style={{ marginBottom: 20 }}>
                 <div className="sd-panel-head">
-                  <div className="sd-panel-title">Teacher review</div>
+                  <div className="sd-panel-title">{t('detail.teacherReview.title')}</div>
                 </div>
                 <div className="sd-panel-body">
                   {teacherReviewReader.personal && (
@@ -1104,7 +1122,7 @@ export default function SubmissionDetail() {
                   {(teacherReviewReader.strengths.length > 0 || teacherReviewReader.suggestions.length > 0) && (
                     <div className="sd-ai-columns">
                       <div>
-                        <div className="sd-ai-col-title">Strengths</div>
+                        <div className="sd-ai-col-title">{t('detail.teacherReview.strengths')}</div>
                         {teacherReviewReader.strengths.length ? (
                           <ul className="sd-ai-list">
                             {teacherReviewReader.strengths.map((item, idx) => (
@@ -1116,7 +1134,7 @@ export default function SubmissionDetail() {
                         )}
                       </div>
                       <div>
-                        <div className="sd-ai-col-title">Suggestions</div>
+                        <div className="sd-ai-col-title">{t('detail.teacherReview.suggestions')}</div>
                         {teacherReviewReader.suggestions.length ? (
                           <ul className="sd-ai-list">
                             {teacherReviewReader.suggestions.map((item, idx) => (
@@ -1140,13 +1158,13 @@ export default function SubmissionDetail() {
                         color: 'var(--muted)',
                       }}
                     >
-                      <div style={{ color: 'var(--green)', marginBottom: 8 }}>Score bonuses</div>
+                      <div style={{ color: 'var(--green)', marginBottom: 8 }}>{t('detail.teacherReview.scoreBonuses')}</div>
                       <ul className="sd-teacher-applied-list">
                         {teacherReviewReader.bonusRows.map((b, idx) => (
                           <li key={b.id || `tb-${idx}`} className="sd-teacher-applied-row">
                             <div className="sd-teacher-applied-main">
                               <span style={{ color: 'var(--green)' }}>
-                                +{b.pointsAdded != null ? Number(b.pointsAdded).toFixed(1) : '—'} pts
+                                +{b.pointsAdded != null ? Number(b.pointsAdded).toFixed(1) : '—'} {t('detail.teacherAdjustments.pts')}
                               </span>
                               {b.label ? ` · ${b.label}` : ''}
                               {b.note ? ` — ${b.note}` : ''}
@@ -1155,8 +1173,8 @@ export default function SubmissionDetail() {
                         ))}
                       </ul>
                       <div style={{ color: 'var(--dim)', marginTop: 8 }}>
-                        Total bonus: +
-                        {sumTeacherBonusPointsFromApiRows(teacherReviewReader.bonusRows).toFixed(1)} pts
+                        {t('detail.teacherReview.totalBonus')} +
+                        {sumTeacherBonusPointsFromApiRows(teacherReviewReader.bonusRows).toFixed(1)} {t('detail.teacherAdjustments.pts')}
                       </div>
                     </div>
                   )}
@@ -1170,7 +1188,7 @@ export default function SubmissionDetail() {
                 {/* Performance */}
                 <div className="sd-panel">
                   <div className="sd-panel-head">
-                    <div className="sd-panel-title">⚡ Performance Metrics</div>
+                    <div className="sd-panel-title">{t('detail.perf.title')}</div>
                   </div>
                   <div className="sd-panel-body">
                     {perfMetrics.map(m => (
@@ -1185,22 +1203,25 @@ export default function SubmissionDetail() {
                 {/* Test results */}
                 <div className="sd-panel">
                   <div className="sd-panel-head">
-                    <div className="sd-panel-title">✓ Test Results</div>
+                    <div className="sd-panel-title">{t('detail.tests.title')}</div>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>
-                      {tests.filter(t => t.passed).length}/{tests.length} passed
+                      {t('detail.tests.passed', {
+                        passed: tests.filter((row) => row.passed).length,
+                        total: tests.length,
+                      })}
                     </span>
                   </div>
                   <div className="sd-panel-body">
-                    {tests.length > 0 ? tests.map((t, i) => (
+                    {tests.length > 0 ? tests.map((testRow, i) => (
                       <div key={i} className="sd-test-row">
-                        <span className="sd-test-icon" style={{ color: t.passed ? 'var(--green)' : 'var(--red)' }}>
-                          {t.passed ? '✓' : '✗'}
+                        <span className="sd-test-icon" style={{ color: testRow.passed ? 'var(--green)' : 'var(--red)' }}>
+                          {testRow.passed ? '✓' : '✗'}
                         </span>
-                        <span className="sd-test-name">{t.name}</span>
-                        {t.time != null && <span className="sd-test-time">{t.time}ms</span>}
+                        <span className="sd-test-name">{testRow.name}</span>
+                        {testRow.time != null && <span className="sd-test-time">{testRow.time}ms</span>}
                       </div>
                     )) : (
-                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>No test data available</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)' }}>{t('detail.tests.noData')}</div>
                     )}
                   </div>
                 </div>
@@ -1215,7 +1236,7 @@ export default function SubmissionDetail() {
                     <div className="sd-panel-head">
                       <div className="sd-panel-title">
                         <IconBuildLogsTitle />
-                        Build Logs
+                        {t('detail.logs.build')}
                       </div>
                     </div>
                     <div className="sd-panel-body">
@@ -1228,7 +1249,7 @@ export default function SubmissionDetail() {
                     <div className="sd-panel-head">
                       <div className="sd-panel-title">
                         <IconTestLogsTitle />
-                        Test Logs
+                        {t('detail.logs.test')}
                       </div>
                     </div>
                     <div className="sd-panel-body">
@@ -1239,7 +1260,7 @@ export default function SubmissionDetail() {
                 {sub.errorMessage && (
                   <div className="sd-panel sd-full-width">
                     <div className="sd-panel-head">
-                      <div className="sd-panel-title" style={{ color: 'var(--red)' }}>⚠ Error</div>
+                      <div className="sd-panel-title" style={{ color: 'var(--red)' }}>{t('detail.logs.error')}</div>
                     </div>
                     <div className="sd-panel-body">
                       <div className="sd-logs" style={{ color: 'var(--red)' }}>{sub.errorMessage}</div>
@@ -1257,16 +1278,16 @@ export default function SubmissionDetail() {
                 color: 'var(--cyan)', letterSpacing: 2
               }}>
                 <div style={{ fontSize: 32, marginBottom: 12, animation: 'db-blink 1s ease-in-out infinite' }}>⚙</div>
-                {sub.status === 'PENDING' && 'Waiting in queue...'}
-                {sub.status === 'BUILDING' && 'Building your project...'}
-                {sub.status === 'TESTING' && 'Running tests against your API...'}
+                {sub.status === 'PENDING' && t('detail.processing.pending')}
+                {sub.status === 'BUILDING' && t('detail.processing.building')}
+                {sub.status === 'TESTING' && t('detail.processing.testing')}
               </div>
             )}
 
             {sub.status === 'COMPLETED' && (
               <div className="sd-continue-wrap">
                 <button className="sd-continue-btn" onClick={() => navigate(`/submissions/${id}/results`)}>
-                  CONTINUE
+                  {t('detail.continue')}
                   <span className="sd-continue-arrow">→</span>
                 </button>
               </div>

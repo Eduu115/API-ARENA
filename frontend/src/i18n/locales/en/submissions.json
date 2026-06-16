@@ -122,5 +122,149 @@
     "onboardLi3": "You must cover endpoints and status codes expected by the challenge.",
     "onboardGuide": "VIEW PRECONFIGURATION GUIDE",
     "onboardConfirm": "YES, I UNDERSTAND. CONTINUE"
+  },
+  "detail": {
+    "loading": "Loading submission...",
+    "loadError": "Failed to load submission",
+    "notFound": "Submission not found",
+    "backToSubmissions": "← BACK TO SUBMISSIONS",
+    "attemptLabel": "{{name}} · Attempt {{n}}",
+    "challengeFallback": "Challenge #{{id}}",
+    "submissionMeta": "Submission #{{id}}",
+    "createdAt": "Created {{date}}",
+    "completedAt": "Completed {{date}}",
+    "pointsSuffix": "/ 1000 POINTS",
+    "score": {
+      "correctness": "Correctness",
+      "performance": "Performance",
+      "design": "Design",
+      "aiReview": "AI Review"
+    },
+    "perf": {
+      "title": "⚡ Performance Metrics",
+      "avgResponse": "Avg Response",
+      "p95Response": "P95 Response",
+      "p99Response": "P99 Response",
+      "rps": "Requests/sec",
+      "totalRequests": "Total Requests",
+      "failedRequests": "Failed Requests",
+      "restCompliance": "REST Compliance"
+    },
+    "teacherAdjustments": {
+      "title": "Teacher score adjustments",
+      "pts": "pts",
+      "notePrefix": "note:",
+      "removable": "removable for {{time}}",
+      "locked": "locked (2h window ended)",
+      "remove": "Remove"
+    },
+    "teacherGrading": {
+      "title": "Teacher grading",
+      "manualApplied": "Manual scores have been applied to this submission (totals reflect teacher grading)."
+    },
+    "penalize": {
+      "title": "Penalize score",
+      "hint": "Add issues to your draft and remove any line before you confirm. Once confirmed, each line can be removed for <strong>2 hours</strong> only; after that it is locked. You can always read the history above.",
+      "issueType": "Issue type",
+      "otherOption": "Other (custom description & points)",
+      "pointsToDeduct": "Points to deduct",
+      "pointsExample": "e.g. 25",
+      "shortDescription": "Short description",
+      "otherPlaceholder": "What went wrong (visible on the adjustment record)",
+      "optionalNote": "Optional note",
+      "notePlaceholder": "Internal note (stored on the penalty record)",
+      "addToDraft": "Add to draft",
+      "draftAria": "Penalty draft",
+      "confirm_one": "Confirm 1 penalty",
+      "confirm_other": "Confirm {{count}} penalties",
+      "draftOther": "Other (−{{pts}} pts): {{desc}}",
+      "draftPreset": "{{label}} (−{{pts}} pts)",
+      "errOtherPoints": "Enter a valid number of points to deduct for “Other”.",
+      "errOtherDesc": "Short description is required for “Other”.",
+      "errConfirm": "Could not confirm penalties",
+      "errRevoke": "Could not remove penalty",
+      "presets": {
+        "WRONG_DELIVERABLE_NAME": "Wrong deliverable / archive name",
+        "SPELLING_AND_DOCS": "Spelling and documentation issues",
+        "CODE_DISORGANIZATION": "Code disorganization / structure",
+        "MISSING_README": "Missing or broken README",
+        "STYLE_AND_NAMING": "Style and naming inconsistencies"
+      }
+    },
+    "manual": {
+      "title": "Manual grading (group student)",
+      "correctness": "Correctness (0–300)",
+      "performance": "Performance (0–300)",
+      "design": "Design (0–200)",
+      "aiReview": "AI review (0–200)",
+      "save": "Save manual scores",
+      "errSave": "Could not save manual scores"
+    },
+    "review": {
+      "title": "Submission review & score bonuses",
+      "hint": "Notes and structured feedback are visible to the student. Bonus lines add points (max 1000 total); you can change or remove lines anytime—unlike penalties, there is no 2-hour lock.",
+      "projectedTotal": "Projected total score:",
+      "personalNote": "Personal note to student",
+      "personalPlaceholder": "Overall comment for this submission",
+      "zoneCorrectness": "Correctness (note)",
+      "zonePerformance": "Performance (note)",
+      "zoneDesign": "Design (note)",
+      "zoneAi": "AI review (note)",
+      "zonePlaceholder": "Short feedback for this scoring area",
+      "summary": "Structured summary",
+      "summaryPlaceholder": "High-level summary (similar to AI review)",
+      "strengths": "Strengths (one per line)",
+      "strengthsPlaceholder": "Bullet-style strengths",
+      "suggestions": "Suggestions (one per line)",
+      "suggestionsPlaceholder": "What to improve next",
+      "bonusLines": "Positive score lines (optional)",
+      "bonusAria": "Bonus lines",
+      "bonusPts": "Pts",
+      "bonusLabel": "Label",
+      "bonusNote": "Note (optional)",
+      "addBonusLine": "Add bonus line",
+      "notifyStudent": "Notify student in-app when saving",
+      "save": "Save review & bonuses",
+      "errMaxTotal": "Total score after bonuses cannot exceed 1000. Reduce bonus points or remove lines.",
+      "errSave": "Could not save teacher review"
+    },
+    "ai": {
+      "title": "AI Review",
+      "provider": "Provider: {{name}}",
+      "score": "AI SCORE",
+      "scoreMax": "/ 200",
+      "noSummary": "No AI summary available for this submission.",
+      "strengths": "Strengths",
+      "suggestions": "Suggestions",
+      "noStrengths": "No strengths provided.",
+      "noSuggestions": "No suggestions provided."
+    },
+    "teacherReview": {
+      "title": "Teacher review",
+      "zoneCorrectness": "Correctness",
+      "zonePerformance": "Performance",
+      "zoneDesign": "Design",
+      "zoneAi": "AI review",
+      "strengths": "Strengths",
+      "suggestions": "Suggestions",
+      "scoreBonuses": "Score bonuses",
+      "totalBonus": "Total bonus:"
+    },
+    "tests": {
+      "title": "✓ Test Results",
+      "passed": "{{passed}}/{{total}} passed",
+      "noData": "No test data available"
+    },
+    "logs": {
+      "build": "Build Logs",
+      "test": "Test Logs",
+      "error": "⚠ Error"
+    },
+    "processing": {
+      "pending": "Waiting in queue...",
+      "building": "Building your project...",
+      "testing": "Running tests against your API..."
+    },
+    "continue": "CONTINUE"
   }
 }
