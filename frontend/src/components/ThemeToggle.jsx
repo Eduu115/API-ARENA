@@ -1,10 +1,13 @@
 import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next";
 import SunIcon from "./icons/SunIcon";
 import MoonIcon from "./icons/MoonIcon";
 
 export default function ThemeToggle({ className = "" }) {
     const { theme, toggleTheme } = useTheme();
+    const { t } = useTranslation("common");
     const isDark = theme === "dark";
+    const label = isDark ? t("topbar.lightMode") : t("topbar.darkMode");
 
     return (
         <button
@@ -14,8 +17,8 @@ export default function ThemeToggle({ className = "" }) {
                 "p-2 rounded-full border border-primary-20 bg-background-tertiary hover:border-primary-40 transition focus:outline-none focus:ring-2 focus:ring-primary-30 " +
                 className
             }
-            title={isDark ? "Modo claro" : "Modo oscuro"}
-            aria-label={isDark ? "Activar modo claro" : "Activar modo oscuro"}
+            title={label}
+            aria-label={label}
         >
             {isDark ? (
                 <SunIcon className="w-5 h-5 text-primary" />

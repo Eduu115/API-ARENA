@@ -99,5 +99,13 @@
     "goToProfile": "Ir al perfil",
     "switchAccount": "Cambiar cuenta",
     "logOut": "Cerrar sesión"
+  },
+  "multiplayer": {
+    "pageTitle": "Multijugador",
+    "eyebrow": "// Próximamente",
+    "titleBefore": "Arena",
+    "titleEm": "en vivo",
+    "description": "Salas en tiempo real y challenges cara a cara están en el roadmap. De momento, afila tus habilidades en challenges en solitario.",
+    "browseChallenges": "Ver challenges"
   }
 }

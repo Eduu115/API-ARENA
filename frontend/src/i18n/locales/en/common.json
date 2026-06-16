@@ -99,5 +99,13 @@
     "goToProfile": "Go to profile",
     "switchAccount": "Switch account",
     "logOut": "Log out"
+  },
+  "multiplayer": {
+    "pageTitle": "Multiplayer",
+    "eyebrow": "// Coming soon",
+    "titleBefore": "Live",
+    "titleEm": "arena",
+    "description": "Real-time rooms and head-to-head challenges are on the roadmap. For now, sharpen your skills in solo challenges.",
+    "browseChallenges": "Browse challenges"
   }
 }
