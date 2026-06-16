@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -28,8 +29,13 @@ public class RefreshToken {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    /** Stored value is a SHA-256 hash of the token; the raw token is never persisted. */
     @Column(unique = true, nullable = false, length = 500)
     private String token;
+
+    /** Raw token, returned to the client once on creation. Never persisted. */
+    @Transient
+    private String rawToken;
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;

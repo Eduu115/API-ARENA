@@ -62,8 +62,15 @@ public class SandboxService {
     @Autowired
     private SandboxProcessRegistry processRegistry;
 
-    @Value("${sandbox.runner.mode:process}")
+    @Value("${sandbox.runner.mode:dind}")
     private String runnerMode;
+
+    /**
+     * "process" mode builds and runs untrusted submissions directly on the host with no isolation.
+     * It must never run by accident in a real deployment, so it requires an explicit opt-in.
+     */
+    @Value("${sandbox.allow-process-mode:false}")
+    private boolean allowProcessMode;
 
     @Value("${sandbox.dind.network:apiarena-network}")
     private String dindNetwork;
@@ -98,6 +105,11 @@ public class SandboxService {
     public SandboxExecutionDTO buildAndRun(BuildRequest request) {
         if ("dind".equalsIgnoreCase(runnerMode)) {
             return buildAndRunDind(request);
+        }
+        if (!allowProcessMode) {
+            throw new IllegalStateException(
+                    "sandbox.runner.mode=" + runnerMode + " runs untrusted code on the host without isolation; "
+                            + "set sandbox.allow-process-mode=true to opt in (never in production).");
         }
         synchronized (BUILD_LOCK) {
             return buildAndRunProcess(request);
@@ -270,10 +282,8 @@ public class SandboxService {
             }
             Path projectRoot = pomOpt.get().getParent();
             Path dockerfile = projectRoot.resolve("Dockerfile.apiarena");
-            String dockerfileBody = request.getDockerfile() != null && !request.getDockerfile().isBlank()
-                    ? request.getDockerfile()
-                    : defaultCandidateDockerfile();
-            Files.writeString(dockerfile, dockerfileBody, StandardCharsets.UTF_8);
+            // Always use the server-controlled Dockerfile; never accept a caller-supplied one.
+            Files.writeString(dockerfile, defaultCandidateDockerfile(), StandardCharsets.UTF_8);
 
             runDockerCommand(List.of("docker", "rm", "-f", containerName), workDir, 10, false);
             if (!dockerNetworkExists(workDir, dindNetwork)) {

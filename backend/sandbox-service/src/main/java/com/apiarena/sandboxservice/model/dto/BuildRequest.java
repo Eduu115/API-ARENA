@@ -14,6 +14,4 @@ public class BuildRequest {
     private Long submissionId;
 
     private String zipFilePath;
-
-    private String dockerfile;
 }

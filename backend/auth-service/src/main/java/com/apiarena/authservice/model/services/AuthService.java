@@ -163,7 +163,7 @@ public class AuthService implements IAuthService {
         String accessToken = jwtService.generateAccessToken(claims, userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        return new AuthResponse(UserDTO.fromEntity(user), accessToken, refreshToken.getToken());
+        return new AuthResponse(UserDTO.fromEntity(user), accessToken, refreshToken.getRawToken());
     }
 
     @Override
@@ -183,7 +183,7 @@ public class AuthService implements IAuthService {
 
         refreshTokenService.revokeRefreshToken(request.getRefreshToken());
 
-        return new AuthResponse(UserDTO.fromEntity(user), accessToken, newRefreshToken.getToken());
+        return new AuthResponse(UserDTO.fromEntity(user), accessToken, newRefreshToken.getRawToken());
     }
 
     @Override
