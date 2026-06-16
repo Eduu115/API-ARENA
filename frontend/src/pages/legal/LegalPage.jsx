@@ -2,6 +2,8 @@ import { Link, useLocation, Navigate } from "react-router-dom";
 import { LEGAL_DOCS, LEGAL_NAV, CONTROLLER } from "./legalContent";
 import { usePageMeta } from "../../lib/usePageMeta";
 import { openConsentManager } from "../../lib/cookieConsent";
+import { stripLocalePathname } from "../../lib/localeRoutes";
+import LocaleLink from "../../components/LocaleLink";
 import "../challenges/challenges.css";
 import "./legal.css";
 
@@ -27,7 +29,7 @@ function renderBlock(block, i) {
 
 export default function LegalPage() {
   const location = useLocation();
-  const slug = location.pathname.replace(/^\/+/, "").split("/")[0];
+  const slug = stripLocalePathname(location.pathname).replace(/^\/+/, "").split("/")[0];
   const doc = LEGAL_DOCS[slug];
 
   usePageMeta({
@@ -36,7 +38,7 @@ export default function LegalPage() {
     path: `/${slug}`,
   });
 
-  if (!doc) return <Navigate to="/privacidad" replace />;
+  if (!doc) return <Navigate to="../privacidad" replace />;
 
   return (
     <div className="legal-root challenges-page">

@@ -1,11 +1,18 @@
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { CONSENT_CHANGED_EVENT } from '../lib/cookieConsent';
 import { APP_LOCALE_CHANGED, detectBrowserLocale, readStoredAppLocale, setAppLocale } from '../lib/locale';
-import { useEffect } from 'react';
+import { localePath, parsePathname } from '../lib/localeRoutes';
+import { useAuth } from '../context/AuthContext';
+import { updateProfile } from '../lib/authApi';
 import './LocaleSwitch.css';
 
 export default function LocaleSwitch({ className = '' }) {
   const { i18n, t } = useTranslation('common');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const locale = i18n.language?.startsWith('es') ? 'es' : 'en';
 
   useEffect(() => {
@@ -37,6 +44,15 @@ export default function LocaleSwitch({ className = '' }) {
     const normalized = next === 'es' ? 'es' : 'en';
     setAppLocale(normalized);
     i18n.changeLanguage(normalized);
+
+    const { path } = parsePathname(location.pathname);
+    const target = localePath(normalized, path);
+    const suffix = `${location.search || ''}${location.hash || ''}`;
+    navigate(`${target}${suffix}`, { replace: true });
+
+    if (isAuthenticated) {
+      updateProfile({ preferredLocale: normalized }).catch(() => {});
+    }
   }
 
   return (

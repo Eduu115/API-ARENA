@@ -69,7 +69,7 @@ public class AuthController {
         turnstileVerificationService.requireValidToken(
                 request.getTurnstileToken(),
                 TurnstileVerificationService.resolveClientIp(httpRequest));
-        AuthResponse response = authService.register(request);
+        AuthResponse response = authService.register(request, httpRequest.getHeader("Accept-Language"));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

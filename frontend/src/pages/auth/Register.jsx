@@ -8,6 +8,7 @@ import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
 import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
+import { useLocalizedPath } from "../../routes/LocaleLayout";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
@@ -24,7 +25,7 @@ function getAge(isoDate) {
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 export default function Register() {
-  const { t } = useTranslation("auth");
+  const { t, i18n } = useTranslation("auth");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,8 +39,9 @@ export default function Register() {
   const turnstileOn = isTurnstileEnabled();
   const { register: doRegister, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const lp = useLocalizedPath();
   const location = useLocation();
-  const redirectTo = location.state?.from?.pathname || "/dashboard";
+  const redirectTo = location.state?.from?.pathname || lp("/dashboard");
 
   useEffect(() => {
     clearError();
@@ -79,14 +81,16 @@ export default function Register() {
       return;
     }
     setSubmitting(true);
+    const preferredLocale = i18n.language?.startsWith("es") ? "es" : "en";
     const result = await doRegister(username, email, password, null, {
       dateOfBirth,
       acceptTerms,
       turnstileToken,
+      preferredLocale,
     });
     setSubmitting(false);
     if (result?.needsVerification) {
-      navigate("/verify-email", { replace: true, state: { email: email.trim() } });
+      navigate(lp("/verify-email"), { replace: true, state: { email: email.trim() } });
       return;
     }
     if (result?.success) {

@@ -41,4 +41,7 @@ public class RegisterRequest {
 
     /** Cloudflare Turnstile token (required when app.turnstile.secret-key is set). */
     private String turnstileToken;
+
+    /** Optional UI locale (`en` | `es`). Defaults to `en` or Accept-Language when omitted. */
+    private String preferredLocale;
 }

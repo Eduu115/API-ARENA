@@ -27,7 +27,9 @@ import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 import com.apiarena.authservice.model.entities.RefreshToken;
 import com.apiarena.authservice.model.entities.User;
+import com.apiarena.authservice.exception.ApiException;
 import com.apiarena.authservice.repository.UserRepository;
+import com.apiarena.authservice.util.LocaleSupport;
 
 @Service
 public class AuthService implements IAuthService {
@@ -70,34 +72,34 @@ public class AuthService implements IAuthService {
 
     @Override
     @Transactional
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request, String acceptLanguage) {
 
         String email = request.getEmail().trim().toLowerCase();
 
         LocalDate dob = request.getDateOfBirth();
         if (dob == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date of birth is required");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_DOB_REQUIRED", "Date of birth is required");
         }
         LocalDate today = LocalDate.now();
         if (dob.isAfter(today)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Date of birth must be in the past");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_DOB_PAST", "Date of birth must be in the past");
         }
         if (Period.between(dob, today).getYears() < MIN_AGE_YEARS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_AGE_MIN",
                     "You must be at least " + MIN_AGE_YEARS + " years old to register");
         }
 
         if (!request.isAcceptTerms()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_TERMS_REQUIRED",
                     "You must accept the Privacy Policy and Terms to register");
         }
 
         if (userRepository.existsByEmail(email)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+            throw new ApiException(HttpStatus.CONFLICT, "AUTH_EMAIL_ALREADY_REGISTERED", "Email already registered");
         }
 
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already taken");
+            throw new ApiException(HttpStatus.CONFLICT, "AUTH_USERNAME_TAKEN", "Username already taken");
         }
 
         User.Role role = User.Role.STUDENT;
@@ -105,9 +107,14 @@ public class AuthService implements IAuthService {
             try {
                 role = User.Role.valueOf(request.getRole().toUpperCase());
             } catch (IllegalArgumentException e) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role: " + request.getRole());
+                throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_INVALID_ROLE",
+                        "Invalid role: " + request.getRole());
             }
         }
+
+        String preferredLocale = request.getPreferredLocale() != null && !request.getPreferredLocale().isBlank()
+                ? LocaleSupport.normalize(request.getPreferredLocale())
+                : LocaleSupport.fromAcceptLanguage(acceptLanguage);
 
         User u = new User(
             request.getUsername(),
@@ -119,6 +126,7 @@ public class AuthService implements IAuthService {
         u.setPrivacyConsentAt(LocalDateTime.now());
         u.setPrivacyConsentVersion(CURRENT_CONSENT_VERSION);
         u.setPasswordChangedAt(LocalDateTime.now());
+        u.setPreferredLocale(preferredLocale);
 
         User savedUser = userRepository.save(u);
 
@@ -130,7 +138,8 @@ public class AuthService implements IAuthService {
         emailDispatchService.sendVerificationEmail(
                 savedUser.getEmail(),
                 savedUser.getUsername(),
-                token);
+                token,
+                preferredLocale);
 
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
     }
@@ -151,7 +160,7 @@ public class AuthService implements IAuthService {
         User user = userService.getUserEntityByEmail(email);
 
         if (!Boolean.TRUE.equals(user.getEmailVerified())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+            throw new ApiException(HttpStatus.FORBIDDEN, "AUTH_EMAIL_NOT_VERIFIED",
                     "Email not verified. Check your inbox or resend the verification link.");
         }
 
@@ -215,9 +224,10 @@ public class AuthService implements IAuthService {
         Long userId = user.getId();
         String username = user.getUsername();
         String email = user.getEmail();
+        String preferredLocale = user.getPreferredLocale() != null ? user.getPreferredLocale() : "en";
         CompletableFuture.runAsync(() -> {
-            emailDispatchService.sendWelcomeBetaLegacyEmail(email, username);
-            emailDispatchService.sendFirstStepsBetaEmail(email, username);
+            emailDispatchService.sendWelcomeBetaLegacyEmail(email, username, preferredLocale);
+            emailDispatchService.sendFirstStepsBetaEmail(email, username, preferredLocale);
             welcomeNotificationDispatchService.sendWelcome(userId, username);
             achievementService.syncForUserId(userId);
         });
@@ -239,7 +249,8 @@ public class AuthService implements IAuthService {
             user.setEmailVerificationToken(token);
             user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(48));
             userRepository.save(user);
-            emailDispatchService.sendVerificationEmail(user.getEmail(), user.getUsername(), token);
+            emailDispatchService.sendVerificationEmail(
+                    user.getEmail(), user.getUsername(), token, user.getPreferredLocale());
         });
     }
 
@@ -255,7 +266,8 @@ public class AuthService implements IAuthService {
             user.setPasswordResetToken(token);
             user.setPasswordResetExpiresAt(LocalDateTime.now().plusHours(1));
             userRepository.save(user);
-            emailDispatchService.sendPasswordResetEmail(user.getEmail(), user.getUsername(), token);
+            emailDispatchService.sendPasswordResetEmail(
+                    user.getEmail(), user.getUsername(), token, user.getPreferredLocale());
         });
     }
 

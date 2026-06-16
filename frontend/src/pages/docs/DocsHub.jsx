@@ -11,6 +11,7 @@ import "./docsHub.css";
 import { getDocByIdMap, getDocDocuments } from "./docsContent";
 import { getDocsUi, getNextDocCtaLabel } from "./docsUi";
 import { usePageMeta } from "../../lib/usePageMeta";
+import { useLocalizedPath } from "../../routes/LocaleLayout";
 
 function SectionVisual({ visual }) {
   if (!visual?.type) return null;
@@ -93,6 +94,7 @@ function SectionVisual({ visual }) {
 
 export default function DocsHub() {
   const navigate = useNavigate();
+  const lp = useLocalizedPath();
   const { docId } = useParams();
   const { user, isAuthenticated } = useAuth();
   const { i18n } = useTranslation();
@@ -124,13 +126,13 @@ export default function DocsHub() {
 
   useEffect(() => {
     if (!docId) {
-      navigate(`/docs/${docDocuments[0].id}`, { replace: true });
+      navigate(lp(`/docs/${docDocuments[0].id}`), { replace: true });
       return;
     }
     if (!docById[docId]) {
-      navigate(`/docs/${docDocuments[0].id}`, { replace: true });
+      navigate(lp(`/docs/${docDocuments[0].id}`), { replace: true });
     }
-  }, [docId, docById, docDocuments, navigate]);
+  }, [docId, docById, docDocuments, navigate, lp]);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -189,7 +191,7 @@ export default function DocsHub() {
                 <h1 className="ch-page-title">Arena<em>Docs</em></h1>
               </div>
               <div className="docs-hub-header-actions">
-                <button className="docs-back-btn" onClick={() => navigate("/challenges")}>
+                <button className="docs-back-btn" onClick={() => navigate(lp("/challenges"))}>
                   {ui.backToChallenges}
                 </button>
               </div>

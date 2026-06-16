@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { clearChallengeSession, getChallengeSession } from "../lib/challengeSessionStorage";
+import { useLocalizedPath } from "../routes/LocaleLayout";
+import { stripLocalePathname } from "../lib/localeRoutes";
 import "./ActiveChallengeSessionBanner.css";
 
 function formatTime(seconds) {
@@ -16,6 +18,8 @@ export default function ActiveChallengeSessionBanner() {
   const { user, isAuthenticated } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const lp = useLocalizedPath();
+  const logicalPath = stripLocalePathname(location.pathname);
 
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -40,16 +44,16 @@ export default function ActiveChallengeSessionBanner() {
 
   const onSubmitPageForSession = useMemo(() => {
     if (!session) return false;
-    const m = location.pathname.match(/^\/challenges\/([^/]+)\/submit\/?$/);
+    const m = logicalPath.match(/^\/challenges\/([^/]+)\/submit\/?$/);
     if (!m) return false;
     return String(m[1]) === String(session.challengeId);
-  }, [location.pathname, session]);
+  }, [logicalPath, session]);
 
   const visible = Boolean(session && !onSubmitPageForSession);
 
   const handleContinue = useCallback(() => {
     if (!session) return;
-    navigate(`/challenges/${session.challengeId}/submit`);
+    navigate(lp(`/challenges/${session.challengeId}/submit`));
   }, [navigate, session]);
 
   const handleAbandon = useCallback(() => {

@@ -156,10 +156,10 @@ function clearStoredTokens() {
 async function getErrorMessage(res, body) {
 
 
-    if (body?.detail) return body.detail;
-
-
     if (body?.message) return body.message;
+
+
+    if (body?.detail) return body.detail;
 
 
     if (typeof body === "object" && body !== null && !Array.isArray(body)) {
@@ -265,6 +265,9 @@ async function request(path, options = {}) {
 
 
         err.body = body;
+
+
+        if (body?.code) err.code = body.code;
 
 
         throw err;

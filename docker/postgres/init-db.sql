@@ -48,6 +48,7 @@ UPDATE users SET last_seen_at = COALESCE(last_login, updated_at, created_at) WHE
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_reminder_sent_at TIMESTAMP;
 UPDATE users SET password_changed_at = created_at WHERE password_changed_at IS NULL;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_locale VARCHAR(5) NOT NULL DEFAULT 'en';
 
 -- ===========================================
 -- Tabla: refresh_tokens

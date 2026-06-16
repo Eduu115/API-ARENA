@@ -8,7 +8,7 @@ import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 
 public interface IAuthService {
 
-    AuthResponse register(RegisterRequest request);
+    AuthResponse register(RegisterRequest request, String acceptLanguage);
 
     AuthResponse login(LoginRequest request);
 

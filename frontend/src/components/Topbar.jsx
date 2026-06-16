@@ -9,6 +9,8 @@ import { getUnreadNotificationCount } from "../lib/notificationsApi";
 import { connectNotificationsWs } from "../lib/notificationsWs";
 import { notificationActionLabel, notificationActionPath } from "../lib/notificationDisplay";
 import { NavIcon, IconBell, IconSun, IconMoon } from "./topbar/TopbarIcons";
+import { useLocalizedPath } from "../routes/LocaleLayout";
+import { stripLocalePathname } from "../lib/localeRoutes";
 import "./Topbar.css";
 
 const MIN_RANKED_CHALLENGES = 3;
@@ -40,6 +42,8 @@ export default function Topbar({
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const { t } = useTranslation("common");
+  const lp = useLocalizedPath();
+  const logicalPath = stripLocalePathname(pathname);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [pushToasts, setPushToasts] = useState([]);
@@ -52,12 +56,12 @@ export default function Topbar({
   const remainingForRank = Math.max(0, MIN_RANKED_CHALLENGES - completedChallenges);
   const isTeacher = String(user?.role || "").toUpperCase() === "TEACHER";
   const profileActive =
-    pathname === "/perfil" ||
-    pathname.startsWith("/perfil/") ||
+    logicalPath === "/perfil" ||
+    logicalPath.startsWith("/perfil/") ||
     accountMenuOpen;
   const notifActive =
-    pathname === "/notifications" ||
-    pathname.startsWith("/notifications/");
+    logicalPath === "/notifications" ||
+    logicalPath.startsWith("/notifications/");
 
   const dismissPushToast = useCallback(() => {
     setPushToasts((queue) => queue.slice(1));
@@ -138,11 +142,11 @@ export default function Topbar({
 
   function renderNavLink({ label, path, icon }) {
     const isActive =
-      pathname === path || pathname.startsWith(`${path}/`);
+      logicalPath === path || logicalPath.startsWith(`${path}/`);
     return (
       <Link
         key={path}
-        to={path}
+        to={lp(path)}
         className={`arena-nav-link${isActive ? " arena-nav-link--active" : ""}`}
         title={label}
       >
@@ -168,7 +172,7 @@ export default function Topbar({
                   height="28"
                 />
               </div>
-              <Link to="/" className="arena-navbar__title">
+              <Link to={lp("/")} className="arena-navbar__title">
                 <span className="arena-navbar__title-api">API</span>
                 <span className="arena-navbar__title-arena">Arena</span>
               </Link>
@@ -190,9 +194,9 @@ export default function Topbar({
             {navItems.map((item) => renderNavLink(item))}
             {isTeacher && (
               <Link
-                to="/teacher"
+                to={lp("/teacher")}
                 className={`arena-nav-link${
-                  pathname.startsWith("/teacher") ? " arena-nav-link--active" : ""
+                  logicalPath.startsWith("/teacher") ? " arena-nav-link--active" : ""
                 }`}
                 title="Teacher"
               >
@@ -215,7 +219,7 @@ export default function Topbar({
               {isUnranked && (
                 <span className="arena-navbar__elo-help-wrap">
                   <Link
-                    to="/docs/sistema-xp-elo"
+                    to={lp("/docs/sistema-xp-elo")}
                     className="arena-navbar__elo-help"
                     aria-label={t("topbar.eloDocsAria")}
                   >
@@ -230,7 +234,7 @@ export default function Topbar({
             </div>
 
             <Link
-              to="/notifications"
+              to={lp("/notifications")}
               className={`arena-nav-icon-btn${notifActive ? " arena-nav-icon-btn--active" : ""}`}
               aria-label={t("topbar.notifications")}
               title={t("topbar.notifications")}
@@ -275,7 +279,7 @@ export default function Topbar({
           ) : (
             <div className="arena-navbar__actions">
               <LocaleSwitch />
-              <Link to="/login" className="arena-navbar__login" title="Log in">
+              <Link to={lp("/login")} className="arena-navbar__login" title="Log in">
                 Log in
               </Link>
               <button

@@ -1,8 +1,37 @@
+const AUTH_CODE_KEYS = {
+  AUTH_DOB_REQUIRED: "errors.codes.AUTH_DOB_REQUIRED",
+  AUTH_DOB_PAST: "errors.codes.AUTH_DOB_PAST",
+  AUTH_AGE_MIN: "errors.codes.AUTH_AGE_MIN",
+  AUTH_TERMS_REQUIRED: "errors.codes.AUTH_TERMS_REQUIRED",
+  AUTH_EMAIL_ALREADY_REGISTERED: "errors.codes.AUTH_EMAIL_ALREADY_REGISTERED",
+  AUTH_USERNAME_TAKEN: "errors.codes.AUTH_USERNAME_TAKEN",
+  AUTH_INVALID_ROLE: "errors.codes.AUTH_INVALID_ROLE",
+  AUTH_EMAIL_NOT_VERIFIED: "errors.emailNotVerified",
+};
+
+function normalizeInput(errOrMessage) {
+  if (errOrMessage && typeof errOrMessage === "object") {
+    return {
+      message: errOrMessage.message ?? errOrMessage.error ?? "",
+      code: errOrMessage.code ?? errOrMessage.body?.code ?? null,
+    };
+  }
+  return { message: errOrMessage ?? "", code: null };
+}
+
 /**
- * Maps known API auth error messages (English) to i18n keys.
- * Unknown messages are returned as-is until backend sends error codes.
+ * Maps API auth error codes or known English messages to i18n strings.
  */
-export function translateAuthError(message, t) {
+export function translateAuthError(errOrMessage, t) {
+  const { message, code } = normalizeInput(errOrMessage);
+
+  if (code && AUTH_CODE_KEYS[code]) {
+    const translated = t(AUTH_CODE_KEYS[code]);
+    if (translated && translated !== AUTH_CODE_KEYS[code]) {
+      return translated;
+    }
+  }
+
   if (!message || typeof message !== "string") {
     return t("errors.signIn");
   }

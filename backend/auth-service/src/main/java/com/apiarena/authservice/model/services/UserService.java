@@ -16,6 +16,7 @@ import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.entities.User;
+import com.apiarena.authservice.util.LocaleSupport;
 import com.apiarena.authservice.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -97,6 +98,9 @@ public class UserService implements IUserService {
                         "New challenge email alerts are only available for student accounts");
             }
             user.setNewChallengeEmailAlerts(request.getNewChallengeEmailAlerts());
+        }
+        if (request.getPreferredLocale() != null) {
+            user.setPreferredLocale(LocaleSupport.normalize(request.getPreferredLocale()));
         }
 
         User savedUser = userRepository.save(user);
@@ -217,7 +221,8 @@ public class UserService implements IUserService {
             if (createdByUserId != null && createdByUserId.equals(u.getId())) {
                 continue;
             }
-            emailDispatchService.sendNewChallengePublishedEmail(u.getEmail(), u.getUsername(), title, challengeId);
+            emailDispatchService.sendNewChallengePublishedEmail(
+                    u.getEmail(), u.getUsername(), title, challengeId, u.getPreferredLocale());
         }
     }
 
@@ -242,6 +247,7 @@ public class UserService implements IUserService {
         profile.put("avatarUrl", u.getAvatarUrl());
         profile.put("bio", u.getBio());
         profile.put("githubUsername", u.getGithubUsername());
+        profile.put("preferredLocale", u.getPreferredLocale());
 
         java.util.Map<String, Object> activity = new java.util.LinkedHashMap<>();
         activity.put("rating", u.getRating());

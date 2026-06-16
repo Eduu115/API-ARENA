@@ -145,6 +145,10 @@ public class User {
     @Column(name = "privacy_consent_version", length = 20)
     private String privacyConsentVersion;
 
+    /** UI language preference for emails and client sync (`en` | `es`). */
+    @Column(name = "preferred_locale", nullable = false, length = 5)
+    private String preferredLocale = "en";
+
     public User(String username, String email, String passwordHash, Role role) {
         this.username = username;
         this.email = email;
@@ -161,6 +165,7 @@ public class User {
         this.emailVerified = false;
         this.betaLegacy = true;
         this.newChallengeEmailAlerts = false;
+        this.preferredLocale = "en";
     }
 
     public enum Role {

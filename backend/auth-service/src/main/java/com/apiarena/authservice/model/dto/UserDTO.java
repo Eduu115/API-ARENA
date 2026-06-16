@@ -34,6 +34,7 @@ public class UserDTO {
     private Boolean emailVerified;
     private Boolean betaLegacy;
     private Boolean newChallengeEmailAlerts;
+    private String preferredLocale;
 
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -56,7 +57,8 @@ public class UserDTO {
             user.getIsActive(),
             user.getEmailVerified(),
             Boolean.TRUE.equals(user.getBetaLegacy()),
-            Boolean.TRUE.equals(user.getNewChallengeEmailAlerts())
+            Boolean.TRUE.equals(user.getNewChallengeEmailAlerts()),
+            user.getPreferredLocale() != null ? user.getPreferredLocale() : "en"
         );
     }
 }
