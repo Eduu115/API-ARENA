@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MAX_DISPLAYED_PROFILE_BADGES,
   badgeStyleClass,
@@ -15,6 +16,7 @@ export default function BadgeCollection({
   onToggleDisplay,
   globalRank = null,
 }) {
+  const { t, i18n } = useTranslation('profile');
   const [error, setError] = useState(null);
 
   const displayedCount = useMemo(() => countDisplayedBadges(badges), [badges]);
@@ -31,7 +33,7 @@ export default function BadgeCollection({
         next = current.filter((c) => c !== badge.code);
       } else {
         if (current.length >= MAX_DISPLAYED_PROFILE_BADGES) {
-          setError(`You can show at most ${MAX_DISPLAYED_PROFILE_BADGES} badges on your profile.`);
+          setError(t('badges.maxError', { max: MAX_DISPLAYED_PROFILE_BADGES }));
           return;
         }
         next = [...current, badge.code];
@@ -40,37 +42,34 @@ export default function BadgeCollection({
       try {
         await onToggleDisplay(next);
       } catch (err) {
-        setError(err?.message || 'Could not update displayed badges.');
+        setError(err?.message || t('badges.updateError'));
       }
     },
-    [badges, onToggleDisplay, saving],
+    [badges, onToggleDisplay, saving, t],
   );
 
   if (loading) {
-    return <p className="badge-collection-empty">Loading badges…</p>;
+    return <p className="badge-collection-empty">{t('badges.loading')}</p>;
   }
 
   if (!badges.length) {
-    return (
-      <p className="badge-collection-empty">
-        No badges yet. Complete challenges and milestones to unlock collectibles.
-      </p>
-    );
+    return <p className="badge-collection-empty">{t('badges.empty')}</p>;
   }
 
+  const dateLocale = i18n.language?.startsWith('es') ? 'es-ES' : 'en-US';
   const rankHint =
     globalRank?.inTop25 || (globalRank?.rank >= 1 && globalRank?.rank <= 25)
-      ? `You are #${globalRank.rank} globally — your rank badge is always visible on your profile.`
-      : 'Global rank badges (TOP 25) are always shown when you qualify — they cannot be hidden.';
+      ? t('badges.rankHintTop', { rank: globalRank.rank })
+      : t('badges.rankHintDefault');
 
   return (
     <div className="badge-collection">
       <p className="badge-collection-lead">
-        Unlock badges by playing. Pick up to {MAX_DISPLAYED_PROFILE_BADGES} to show on your public profile.
+        {t('badges.lead', { max: MAX_DISPLAYED_PROFILE_BADGES })}
       </p>
       <div className="badge-collection-meta">
         <span className="badge-collection-counter">
-          {displayedCount} / {MAX_DISPLAYED_PROFILE_BADGES} displayed
+          {t('badges.displayed', { count: displayedCount, max: MAX_DISPLAYED_PROFILE_BADGES })}
         </span>
         <span className="badge-collection-rank-hint">{rankHint}</span>
       </div>
@@ -103,8 +102,8 @@ export default function BadgeCollection({
                 locked
                   ? badge.description
                   : badge.displayed
-                    ? 'Click to hide from profile'
-                    : 'Click to show on profile'
+                    ? t('badges.hideTitle')
+                    : t('badges.showTitle')
               }
             >
               <div className="badge-collection-card-top">
@@ -125,18 +124,18 @@ export default function BadgeCollection({
               <div className="badge-collection-state">
                 {locked ? (
                   <span className="badge-collection-state-label badge-collection-state-label--locked">
-                    Locked
+                    {t('badges.locked')}
                   </span>
                 ) : badge.displayed ? (
                   <span className="badge-collection-state-label badge-collection-state-label--on">
-                    On profile
+                    {t('badges.onProfile')}
                   </span>
                 ) : (
-                  <span className="badge-collection-state-label">Unlocked</span>
+                  <span className="badge-collection-state-label">{t('badges.unlocked')}</span>
                 )}
                 {!locked && badge.unlockedAt && (
                   <time className="badge-collection-when" dateTime={badge.unlockedAt}>
-                    {new Date(badge.unlockedAt).toLocaleDateString('en-US', {
+                    {new Date(badge.unlockedAt).toLocaleDateString(dateLocale, {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',

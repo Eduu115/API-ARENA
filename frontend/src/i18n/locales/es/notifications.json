@@ -1,0 +1,35 @@
+{
+  "pageTitle": "Mis notificaciones",
+  "eyebrow": "// Bandeja",
+  "titleBefore": "Mis",
+  "titleEm": "notificaciones",
+  "lead": "Resultados de entregas y mensajes del sistema. Filtra por prioridad o estado de lectura.",
+  "markAllRead": "Marcar todo leído",
+  "priority": "Prioridad",
+  "priorityAria": "Filtrar por prioridad",
+  "status": "Estado",
+  "statusAria": "Filtrar por estado de lectura",
+  "filters": {
+    "allLevels": "Todos los niveles",
+    "info": "Info",
+    "reminder": "Recordatorio",
+    "alerts": "Alertas",
+    "important": "Importante",
+    "all": "Todas",
+    "unread": "No leídas",
+    "read": "Leídas"
+  },
+  "importanceTitle": "Prioridad (baja → alta): Info, Recordatorio, Alertas, Importante",
+  "loading": "Cargando…",
+  "loadError": "Error al cargar las notificaciones",
+  "updateError": "No se pudo actualizar",
+  "emptyFiltered": "Ninguna notificación coincide con estos filtros. Prueba a cambiar prioridad o estado.",
+  "emptyNone": "Aún no hay notificaciones. Completa una entrega para ver resultados aquí.",
+  "markRead": "Marcar leída",
+  "actions": {
+    "open": "Abrir",
+    "seeMore": "Ver más →",
+    "viewSubmission": "Ver entrega →",
+    "openInbox": "Abrir bandeja →"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "pageTitle": "My Notifications",
+  "eyebrow": "// Inbox",
+  "titleBefore": "My",
+  "titleEm": "Notifications",
+  "lead": "Submission results and system messages. Filter by priority or read status.",
+  "markAllRead": "Mark all read",
+  "priority": "Priority",
+  "priorityAria": "Filter by priority",
+  "status": "Status",
+  "statusAria": "Filter by read status",
+  "filters": {
+    "allLevels": "All levels",
+    "info": "Info",
+    "reminder": "Reminder",
+    "alerts": "Alerts",
+    "important": "Important",
+    "all": "All",
+    "unread": "Unread",
+    "read": "Read"
+  },
+  "importanceTitle": "Priority (low → high): Info, Reminder, Alerts, Important",
+  "loading": "Loading…",
+  "loadError": "Failed to load notifications",
+  "updateError": "Could not update",
+  "emptyFiltered": "No notifications match these filters. Try changing priority or status.",
+  "emptyNone": "No notifications yet. Complete a submission to see results here.",
+  "markRead": "Mark read",
+  "actions": {
+    "open": "Open",
+    "seeMore": "See more →",
+    "viewSubmission": "View submission →",
+    "openInbox": "Open inbox →"
+  }
+}

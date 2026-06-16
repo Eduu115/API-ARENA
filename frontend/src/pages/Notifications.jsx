@@ -1,69 +1,75 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
-import Topbar from "../components/Topbar";
-import BottomNav from "../components/BottomNav";
-import CustomCursor from "../components/CustomCursor";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import Topbar from '../components/Topbar';
+import BottomNav from '../components/BottomNav';
+import CustomCursor from '../components/CustomCursor';
 import {
   getMyNotifications,
   getUnreadNotificationCount,
   markNotificationRead,
   markAllNotificationsRead,
-} from "../lib/notificationsApi";
-import { connectNotificationsWs } from "../lib/notificationsWs";
-import { notificationActionLabel, notificationActionPath } from "../lib/notificationDisplay";
-import "./challenges/challenges.css";
-import "./notifications.css";
+} from '../lib/notificationsApi';
+import { connectNotificationsWs } from '../lib/notificationsWs';
+import { notificationActionLabel, notificationActionPath } from '../lib/notificationDisplay';
+import { usePageMeta } from '../lib/usePageMeta';
+import './challenges/challenges.css';
+import './notifications.css';
 
-const IMPORTANCE_ORDER = ["INFO", "REMINDER", "ALERTS", "IMPORTANT"];
-
-const IMPORTANCE_FILTERS = [
-  { id: "ALL", label: "All levels" },
-  { id: "INFO", label: "Info" },
-  { id: "REMINDER", label: "Reminder" },
-  { id: "ALERTS", label: "Alerts" },
-  { id: "IMPORTANT", label: "Important" },
-];
-
-const READ_FILTERS = [
-  { id: "all", label: "All" },
-  { id: "unread", label: "Unread" },
-  { id: "read", label: "Read" },
-];
+const IMPORTANCE_ORDER = ['INFO', 'REMINDER', 'ALERTS', 'IMPORTANT'];
 
 function importanceClass(imp) {
-  const key = typeof imp === "string" ? imp.toUpperCase() : "INFO";
-  if (!IMPORTANCE_ORDER.includes(key)) return "notif-importance--info";
+  const key = typeof imp === 'string' ? imp.toUpperCase() : 'INFO';
+  if (!IMPORTANCE_ORDER.includes(key)) return 'notif-importance--info';
   return `notif-importance--${key.toLowerCase()}`;
 }
 
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+function formatDate(iso, locale) {
+  if (!iso) return '—';
+  const loc = locale?.startsWith('es') ? 'es-ES' : 'en-GB';
+  return new Date(iso).toLocaleString(loc, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
 export default function Notifications() {
+  const { t, i18n } = useTranslation('notifications');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [page, setPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [unreadTotal, setUnreadTotal] = useState(0);
-  const [importanceFilter, setImportanceFilter] = useState("ALL");
-  const [readFilter, setReadFilter] = useState("all");
+  const [importanceFilter, setImportanceFilter] = useState('ALL');
+  const [readFilter, setReadFilter] = useState('all');
   const cancelledRef = useRef(false);
+
+  usePageMeta({ title: t('pageTitle'), path: '/notifications' });
+
+  const importanceFilters = [
+    { id: 'ALL', label: t('filters.allLevels') },
+    { id: 'INFO', label: t('filters.info') },
+    { id: 'REMINDER', label: t('filters.reminder') },
+    { id: 'ALERTS', label: t('filters.alerts') },
+    { id: 'IMPORTANT', label: t('filters.important') },
+  ];
+
+  const readFilters = [
+    { id: 'all', label: t('filters.all') },
+    { id: 'unread', label: t('filters.unread') },
+    { id: 'read', label: t('filters.read') },
+  ];
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     const params = { page: 0, size: 50 };
-    if (readFilter === "unread") params.unreadOnly = true;
-    else if (readFilter === "read") params.unreadOnly = false;
-    if (importanceFilter !== "ALL") params.minImportance = importanceFilter;
+    if (readFilter === 'unread') params.unreadOnly = true;
+    else if (readFilter === 'read') params.unreadOnly = false;
+    if (importanceFilter !== 'ALL') params.minImportance = importanceFilter;
 
     try {
       const [data, unreadRes] = await Promise.all([
@@ -75,18 +81,18 @@ export default function Notifications() {
         setUnreadTotal(Number(unreadRes?.count) || 0);
       }
     } catch (e) {
-      if (!cancelledRef.current) setError(e?.message || "Failed to load notifications");
+      if (!cancelledRef.current) setError(e?.message || t('loadError'));
     } finally {
       if (!cancelledRef.current) setLoading(false);
     }
-  }, [importanceFilter, readFilter]);
+  }, [importanceFilter, readFilter, t]);
 
   useEffect(() => {
     cancelledRef.current = false;
     load();
     const disconnect = connectNotificationsWs({
       onEvent: (msg) => {
-        if (msg?.event === "NEW_NOTIFICATION") {
+        if (msg?.event === 'NEW_NOTIFICATION') {
           load();
         }
       },
@@ -102,7 +108,7 @@ export default function Notifications() {
       await markNotificationRead(id);
       await load();
     } catch (e) {
-      setError(e?.message || "Could not update");
+      setError(e?.message || t('updateError'));
     }
   }
 
@@ -111,33 +117,32 @@ export default function Notifications() {
       await markAllNotificationsRead();
       await load();
     } catch (e) {
-      setError(e?.message || "Could not update");
+      setError(e?.message || t('updateError'));
     }
   }
 
   const items = page?.content ?? [];
-  const hasFilters = importanceFilter !== "ALL" || readFilter !== "all";
+  const hasFilters = importanceFilter !== 'ALL' || readFilter !== 'all';
 
   return (
     <div className="challenges-page notif-page">
       <CustomCursor />
       <div className="ch-grid-bg" aria-hidden />
-      <div className="ch-layout" style={{ gridTemplateColumns: "1fr" }}>
+      <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
         <Topbar onMenuToggle={() => setSidebarOpen((o) => !o)} sidebarOpen={sidebarOpen} />
         <main className="ch-main notif-main">
           <div className="ch-page-header notif-page-header">
             <div>
-              <div className="ch-page-eyebrow">// Inbox</div>
+              <div className="ch-page-eyebrow">{t('eyebrow')}</div>
               <h1 className="ch-page-title">
-                My<em>Notifications</em>
+                {t('titleBefore')}
+                <em>{t('titleEm')}</em>
               </h1>
-              <p className="notif-page-lead">
-                Submission results and system messages. Filter by priority or read status.
-              </p>
+              <p className="notif-page-lead">{t('lead')}</p>
             </div>
             {unreadTotal > 0 && (
               <button type="button" className="notif-mark-all" onClick={handleMarkAll}>
-                Mark all read
+                {t('markAllRead')}
               </button>
             )}
           </div>
@@ -145,14 +150,14 @@ export default function Notifications() {
           <div className="notif-filter-panel">
             <div className="notif-filter-row">
               <span className="notif-filter-heading" aria-hidden>
-                Priority
+                {t('priority')}
               </span>
-              <div className="notif-filter-chips" role="group" aria-label="Filter by priority">
-                {IMPORTANCE_FILTERS.map((f) => (
+              <div className="notif-filter-chips" role="group" aria-label={t('priorityAria')}>
+                {importanceFilters.map((f) => (
                   <button
                     key={f.id}
                     type="button"
-                    className={`notif-filter-chip${importanceFilter === f.id ? " is-active" : ""}`}
+                    className={`notif-filter-chip${importanceFilter === f.id ? ' is-active' : ''}`}
                     onClick={() => setImportanceFilter(f.id)}
                   >
                     {f.label}
@@ -162,14 +167,14 @@ export default function Notifications() {
             </div>
             <div className="notif-filter-row">
               <span className="notif-filter-heading" aria-hidden>
-                Status
+                {t('status')}
               </span>
-              <div className="notif-filter-chips" role="group" aria-label="Filter by read status">
-                {READ_FILTERS.map((f) => (
+              <div className="notif-filter-chips" role="group" aria-label={t('statusAria')}>
+                {readFilters.map((f) => (
                   <button
                     key={f.id}
                     type="button"
-                    className={`notif-filter-chip${readFilter === f.id ? " is-active" : ""}`}
+                    className={`notif-filter-chip${readFilter === f.id ? ' is-active' : ''}`}
                     onClick={() => setReadFilter(f.id)}
                   >
                     {f.label}
@@ -183,15 +188,13 @@ export default function Notifications() {
 
           {loading && (
             <p className="notif-loading" role="status">
-              Loading…
+              {t('loading')}
             </p>
           )}
 
           {!loading && items.length === 0 && (
             <p className="notif-muted">
-              {hasFilters
-                ? "No notifications match these filters. Try changing priority or status."
-                : "No notifications yet. Complete a submission to see results here."}
+              {hasFilters ? t('emptyFiltered') : t('emptyNone')}
             </p>
           )}
 
@@ -200,28 +203,28 @@ export default function Notifications() {
               {items.map((n) => {
                 const actionPath = notificationActionPath(n);
                 const actionLabel = notificationActionLabel(n);
-                const showAction = actionPath !== "/notifications" || n.type === "ACHIEVEMENT_UNLOCKED";
+                const showAction = actionPath !== '/notifications' || n.type === 'ACHIEVEMENT_UNLOCKED';
                 return (
-                  <li key={n.id} className={`notif-card${n.read ? " notif-read" : ""}`}>
+                  <li key={n.id} className={`notif-card${n.read ? ' notif-read' : ''}`}>
                     <div className="notif-card-head">
                       <div className="notif-card-title-row">
                         <span
                           className={`notif-importance ${importanceClass(n.importance)}`}
-                          title="Priority (low → high): Info, Reminder, Alerts, Important"
+                          title={t('importanceTitle')}
                         >
-                          {n.importance || "INFO"}
+                          {n.importance || 'INFO'}
                         </span>
                         <span className="notif-card-title">{n.title}</span>
                       </div>
                       <time className="notif-time" dateTime={n.createdAt}>
-                        {formatDate(n.createdAt)}
+                        {formatDate(n.createdAt, i18n.language)}
                       </time>
                     </div>
                     <p className="notif-body">{n.body}</p>
                     <div className="notif-actions">
                       {!n.read && (
                         <button type="button" className="notif-btn" onClick={() => handleMarkRead(n.id)}>
-                          Mark read
+                          {t('markRead')}
                         </button>
                       )}
                       {showAction && (
