@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import ProfileAccountMenu from "./ProfileAccountMenu";
+import LocaleSwitch from "./LocaleSwitch";
 import { getUnreadNotificationCount } from "../lib/notificationsApi";
 import { connectNotificationsWs } from "../lib/notificationsWs";
 import { notificationActionLabel, notificationActionPath } from "../lib/notificationDisplay";
@@ -203,6 +204,7 @@ export default function Topbar({
 
           {isAuthenticated ? (
           <div className="arena-navbar__actions">
+            <LocaleSwitch />
             <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? undefined : `Rating ${rating}`}>
               <span className="arena-navbar__elo-lbl">ELO</span>
               <span className={`arena-navbar__elo-val${isUnranked ? " arena-navbar__elo-val--unranked" : ""}`}>
@@ -270,6 +272,7 @@ export default function Topbar({
           </div>
           ) : (
             <div className="arena-navbar__actions">
+              <LocaleSwitch />
               <Link to="/login" className="arena-navbar__login" title="Log in">
                 Log in
               </Link>

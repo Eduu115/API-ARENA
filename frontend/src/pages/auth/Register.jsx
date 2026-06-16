@@ -1,9 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "../../components/ThemeToggle";
+import LocaleSwitch from "../../components/LocaleSwitch";
 import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
+import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
@@ -21,6 +24,7 @@ function getAge(isoDate) {
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 export default function Register() {
+  const { t } = useTranslation("auth");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,27 +55,27 @@ export default function Register() {
     clearError();
     setFieldError(null);
     if (turnstileOn && !turnstileToken) {
-      setFieldError("Please complete the security check.");
+      setFieldError(t("errors.turnstile"));
       return;
     }
     if (password !== confirmPassword) {
-      setFieldError("Passwords do not match.");
+      setFieldError(t("errors.passwordMismatch"));
       return;
     }
     if (password.length < 6) {
-      setFieldError("Password must be at least 6 characters long.");
+      setFieldError(t("errors.passwordMin"));
       return;
     }
     if (!dateOfBirth) {
-      setFieldError("Please enter your date of birth.");
+      setFieldError(t("errors.dobRequired"));
       return;
     }
     if (getAge(dateOfBirth) < 14) {
-      setFieldError("You must be at least 14 years old to register.");
+      setFieldError(t("errors.dobMinAge"));
       return;
     }
     if (!acceptTerms) {
-      setFieldError("You must accept the Privacy Policy and Terms to continue.");
+      setFieldError(t("errors.termsRequired"));
       return;
     }
     setSubmitting(true);
@@ -95,7 +99,7 @@ export default function Register() {
     }
   }
 
-  const displayError = fieldError || error;
+  const displayError = fieldError || (error ? translateAuthError(error, t) : null);
 
   return (
     <div className="auth-page-root challenges-page">
@@ -104,10 +108,13 @@ export default function Register() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/" className="auth-page__back" title="Back to home" aria-label="Back to home">
+          <Link to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
           </Link>
-          <ThemeToggle />
+          <div className="auth-page__toolbar-actions">
+            <LocaleSwitch />
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="auth-page__inner">
@@ -121,24 +128,22 @@ export default function Register() {
                 </span>
               </Link>
 
-              <div className="ch-page-eyebrow">// Register</div>
+              <div className="ch-page-eyebrow">{t("register.eyebrow")}</div>
               <div className="auth-title-crt">
                 <h1 className="ch-page-title">
-                  Create your
-                  <em>profile</em>
+                  {t("register.titleBefore")}
+                  <em>{t("register.titleEm")}</em>
                 </h1>
               </div>
-              <p className="ch-card-desc auth-copy-lead">
-                One account, one name, and you are in. Enter the dashboard and fight for ELO.
-              </p>
+              <p className="ch-card-desc auth-copy-lead">{t("register.lead")}</p>
 
               <div className="auth-actions">
                 <Link to="/login" className="auth-btn-outline">
-                  I already have an account
+                  {t("register.hasAccount")}
                   <ArrowRightIcon width={16} height={16} />
                 </Link>
                 <Link to="/leaderboard" className="auth-link-quiet">
-                  View leaderboard →
+                  {t("register.viewLeaderboard")}
                 </Link>
               </div>
             </div>
@@ -147,12 +152,14 @@ export default function Register() {
               <form className="auth-form" onSubmit={handleSubmit}>
                 <div className="auth-form__head">
                   <div>
-                    <div className="ch-page-eyebrow">// Details</div>
+                    <div className="ch-page-eyebrow">{t("register.formEyebrow")}</div>
                     <div className="auth-title-crt auth-title-crt--sm">
-                      <h2 className="ch-card-title">Create account</h2>
+                      <h2 className="ch-card-title">{t("register.formTitle")}</h2>
                     </div>
                   </div>
-                  <div className="auth-form__status">{submitting ? "// creating…" : "// ready"}</div>
+                  <div className="auth-form__status">
+                    {submitting ? t("register.statusSubmitting") : t("register.statusReady")}
+                  </div>
                 </div>
 
                 {displayError && (
@@ -164,7 +171,7 @@ export default function Register() {
                 <div className="auth-fields">
                   <div>
                     <label htmlFor="register-username" className="auth-label">
-                      Username
+                      {t("username")}
                     </label>
                     <input
                       id="register-username"
@@ -182,7 +189,7 @@ export default function Register() {
 
                   <div>
                     <label htmlFor="register-email" className="auth-label">
-                      Email
+                      {t("email")}
                     </label>
                     <input
                       id="register-email"
@@ -199,7 +206,7 @@ export default function Register() {
                   <div className="auth-field-grid">
                     <div>
                       <label htmlFor="register-password" className="auth-label">
-                        Password
+                        {t("password")}
                       </label>
                       <input
                         id="register-password"
@@ -215,7 +222,7 @@ export default function Register() {
                     </div>
                     <div>
                       <label htmlFor="register-confirm" className="auth-label">
-                        Confirm
+                        {t("confirm")}
                       </label>
                       <input
                         id="register-confirm"
@@ -232,7 +239,7 @@ export default function Register() {
 
                   <div>
                     <label htmlFor="register-dob" className="auth-label">
-                      Date of birth
+                      {t("dateOfBirth")}
                     </label>
                     <input
                       id="register-dob"
@@ -244,7 +251,7 @@ export default function Register() {
                       onChange={(e) => setDateOfBirth(e.target.value)}
                       required
                     />
-                    <p className="auth-help-text">You must be at least 14 years old to register.</p>
+                    <p className="auth-help-text">{t("register.dobHint")}</p>
                   </div>
 
                   <label className="auth-consent">
@@ -255,13 +262,13 @@ export default function Register() {
                       required
                     />
                     <span>
-                      I have read and accept the{" "}
+                      {t("register.consentBefore")}{" "}
                       <Link to="/privacidad" target="_blank" rel="noopener noreferrer">
-                        Privacy Policy
+                        {t("register.privacyPolicy")}
                       </Link>{" "}
-                      and the{" "}
+                      {t("register.consentMiddle")}{" "}
                       <Link to="/terminos" target="_blank" rel="noopener noreferrer">
-                        Terms of Use
+                        {t("register.termsOfUse")}
                       </Link>
                       .
                     </span>
@@ -275,12 +282,12 @@ export default function Register() {
                   className="auth-submit"
                   disabled={submitting || (turnstileOn && !turnstileToken)}
                 >
-                  {submitting ? "Creating account…" : "Sign up"}
+                  {submitting ? t("register.submitting") : t("register.submit")}
                 </button>
 
                 <div className="auth-footer-row">
-                  <p>Are you a teacher?</p>
-                  <Link to="/login">Sign in (education account) →</Link>
+                  <p>{t("teacherPrompt")}</p>
+                  <Link to="/login">{t("teacherSignIn")}</Link>
                 </div>
               </form>
             </div>

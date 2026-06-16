@@ -1,12 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
 import CustomCursor from "../../components/CustomCursor";
 import { useAuth } from "../../context/AuthContext";
-import { CONSENT_CHANGED_EVENT } from "../../lib/cookieConsent";
 import { getDocsFeedbackSummary, submitDocsFeedback } from "../../lib/docsMetricsApi";
-import { persistDocsLocale, readStoredDocsLocale } from "../../lib/docsLocale";
 import "../challenges/challenges.css";
 import "./docsHub.css";
 import { getDocByIdMap, getDocDocuments } from "./docsContent";
@@ -96,7 +95,8 @@ export default function DocsHub() {
   const navigate = useNavigate();
   const { docId } = useParams();
   const { user, isAuthenticated } = useAuth();
-  const [locale, setLocale] = useState(() => readStoredDocsLocale() || "en");
+  const { i18n } = useTranslation();
+  const locale = i18n.language?.startsWith("es") ? "es" : "en";
   const docDocuments = useMemo(() => getDocDocuments(locale), [locale]);
   const docById = useMemo(() => getDocByIdMap(locale), [locale]);
   const ui = useMemo(() => getDocsUi(locale), [locale]);
@@ -117,23 +117,6 @@ export default function DocsHub() {
     if (docIndex < 0 || docIndex >= docDocuments.length - 1) return null;
     return docDocuments[docIndex + 1];
   }, [docIndex, docDocuments]);
-
-  const handleLocaleChange = useCallback((next) => {
-    const normalized = next === "es" ? "es" : "en";
-    setLocale(normalized);
-    persistDocsLocale(normalized);
-  }, []);
-
-  useEffect(() => {
-    const onConsentChanged = () => {
-      const stored = readStoredDocsLocale();
-      if (stored) {
-        setLocale(stored);
-      }
-    };
-    window.addEventListener(CONSENT_CHANGED_EVENT, onConsentChanged);
-    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, onConsentChanged);
-  }, []);
   const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const [savingId, setSavingId] = useState(null);
   const [feedbackDone, setFeedbackDone] = useState({});
@@ -206,31 +189,6 @@ export default function DocsHub() {
                 <h1 className="ch-page-title">Arena<em>Docs</em></h1>
               </div>
               <div className="docs-hub-header-actions">
-                <div
-                  className="docs-locale-switch"
-                  role="group"
-                  aria-label={locale === "es" ? "Idioma de la documentación" : "Documentation language"}
-                >
-                  <button
-                    type="button"
-                    className={`docs-locale-btn${locale === "en" ? " is-active" : ""}`}
-                    aria-pressed={locale === "en"}
-                    onClick={() => handleLocaleChange("en")}
-                  >
-                    EN
-                  </button>
-                  <span className="docs-locale-divider" aria-hidden="true">
-                    |
-                  </span>
-                  <button
-                    type="button"
-                    className={`docs-locale-btn${locale === "es" ? " is-active" : ""}`}
-                    aria-pressed={locale === "es"}
-                    onClick={() => handleLocaleChange("es")}
-                  >
-                    ES
-                  </button>
-                </div>
                 <button className="docs-back-btn" onClick={() => navigate("/challenges")}>
                   {ui.backToChallenges}
                 </button>

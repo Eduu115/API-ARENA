@@ -62,6 +62,12 @@
   gap: 8px;
 }
 
+.auth-page__toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .auth-page__inner {
   position: relative;
   margin: 0 auto;
