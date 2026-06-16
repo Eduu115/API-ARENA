@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import * as challengesApi from '../../lib/challengesApi';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -23,11 +24,12 @@ function formatTime(seconds) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function formatUtcHint(iso) {
+function formatUtcHint(iso, locale) {
   if (!iso) return '';
   try {
     const d = new Date(iso);
-    return `${d.toLocaleString('en-GB', { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' })} UTC`;
+    const loc = locale?.startsWith('es') ? 'es-ES' : 'en-GB';
+    return `${d.toLocaleString(loc, { timeZone: 'UTC', dateStyle: 'medium', timeStyle: 'short' })} UTC`;
   } catch {
     return iso;
   }
@@ -40,12 +42,17 @@ function formatFileSize(bytes) {
 }
 
 function EndpointsTable({ data }) {
+  const { t } = useTranslation('submissions');
   const items = data?.items || (Array.isArray(data) ? data : null);
   if (!items?.length) return null;
   return (
     <table className="cs-ep-table">
       <thead>
-        <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+        <tr>
+          <th>{t('submit.tableMethod')}</th>
+          <th>{t('submit.tablePath')}</th>
+          <th>{t('submit.tableDescription')}</th>
+        </tr>
       </thead>
       <tbody>
         {items.map((ep, i) => (
@@ -76,6 +83,7 @@ function StatusCodesList({ data }) {
 }
 
 function PerformanceTable({ data }) {
+  const { t } = useTranslation('submissions');
   const items = data?.items || (Array.isArray(data) ? data : null);
   if (!items?.length) {
     if (data && typeof data === 'object' && !Array.isArray(data) && !data.items) {
@@ -98,7 +106,10 @@ function PerformanceTable({ data }) {
   return (
     <table className="cs-ep-table">
       <thead>
-        <tr><th>Metric</th><th>Threshold</th></tr>
+        <tr>
+          <th>{t('submit.tableMetric')}</th>
+          <th>{t('submit.tableThreshold')}</th>
+        </tr>
       </thead>
       <tbody>
         {items.map((p, i) => (
@@ -131,6 +142,7 @@ function GenericData({ data }) {
 }
 
 function HintsAccordion({ hints }) {
+  const { t } = useTranslation('submissions');
   const [open, setOpen] = useState({});
   if (!hints || (typeof hints === 'object' && Object.keys(hints).length === 0)) return null;
   const entries = typeof hints === 'object' ? Object.entries(hints) : [];
@@ -145,7 +157,7 @@ function HintsAccordion({ hints }) {
             onClick={() => setOpen(prev => ({ ...prev, [key]: !prev[key] }))}
           >
             <span className={`cs-hint-arrow ${open[key] ? 'open' : ''}`}>▶</span>
-            Hint {key}
+            {t('submit.hintLabel', { key })}
           </button>
           {open[key] && (
             <div className="cs-hint-body">
@@ -193,6 +205,7 @@ function Section({ title, children }) {
 }
 
 export default function ChallengeSubmit() {
+  const { t, i18n } = useTranslation(['submissions', 'challenges']);
   const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -282,7 +295,7 @@ export default function ChallengeSubmit() {
           setChallenge(data);
         }
       } catch (e) {
-        if (!cancelled) setError(e?.message || 'Error loading challenge');
+        if (!cancelled) setError(e?.message || t('challenges:detail.loadError'));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -408,18 +421,18 @@ export default function ChallengeSubmit() {
       setFile(dropped);
       setSubmitError(null);
     } else {
-      setSubmitError('Only .zip files are accepted');
+      setSubmitError(t('submissions:submit.zipOnly'));
     }
-  }, []);
+  }, [t]);
   const handleFileChange = useCallback((e) => {
     const selected = e.target.files?.[0];
     if (selected && selected.name.endsWith('.zip')) {
       setFile(selected);
       setSubmitError(null);
     } else if (selected) {
-      setSubmitError('Only .zip files are accepted');
+      setSubmitError(t('submissions:submit.zipOnly'));
     }
-  }, []);
+  }, [t]);
 
   const policyBlocks = !staffBypass && attemptPolicy && attemptPolicy.allowed === false;
   const submitBlockedByFirstTimeCheck = showFirstSubmitModal;
@@ -453,7 +466,7 @@ export default function ChallengeSubmit() {
         navigate('/submissions');
       }
     } catch (e) {
-      setSubmitError(e?.message || 'Submission failed');
+      setSubmitError(e?.message || t('submissions:submit.submitFailed'));
       setSubmitting(false);
     }
   };
@@ -468,7 +481,7 @@ export default function ChallengeSubmit() {
     return (
       <div className="challenges-page chd-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
-        <main className="chd-main"><div className="chd-loading">Loading challenge...</div></main>
+        <main className="chd-main"><div className="chd-loading">{t('challenges:detail.loading')}</div></main>
         <BottomNav /><CustomCursor />
       </div>
     );
@@ -478,9 +491,9 @@ export default function ChallengeSubmit() {
       <div className="challenges-page chd-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="chd-main">
-          <p className="chd-error">{error || 'Challenge not found'}</p>
+          <p className="chd-error">{error || t('challenges:detail.notFound')}</p>
           <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
-            Back to Challenges
+            {t('challenges:detail.backToChallenges')}
           </button>
         </main>
         <BottomNav /><CustomCursor />
@@ -503,66 +516,69 @@ export default function ChallengeSubmit() {
       <main className="chd-main">
         <div className="chd-container">
           <button type="button" className="cs-back" onClick={() => navigate(`/challenges/${id}`)}>
-            ← BACK TO CHALLENGE
+            {t('submissions:submit.backToChallenge')}
           </button>
 
           {/* Attempt limits — visible immediately */}
           <section className="cs-attempts-hero" aria-labelledby="cs-attempts-title" data-tutorial="submit-limits">
             <div className="cs-attempts-hero-head">
-              <span className="cs-attempts-eyebrow">Fair play</span>
+              <span className="cs-attempts-eyebrow">{t('submissions:submit.fairPlay')}</span>
               <h2 id="cs-attempts-title" className="cs-attempts-title">
-                Submission limits
+                {t('submissions:submit.limitsTitle')}
               </h2>
               <p className="cs-attempts-lead">
-                These rules apply to every student. They prevent XP farming and keep the leaderboard fair.
+                {t('submissions:submit.limitsLead')}
               </p>
             </div>
             {staffBypass && (
-              <p className="cs-attempts-staff">Staff account: daily limits and cooldown are waived for your submissions.</p>
+              <p className="cs-attempts-staff">{t('submissions:submit.staffNote')}</p>
             )}
             {!staffBypass && policyLoading && (
-              <p className="cs-attempts-loading">Loading your submission limits…</p>
+              <p className="cs-attempts-loading">{t('submissions:submit.limitsLoading')}</p>
             )}
             {!staffBypass && !policyLoading && attemptPolicy?.allowed && (
               <div className="cs-attempts-grid">
                 <div className="cs-attempts-card">
-                  <div className="cs-attempts-card-label">Daily submissions (UTC)</div>
+                  <div className="cs-attempts-card-label">{t('submissions:submit.dailyLabel')}</div>
                   <div className="cs-attempts-card-value" aria-live="polite">
                     <span className="cs-attempts-nums">{attemptPolicy.attemptsUsedToday}</span>
                     <span className="cs-attempts-slash">/</span>
                     <span className="cs-attempts-max">{attemptPolicy.maxAttemptsPerDay}</span>
                   </div>
                   <p className="cs-attempts-card-hint">
-                    You can start at most {attemptPolicy.maxAttemptsPerDay} runs per challenge per calendar day (UTC).
+                    {t('submissions:submit.dailyHint', { max: attemptPolicy.maxAttemptsPerDay })}
                   </p>
                 </div>
                 <div className="cs-attempts-card">
-                  <div className="cs-attempts-card-label">Cooldown between attempts</div>
+                  <div className="cs-attempts-card-label">{t('submissions:submit.cooldownLabel')}</div>
                   <div className="cs-attempts-card-value cs-attempts-cooldown-val">
                     {challenge.timeLimitMinutes ?? 60}
-                    <span className="cs-attempts-unit">min</span>
+                    <span className="cs-attempts-unit">{t('submissions:submit.minUnit')}</span>
                   </div>
                   <p className="cs-attempts-card-hint">
-                    After you start a run, you must wait this long before you can submit again for this challenge.
+                    {t('submissions:submit.cooldownHint')}
                   </p>
                 </div>
               </div>
             )}
             {!staffBypass && !policyLoading && attemptPolicy && !attemptPolicy.allowed && attemptPolicy.blockReason === 'DAILY_LIMIT' && (
               <div className="cs-attempts-block cs-attempts-block-warn" role="alert">
-                <strong>Daily limit reached</strong>
+                <strong>{t('submissions:submit.dailyBlockTitle')}</strong>
                 <span>
-                  You have used all {attemptPolicy.maxAttemptsPerDay} submissions for this challenge today (UTC).
-                  Resets at {formatUtcHint(attemptPolicy.dailyLimitResetsAtIso)}.
+                  {t('submissions:submit.dailyBlockCopy', {
+                    max: attemptPolicy.maxAttemptsPerDay,
+                    time: formatUtcHint(attemptPolicy.dailyLimitResetsAtIso, i18n.language),
+                  })}
                 </span>
               </div>
             )}
             {!staffBypass && !policyLoading && attemptPolicy && !attemptPolicy.allowed && attemptPolicy.blockReason === 'COOLDOWN' && (
               <div className="cs-attempts-block cs-attempts-block-warn" role="alert">
-                <strong>Cooldown active</strong>
+                <strong>{t('submissions:submit.cooldownBlockTitle')}</strong>
                 <span>
-                  Wait until the cooldown window ends before submitting again. Next allowed:{' '}
-                  {formatUtcHint(attemptPolicy.cooldownUntilIso)} (UTC).
+                  {t('submissions:submit.cooldownBlockCopy', {
+                    time: formatUtcHint(attemptPolicy.cooldownUntilIso, i18n.language),
+                  })}
                 </span>
               </div>
             )}
@@ -575,9 +591,9 @@ export default function ChallengeSubmit() {
                 <span className={`ch-badge ${diffBadge}`}>{challenge.difficulty}</span>
                 <span className="ch-badge ch-badge-cat">{challenge.category}</span>
                 <span className={`ch-badge ${(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'ch-badge-community' : 'ch-badge-legacy'}`}>
-                  {(challenge.origin || 'LEGACY') === 'COMMUNITY' ? 'Community' : 'Legacy'}
+                  {(challenge.origin || 'LEGACY') === 'COMMUNITY' ? t('challenges:community') : t('challenges:legacy')}
                 </span>
-                {challenge.featured && <span className="ch-badge ch-badge-new">Featured</span>}
+                {challenge.featured && <span className="ch-badge ch-badge-new">{t('challenges:featuredBadge')}</span>}
               </div>
 
               <h1 className="cs-title">{challenge.title}</h1>
@@ -586,74 +602,74 @@ export default function ChallengeSubmit() {
               <div className="cs-stats">
                 <div className="cs-stat">
                   <div className="cs-stat-val">{challenge.maxScore ?? 1000}</div>
-                  <div className="cs-stat-label">MAX SCORE</div>
+                  <div className="cs-stat-label">{t('submissions:submit.maxScore')}</div>
                 </div>
                 <div className="cs-stat">
                   <div className="cs-stat-val">{challenge.timeLimitMinutes ?? 60}</div>
-                  <div className="cs-stat-label">MINUTES</div>
+                  <div className="cs-stat-label">{t('submissions:submit.minutes')}</div>
                 </div>
                 <div className="cs-stat">
                   <div className="cs-stat-val">{challenge.timesAttempted ?? 0}</div>
-                  <div className="cs-stat-label">ATTEMPTS</div>
+                  <div className="cs-stat-label">{t('submissions:submit.attempts')}</div>
                 </div>
                 <div className="cs-stat">
                   <div className="cs-stat-val">{challenge.timesCompleted ?? 0}</div>
-                  <div className="cs-stat-label">COMPLETIONS</div>
+                  <div className="cs-stat-label">{t('submissions:submit.completions')}</div>
                 </div>
                 <div className="cs-stat">
                   <div className="cs-stat-val">{Number(challenge.averageScore ?? 0).toFixed(1)}</div>
-                  <div className="cs-stat-label">AVG SCORE</div>
+                  <div className="cs-stat-label">{t('submissions:submit.avgScore')}</div>
                 </div>
               </div>
 
-              <Section title="Description">
-                <p className="cs-desc">{challenge.description || 'No description available.'}</p>
+              <Section title={t('submissions:submit.description')}>
+                <p className="cs-desc">{challenge.description || t('submissions:submit.noDescription')}</p>
               </Section>
 
               {hasContent(challenge.requiredEndpoints) && (
-                <Section title="Required Endpoints">
+                <Section title={t('submissions:submit.requiredEndpoints')}>
                   <EndpointsTable data={challenge.requiredEndpoints} />
                 </Section>
               )}
 
               {hasContent(challenge.requiredStatusCodes) && (
-                <Section title="Required Status Codes">
+                <Section title={t('submissions:submit.requiredStatusCodes')}>
                   <StatusCodesList data={challenge.requiredStatusCodes} />
                 </Section>
               )}
 
               {hasContent(challenge.requiredHeaders) && (
-                <Section title="Required Headers">
+                <Section title={t('submissions:submit.requiredHeaders')}>
                   <GenericData data={challenge.requiredHeaders} />
                 </Section>
               )}
 
               {hasContent(challenge.testSuite) && (
-                <Section title="Test Suite">
+                <Section title={t('submissions:submit.testSuite')}>
                   <GenericData data={challenge.testSuite} />
                 </Section>
               )}
 
               {hasContent(challenge.performanceRequirements) && (
-                <Section title="Performance Requirements">
+                <Section title={t('submissions:submit.performanceRequirements')}>
                   <PerformanceTable data={challenge.performanceRequirements} />
                 </Section>
               )}
 
               {hasContent(challenge.designCriteria) && (
-                <Section title="Design Criteria">
+                <Section title={t('submissions:submit.designCriteria')}>
                   <GenericData data={challenge.designCriteria} />
                 </Section>
               )}
 
               {hasContent(challenge.hints) && (
-                <Section title="Hints">
+                <Section title={t('submissions:submit.hints')}>
                   <HintsAccordion hints={challenge.hints} />
                 </Section>
               )}
 
               {hasContent(challenge.learningObjectives) && (
-                <Section title="Learning Objectives">
+                <Section title={t('submissions:submit.learningObjectives')}>
                   <LearningObjectives data={challenge.learningObjectives} />
                 </Section>
               )}
@@ -664,9 +680,9 @@ export default function ChallengeSubmit() {
               <div className="cs-panel-inner">
               {/* Timer */}
                 <div className="cs-timer-section" data-tutorial="submit-timer">
-                  <div className="cs-timer-label">TIME REMAINING</div>
+                  <div className="cs-timer-label">{t('submissions:submit.timerLabel')}</div>
                   <div className={`cs-timer-display ${timerClass}`}>
-                    {timerExpired ? "TIME'S UP" : formatTime(secondsLeft ?? 0)}
+                    {timerExpired ? t('submissions:submit.timesUp') : formatTime(secondsLeft ?? 0)}
                   </div>
                   <div className="cs-timer-bar">
                     <div
@@ -675,7 +691,7 @@ export default function ChallengeSubmit() {
                     />
                   </div>
                   <p className="cs-timer-realtime-hint">
-                    Timer runs in real time — even if you leave this page or close the tab.
+                    {t('submissions:submit.timerHint')}
                   </p>
                 </div>
 
@@ -689,15 +705,15 @@ export default function ChallengeSubmit() {
                       onDrop={handleDrop}
                     >
                       <div className="cs-dropzone-icon">📦</div>
-                      <div className="cs-dropzone-text">Drop your .zip file here</div>
-                      <div className="cs-dropzone-hint">or click to browse</div>
+                      <div className="cs-dropzone-text">{t('submissions:submit.dropText')}</div>
+                      <div className="cs-dropzone-hint">{t('submissions:submit.dropHint')}</div>
                       <input
                         ref={fileInputRef}
                         type="file"
                         accept=".zip"
                         onChange={handleFileChange}
                         tabIndex={-1}
-                        aria-label="Choose ZIP file"
+                        aria-label={t('submissions:submit.chooseZip')}
                       />
                     </div>
                   ) : (
@@ -737,7 +753,7 @@ export default function ChallengeSubmit() {
                     }
                     onClick={handleSubmit}
                   >
-                    {submitting ? 'Submitting...' : 'Submit Solution'}
+                    {submitting ? t('submissions:submit.submitting') : t('submissions:submit.submitSolution')}
                   </button>
                   {submitError && <div className="cs-submit-status error">{submitError}</div>}
                 </div>
@@ -749,16 +765,15 @@ export default function ChallengeSubmit() {
       <BottomNav />
       <CustomCursor />
       {submitting && (
-        <div className="cs-submit-modal-backdrop" role="status" aria-live="assertive" aria-label="Submission in progress">
+        <div className="cs-submit-modal-backdrop" role="status" aria-live="assertive" aria-label={t('submissions:submit.modalLabel')}>
           <div className="cs-submit-modal">
-            <div className="cs-submit-modal-eyebrow">SUBMISSION IN PROGRESS</div>
-            <h2 className="cs-submit-modal-title">Do not close this tab or browser</h2>
+            <div className="cs-submit-modal-eyebrow">{t('submissions:submit.modalEyebrow')}</div>
+            <h2 className="cs-submit-modal-title">{t('submissions:submit.modalTitle')}</h2>
             <p className="cs-submit-modal-copy">
-              We are building and validating your project. If you interrupt the process now, your submission may fail
-              and you will need to wait for cooldown before submitting again.
+              {t('submissions:submit.modalCopy')}
             </p>
             <div className="cs-submit-modal-spinner" aria-hidden />
-            <div className="cs-submit-modal-hint">Uploading ZIP · Sandbox build · Test pipeline</div>
+            <div className="cs-submit-modal-hint">{t('submissions:submit.modalHint')}</div>
           </div>
         </div>
       )}
@@ -771,18 +786,17 @@ export default function ChallengeSubmit() {
       {showFirstSubmitModal && !policyBlocks && (
         <div className="cs-onboard-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="cs-onboard-title">
           <div className="cs-onboard-modal">
-            <div className="cs-onboard-eyebrow">FIRST SUBMISSION CHECK</div>
+            <div className="cs-onboard-eyebrow">{t('submissions:submit.onboardEyebrow')}</div>
             <h2 id="cs-onboard-title" className="cs-onboard-title">
-              Do you know how to properly prepare your project before submitting?
+              {t('submissions:submit.onboardTitle')}
             </h2>
             <p className="cs-onboard-copy">
-              Before your first submission, confirm that you understand the minimum challenge preconfiguration (ZIP structure,
-              `pom.xml` at root, required endpoints and HTTP status codes). This prevents most build errors.
+              {t('submissions:submit.onboardCopy')}
             </p>
             <ul className="cs-onboard-list">
-              <li>Your ZIP must open with `pom.xml` at the root.</li>
-              <li>Your API must start without extra manual steps.</li>
-              <li>You must cover endpoints and status codes expected by the challenge.</li>
+              <li>{t('submissions:submit.onboardLi1')}</li>
+              <li>{t('submissions:submit.onboardLi2')}</li>
+              <li>{t('submissions:submit.onboardLi3')}</li>
             </ul>
             <div className="cs-onboard-actions">
               <button
@@ -790,7 +804,7 @@ export default function ChallengeSubmit() {
                 className="cs-onboard-btn"
                 onClick={() => navigate('/docs/preconfiguracion-proyecto')}
               >
-                VIEW PRECONFIGURATION GUIDE
+                {t('submissions:submit.onboardGuide')}
               </button>
               <button
                 type="button"
@@ -800,7 +814,7 @@ export default function ChallengeSubmit() {
                   setShowFirstSubmitModal(false);
                 }}
               >
-                YES, I UNDERSTAND. CONTINUE
+                {t('submissions:submit.onboardConfirm')}
               </button>
             </div>
           </div>
