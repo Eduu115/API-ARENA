@@ -8,6 +8,7 @@ import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
 import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
+import { useLocalizedPath } from "../../routes/LocaleLayout";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
@@ -21,8 +22,9 @@ export default function Login() {
   const turnstileOn = isTurnstileEnabled();
   const { login, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const lp = useLocalizedPath();
   const location = useLocation();
-  const redirectTo = location.state?.from?.pathname || "/dashboard";
+  const redirectTo = location.state?.from?.pathname || lp("/dashboard");
 
   useEffect(() => {
     clearError();
