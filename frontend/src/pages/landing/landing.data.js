@@ -1,67 +1,83 @@
-export const HERO_STATS = [
-  { num: '2.4K', label: 'Submissions' },
-  { num: '48',   label: 'Challenges' },
-  { num: '312',  label: 'Developers' },
-];
-
 export const TERMINAL_SCORE_DIMS = [
   {
-    label: 'CORRECTNESS',
-    pct: 98, value: 980,
+    group: 'http',
+    labelKey: 'functional',
+    score: 285,
+    max: 300,
+    pct: 95,
     color: '#00D9FF',
     gradient: 'linear-gradient(90deg,#00D9FF,#00FFA3)',
   },
   {
-    label: 'PERFORMANCE',
-    pct: 85, value: 850,
+    group: 'http',
+    labelKey: 'performance',
+    score: 255,
+    max: 300,
+    pct: 85,
     color: '#B24BF3',
     gradient: 'linear-gradient(90deg,#B24BF3,#00D9FF)',
   },
   {
-    label: 'REST DESIGN',
-    pct: 94, value: 940,
+    group: 'http',
+    labelKey: 'design',
+    score: 190,
+    max: 200,
+    pct: 95,
     color: '#00FFA3',
     gradient: 'linear-gradient(90deg,#00FFA3,#00D9FF)',
   },
   {
-    label: 'AI REVIEW',
-    pct: 91, value: 910,
+    group: 'review',
+    labelKey: 'review',
+    score: 190,
+    max: 200,
+    pct: 95,
     color: '#FFB800',
     gradient: 'linear-gradient(90deg,#FFB800,#FF6B8A)',
   },
 ];
 
-export const TICKER_ITEMS = [
-  'Docker-in-Docker execution',
-  'Real-time leaderboard',
-  'AI code review',
-  'Performance benchmarks',
-  'REST design analysis',
-  'Multiplayer mode',
-  'Replay system',
-  'ELO rating',
-];
-
-export const ABOUT_METRICS = [
-  { name: 'Functional',  pct: 97, display: '97%', color: '#00D9FF', gradient: 'linear-gradient(90deg,#00D9FF,#00FFA3)' },
-  { name: 'Performance', pct: 82, display: '82%', color: '#B24BF3', gradient: 'linear-gradient(90deg,#B24BF3,#00D9FF)' },
-  { name: 'REST Design', pct: 88, display: '88%', color: '#00FFA3', gradient: 'linear-gradient(90deg,#00FFA3,#00D9FF)' },
-  { name: 'AI Review',   pct: 91, display: '91%', color: '#FFB800', gradient: 'linear-gradient(90deg,#FFB800,#FF6B8A)' },
+/** Max points per dimension (rubric caps, not example grades). */
+export const SCORE_RUBRIC_HTTP = [
   {
-    name: 'TOTAL SCORE',
-    pct: 90, display: '900',
-    color: '#ffffff',
-    gradient: 'linear-gradient(90deg,#00D9FF,#B24BF3)',
-    total: true,
+    key: 'functional',
+    points: 300,
+    max: 300,
+    pct: 100,
+    color: '#00D9FF',
+    gradient: 'linear-gradient(90deg,#00D9FF,#00FFA3)',
+  },
+  {
+    key: 'performance',
+    points: 300,
+    max: 300,
+    pct: 100,
+    color: '#B24BF3',
+    gradient: 'linear-gradient(90deg,#B24BF3,#00D9FF)',
+  },
+  {
+    key: 'design',
+    points: 200,
+    max: 200,
+    pct: 100,
+    color: '#00FFA3',
+    gradient: 'linear-gradient(90deg,#00FFA3,#00D9FF)',
   },
 ];
+
+export const SCORE_RUBRIC_REVIEW = {
+  points: 200,
+  max: 200,
+  pct: 100,
+  color: '#FFB800',
+  gradient: 'linear-gradient(90deg,#FFB800,#FF6B8A)',
+};
 
 export const ABOUT_TAGS = [
   { label: 'REST APIs',        active: true },
   { label: 'Spring Boot',      active: true },
   { label: 'Node.js',          active: false },
   { label: 'FastAPI',          active: false },
-  { label: 'Go',               active: false },
   { label: 'Any language', active: false },
 ];
 
@@ -130,35 +146,35 @@ export const FEATURES = [
 
 export const LB_ENTRIES = [
   {
-    rank: 1, initials: 'CX', name: 'CodeX_Dev',
+    rank: 1, initials: 'AR', name: 'arclight',
     score: 987, time: '04:12',
     tier: 'gold',
     avatarGradient: 'linear-gradient(135deg,#FFD700,#FF6B8A)',
     scoreColor: null,
   },
   {
-    rank: 2, initials: 'NN', name: 'n1nja_net',
+    rank: 2, initials: 'BY', name: 'byterunner',
     score: 961, time: '05:47',
     tier: 'silver',
     avatarGradient: 'linear-gradient(135deg,#00D9FF,#B24BF3)',
     scoreColor: '#B24BF3',
   },
   {
-    rank: 3, initials: 'AW', name: 'api_wizard',
+    rank: 3, initials: 'MS', name: 'm.soto',
     score: 943, time: '06:03',
     tier: 'bronze',
     avatarGradient: 'linear-gradient(135deg,#00FFA3,#00D9FF)',
     scoreColor: '#00FFA3',
   },
   {
-    rank: 4, initials: 'RG', name: 'restguru',
+    rank: 4, initials: 'JV', name: 'jvallejo',
     score: 918, time: '07:22',
     tier: null,
     avatarGradient: 'linear-gradient(135deg,#1A2040,#B24BF3)',
     scoreColor: 'var(--muted)',
   },
   {
-    rank: 5, initials: 'DK', name: 'dev_kira',
+    rank: 5, initials: 'EP', name: 'elena_p',
     score: 897, time: '08:11',
     tier: null,
     avatarGradient: 'linear-gradient(135deg,#1A2040,#FFB800)',

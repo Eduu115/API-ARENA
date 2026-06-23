@@ -1,7 +1,7 @@
-export default function MetricBar({ name, pct, display, gradient, color, total }) {
+export default function MetricBar({ name, pct, display, gradient, color, total, subnote }) {
   return (
     <div
-      className="metric-bar-item bracket-hover"
+      className={`metric-bar-item bracket-hover${subnote ? ' metric-bar-item--noted' : ''}`}
       style={total ? {
         marginTop: '2px',
         background: 'rgba(0,217,255,0.04)',
@@ -12,7 +12,8 @@ export default function MetricBar({ name, pct, display, gradient, color, total }
         className="metric-name"
         style={total ? { color: 'var(--cyan)' } : undefined}
       >
-        {name}
+        <span className="metric-name-text">{name}</span>
+        {subnote && <span className="metric-subnote">{subnote}</span>}
       </span>
       <div className="metric-track">
         <div

@@ -4,22 +4,31 @@ const BADGE_COLORS = {
   cyan: 'cyan',
   purple: 'purple',
   green: 'green',
+  warn: 'warn',
 };
 
-function BentoCell({ num, title, desc, wide, badges }) {
+function BentoCell({ num, title, desc, wide, badges, comingSoon, soonLabel, resolveBadgeLabel }) {
   return (
-    <div className={`bento-cell${wide ? ' bento-wide' : ''} bracket-hover`}>
+    <div className={`bento-cell${wide ? ' bento-wide' : ''}${comingSoon ? ' bento-cell--soon' : ''} bracket-hover`}>
       <span className="bento-icon" />
       <div className="bento-num">{num}</div>
-      <h3 className="bento-title">{title}</h3>
+      <h3 className="bento-title">
+        {title}
+        {comingSoon && soonLabel && (
+          <span className="bento-soon-badge">{soonLabel}</span>
+        )}
+      </h3>
       <p className="bento-desc">{desc}</p>
       {badges?.length > 0 && (
         <div className="bento-extra">
-          {badges.map(({ label, color }) => (
-            <span key={label} className={`mini-badge ${BADGE_COLORS[color] ?? color}`}>
-              {label}
-            </span>
-          ))}
+          {badges.map((badge) => {
+            const label = resolveBadgeLabel(badge);
+            return (
+              <span key={label} className={`mini-badge ${BADGE_COLORS[badge.color] ?? badge.color}`}>
+                {label}
+              </span>
+            );
+          })}
         </div>
       )}
     </div>
@@ -51,7 +60,14 @@ export default function FeaturesSection() {
 
       <div className="bento-grid">
         {(Array.isArray(features) ? features : []).map((feature) => (
-          <BentoCell key={feature.num} {...feature} />
+          <BentoCell
+            key={feature.num}
+            {...feature}
+            soonLabel={feature.comingSoon ? t('features.comingSoon') : undefined}
+            resolveBadgeLabel={(badge) =>
+              badge.labelKey ? t(`features.${badge.labelKey}`) : badge.label
+            }
+          />
         ))}
       </div>
     </section>
