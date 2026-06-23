@@ -183,20 +183,29 @@ export default function ChallengeDetail() {
             <button type="button" className="chd-btn-back" onClick={() => navigate('/challenges')}>
               {t('detail.backToChallengesArrow')}
             </button>
-            <button
-              type="button"
-              className={`chd-btn-start${policyBlocks ? ' chd-btn-start--blocked' : ''}`}
-              onClick={handleStartChallenge}
-              disabled={isAuthenticated && !staffBypass && policyLoading}
-            >
-              {policyLoading && isAuthenticated && !staffBypass
-                ? t('detail.checkingLimits')
-                : policyBlocks
-                  ? attemptPolicy?.blockReason === 'DAILY_LIMIT'
-                    ? t('detail.dailyLimitBtn')
-                    : t('detail.cooldownBtn')
-                  : t('detail.startChallenge')}
-            </button>
+            <div className="chd-top-actions-end">
+              <button
+                type="button"
+                className="chd-btn-leaderboard"
+                onClick={() => navigate(`/leaderboard?challenge=${challenge.id}`)}
+              >
+                {t('detail.viewLeaderboard')}
+              </button>
+              <button
+                type="button"
+                className={`chd-btn-start${policyBlocks ? ' chd-btn-start--blocked' : ''}`}
+                onClick={handleStartChallenge}
+                disabled={isAuthenticated && !staffBypass && policyLoading}
+              >
+                {policyLoading && isAuthenticated && !staffBypass
+                  ? t('detail.checkingLimits')
+                  : policyBlocks
+                    ? attemptPolicy?.blockReason === 'DAILY_LIMIT'
+                      ? t('detail.dailyLimitBtn')
+                      : t('detail.cooldownBtn')
+                    : t('detail.startChallenge')}
+              </button>
+            </div>
           </div>
 
           <header className="chd-hero" data-tutorial="challenge-detail-hero">

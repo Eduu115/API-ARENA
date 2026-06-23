@@ -8,25 +8,30 @@
   "hero": {
     "eyebrow": "Temporada 01 · Builds reales · Tests reales",
     "title1": "Code",
-    "title2": "más rápido.",
-    "title3": "Gana.",
-    "sub": "La primera arena competitiva de <1>APIs</1>.<br/>Envía tu código. Pasa los tests. <2>Domina el ranking.</2><br/>Sin simulaciones. Sin ejercicios solo teóricos. Código real en condiciones de producción.",
+    "title2": "Faster.",
+    "title3": "Win.",
+    "sub": "La primera arena competitiva de <1>APIs</1>.<br/>Envía tu proyecto Spring Boot. Pasa los tests. <2>Domina el ranking.</2><br/>Sin simulaciones. Sin ejercicios solo teóricos. Código real en condiciones de producción.",
     "ctaPrimary": "▶ Empezar a competir",
     "ctaSecondary": "Ver challenges",
     "stats": [
-      { "label": "Entregas" },
-      { "label": "Challenges" },
-      { "label": "Desarrolladores" }
+      { "label": "Challenges activos" },
+      { "label": "Puntuación máx." },
+      { "value": "HTTP real", "label": "Tests caja negra" }
     ]
+  },
+  "stacks": {
+    "aria": "Stacks tecnológicos soportados",
+    "note": "Solo Spring Boot por ahora — más runtimes en camino."
   },
   "ticker": {
     "items": [
+      "Spring Boot · disponible ya",
       "Ejecución Docker-in-Docker",
       "Leaderboard en tiempo real",
-      "Revisión de código con IA",
+      "Revisión heurística de código",
       "Benchmarks de rendimiento",
       "Análisis de diseño REST",
-      "Modo multijugador",
+      "Multijugador (próximamente)",
       "Sistema de replay",
       "Rating ELO"
     ]
@@ -36,21 +41,23 @@
     "title1": "No es un",
     "title2": "curso.",
     "titleEm": "Es una batalla.",
-    "desc": "Construye una API que resuelva el challenge. Envía tu código.<br/>Nuestro sistema la ejecuta en un sandbox aislado y la <1>somete a tests automáticos</1>, análisis de rendimiento, validación REST y revisión con IA.<br/><br/>Tu nota entra en el ranking. <2>En tiempo real.</2><br/>Mejora, vuelve a enviar y sube posiciones.",
+    "desc": "Construye una API que resuelva el challenge. Envía tu código.<br/>Nuestro sistema la ejecuta en un sandbox aislado y la <1>somete a tests automáticos</1>, análisis de rendimiento, validación REST y una pasada de revisión heurística (revisión LLM próximamente).<br/><br/>Tu nota entra en el ranking. <2>En tiempo real.</2><br/>Mejora, vuelve a enviar y sube posiciones.",
+    "metricsHeading": "Rúbrica de puntuación (máx. 1.000 por entrega)",
+    "metricsExampleNote": "Las barras muestran los techos de puntos — no una nota de ejemplo. Los tests HTTP y la revisión de código se puntúan en bloques separados.",
+    "scoreHttpGroup": "HTTP · tests en sandbox",
+    "scoreHttpCap": "máx. 800",
+    "scoreHttpItems": ["Tests funcionales", "Rendimiento", "Diseño REST"],
+    "scoreReviewGroup": "Revisión de código",
+    "scoreReviewCap": "máx. 200",
+    "scoreReviewItem": "Rúbrica heurística",
+    "scoreReviewMode": "Heurística automática hoy · revisión LLM próximamente",
+    "scoreEquation": "800 + 200 =",
     "tags": [
-      { "label": "APIs REST", "active": true },
+      { "label": "APIs REST", "active": false },
       { "label": "Spring Boot", "active": true },
-      { "label": "Node.js", "active": false },
-      { "label": "FastAPI", "active": false },
-      { "label": "Go", "active": false },
-      { "label": "Cualquier lenguaje", "active": false }
-    ],
-    "metrics": [
-      "Funcional",
-      "Rendimiento",
-      "Diseño REST",
-      "Revisión IA",
-      "NOTA TOTAL"
+      { "label": "Node.js", "comingSoon": true },
+      { "label": "FastAPI", "comingSoon": true },
+      { "label": "Cualquier lenguaje", "comingSoon": true }
     ]
   },
   "how": {
@@ -68,13 +75,13 @@
         "num": "02",
         "title1": "Construye",
         "title2": "tu API",
-        "desc": "Usa el lenguaje y framework que prefieras. Spring Boot, Node, Go, Rust. Dockerízala y sube tu código."
+        "desc": "Entrega una API Spring Boot hoy (más stacks próximamente). Dockerízala, empaqueta el ZIP y súbelo a la arena."
       },
       {
         "num": "03",
         "title1": "Sandbox",
         "title2": "y tests",
-        "desc": "Tu API corre en un contenedor aislado. Tests automáticos, análisis de rendimiento a 1000 RPS, validación REST y revisión con IA."
+        "desc": "Tu API corre en un contenedor aislado. Tests automáticos, análisis de rendimiento a 1000 RPS, validación REST y revisión heurística (revisión LLM próximamente)."
       },
       {
         "num": "04",
@@ -89,6 +96,9 @@
     "title1": "Funciones que",
     "title2": "importan.",
     "aside": "Evaluación multidimensional. No solo importa que tu API funcione — importa qué tan bien lo hace.",
+    "comingSoon": "Próximamente",
+    "heuristicLive": "Heurística activa",
+    "llmReviewSoon": "Revisión LLM pronto",
     "items": [
       {
         "num": "01",
@@ -104,7 +114,11 @@
       {
         "num": "02",
         "title": "Revisión IA",
-        "desc": "La IA analiza tu código: arquitectura, seguridad y buenas prácticas. Feedback real, no genérico."
+        "desc": "Una rúbrica heurística puntúa estructura, señales de seguridad e higiene de API en cada entrega (0–200 hoy). La revisión con proveedor LLM llegará pronto.",
+        "badges": [
+          { "labelKey": "heuristicLive", "color": "warn" },
+          { "labelKey": "llmReviewSoon", "color": "purple" }
+        ]
       },
       {
         "num": "03",
@@ -114,7 +128,8 @@
       {
         "num": "04",
         "title": "Multijugador",
-        "desc": "Compite 1v1 en tiempo real. Mismo challenge, mismo reloj. Gana la mejor nota."
+        "desc": "Duelos 1v1 en tiempo real en el roadmap — mismo challenge, mismo reloj, gana la mejor nota.",
+        "comingSoon": true
       },
       {
         "num": "05",
@@ -130,7 +145,7 @@
     ]
   },
   "leaderboard": {
-    "live": "Leaderboard en vivo",
+    "live": "EN VIVO",
     "colRank": "Pos.",
     "colPlayer": "Jugador",
     "colScore": "Nota",
@@ -149,7 +164,7 @@
     "sub": "Acceso anticipado abierto · Sin tarjeta de crédito",
     "placeholder": "tu@email.com",
     "button": "Unirme a la arena",
-    "fine": "312 desarrolladores ya en la arena · Gratis durante la alpha"
+    "fine": "Gratis durante la alpha · Sin tarjeta de crédito"
   },
   "footer": {
     "tagline": "© 2025 · Compite. Construye. Conquista.",
@@ -171,7 +186,7 @@
   "terminal": {
     "title": "apiarena · entrega #2847",
     "live": "EN VIVO",
-    "totalScore": "★ NOTA TOTAL: 920 · POS. #3 ↑2",
+    "totalScore": "★ TOTAL: 920 / 1.000 · POS. #3 ↑2",
     "lines": [
       { "type": "cmd", "text": "arena submit ./my-api --challenge crud-master" },
       { "type": "output", "text": "→ Compilando imagen Docker..." },
@@ -184,15 +199,13 @@
       { "type": "success", "text": "[OK] Media: 12ms - P99: 28ms" },
       { "type": "output", "text": "→ Análisis de diseño REST..." },
       { "type": "info", "text": "[i] 2 sugerencias - Nota: 94/100" },
-      { "type": "output", "text": "→ Revisión de código con IA..." },
-      { "type": "success", "text": "[OK] Revisión Claude: excelente" },
+      { "type": "output", "text": "→ Revisión heurística de código..." },
+      { "type": "success", "text": "[OK] Rúbrica OK · 190/200 (LLM pronto)" },
       { "type": "sep" }
     ],
-    "scoreDims": [
-      "CORRECCIÓN",
-      "RENDIMIENTO",
-      "DISEÑO REST",
-      "REVISIÓN IA"
-    ]
+    "scoreHttpGroup": "// tests HTTP",
+    "scoreReviewGroup": "// revisión código",
+    "scoreReviewItem": "Rúbrica heurística",
+    "scoreItems": ["Funcional", "Rendimiento", "Diseño REST"]
   }
 }

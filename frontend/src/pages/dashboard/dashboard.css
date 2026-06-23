@@ -381,84 +381,135 @@
   font-variant-numeric: tabular-nums;
 }
 
-.dashboard-page .ws-hero {
+.dashboard-page .db-page-sub {
+  color: var(--text);
+  opacity: 0.88;
+  font-size: 14px;
+}
+
+.dashboard-page .ws-hero,
+.dashboard-page .ws-hero--flat {
   margin-bottom: 18px;
   border: 1px solid var(--dim);
   background: var(--bg2);
-  box-shadow: none;
+  box-shadow: inset 3px 0 0 rgba(0, 229, 255, 0.45);
 }
 .dashboard-page .ws-hero-inner {
-  padding: 16px 20px 14px;
+  padding: 18px 20px 16px;
   gap: 14px;
 }
 .dashboard-page .ws-hero-top {
-  gap: 16px 20px;
+  gap: 16px 24px;
 }
 .dashboard-page .ws-hero-week {
   flex: 0 1 260px;
   min-width: 200px;
 }
 .dashboard-page .ws-hero-goals-band {
-  padding-top: 12px;
+  padding-top: 14px;
+  border-top-color: var(--dim);
 }
 .dashboard-page .ws-goals--wide {
-  gap: 10px 18px;
+  gap: 12px 20px;
 }
 .dashboard-page .ws-goals--wide .ws-progress-row--lg .ws-progress-track {
-  height: 7px;
+  height: 6px;
 }
 .dashboard-page .ws-hero-eyebrow {
-  margin-bottom: 6px;
-  font-size: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--warn);
 }
 .dashboard-page .ws-hero-count-block {
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 6px;
 }
 .dashboard-page .ws-hero-flame {
-  font-size: 36px;
+  font-size: 32px;
+  text-shadow: none;
+  opacity: 0.95;
 }
 .dashboard-page .ws-hero-num {
-  font-size: clamp(36px, 5vw, 52px);
+  font-size: clamp(40px, 5vw, 56px);
   letter-spacing: -2px;
+  color: var(--warn);
 }
 .dashboard-page .ws-hero-unit {
-  font-size: 11px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--text);
+  opacity: 0.9;
 }
 .dashboard-page .ws-hero-badge {
   margin-bottom: 6px;
-  padding: 3px 8px;
-  font-size: 9px;
-}
-.dashboard-page .ws-hero-status {
-  margin-bottom: 4px;
-  font-size: 11px;
-}
-.dashboard-page .ws-hero-best {
+  padding: 3px 9px;
   font-size: 10px;
 }
+.dashboard-page .ws-hero-status {
+  margin-bottom: 2px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 36ch;
+}
+.dashboard-page .ws-hero-best {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
 .dashboard-page .ws-hero-side-label {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dashboard-page .ws-progress-row--lg .ws-progress-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dashboard-page .ws-progress-row--lg .ws-progress-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+}
+.dashboard-page .ws-goals-or-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+}
+.dashboard-page .db-streak-days--lg .db-streak-day-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
 }
 .dashboard-page .db-streak-dot--lg {
-  min-height: 20px;
+  min-height: 22px;
 }
 .dashboard-page .db-streak-grid--lg {
-  gap: 4px;
+  gap: 5px;
 }
 .dashboard-page .ws-progress-row--lg .ws-progress-track {
   height: 5px;
 }
 .dashboard-page .ws-hero--secured {
-  border-color: rgba(255, 184, 0, 0.28);
+  border-color: rgba(255, 184, 0, 0.32);
   box-shadow: inset 3px 0 0 var(--warn);
 }
 .dashboard-page .ws-hero:not(.ws-hero--secured) {
   box-shadow: inset 3px 0 0 rgba(0, 229, 255, 0.45);
 }
 .dashboard-page .ws-hero-glow {
-  opacity: 0.35;
-  background: radial-gradient(ellipse at 20% 50%, rgba(255, 184, 0, 0.12) 0%, transparent 55%);
+  display: none;
 }
 
 .dashboard-page .db-panel--feed {
@@ -798,15 +849,32 @@ button.db-activity-row {
   padding: 16px 18px;
 }
 
-/* ── Hero streak (dashboard + profile) ── */
-.ws-hero {
+/* ── Hero streak (dashboard) — flat panel, same language as db-panel ── */
+.ws-hero--flat {
+  position: relative;
+  margin-bottom: 28px;
+  border: 1px solid var(--dim);
+  background: var(--bg2);
+  box-shadow: inset 3px 0 0 rgba(0, 229, 255, 0.45);
+  overflow: hidden;
+}
+.ws-hero--flat.ws-hero--secured {
+  border-color: rgba(255, 184, 0, 0.32);
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+.ws-hero--flat .ws-hero-flame {
+  text-shadow: none;
+}
+
+/* Legacy hero gradient (profile/other if used later) */
+.ws-hero:not(.ws-hero--flat) {
   position: relative;
   margin-bottom: 28px;
   border: 1px solid rgba(255, 184, 0, 0.35);
   background: linear-gradient(135deg, rgba(255, 184, 0, 0.1) 0%, rgba(8, 11, 30, 0.95) 42%, rgba(0, 229, 255, 0.06) 100%);
   overflow: hidden;
 }
-.ws-hero--secured {
+.ws-hero:not(.ws-hero--flat).ws-hero--secured {
   border-color: rgba(255, 184, 0, 0.55);
   box-shadow: 0 0 32px rgba(255, 184, 0, 0.12);
 }

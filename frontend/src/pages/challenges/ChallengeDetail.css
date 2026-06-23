@@ -33,6 +33,35 @@
   margin-bottom: 32px;
 }
 
+.chd-top-actions-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chd-btn-leaderboard {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--purple);
+  border: 1px solid rgba(178, 75, 243, 0.45);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.chd-btn-leaderboard:hover {
+  background: rgba(178, 75, 243, 0.1);
+  border-color: var(--purple);
+  color: var(--text);
+}
+
 .chd-btn-back {
   display: inline-flex;
   align-items: center;
@@ -58,7 +87,7 @@
   align-items: center;
   padding: 10px 24px;
   background: linear-gradient(135deg, var(--cyan), var(--green));
-  color: var(--bg);
+  color: #080b1e;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -66,12 +95,13 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.5px;
-  transition: opacity 0.2s, transform 0.15s;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 
 .chd-btn-start:hover {
-  opacity: 0.9;
+  opacity: 1;
   transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0, 217, 255, 0.35);
 }
 
 .chd-btn-start:disabled {

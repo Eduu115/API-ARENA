@@ -143,10 +143,9 @@ export default function WeeklyStreakPanel({ streak, variant = 'default' }) {
   if (hero) {
     return (
       <section
-        className={`ws-hero${streak.qualifiedThisWeek ? ' ws-hero--secured' : ''}`}
+        className={`ws-hero ws-hero--flat${streak.qualifiedThisWeek ? ' ws-hero--secured' : ''}`}
         aria-label={t('streak.panelAria')}
       >
-        <div className="ws-hero-glow" aria-hidden />
         <div className="ws-hero-inner">
           <div className="ws-hero-top">
             <div className="ws-hero-main">
@@ -178,7 +177,7 @@ export default function WeeklyStreakPanel({ streak, variant = 'default' }) {
           </div>
 
           <div className="ws-hero-goals-band">
-            <StreakGoals streak={streak} large layout="wide" t={t} />
+            <StreakGoals streak={streak} large layout="wide" showHint={false} t={t} />
           </div>
         </div>
       </section>

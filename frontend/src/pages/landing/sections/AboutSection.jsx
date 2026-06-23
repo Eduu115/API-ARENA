@@ -1,11 +1,9 @@
 import { Trans, useTranslation } from 'react-i18next';
-import MetricBar from '../../../components/landing/MetricBar';
-import { ABOUT_METRICS } from '../landing.data';
+import AboutScoreRubric from '../../../components/landing/AboutScoreRubric';
+import LandingStackPanel from '../../../components/landing/LandingStackPanel';
 
 export default function AboutSection() {
   const { t } = useTranslation('landing');
-  const metricNames = t('about.metrics', { returnObjects: true });
-  const tags = t('about.tags', { returnObjects: true });
 
   return (
     <section className="section">
@@ -20,26 +18,12 @@ export default function AboutSection() {
           <p className="about-desc">
             <Trans i18nKey="about.desc" t={t} components={{ 1: <strong />, 2: <strong /> }} />
           </p>
-          <div className="about-tags">
-            {(Array.isArray(tags) ? tags : []).map(({ label, active }) => (
-              <span key={label} className={`tag${active ? ' active' : ''}`}>
-                {label}
-              </span>
-            ))}
-          </div>
+          <LandingStackPanel variant="about" />
         </div>
 
         <div className="about-right">
           <div className="about-corner-text">API</div>
-          <div className="metrics-stack">
-            {ABOUT_METRICS.map((metric, i) => (
-              <MetricBar
-                key={metric.name}
-                {...metric}
-                name={Array.isArray(metricNames) ? metricNames[i] : metric.name}
-              />
-            ))}
-          </div>
+          <AboutScoreRubric />
         </div>
       </div>
     </section>

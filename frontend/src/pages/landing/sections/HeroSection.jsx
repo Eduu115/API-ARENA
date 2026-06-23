@@ -1,13 +1,51 @@
+import { useEffect, useState } from 'react';
 import LocaleLink from '../../../components/LocaleLink';
 import { Trans, useTranslation } from 'react-i18next';
 import TerminalWindow from '../../../components/landing/TerminalWindow';
 import AlphaBadge from '../../../components/landing/AlphaBadge';
 import ArrowRightIcon from '../../../components/icons/ArrowRightIcon';
-import { HERO_STATS } from '../landing.data';
+import { getChallenges } from '../../../lib/challengesApi';
+import LandingStackPanel from '../../../components/landing/LandingStackPanel';
 
 export default function HeroSection() {
   const { t } = useTranslation('landing');
   const statLabels = t('hero.stats', { returnObjects: true });
+  const [activeChallengeCount, setActiveChallengeCount] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getChallenges();
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : [];
+        setActiveChallengeCount(list.filter((c) => c.isActive !== false).length);
+      } catch {
+        if (!cancelled) setActiveChallengeCount(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const stats = [
+    {
+      num: activeChallengeCount != null ? String(activeChallengeCount) : '—',
+      text: false,
+      label: statLabels?.[0]?.label ?? '',
+    },
+    {
+      num: '1000',
+      text: false,
+      label: statLabels?.[1]?.label ?? '',
+    },
+    {
+      num: statLabels?.[2]?.value ?? 'Real HTTP',
+      text: true,
+      label: statLabels?.[2]?.label ?? '',
+    },
+  ];
 
   return (
     <section className="hero">
@@ -31,6 +69,8 @@ export default function HeroSection() {
           <Trans i18nKey="hero.sub" t={t} components={{ 1: <strong />, 2: <strong /> }} />
         </p>
 
+        <LandingStackPanel variant="hero" />
+
         <div className="hero-actions" data-tutorial="landing-hero-cta">
           <LocaleLink to="/register" className="btn-primary">{t('hero.ctaPrimary')}</LocaleLink>
           <LocaleLink to="/challenges" className="btn-secondary">
@@ -40,10 +80,10 @@ export default function HeroSection() {
         </div>
 
         <div className="hero-stats">
-          {HERO_STATS.map(({ num }, i) => (
+          {stats.map(({ num, text, label }, i) => (
             <div key={i} className="stat-item">
-              <span className="stat-num">{num}</span>
-              <span className="stat-label">{statLabels[i]?.label ?? ''}</span>
+              <span className={`stat-num${text ? ' stat-num--text' : ''}`}>{num}</span>
+              <span className="stat-label">{label}</span>
             </div>
           ))}
         </div>

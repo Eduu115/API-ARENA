@@ -78,15 +78,10 @@ export default function Dashboard() {
   const dateLocale = i18n.language?.startsWith('es') ? 'es-ES' : 'en-US';
 
   const statStrip = useMemo(() => ([
-    {
-      label: t('stats.elo'),
-      value: unranked ? t('unranked') : elo.toLocaleString(),
-      color: unranked ? 'var(--purple)' : 'var(--warn)',
-    },
     { label: t('stats.level'), value: String(level), color: 'var(--cyan)' },
     { label: t('stats.completed'), value: String(solved), color: 'var(--green)' },
     { label: t('stats.xp'), value: xp.toLocaleString(), color: 'var(--purple)' },
-  ]), [elo, level, solved, xp, unranked, t]);
+  ]), [level, solved, xp, t]);
 
   const featuredList = useMemo(() => featured.slice(0, 6), [featured]);
   const tourSteps = useTourSteps('dashboard');
@@ -194,9 +189,6 @@ export default function Dashboard() {
               </div>
               <LocaleLink to="/challenges" className="db-panel-action">{t('featured.catalog')}</LocaleLink>
             </div>
-            <p className="db-panel-lead">
-              {t('featured.lead')}
-            </p>
 
             <div className="db-table-header">
               <div style={{ width: 6, flexShrink: 0 }} />

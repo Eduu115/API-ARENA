@@ -15,10 +15,29 @@ function TerminalLine({ line }) {
   return <div className={cls}>{line.text}</div>;
 }
 
+function ScoreRow({ label, score, max, pct, color, gradient }) {
+  return (
+    <div className="score-row">
+      <span className="score-label">{label}</span>
+      <div className="score-bar-bg">
+        <div
+          className="score-bar-fill"
+          style={{ width: `${pct}%`, background: gradient }}
+        />
+      </div>
+      <span className="score-val" style={{ color }}>
+        {score}<span className="score-val-max">/{max}</span>
+      </span>
+    </div>
+  );
+}
+
 export default function TerminalWindow() {
   const { t } = useTranslation('landing');
   const lines = t('terminal.lines', { returnObjects: true });
-  const scoreLabels = t('terminal.scoreDims', { returnObjects: true });
+  const scoreLabels = t('terminal.scoreItems', { returnObjects: true });
+  const httpRows = TERMINAL_SCORE_DIMS.filter((r) => r.group === 'http');
+  const reviewRow = TERMINAL_SCORE_DIMS.find((r) => r.group === 'review');
 
   return (
     <div className="terminal-window">
@@ -39,20 +58,23 @@ export default function TerminalWindow() {
         ))}
 
         <div className="score-panel">
-          {TERMINAL_SCORE_DIMS.map(({ pct, value, color, gradient }, i) => (
-            <div key={i} className="score-row">
-              <span className="score-label">
-                {Array.isArray(scoreLabels) ? scoreLabels[i] : ''}
-              </span>
-              <div className="score-bar-bg">
-                <div
-                  className="score-bar-fill"
-                  style={{ width: `${pct}%`, background: gradient }}
-                />
-              </div>
-              <span className="score-val" style={{ color }}>{value}</span>
-            </div>
+          <div className="score-panel-group-label">{t('terminal.scoreHttpGroup')}</div>
+          {httpRows.map((row, i) => (
+            <ScoreRow
+              key={row.labelKey}
+              {...row}
+              label={Array.isArray(scoreLabels) ? scoreLabels[i] : row.labelKey}
+            />
           ))}
+          <div className="score-panel-group-label score-panel-group-label--review">
+            {t('terminal.scoreReviewGroup')}
+          </div>
+          {reviewRow && (
+            <ScoreRow
+              {...reviewRow}
+              label={t('terminal.scoreReviewItem')}
+            />
+          )}
         </div>
 
         <div className="t-line" style={{ marginTop: '12px' }}>

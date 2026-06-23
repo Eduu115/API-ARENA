@@ -109,36 +109,68 @@
 }
 
 .lb-controls {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 16px;
   margin-bottom: 12px;
+  min-height: 45px;
 }
 
+.lb-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  transition: padding-right 0.2s ease;
+}
+
+.lb-controls--challenge .lb-tabs {
+  padding-right: calc(min(320px, 42vw) + 16px);
+}
+
+/* Absolute so showing the filter never grows the control row */
 .lb-challenge-filter {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: min(100%, 320px);
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  width: min(320px, 42vw);
+  max-width: 320px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.lb-controls--challenge .lb-challenge-filter {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .lb-challenge-label {
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
   color: var(--muted);
+  white-space: nowrap;
 }
 
 .lb-challenge-select {
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-mono);
   font-size: 13px;
   color: var(--text);
   background: var(--bg2);
   border: 1px solid var(--dim);
-  padding: 10px 14px;
+  padding: 9px 14px;
   cursor: none;
   appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
@@ -156,12 +188,18 @@
   outline: none;
 }
 
+.lb-mode-hint-slot {
+  min-height: 40px;
+  margin-bottom: 20px;
+}
+
 .lb-mode-hint {
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--muted);
-  margin: 0 0 20px;
+  margin: 0;
   letter-spacing: 0.3px;
+  line-height: 1.45;
 }
 
 .lb-mode-hint strong {
@@ -340,6 +378,40 @@
 }
 
 @media (max-width: 768px) {
+  .lb-controls {
+    flex-wrap: wrap;
+    align-items: stretch;
+    min-height: 0;
+    gap: 12px;
+  }
+
+  .lb-tabs {
+    flex: 1 1 100%;
+    width: 100%;
+    padding-right: 0 !important;
+  }
+
+  .lb-challenge-filter {
+    position: static;
+    width: 100%;
+    max-width: none;
+    flex: 1 1 100%;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    margin: 0;
+    transition: max-height 0.2s ease, opacity 0.15s ease, visibility 0.15s ease;
+  }
+
+  .lb-controls--challenge .lb-challenge-filter {
+    max-height: 48px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
   .lb-hero-strip { grid-template-columns: 1fr; }
   .lb-podium-1 { order: -1; }
   .lb-table-head, .lb-row { grid-template-columns: 40px 1fr 80px; }

@@ -10,23 +10,28 @@
     "title1": "Code",
     "title2": "Faster.",
     "title3": "Win.",
-    "sub": "The first competitive arena for <1>APIs</1>.<br/>Submit your code. Pass the tests. <2>Own the leaderboard.</2><br/>No simulations. No theory-only drills. Real code in real production conditions.",
+    "sub": "The first competitive arena for <1>APIs</1>.<br/>Submit your Spring Boot project. Pass the tests. <2>Own the leaderboard.</2><br/>No simulations. No theory-only drills. Real code in real production conditions.",
     "ctaPrimary": "▶ Start Competing",
     "ctaSecondary": "View challenges",
     "stats": [
-      { "label": "Submissions" },
-      { "label": "Challenges" },
-      { "label": "Developers" }
+      { "label": "Active challenges" },
+      { "label": "Max score" },
+      { "value": "Real HTTP", "label": "Black-box tests" }
     ]
+  },
+  "stacks": {
+    "aria": "Supported technology stacks",
+    "note": "Spring Boot only for now — more runtimes on the way."
   },
   "ticker": {
     "items": [
+      "Spring Boot · available now",
       "Docker-in-Docker execution",
       "Real-time leaderboard",
-      "AI code review",
+      "Heuristic code review",
       "Performance benchmarks",
       "REST design analysis",
-      "Multiplayer mode",
+      "Multiplayer (coming soon)",
       "Replay system",
       "ELO rating"
     ]
@@ -36,21 +41,23 @@
     "title1": "Not a",
     "title2": "course.",
     "titleEm": "It is a battle.",
-    "desc": "Build an API that solves the challenge. Submit your code.<br/>Our system runs it in an isolated sandbox and <1>stress-tests it with automated checks</1>, performance analysis, REST validation, and AI review.<br/><br/>Your score enters the leaderboard. <2>In real time.</2><br/>Improve, resubmit, and climb positions.",
+    "desc": "Build an API that solves the challenge. Submit your code.<br/>Our system runs it in an isolated sandbox and <1>stress-tests it with automated checks</1>, performance analysis, REST validation, and a heuristic code-review pass (LLM review coming soon).<br/><br/>Your score enters the leaderboard. <2>In real time.</2><br/>Improve, resubmit, and climb positions.",
+    "metricsHeading": "Score rubric (max 1,000 per submission)",
+    "metricsExampleNote": "Bars show point caps — not a sample grade. HTTP tests and code review are scored in separate blocks.",
+    "scoreHttpGroup": "HTTP · sandbox tests",
+    "scoreHttpCap": "max 800",
+    "scoreHttpItems": ["Functional tests", "Performance", "REST design"],
+    "scoreReviewGroup": "Code review",
+    "scoreReviewCap": "max 200",
+    "scoreReviewItem": "Heuristic rubric",
+    "scoreReviewMode": "Automated heuristics today · LLM review coming soon",
+    "scoreEquation": "800 + 200 =",
     "tags": [
-      { "label": "REST APIs", "active": true },
+      { "label": "REST APIs", "active": false },
       { "label": "Spring Boot", "active": true },
-      { "label": "Node.js", "active": false },
-      { "label": "FastAPI", "active": false },
-      { "label": "Go", "active": false },
-      { "label": "Any language", "active": false }
-    ],
-    "metrics": [
-      "Functional",
-      "Performance",
-      "REST Design",
-      "AI Review",
-      "TOTAL SCORE"
+      { "label": "Node.js", "comingSoon": true },
+      { "label": "FastAPI", "comingSoon": true },
+      { "label": "Any language", "comingSoon": true }
     ]
   },
   "how": {
@@ -68,13 +75,13 @@
         "num": "02",
         "title1": "Build",
         "title2": "your API",
-        "desc": "Use the language and framework you prefer. Spring Boot, Node, Go, Rust. Dockerize it and upload your code."
+        "desc": "Ship a Spring Boot API today (more stacks coming soon). Dockerize it, zip your project, and upload it to the arena."
       },
       {
         "num": "03",
         "title1": "Sandbox",
         "title2": "& Tests",
-        "desc": "Your API runs in an isolated container. Automated tests, performance analysis with 1000 RPS, REST validation, and AI review."
+        "desc": "Your API runs in an isolated container. Automated tests, performance analysis with 1000 RPS, REST validation, and heuristic code review (LLM review coming soon)."
       },
       {
         "num": "04",
@@ -89,6 +96,9 @@
     "title1": "Features that",
     "title2": "matter.",
     "aside": "Multidimensional evaluation. It is not only whether your API works - it is how well it works.",
+    "comingSoon": "Coming soon",
+    "heuristicLive": "Heuristic live",
+    "llmReviewSoon": "LLM review soon",
     "items": [
       {
         "num": "01",
@@ -104,7 +114,11 @@
       {
         "num": "02",
         "title": "AI Review",
-        "desc": "AI analyzes your code: architecture, security, and best practices. Real feedback, not generic output."
+        "desc": "A heuristic rubric scores structure, safety signals, and API hygiene on every submission (0–200 today). Provider-based LLM review is coming soon.",
+        "badges": [
+          { "labelKey": "heuristicLive", "color": "warn" },
+          { "labelKey": "llmReviewSoon", "color": "purple" }
+        ]
       },
       {
         "num": "03",
@@ -114,7 +128,8 @@
       {
         "num": "04",
         "title": "Multiplayer",
-        "desc": "Compete 1v1 in real time. Same challenge, same clock. Best score wins."
+        "desc": "1v1 real-time duels on the roadmap — same challenge, same clock, best score wins.",
+        "comingSoon": true
       },
       {
         "num": "05",
@@ -130,7 +145,7 @@
     ]
   },
   "leaderboard": {
-    "live": "Live Leaderboard",
+    "live": "LIVE",
     "colRank": "Rank",
     "colPlayer": "Player",
     "colScore": "Score",
@@ -149,7 +164,7 @@
     "sub": "Early access open · No credit card required",
     "placeholder": "your@email.com",
     "button": "Join Arena",
-    "fine": "312 developers already in the arena · Free during alpha"
+    "fine": "Free during alpha · No credit card required"
   },
   "footer": {
     "tagline": "© 2025 · Compete. Build. Conquer.",
@@ -171,7 +186,7 @@
   "terminal": {
     "title": "apiarena · submission #2847",
     "live": "LIVE",
-    "totalScore": "★ TOTAL SCORE: 920 · RANK #3 ↑2",
+    "totalScore": "★ TOTAL: 920 / 1,000 · RANK #3 ↑2",
     "lines": [
       { "type": "cmd", "text": "arena submit ./my-api --challenge crud-master" },
       { "type": "output", "text": "→ Building Docker image..." },
@@ -184,15 +199,13 @@
       { "type": "success", "text": "[OK] Avg: 12ms - P99: 28ms" },
       { "type": "output", "text": "→ REST design analysis..." },
       { "type": "info", "text": "[i] 2 suggestions - Score: 94/100" },
-      { "type": "output", "text": "→ AI code review..." },
-      { "type": "success", "text": "[OK] Claude review: excellent" },
+      { "type": "output", "text": "→ Heuristic code review..." },
+      { "type": "success", "text": "[OK] Rubric pass · 190/200 (LLM review soon)" },
       { "type": "sep" }
     ],
-    "scoreDims": [
-      "CORRECTNESS",
-      "PERFORMANCE",
-      "REST DESIGN",
-      "AI REVIEW"
-    ]
+    "scoreHttpGroup": "// HTTP tests",
+    "scoreReviewGroup": "// code review",
+    "scoreReviewItem": "Heuristic rubric",
+    "scoreItems": ["Functional", "Performance", "REST design"]
   }
 }
