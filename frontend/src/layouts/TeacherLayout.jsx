@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLocalizedPath } from "../routes/LocaleLayout";
 import "./auth-layout.css";
 
 function isTeacherRole(role) {
@@ -12,6 +13,7 @@ function isTeacherRole(role) {
 export default function TeacherLayout() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
+  const lp = useLocalizedPath();
 
   if (isLoading) {
     return (
@@ -22,11 +24,11 @@ export default function TeacherLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to={lp("/login")} replace state={{ from: location }} />;
   }
 
   if (!isTeacherRole(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={lp("/dashboard")} replace />;
   }
 
   return <Outlet />;

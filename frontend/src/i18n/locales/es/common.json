@@ -1,0 +1,111 @@
+{
+  "locale": {
+    "switchLabel": "Idioma de la interfaz",
+    "en": "EN",
+    "es": "ES"
+  },
+  "notFound": {
+    "pageTitle": "Página no encontrada",
+    "eyebrow": "// 404",
+    "titleBefore": "Perdido en la",
+    "titleEm": "arena",
+    "description": "La página que buscas no existe o ha cambiado de ruta.",
+    "backHome": "Volver al inicio",
+    "browseChallenges": "Ver challenges"
+  },
+  "cookieConsent": {
+    "dialogLabel": "Preferencias de cookies y almacenamiento",
+    "eyebrow": "// Privacidad",
+    "title": "Almacenamiento y cookies",
+    "intro": "API Arena usa almacenamiento de primer partido estrictamente necesario para el servicio (sesión de login, temporizador del challenge en curso). No usamos seguimiento de terceros, publicidad ni analytics. El almacenamiento opcional guarda tus preferencias (tema, tutoriales, idioma). Consulta nuestra",
+    "cookiePolicy": "Política de cookies",
+    "necessaryName": "Estrictamente necesarias",
+    "necessaryDesc": "Sesión de login, temporizador del challenge, control de pestaña. Siempre activas.",
+    "preferencesName": "Preferencias",
+    "preferencesDesc": "Recuerda tu tema, tutoriales y elección de idioma.",
+    "analyticsName": "Analytics",
+    "analyticsDesc": "Uso anónimo del producto para mejorar la plataforma (actualmente inactivo).",
+    "customize": "Personalizar",
+    "essentialOnly": "Solo esenciales",
+    "acceptAll": "Aceptar todo",
+    "saveChoices": "Guardar elección"
+  },
+  "sessionBanner": {
+    "title": "Challenge en curso",
+    "timer": "Temporizador:",
+    "timesUp": "TIEMPO AGOTADO",
+    "continue": "Continuar",
+    "abandon": "Abandonar"
+  },
+  "modals": {
+    "login": {
+      "title": "Iniciar sesión",
+      "description": "Necesitas iniciar sesión para empezar este challenge. Si aún no tienes cuenta, puedes registrarte.",
+      "signIn": "Iniciar sesión",
+      "createAccount": "Crear cuenta",
+      "cancel": "Cancelar"
+    },
+    "loginChallenge": {
+      "title": "Inicia sesión para competir",
+      "description": "Necesitas iniciar sesión para empezar este challenge y enviar tu solución. Si aún no tienes cuenta, puedes registrarte en un momento."
+    },
+    "attemptBlock": {
+      "fairPlay": "Juego limpio",
+      "challengePolicy": "Política del challenge",
+      "dailyTitle": "Límite diario alcanzado",
+      "cooldownTitle": "Cooldown activo",
+      "challengeLabel": "Challenge:",
+      "timeUntilReset": "Tiempo hasta el reset diario",
+      "timeRemaining": "Tiempo restante",
+      "dailyCopy": "Has usado todas las entregas permitidas para este challenge hoy (UTC). Podrás iniciar una nueva partida tras el reset indicado abajo.",
+      "cooldownCopy": "Debes esperar antes de iniciar otra partida en este challenge. Tiempo restante hasta el siguiente intento permitido:",
+      "exactUtc": "Instante exacto (UTC):",
+      "backToChallenge": "Volver al challenge",
+      "close": "Cerrar",
+      "backToOverview": "Volver a la ficha del challenge"
+    }
+  },
+  "topbar": {
+    "logoAlt": "Logo de API Arena",
+    "mainNav": "Principal",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "ratingTitle": "Rating {{rating}}",
+    "unranked": "SIN CLASIFICAR",
+    "unrankedTooltip": "Estás sin clasificar hasta completar {{min}} challenges.",
+    "unrankedRemaining": "Quedan {{count}} para clasificarte.",
+    "eloDocsAria": "Abrir documentación del sistema ELO",
+    "notifications": "Notificaciones",
+    "lightMode": "Cambiar a modo claro",
+    "darkMode": "Cambiar a modo oscuro",
+    "profileMenu": "Menú de perfil",
+    "profile": "Perfil",
+    "pushEyebrow": "Notificación",
+    "dismissNotification": "Descartar notificación"
+  },
+  "accountMenu": {
+    "closeBackdrop": "Cerrar menú de cuenta",
+    "title": "Menú de cuenta",
+    "close": "Cerrar",
+    "active": "ACTIVO",
+    "eloDash": "• ELO —",
+    "eloRating": "• ELO {{rating}}",
+    "combatStats": "STATS DE COMBATE",
+    "combatStatsAria": "Estadísticas de combate",
+    "level": "NIVEL",
+    "solved": "RESUELTOS",
+    "xp": "XP",
+    "tests": "TESTS",
+    "goToProfile": "Ir al perfil",
+    "switchAccount": "Cambiar cuenta",
+    "logOut": "Cerrar sesión"
+  },
+  "multiplayer": {
+    "pageTitle": "Multijugador",
+    "eyebrow": "// Próximamente",
+    "titleBefore": "Arena",
+    "titleEm": "en vivo",
+    "description": "Salas en tiempo real y challenges cara a cara están en el roadmap. De momento, afila tus habilidades en challenges en solitario.",
+    "browseChallenges": "Ver challenges"
+  }
+}

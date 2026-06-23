@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import {
   badgeStyleClass,
   formatGlobalRankPosition,
@@ -6,9 +7,10 @@ import {
 } from '../lib/profileBadges';
 import './profileBadges.css';
 
-function formatDate(iso) {
+function formatDate(iso, locale) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', {
+  const loc = locale?.startsWith('es') ? 'es-ES' : 'en-US';
+  return new Date(iso).toLocaleDateString(loc, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -26,6 +28,7 @@ export default function ProfileBadges({
   profile = null,
   className = '',
 }) {
+  const { t, i18n } = useTranslation('profile');
   const rank = globalRank?.rank;
   const tierLabel = globalRankTierLabel(rank);
   const tierClass = globalRankTierClass(rank);
@@ -45,7 +48,7 @@ export default function ProfileBadges({
     <div className={`profile-badges${className ? ` ${className}` : ''}`}>
       {tierLabel && tierClass && (
         <>
-          <span className={`profile-badge profile-badge--mandatory ${tierClass}`} title="Always shown when in top 25">
+          <span className={`profile-badge profile-badge--mandatory ${tierClass}`} title={t('badges.mandatoryTitle')}>
             {tierLabel}
           </span>
           {rankPosition && (
@@ -67,7 +70,7 @@ export default function ProfileBadges({
       )}
       {showSince && profile?.createdAt && (
         <span className="profile-badge profile-badge--since">
-          Since {formatDate(profile.createdAt)}
+          {t('badges.since', { date: formatDate(profile.createdAt, i18n.language) })}
         </span>
       )}
     </div>

@@ -1,10 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import * as challengesApi from "../../lib/challengesApi";
+import { usePageMeta } from "../../lib/usePageMeta";
 
 const DIFFICULTIES = ["EASY", "MEDIUM", "HARD", "EXPERT"];
 
 export default function CreateChallenge() {
+  const { t } = useTranslation("teacher");
+
+  usePageMeta({ title: t("createChallenge.pageTitle"), path: "/teacher/challenges/new" });
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [serverError, setServerError] = useState(null);
@@ -53,7 +58,7 @@ export default function CreateChallenge() {
           setForm((f) => ({ ...f, categoryId: f.categoryId ?? list?.[0]?.id ?? null }));
         }
       } catch (e) {
-        if (!cancelled) setServerError(e?.message || "Error loading categories");
+        if (!cancelled) setServerError(e?.message || t("createChallenge.errorLoadCategories"));
       } finally {
         if (!cancelled) setLoadingCats(false);
       }
@@ -79,7 +84,7 @@ export default function CreateChallenge() {
     if (!trimmed) return {};
     const parsed = JSON.parse(trimmed);
     if (parsed === null || Array.isArray(parsed) || typeof parsed !== "object") {
-      throw new Error("Must be a JSON object (e.g. {})");
+      throw new Error(t("createChallenge.jsonMustBeObject"));
     }
     return parsed;
   };
@@ -91,7 +96,7 @@ export default function CreateChallenge() {
       parseJsonOrThrow(value);
       setJsonErrors((prev) => ({ ...prev, [key]: null }));
     } catch (err) {
-      setJsonErrors((prev) => ({ ...prev, [key]: err?.message || "Invalid JSON" }));
+      setJsonErrors((prev) => ({ ...prev, [key]: err?.message || t("createChallenge.invalidJson") }));
     }
   };
 
@@ -195,7 +200,7 @@ export default function CreateChallenge() {
     try {
       await doCreate({ publish: false });
     } catch (e2) {
-      setServerError(e2?.message || "Error saving draft");
+      setServerError(e2?.message || t("createChallenge.errorSaveDraft"));
     } finally {
       setSaving(false);
     }
@@ -208,7 +213,7 @@ export default function CreateChallenge() {
     try {
       await doCreate({ publish: true });
     } catch (e2) {
-      setServerError(e2?.message || "Error publishing challenge");
+      setServerError(e2?.message || t("createChallenge.errorPublish"));
     } finally {
       setPublishing(false);
     }
@@ -254,7 +259,7 @@ export default function CreateChallenge() {
     const errors = {};
     for (const e of form.requiredEndpoints || []) {
       const hasAny = String(e?.method || "").trim() || String(e?.path || "").trim() || String(e?.description || "").trim();
-      if (hasAny && !String(e?.path || "").trim()) errors.requiredEndpoints = "There are endpoints with method but no path";
+      if (hasAny && !String(e?.path || "").trim()) errors.requiredEndpoints = t("createChallenge.endpointPathMissing");
     }
     setAdvancedErrors(errors);
   };
@@ -268,9 +273,9 @@ export default function CreateChallenge() {
     <TeacherLayout>
       <div className="ch-page-header" style={{ marginBottom: 20 }}>
         <div>
-          <div className="ch-page-eyebrow">// Builder</div>
+          <div className="ch-page-eyebrow">{t("createChallenge.eyebrow")}</div>
           <h1 className="ch-page-title">
-            Create<em>Challenge</em>
+            {t("createChallenge.titleBefore")}<em>{t("createChallenge.titleEm")}</em>
           </h1>
         </div>
       </div>
@@ -278,9 +283,9 @@ export default function CreateChallenge() {
       <div className="db-content-grid" style={{ gridTemplateColumns: "1fr 340px" }}>
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">Details</div>
+            <div className="db-panel-title">{t("createChallenge.details")}</div>
             <div className="db-panel-action" style={{ cursor: "default" }}>
-              {savedId ? `#${savedId}` : "// draft/publish"}
+              {savedId ? `#${savedId}` : t("createChallenge.draftPublish")}
             </div>
           </div>
 
@@ -293,21 +298,21 @@ export default function CreateChallenge() {
               )}
               <div>
                 <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                  Title
+                  {t("createChallenge.title")}
                 </div>
                 <input
                   className="ch-search-input"
                   style={{ width: "100%" }}
                   value={form.title}
                   onChange={on("title")}
-                  placeholder="Ex: Basic rate limiter"
+                  placeholder={t("createChallenge.titlePlaceholder")}
                 />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Category
+                    {t("createChallenge.category")}
                   </div>
                   <select
                     className="ch-sort-select"
@@ -316,9 +321,9 @@ export default function CreateChallenge() {
                     disabled={loadingCats}
                   >
                     {loadingCats ? (
-                      <option value="">LOADING...</option>
+                      <option value="">{t("createChallenge.loadingCategories")}</option>
                     ) : categories.length === 0 ? (
-                      <option value="">NO CATEGORIES</option>
+                      <option value="">{t("createChallenge.noCategories")}</option>
                     ) : (
                       categories.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -330,7 +335,7 @@ export default function CreateChallenge() {
                 </div>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Difficulty
+                    {t("createChallenge.difficulty")}
                   </div>
                   <select className="ch-sort-select" value={form.difficulty} onChange={on("difficulty")}>
                     {DIFFICULTIES.map((d) => (
@@ -345,7 +350,7 @@ export default function CreateChallenge() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Time (min)
+                    {t("createChallenge.timeMin")}
                   </div>
                   <input
                     className="ch-search-input"
@@ -359,7 +364,7 @@ export default function CreateChallenge() {
                 </div>
                 <div>
                   <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                    Max score
+                    {t("createChallenge.maxScore")}
                   </div>
                   <input
                     className="ch-search-input"
@@ -375,17 +380,17 @@ export default function CreateChallenge() {
 
               <div>
                 <div className="ch-sidebar-label" style={{ paddingTop: 0 }}>
-                  Description
+                  {t("createChallenge.description")}
                 </div>
                 <textarea
                   className="ch-search-input"
                   style={{ width: "100%", minHeight: 140, resize: "vertical", paddingTop: 10 }}
                   value={form.description}
                   onChange={on("description")}
-                  placeholder="Define objective, requirements, expected endpoints, etc."
+                  placeholder={t("createChallenge.descriptionPlaceholder")}
                 />
                 <div style={{ marginTop: 8, fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  Minimum 20 characters. {form.description.trim().length}/20
+                  {t("createChallenge.descriptionMin", { count: form.description.trim().length })}
                 </div>
               </div>
 
@@ -400,9 +405,9 @@ export default function CreateChallenge() {
                     if (e.key === "Enter" || e.key === " ") setShowAdvanced((s) => !s);
                   }}
                 >
-                  <div className="db-panel-title">Advanced</div>
+                  <div className="db-panel-title">{t("createChallenge.advanced")}</div>
                   <div className="db-panel-action" style={{ cursor: "pointer" }}>
-                    {showAdvanced ? "Hide" : "Show"} →
+                    {showAdvanced ? t("createChallenge.hide") : t("createChallenge.show")} →
                   </div>
                 </div>
 
@@ -433,20 +438,20 @@ export default function CreateChallenge() {
                             placeholder="/users/{id}"
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("requiredEndpoints", idx)}>
-                            Remove
+                            {t("createChallenge.remove")}
                           </button>
                           <div style={{ gridColumn: "1 / -1" }}>
                             <input
                               className="ch-search-input"
                               value={row.description}
                               onChange={(e) => setListItem("requiredEndpoints", idx, { description: e.target.value })}
-                              placeholder="Description (optional)"
+                              placeholder={t("createChallenge.descriptionOptional")}
                             />
                           </div>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("requiredEndpoints", itemDefaults("requiredEndpoints"))}>
-                        Add endpoint
+                        {t("createChallenge.addEndpoint")}
                       </button>
                     </div>
 
@@ -469,20 +474,20 @@ export default function CreateChallenge() {
                             placeholder="GET /users"
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("requiredStatusCodes", idx)}>
-                            Remove
+                            {t("createChallenge.remove")}
                           </button>
                           <div style={{ gridColumn: "1 / -1" }}>
                             <input
                               className="ch-search-input"
                               value={row.description}
                               onChange={(e) => setListItem("requiredStatusCodes", idx, { description: e.target.value })}
-                              placeholder="Description (optional)"
+                              placeholder={t("createChallenge.descriptionOptional")}
                             />
                           </div>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("requiredStatusCodes", itemDefaults("requiredStatusCodes"))}>
-                        Add status code
+                        {t("createChallenge.addStatusCode")}
                       </button>
                     </div>
 
@@ -510,15 +515,15 @@ export default function CreateChallenge() {
                               checked={!!row.required}
                               onChange={(e) => setListItem("requiredHeaders", idx, { required: e.target.checked })}
                             />
-                            Required
+                            {t("createChallenge.required")}
                           </label>
                           <button type="button" className="db-btn" onClick={() => removeListItem("requiredHeaders", idx)}>
-                            Remove
+                            {t("createChallenge.remove")}
                           </button>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("requiredHeaders", itemDefaults("requiredHeaders"))}>
-                        Add header
+                        {t("createChallenge.addHeader")}
                       </button>
                     </div>
 
@@ -537,21 +542,21 @@ export default function CreateChallenge() {
                               className="ch-search-input"
                               value={row.name}
                               onChange={(e) => setListItem(block.key, idx, { name: e.target.value })}
-                              placeholder="key"
+                              placeholder={t("createChallenge.keyPlaceholder")}
                             />
                             <input
                               className="ch-search-input"
                               value={row.value}
                               onChange={(e) => setListItem(block.key, idx, { value: e.target.value })}
-                              placeholder="value"
+                              placeholder={t("createChallenge.valuePlaceholder")}
                             />
                             <button type="button" className="db-btn" onClick={() => removeListItem(block.key, idx)}>
-                              Remove
+                              {t("createChallenge.remove")}
                             </button>
                           </div>
                         ))}
                         <button type="button" className="db-btn" onClick={() => addListItem(block.key, itemDefaults(block.key))}>
-                          Add field
+                          {t("createChallenge.addField")}
                         </button>
                       </div>
                     ))}
@@ -566,15 +571,15 @@ export default function CreateChallenge() {
                             className="ch-search-input"
                             value={row.text}
                             onChange={(e) => setListItem("hints", idx, { text: e.target.value })}
-                            placeholder="Hint..."
+                            placeholder={t("createChallenge.hintPlaceholder")}
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("hints", idx)}>
-                            Remove
+                            {t("createChallenge.remove")}
                           </button>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("hints", itemDefaults("hints"))}>
-                        Add hint
+                        {t("createChallenge.addHint")}
                       </button>
                     </div>
 
@@ -588,15 +593,15 @@ export default function CreateChallenge() {
                             className="ch-search-input"
                             value={row.text}
                             onChange={(e) => setListItem("learningObjectives", idx, { text: e.target.value })}
-                            placeholder="Objective..."
+                            placeholder={t("createChallenge.objectivePlaceholder")}
                           />
                           <button type="button" className="db-btn" onClick={() => removeListItem("learningObjectives", idx)}>
-                            Remove
+                            {t("createChallenge.remove")}
                           </button>
                         </div>
                       ))}
                       <button type="button" className="db-btn" onClick={() => addListItem("learningObjectives", itemDefaults("learningObjectives"))}>
-                        Add objective
+                        {t("createChallenge.addObjective")}
                       </button>
                     </div>
 
@@ -609,7 +614,7 @@ export default function CreateChallenge() {
                         style={{ width: "100%", minHeight: 90, resize: "vertical", paddingTop: 10 }}
                         value={form.solutionExplanation}
                         onChange={on("solutionExplanation")}
-                        placeholder="Solution explanation (optional)"
+                        placeholder={t("createChallenge.solutionPlaceholder")}
                       />
                     </div>
 
@@ -624,9 +629,9 @@ export default function CreateChallenge() {
                           if (e.key === "Enter" || e.key === " ") setShowRawJson((s) => !s);
                         }}
                       >
-                        <div className="db-panel-title">JSON (optional)</div>
+                        <div className="db-panel-title">{t("createChallenge.jsonOptional")}</div>
                         <div className="db-panel-action" style={{ cursor: "pointer" }}>
-                          {showRawJson ? "Hide" : "Show"} →
+                          {showRawJson ? t("createChallenge.hide") : t("createChallenge.show")} →
                         </div>
                       </div>
 
@@ -680,7 +685,7 @@ export default function CreateChallenge() {
                   disabled={!isValid || saving || publishing}
                   onClick={handleSaveDraft}
                 >
-                  {saving ? "Saving..." : "Save draft"}
+                  {saving ? t("createChallenge.saving") : t("createChallenge.saveDraft")}
                 </button>
                 <button
                   type="button"
@@ -688,10 +693,10 @@ export default function CreateChallenge() {
                   disabled={!isValid || saving || publishing}
                   onClick={handlePublish}
                 >
-                  {publishing ? "Publishing..." : "Publish"}
+                  {publishing ? t("createChallenge.publishing") : t("createChallenge.publish")}
                 </button>
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  {isValid ? "// ready" : "// missing data"}
+                  {isValid ? t("createChallenge.ready") : t("createChallenge.missingData")}
                 </div>
               </div>
             </div>
@@ -700,11 +705,11 @@ export default function CreateChallenge() {
 
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">Preview</div>
+            <div className="db-panel-title">{t("createChallenge.preview")}</div>
           </div>
           <div style={{ padding: "16px 18px" }}>
             <div style={{ fontFamily: "var(--font-display)", fontWeight: 900, textTransform: "uppercase", fontSize: 20, color: "var(--white)" }}>
-              {form.title.trim() || "Challenge title"}
+              {form.title.trim() || t("createChallenge.previewTitle")}
             </div>
             <div style={{ marginTop: 10, display: "flex", gap: 8, flexWrap: "wrap" }}>
               <span className="ch-badge ch-badge-cat">
@@ -712,13 +717,13 @@ export default function CreateChallenge() {
               </span>
               <span className="ch-badge ch-badge-new">{form.difficulty}</span>
               <span className="ch-badge ch-badge-cat">{form.timeLimitMinutes}m</span>
-              <span className="ch-badge ch-badge-cat">{form.maxScore} pts</span>
+              <span className="ch-badge ch-badge-cat">{form.maxScore} {t("createChallenge.pts")}</span>
               <span className="ch-badge ch-badge-cat" style={{ color: savedId ? "var(--green)" : "var(--warn)" }}>
-              {savedId ? "SAVED" : "NOT SAVED"}
+              {savedId ? t("createChallenge.saved") : t("createChallenge.notSaved")}
               </span>
             </div>
             <div style={{ marginTop: 14, fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", lineHeight: 1.8 }}>
-              {form.description.trim() || "Description preview appears here…"}
+              {form.description.trim() || t("createChallenge.previewDescription")}
             </div>
           </div>
         </div>

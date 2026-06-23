@@ -14,5 +14,7 @@ public class UpdateProfileRequest {
     private String githubUsername;
     /** When set, updates student opt-in for new-challenge alert emails. */
     private Boolean newChallengeEmailAlerts;
+    /** UI locale preference: `en` or `es`. */
+    private String preferredLocale;
     
 }

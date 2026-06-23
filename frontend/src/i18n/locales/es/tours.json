@@ -1,0 +1,80 @@
+{
+  "chrome": {
+    "eyebrow": "Tour rápido",
+    "welcome": "Bienvenido",
+    "hint": "Puedes saltarlo cuando quieras. Las guías completas están en <1>Docs</1> — guarda lo que necesites.",
+    "skip": "Saltar tour",
+    "openDocs": "Abrir Docs",
+    "next": "Siguiente",
+    "done": "Listo",
+    "stepPill": "{{current}} / {{total}}"
+  },
+  "dashboard": {
+    "steps": [
+      {
+        "title": "Navegación principal",
+        "body": "Dashboard, Challenges, Submissions, Friends, Leaderboard, Docs y Replay están a un clic. Alertas y tu perfil, a la derecha."
+      },
+      {
+        "title": "Tus estadísticas",
+        "body": "La barra lateral muestra nivel, XP, challenges resueltos y desglose por categoría. Un vistazo rápido a tu progreso."
+      },
+      {
+        "title": "Continúa desde aquí",
+        "body": "Los challenges destacados aparecen en el área principal. Elige uno, lee el briefing y arranca la partida con temporizador cuando estés listo."
+      }
+    ]
+  },
+  "challenges": {
+    "steps": [
+      {
+        "title": "Navegación del catálogo",
+        "body": "La misma barra superior en todas las páginas. Docs enlaza guías de ZIP, ELO y resolución de problemas."
+      },
+      {
+        "title": "Filtra la lista",
+        "body": "Busca por nombre, filtra por dificultad y estado, y ordena. Tu resumen de progreso está al pie de la barra lateral."
+      },
+      {
+        "title": "Abre un challenge",
+        "body": "Haz clic en una tarjeta para ver el briefing público. Tras iniciar sesión, Start Challenge abre las specs completas y el espacio de entrega con timer y ZIP."
+      }
+    ]
+  },
+  "challengeDetail": {
+    "steps": [
+      {
+        "title": "Inicia una partida",
+        "body": "Back vuelve al catálogo. Start Challenge inicia la sesión con temporizador: verás endpoints, tests y la pantalla de ZIP. Los límites (cooldown, tope diario) aplican a estudiantes."
+      },
+      {
+        "title": "Lee el briefing",
+        "body": "Aquí ves dificultad, categoría, tiempo límite y XP. El contrato detallado solo aparece al empezar — esta página es la vista general."
+      },
+      {
+        "title": "Requisitos completos",
+        "body": "Endpoints, códigos de estado, rendimiento e hints se desbloquean en el espacio de entrega. Si eres nuevo, lee Docs → First Steps y Preconfigure Project antes de empezar."
+      }
+    ]
+  },
+  "challengeSubmit": {
+    "steps": [
+      {
+        "title": "Reglas de juego limpio",
+        "body": "Los intentos diarios (UTC) y el cooldown entre partidas mantienen el ranking justo. Las cuentas staff no tienen estos límites."
+      },
+      {
+        "title": "Temporizador de sesión",
+        "body": "El timer sigue corriendo si cambias de pestaña. Cuando se agota el tiempo no puedes entregar — planifica antes de empezar."
+      },
+      {
+        "title": "Sube tu proyecto",
+        "body": "Solo archivos .zip. Pon pom.xml en la raíz del archivo, incluye tu API Spring (o compatible) y evita secretos. Arrastra o haz clic en la zona."
+      },
+      {
+        "title": "Envía al pipeline",
+        "body": "Submit Solution sube tu ZIP al pipeline de build y tests. Espera a que termine — cerrar la pestaña puede fallar la entrega. Ver Docs → Submitting a Challenge para el checklist completo."
+      }
+    ]
+  }
+}

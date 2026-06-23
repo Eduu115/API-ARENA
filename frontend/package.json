@@ -16,8 +16,10 @@
     "@fontsource/share-tech-mono": "^5.2.7",
     "@fontsource/space-grotesk": "^5.2.10",
     "@fontsource/syne": "^5.2.7",
+    "i18next": "^26.3.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-i18next": "^17.0.8",
     "react-router-dom": "^7.13.0"
   },
   "devDependencies": {

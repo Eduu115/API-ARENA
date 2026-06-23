@@ -1,7 +1,9 @@
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import { LEGAL_DOCS, LEGAL_NAV, CONTROLLER } from "./legalContent";
 import { usePageMeta } from "../../lib/usePageMeta";
 import { openConsentManager } from "../../lib/cookieConsent";
+import { stripLocalePathname } from "../../lib/localeRoutes";
+import LocaleLink from "../../components/LocaleLink";
 import "../challenges/challenges.css";
 import "./legal.css";
 
@@ -27,7 +29,7 @@ function renderBlock(block, i) {
 
 export default function LegalPage() {
   const location = useLocation();
-  const slug = location.pathname.replace(/^\/+/, "").split("/")[0];
+  const slug = stripLocalePathname(location.pathname).replace(/^\/+/, "").split("/")[0];
   const doc = LEGAL_DOCS[slug];
 
   usePageMeta({
@@ -36,7 +38,7 @@ export default function LegalPage() {
     path: `/${slug}`,
   });
 
-  if (!doc) return <Navigate to="/privacidad" replace />;
+  if (!doc) return <Navigate to="../privacidad" replace />;
 
   return (
     <div className="legal-root challenges-page">
@@ -44,23 +46,23 @@ export default function LegalPage() {
 
       <div className="legal-shell">
         <header className="legal-head">
-          <Link to="/" className="legal-brand">
+          <LocaleLink to="/" className="legal-brand">
             <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="32" height="32" />
             <span className="ch-logo-text">
               <span className="ch-api">API</span>
               <span className="ch-arena">Arena</span>
             </span>
-          </Link>
+          </LocaleLink>
 
           <nav className="legal-nav" aria-label="Documentos legales">
             {LEGAL_NAV.map((item) => (
-              <Link
+              <LocaleLink
                 key={item.slug}
                 to={`/${item.slug}`}
                 className={`legal-nav-item${item.slug === slug ? " is-active" : ""}`}
               >
                 {item.label}
-              </Link>
+              </LocaleLink>
             ))}
           </nav>
         </header>
@@ -90,9 +92,9 @@ export default function LegalPage() {
               Última actualización: {CONTROLLER.lastUpdated}. Para cualquier consulta:{" "}
               <a href={`mailto:${CONTROLLER.email}`}>{CONTROLLER.email}</a>.
             </p>
-            <Link to="/" className="legal-back">
+            <LocaleLink to="/" className="legal-back">
               ← Volver al inicio
-            </Link>
+            </LocaleLink>
           </footer>
         </article>
       </div>

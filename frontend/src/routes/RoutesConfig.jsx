@@ -33,39 +33,38 @@ import Notifications from "../pages/Notifications";
 import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
 import BrowsingTimeTracker from "../components/BrowsingTimeTracker";
 import CookieConsent from "../components/CookieConsent";
+import LocaleLayout, { RootLocaleRedirect } from "./LocaleLayout";
 
-export default function RoutesConfig() {
+function AppRoutes() {
   return (
-    <BrowserRouter>
-      <BrowsingTimeTracker />
-      <ActiveChallengeSessionBanner />
-      <CookieConsent />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+    <>
+      <Route path="/" element={<RootLocaleRedirect />} />
+      <Route path="/:locale" element={<LocaleLayout />}>
+        <Route index element={<Landing />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route path="verify-email" element={<VerifyEmail />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="reset-password" element={<ResetPassword />} />
 
-        <Route path="/challenges" element={<Challenges />} />
-        <Route path="/challenges/:id" element={<ChallengeDetail />} />
+        <Route path="challenges" element={<Challenges />} />
+        <Route path="challenges/:id" element={<ChallengeDetail />} />
 
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/multiplayer" element={<MultiplayerHub />} />
-        <Route path="/docs" element={<DocsHub />} />
-        <Route path="/docs/:docId" element={<DocsHub />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="multiplayer" element={<MultiplayerHub />} />
+        <Route path="docs" element={<DocsHub />} />
+        <Route path="docs/:docId" element={<DocsHub />} />
 
-        <Route path="/aviso-legal" element={<LegalPage />} />
-        <Route path="/privacidad" element={<LegalPage />} />
-        <Route path="/cookies" element={<LegalPage />} />
-        <Route path="/terminos" element={<LegalPage />} />
+        <Route path="aviso-legal" element={<LegalPage />} />
+        <Route path="privacidad" element={<LegalPage />} />
+        <Route path="cookies" element={<LegalPage />} />
+        <Route path="terminos" element={<LegalPage />} />
 
         <Route element={<ProtectedLayout />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="perfil" element={<Profile />} />
           <Route path="perfil/achievements" element={<ProfileAchievements />} />
-          <Route path="profile" element={<Navigate to="/perfil" replace />} />
+          <Route path="profile" element={<Navigate to="../perfil" replace />} />
           <Route path="submissions" element={<MySubmissions />} />
           <Route path="submissions/:id" element={<SubmissionDetail />} />
           <Route path="submissions/:id/results" element={<SubmissionResults />} />
@@ -84,7 +83,18 @@ export default function RoutesConfig() {
         </Route>
 
         <Route path="*" element={<NotFound />} />
-      </Routes>
+      </Route>
+    </>
+  );
+}
+
+export default function RoutesConfig() {
+  return (
+    <BrowserRouter>
+      <BrowsingTimeTracker />
+      <ActiveChallengeSessionBanner />
+      <CookieConsent />
+      <Routes>{AppRoutes()}</Routes>
     </BrowserRouter>
   );
 }

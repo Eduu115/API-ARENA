@@ -1,5 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import LocaleLink from '../../components/LocaleLink';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
+import { stripLocalePathname } from '../../lib/localeRoutes';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
@@ -12,7 +16,9 @@ import TutorialTour from '../../components/tutorial/TutorialTour';
 import WeeklyStreakPanel from '../../components/WeeklyStreakPanel';
 import * as authApi from '../../lib/authApi';
 import { isUnranked, challengesUntilRanked } from '../../lib/rankConstants';
-import { DOCS_PATHS, TOUR_DASHBOARD } from '../../tutorial/tourDefinitions';
+import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
+import { useTourSteps } from '../../lib/tourSteps';
+import { usePageMeta } from '../../lib/usePageMeta';
 
 const DIFF_COLOR = { easy: 'var(--green)', medium: 'var(--warn)', hard: 'var(--red)', expert: 'var(--purple)' };
 
@@ -23,13 +29,17 @@ const SIDEBAR_LINKS = [
 ];
 
 export default function Dashboard() {
-  const navigate = useNavigate();
+  const { t, i18n } = useTranslation('dashboard');
+  const navigate = useNavigateLocalized();
   const { pathname } = useLocation();
+  const logicalPath = stripLocalePathname(pathname);
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [featured, setFeatured] = useState([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const [weeklyStreak, setWeeklyStreak] = useState(null);
+
+  usePageMeta({ title: t('pageTitle'), path: '/dashboard' });
 
   useEffect(() => {
     let cancelled = false;
@@ -56,7 +66,8 @@ export default function Dashboard() {
 
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? '??';
   const userName = user?.username ?? 'User';
-  const userRole = `${user?.role ?? 'STUDENT'} · ${user?.isActive !== false ? 'Active' : 'Inactive'}`;
+  const activeLabel = user?.isActive !== false ? t('active') : t('inactive');
+  const userRole = `${user?.role ?? 'STUDENT'} · ${activeLabel}`;
   const elo = user?.rating ?? 1000;
   const level = user?.level ?? 1;
   const xp = user?.experiencePoints ?? 0;
@@ -64,18 +75,21 @@ export default function Dashboard() {
   const unranked = isUnranked(solved);
   const untilRanked = challengesUntilRanked(solved);
 
+  const dateLocale = i18n.language?.startsWith('es') ? 'es-ES' : 'en-US';
+
   const statStrip = useMemo(() => ([
     {
-      label: 'ELO',
-      value: unranked ? 'UNRANKED' : elo.toLocaleString(),
+      label: t('stats.elo'),
+      value: unranked ? t('unranked') : elo.toLocaleString(),
       color: unranked ? 'var(--purple)' : 'var(--warn)',
     },
-    { label: 'Level', value: String(level), color: 'var(--cyan)' },
-    { label: 'Completed', value: String(solved), color: 'var(--green)' },
-    { label: 'XP', value: xp.toLocaleString(), color: 'var(--purple)' },
-  ]), [elo, level, solved, xp, unranked]);
+    { label: t('stats.level'), value: String(level), color: 'var(--cyan)' },
+    { label: t('stats.completed'), value: String(solved), color: 'var(--green)' },
+    { label: t('stats.xp'), value: xp.toLocaleString(), color: 'var(--purple)' },
+  ]), [elo, level, solved, xp, unranked, t]);
 
   const featuredList = useMemo(() => featured.slice(0, 6), [featured]);
+  const tourSteps = useTourSteps('dashboard');
 
   return (
     <div className="challenges-page dashboard-page">
@@ -102,27 +116,27 @@ export default function Dashboard() {
               <span className="db-elo-dot" />
               {unranked ? (
                 <>
-                  <span className="db-elo-badge-lbl">ELO</span>
-                  <span className="db-elo-badge-val">UNRANKED</span>
+                  <span className="db-elo-badge-lbl">{t('stats.elo')}</span>
+                  <span className="db-elo-badge-val">{t('unranked')}</span>
                 </>
               ) : (
-                <>ELO {elo}</>
+                <>{t('stats.elo')} {elo}</>
               )}
             </div>
             {unranked && (
               <p className="db-elo-hint">
-                {untilRanked} more challenge{untilRanked !== 1 ? 's' : ''} to classify
+                {t('rankMore', { count: untilRanked })}
               </p>
             )}
           </div>
 
           <div className="ch-sidebar-section db-sidebar-nav">
-            <div className="ch-sidebar-label">Quick jump</div>
+            <div className="ch-sidebar-label">{t('quickJump')}</div>
             <div className="db-jump-list">
               {SIDEBAR_LINKS.map(({ label, path, icon, primary }) => {
-                const active = pathname === path || pathname.startsWith(`${path}/`);
+                const active = logicalPath === path || logicalPath.startsWith(`${path}/`);
                 return (
-                  <Link
+                  <LocaleLink
                     key={path}
                     to={path}
                     className={[
@@ -136,7 +150,7 @@ export default function Dashboard() {
                     </span>
                     <span className="db-jump-link__label">{label}</span>
                     <span className="db-jump-link__arrow" aria-hidden>→</span>
-                  </Link>
+                  </LocaleLink>
                 );
               })}
             </div>
@@ -146,24 +160,24 @@ export default function Dashboard() {
         <main className="ch-main" data-tutorial="dashboard-main">
           <div className="ch-page-header db-page-header">
             <div>
-              <div className="db-page-eyebrow">// Your command center</div>
+              <div className="db-page-eyebrow">{t('eyebrow')}</div>
               <h1 className="db-page-title">
-                Welcome back, <em>{userName}</em>
+                {t('welcomeBefore')} <em>{userName}</em>
               </h1>
               <div className="db-page-sub">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                {new Date().toLocaleDateString(dateLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </div>
             </div>
             <div className="db-header-actions">
-              <Link to="/challenges" className="db-btn db-btn-primary">
-                Enter Arena
-              </Link>
+              <LocaleLink to="/challenges" className="db-btn db-btn-primary">
+                {t('enterArena')}
+              </LocaleLink>
             </div>
           </div>
 
           <WeeklyStreakPanel streak={weeklyStreak} variant="hero" />
 
-          <div className="db-stat-strip" aria-label="Combat overview">
+          <div className="db-stat-strip" aria-label={t('combatOverview')}>
             {statStrip.map((stat) => (
               <div key={stat.label} className="db-stat-strip__item">
                 <span className="db-stat-strip__lbl">{stat.label}</span>
@@ -176,24 +190,24 @@ export default function Dashboard() {
             <div className="db-panel-head">
               <div className="db-panel-title">
                 <span className="db-live-dot" />
-                Featured challenges
+                {t('featured.title')}
               </div>
-              <Link to="/challenges" className="db-panel-action">Full catalog →</Link>
+              <LocaleLink to="/challenges" className="db-panel-action">{t('featured.catalog')}</LocaleLink>
             </div>
             <p className="db-panel-lead">
-              Current highlights in the arena — hand-picked for visibility.
+              {t('featured.lead')}
             </p>
 
             <div className="db-table-header">
               <div style={{ width: 6, flexShrink: 0 }} />
-              <div className="db-th db-th-challenge">Challenge</div>
-              <div className="db-th db-th-score">Max Score</div>
-              <div className="db-th db-th-status">Difficulty</div>
-              <div className="db-th db-th-time">Time</div>
+              <div className="db-th db-th-challenge">{t('featured.colChallenge')}</div>
+              <div className="db-th db-th-score">{t('featured.colScore')}</div>
+              <div className="db-th db-th-status">{t('featured.colDifficulty')}</div>
+              <div className="db-th db-th-time">{t('featured.colTime')}</div>
             </div>
 
             {loadingFeatured ? (
-              <div className="db-panel-empty">Loading featured challenges…</div>
+              <div className="db-panel-empty">{t('featured.loading')}</div>
             ) : featuredList.length > 0 ? (
               featuredList.map(ch => {
                 const diff = (ch.difficulty || 'EASY').toLowerCase();
@@ -213,13 +227,13 @@ export default function Dashboard() {
                       <div className="db-row-meta">
                         <span>{ch.category}</span>
                         <span style={{ color: 'var(--dim)' }}>·</span>
-                        <span>{ch.timesCompleted ?? 0} solved</span>
+                        <span>{ch.timesCompleted ?? 0} {t('featured.solved')}</span>
                       </div>
                     </div>
                     <div className="db-row-score">
                       <div className="db-row-score-label">
                         <span>{ch.maxScore ?? 0}</span>
-                        <span>pts</span>
+                        <span>{t('featured.pts')}</span>
                       </div>
                       <div className="db-row-track">
                         <div
@@ -237,10 +251,10 @@ export default function Dashboard() {
               })
             ) : (
               <div className="db-panel-empty">
-                No featured challenges right now.{' '}
-                <Link to="/challenges" className="db-panel-action" style={{ display: 'inline' }}>
-                  Browse the catalog
-                </Link>
+                {t('featured.empty')}{' '}
+                <LocaleLink to="/challenges" className="db-panel-action" style={{ display: 'inline' }}>
+                  {t('featured.browse')}
+                </LocaleLink>
               </div>
             )}
           </div>
@@ -248,7 +262,7 @@ export default function Dashboard() {
       </div>
 
       <BottomNav />
-      <TutorialTour tourKey="dashboard" steps={TOUR_DASHBOARD} docsHref={DOCS_PATHS.dashboard} when />
+      <TutorialTour tourKey="dashboard" steps={tourSteps} docsHref={DOCS_PATHS.dashboard} when />
     </div>
   );
 }

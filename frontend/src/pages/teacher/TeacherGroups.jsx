@@ -1,12 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
+import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import * as groupsApi from "../../lib/groupsApi";
 import * as submissionsApi from "../../lib/submissionsApi";
 import SubmissionZipDownloadBlock from "../../components/teacher/SubmissionZipDownloadBlock";
+import { usePageMeta } from "../../lib/usePageMeta";
 
 export default function TeacherGroups() {
-  const navigate = useNavigate();
+  const { t } = useTranslation("teacher");
+  const navigate = useNavigateLocalized();
+
+  usePageMeta({ title: t("groups.pageTitle"), path: "/teacher/groups" });
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -170,7 +175,7 @@ export default function TeacherGroups() {
       setDetail(updated);
       setGroups((prev) => prev.map((g) => (g.id === selected ? { ...g, studentCount: updated.studentCount } : g)));
     } catch (err) {
-      alert(err.message || "Error adding student");
+      alert(err.message || t("groups.errorAddStudent"));
     }
   }
 
@@ -182,18 +187,18 @@ export default function TeacherGroups() {
       setSelectedStudent((prev) => (prev?.userId === userId ? null : prev));
       setGroups((prev) => prev.map((g) => (g.id === selected ? { ...g, studentCount: updated.studentCount } : g)));
     } catch (err) {
-      alert(err.message || "Error removing student");
+      alert(err.message || t("groups.errorRemoveStudent"));
     }
   }
 
   async function handleDelete(id) {
-    if (!window.confirm("Delete this group and remove all students?")) return;
+    if (!window.confirm(t("groups.confirmDelete"))) return;
     try {
       await groupsApi.deleteGroup(id);
       if (selected === id) { setSelected(null); setDetail(null); }
       await loadGroups();
     } catch (err) {
-      alert(err.message || "Error deleting group");
+      alert(err.message || t("groups.errorDeleteGroup"));
     }
   }
 
@@ -206,7 +211,7 @@ export default function TeacherGroups() {
       setCoSearchResults([]);
       await loadGroups();
     } catch (err) {
-      alert(err.message || "Could not update co-teacher");
+      alert(err.message || t("groups.errorUpdateCoTeacher"));
     }
   }
 
@@ -217,7 +222,7 @@ export default function TeacherGroups() {
       setDetail(updated);
       await loadGroups();
     } catch (err) {
-      alert(err.message || "Could not remove co-teacher");
+      alert(err.message || t("groups.errorRemoveCoTeacher"));
     }
   }
 
@@ -230,7 +235,7 @@ export default function TeacherGroups() {
       setStudentSubmissions(Array.isArray(data) ? data : []);
     } catch (err) {
       setStudentSubmissions([]);
-      setStudentSubmissionsError(err?.message || "Error loading submissions");
+      setStudentSubmissionsError(err?.message || t("groups.errorLoadSubmissions"));
     } finally {
       setStudentSubmissionsLoading(false);
     }
@@ -249,7 +254,7 @@ export default function TeacherGroups() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err?.message || "Error downloading submission");
+      alert(err?.message || t("groups.errorDownload"));
     } finally {
       setDownloadingSubmissionId(null);
     }
@@ -259,17 +264,17 @@ export default function TeacherGroups() {
     <TeacherLayout>
       <div className="ch-page-header" style={{ marginBottom: 20 }}>
         <div>
-          <div className="db-page-eyebrow">// Group Manager</div>
+          <div className="db-page-eyebrow">{t("groups.eyebrow")}</div>
           <h1 className="db-page-title">
-            My<em>Groups</em>
+            {t("groups.titleBefore")}<em>{t("groups.titleEm")}</em>
           </h1>
           <div className="db-page-sub">
-            Create student groups and manage members.
+            {t("groups.subtitle")}
           </div>
         </div>
         <div className="db-header-actions">
           <button type="button" className="db-btn db-btn-primary" onClick={() => setShowCreate((s) => !s)}>
-            {showCreate ? "Cancel" : "+ Create group"}
+            {showCreate ? t("groups.cancel") : t("groups.createGroup")}
           </button>
         </div>
       </div>
@@ -277,12 +282,12 @@ export default function TeacherGroups() {
       {showCreate && (
         <div className="db-panel" style={{ marginBottom: 18 }}>
           <div className="db-panel-head">
-            <div className="db-panel-title">New group</div>
+            <div className="db-panel-title">{t("groups.newGroup")}</div>
           </div>
           <form onSubmit={handleCreate} style={{ padding: "14px 18px", display: "grid", gap: 10 }}>
             <input
               className="ch-search-input"
-              placeholder="Group name (e.g. DAW 2A)"
+              placeholder={t("groups.groupNamePlaceholder")}
               value={createName}
               onChange={(e) => setCreateName(e.target.value)}
               required
@@ -290,13 +295,13 @@ export default function TeacherGroups() {
             />
             <input
               className="ch-search-input"
-              placeholder="Description (optional)"
+              placeholder={t("groups.descriptionPlaceholder")}
               value={createDesc}
               onChange={(e) => setCreateDesc(e.target.value)}
               style={{ width: "100%", boxSizing: "border-box" }}
             />
             <button type="submit" className="db-btn db-btn-primary" disabled={creating} style={{ justifySelf: "start" }}>
-              {creating ? "Creating..." : "Create group"}
+              {creating ? t("groups.creating") : t("groups.createGroupSubmit")}
             </button>
           </form>
         </div>
@@ -306,16 +311,16 @@ export default function TeacherGroups() {
         {/* --- groups list --- */}
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">Groups ({groups.length})</div>
+            <div className="db-panel-title">{t("groups.groupsCount", { count: groups.length })}</div>
           </div>
           <div style={{ padding: "6px 0" }}>
             {loading ? (
               <div style={{ padding: 30, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                Loading...
+                {t("groups.loading")}
               </div>
             ) : groups.length === 0 ? (
               <div style={{ padding: 30, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                You do not have groups yet
+                {t("groups.empty")}
               </div>
             ) : (
               groups.map((g) => (
@@ -349,14 +354,14 @@ export default function TeacherGroups() {
                             padding: "1px 6px",
                           }}
                         >
-                          Shared
+                          {t("groups.shared")}
                         </span>
                       )}
                     </div>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 2 }}>
-                      {g.studentCount} student{g.studentCount !== 1 ? "s" : ""}
+                      {t("groups.student", { count: g.studentCount })}
                       {g.currentUserIsPrimary === false && (
-                        <span style={{ marginLeft: 8, color: "var(--dim)" }}>· co-teaching</span>
+                        <span style={{ marginLeft: 8, color: "var(--dim)" }}>{t("groups.coTeaching")}</span>
                       )}
                     </div>
                   </div>
@@ -385,26 +390,26 @@ export default function TeacherGroups() {
             {/* co-teacher */}
             <div className="db-panel">
               <div className="db-panel-head">
-                <div className="db-panel-title">Co-teacher</div>
+                <div className="db-panel-title">{t("groups.coTeacher")}</div>
               </div>
               <div style={{ padding: "12px 18px" }}>
                 {detailLoading || !detail ? (
-                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>Loading…</div>
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>{t("groups.loading")}</div>
                 ) : detail.currentUserIsPrimary === false ? (
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>
-                    <div style={{ color: "var(--purple)", marginBottom: 6, fontSize: 11, letterSpacing: 1 }}>SHARED GROUP</div>
+                    <div style={{ color: "var(--purple)", marginBottom: 6, fontSize: 11, letterSpacing: 1 }}>{t("groups.sharedGroup")}</div>
                     <div>
-                      Primary teacher:{" "}
+                      {t("groups.primaryTeacher")}{" "}
                       <span style={{ color: "var(--text)" }}>@{detail.primaryTeacherUsername || "—"}</span>
                     </div>
                     <div style={{ marginTop: 8, color: "var(--text)" }}>
-                      Your role: co-teacher (same member access as the primary).
+                      {t("groups.coTeacherRole")}
                     </div>
                   </div>
                 ) : detail.coTeacherId ? (
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--text)" }}>
-                      Co-teacher: <span style={{ color: "var(--cyan)" }}>@{detail.coTeacherUsername}</span>
+                      {t("groups.coTeacher")}: <span style={{ color: "var(--cyan)" }}>@{detail.coTeacherUsername}</span>
                     </div>
                     <button
                       type="button"
@@ -420,27 +425,27 @@ export default function TeacherGroups() {
                         cursor: "pointer",
                       }}
                     >
-                      Remove co-teacher
+                      {t("groups.removeCoTeacher")}
                     </button>
                   </div>
                 ) : (
                   <div>
                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginBottom: 8 }}>
-                      Invite another teacher to manage this group with you (shared on the dashboard).
+                      {t("groups.inviteCoTeacher")}
                     </div>
                     <div className="ch-search-wrap" style={{ marginBottom: 8 }}>
                       <span className="ch-search-icon">/</span>
                       <input
                         type="text"
                         className="ch-search-input"
-                        placeholder="Search teacher by username or email…"
+                        placeholder={t("groups.searchTeacherPlaceholder")}
                         value={coSearchQ}
                         onChange={(e) => setCoSearchQ(e.target.value)}
                       />
                     </div>
                     {coSearching && (
                       <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", padding: "4px 0" }}>
-                        Searching…
+                        {t("groups.searching")}
                       </div>
                     )}
                     {coSearchResults.length > 0 && (
@@ -478,7 +483,7 @@ export default function TeacherGroups() {
                                 cursor: "pointer",
                               }}
                             >
-                              Add as co-teacher
+                              {t("groups.addAsCoTeacher")}
                             </button>
                           </div>
                         ))}
@@ -492,7 +497,7 @@ export default function TeacherGroups() {
             {/* search */}
             <div className="db-panel">
               <div className="db-panel-head">
-                <div className="db-panel-title">Add student</div>
+                <div className="db-panel-title">{t("groups.addStudent")}</div>
               </div>
               <div style={{ padding: "12px 18px" }}>
                 <div className="ch-search-wrap" style={{ marginBottom: 8 }}>
@@ -500,14 +505,14 @@ export default function TeacherGroups() {
                   <input
                     type="text"
                     className="ch-search-input"
-                    placeholder="Search by username or email..."
+                    placeholder={t("groups.searchStudentPlaceholder")}
                     value={searchQ}
                     onChange={(e) => setSearchQ(e.target.value)}
                   />
                 </div>
                 {searching && (
                   <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", padding: "4px 0" }}>
-                    Searching...
+                    {t("groups.searching")}
                   </div>
                 )}
                 {searchResults.length > 0 && (
@@ -535,7 +540,7 @@ export default function TeacherGroups() {
                           </div>
                           {already ? (
                             <span style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--green)" }}>
-                              ALREADY A MEMBER
+                              {t("groups.alreadyMember")}
                             </span>
                           ) : (
                             <button
@@ -552,7 +557,7 @@ export default function TeacherGroups() {
                                 cursor: "pointer",
                               }}
                             >
-                              + Add
+                              {t("groups.add")}
                             </button>
                           )}
                         </div>
@@ -567,17 +572,17 @@ export default function TeacherGroups() {
             <div className="db-panel">
               <div className="db-panel-head">
                 <div className="db-panel-title">
-                  {detail?.name ?? "Group"} — Members ({detail?.members?.length ?? 0})
+                  {t("groups.membersTitle", { name: detail?.name ?? t("groups.groupDefault"), count: detail?.members?.length ?? 0 })}
                 </div>
               </div>
               <div style={{ padding: "6px 18px" }}>
                 {detailLoading ? (
                   <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                    Loading members...
+                    {t("groups.loadingMembers")}
                   </div>
                 ) : !detail?.members?.length ? (
                   <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                    No members yet. Use the search above.
+                    {t("groups.noMembers")}
                   </div>
                 ) : (
                   detail.members.map((m) => (
@@ -614,7 +619,7 @@ export default function TeacherGroups() {
                             cursor: "pointer",
                           }}
                         >
-                          {submissionCountsLoading ? "..." : `${Number(submissionCounts[m.userId] ?? 0)} entregas`}
+                          {submissionCountsLoading ? "..." : t("groups.submissionsCount", { count: Number(submissionCounts[m.userId] ?? 0) })}
                         </button>
                         <button
                           type="button"
@@ -630,7 +635,7 @@ export default function TeacherGroups() {
                             cursor: "pointer",
                           }}
                         >
-                          Remove
+                          {t("groups.remove")}
                         </button>
                       </div>
                     </div>
@@ -643,7 +648,7 @@ export default function TeacherGroups() {
               <div className="db-panel">
                 <div className="db-panel-head">
                   <div className="db-panel-title">
-                    @{selectedStudent.username} — entregas en tus challenges ({studentSubmissions.length})
+                    {t("groups.studentSubmissionsTitle", { username: selectedStudent.username, count: studentSubmissions.length })}
                   </div>
                   <button
                     type="button"
@@ -660,13 +665,13 @@ export default function TeacherGroups() {
                       fontSize: 11,
                     }}
                   >
-                    Close
+                    {t("groups.close")}
                   </button>
                 </div>
                 <div style={{ padding: "10px 18px" }}>
                   {studentSubmissionsLoading ? (
                     <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                      Loading submissions...
+                      {t("groups.loadingSubmissions")}
                     </div>
                   ) : studentSubmissionsError ? (
                     <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--red)" }}>
@@ -674,11 +679,11 @@ export default function TeacherGroups() {
                     </div>
                   ) : studentSubmissions.length === 0 ? (
                     <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                      No hay entregas de este alumno en tus challenges.
+                      {t("groups.noStudentSubmissions")}
                     </div>
                   ) : (
                     studentSubmissions.map((sub) => {
-                      const title = (sub.challengeTitle && String(sub.challengeTitle).trim()) || `Challenge #${sub.challengeId}`;
+                      const title = (sub.challengeTitle && String(sub.challengeTitle).trim()) || t("groups.challengeFallback", { id: sub.challengeId });
                       const score = Number(sub.totalScore) || 0;
                       return (
                         <div
@@ -696,7 +701,7 @@ export default function TeacherGroups() {
                               {title}
                             </div>
                             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
-                              Submission #{sub.id} · {sub.status} · score {score > 0 ? score.toFixed(1) : "—"}
+                              {t("groups.submissionMeta", { id: sub.id, status: sub.status, score: score > 0 ? score.toFixed(1) : "—" })}
                             </div>
                           </div>
                           <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
@@ -714,7 +719,7 @@ export default function TeacherGroups() {
                                 cursor: "pointer",
                               }}
                             >
-                              View
+                              {t("groups.view")}
                             </button>
                             <button
                               type="button"
@@ -730,7 +735,7 @@ export default function TeacherGroups() {
                                 cursor: "pointer",
                               }}
                             >
-                              Results
+                              {t("groups.results")}
                             </button>
                             <SubmissionZipDownloadBlock
                               zipDownloadExpiresAt={sub.zipDownloadExpiresAt}

@@ -1,0 +1,111 @@
+{
+  "pageTitle": "Catálogo de Challenges API",
+  "pageDescription": "Explora challenges backend reales: APIs CRUD, JWT auth, rate limiters, caching, WebSockets y más. Envía tu proyecto Spring Boot y puntúa con tests HTTP reales.",
+  "untitled": "Sin título",
+  "community": "Community",
+  "legacy": "Legacy",
+  "featuredBadge": "Destacado",
+  "new": "Nuevo",
+  "solved": "resueltos",
+  "points": "PUNTOS",
+  "sidebar": {
+    "search": "Buscar",
+    "searchPlaceholder": "nombre del challenge...",
+    "difficulty": "Dificultad",
+    "status": "Estado",
+    "category": "Categoría",
+    "myProgress": "Mi progreso",
+    "completed": "Completados",
+    "attempted": "Intentados",
+    "bestRank": "Mejor rank",
+    "totalPts": "Pts totales",
+    "emailAlerts": "Alertas por email",
+    "newChallengesEmail": "Nuevos challenges",
+    "newChallengesEmailDesc": "— avísame por email cuando se publique un challenge nuevo en el catálogo.",
+    "verifyEmailNote": "Verifica tu email para activar esta opción.",
+    "updatePrefError": "No se pudo actualizar la preferencia"
+  },
+  "difficulty": {
+    "all": "Todas las dificultades",
+    "easy": "Fácil",
+    "medium": "Media",
+    "hard": "Difícil",
+    "expert": "Experto",
+    "allTag": "TODAS LAS DIFICULTADES"
+  },
+  "status": {
+    "all": "Todos",
+    "unsolved": "Sin resolver",
+    "attempted": "Intentado",
+    "completed": "Completado"
+  },
+  "category": {
+    "all": "TODAS LAS CATEGORÍAS"
+  },
+  "header": {
+    "eyebrow": "{{count}} challenges disponibles",
+    "titleBefore": "Elige tu",
+    "titleEm": "batalla"
+  },
+  "sort": {
+    "featured": "ORDEN: DESTACADOS",
+    "newest": "ORDEN: MÁS NUEVOS",
+    "hardest": "ORDEN: MÁS DIFÍCILES",
+    "mostSolved": "ORDEN: MÁS RESUELTOS",
+    "highestPts": "ORDEN: MÁS PUNTOS"
+  },
+  "view": {
+    "grid": "Vista cuadrícula",
+    "list": "Vista lista"
+  },
+  "results": "{{count}} challenges encontrados",
+  "loading": "Cargando challenges...",
+  "loadError": "Error al cargar challenges",
+  "serviceHint": "Comprueba que challenge-service está en http://localhost:8082",
+  "emptyFilters": "Ningún challenge coincide con tus filtros",
+  "featured": {
+    "eyebrow": "// Destacados",
+    "titleBefore": "Challenges",
+    "titleEm": "destacados"
+  },
+  "catalog": {
+    "eyebrow": "// Catálogo",
+    "titleBefore": "Todos los",
+    "titleEm": "challenges"
+  },
+  "detail": {
+    "pageTitleChallenge": "Challenge API",
+    "pageTitleSuffix": "— Challenge API",
+    "pageDescription": "Lee el briefing e inicia una partida cronometrada: envía tu API Spring Boot y puntúa con tests HTTP reales.",
+    "loading": "Cargando challenge...",
+    "notFound": "Challenge no encontrado",
+    "loadError": "Error al cargar el challenge",
+    "backToChallenges": "Volver a Challenges",
+    "backToChallengesArrow": "← Volver a Challenges",
+    "dailyLimitBanner": "Límite diario activo",
+    "cooldownBanner": "Cooldown activo",
+    "dailyBannerCopy": "No puedes iniciar una nueva partida hasta que el contador diario se reinicie (UTC).",
+    "cooldownBannerCopy": "No puedes iniciar una nueva partida hasta que termine el cooldown. Los requisitos completos solo están en la pantalla de entrega cuando puedas empezar.",
+    "viewDetails": "Ver detalles completos",
+    "checkingLimits": "Comprobando límites…",
+    "dailyLimitBtn": "Límite diario — detalles",
+    "cooldownBtn": "Cooldown — detalles",
+    "startChallenge": "Start Challenge",
+    "inactive": "Inactivo",
+    "maxPoints": "Puntos máx.",
+    "minutes": "Minutos",
+    "xpReward": "Recompensa XP",
+    "attempts": "Intentos",
+    "completed": "Completados",
+    "averageScore": "Nota media",
+    "created": "Creado:",
+    "updated": "Actualizado:",
+    "description": "Descripción",
+    "noDescription": "Sin descripción.",
+    "fullRequirements": "Requisitos completos",
+    "specsTeaser": "Los endpoints, contratos HTTP, suite de tests automatizados, criterios de rendimiento y diseño, hints y objetivos de aprendizaje solo se revelan dentro del challenge al iniciar y abrir el workspace de entrega. Inicia sesión y usa",
+    "startChallengeStrong": "Start Challenge",
+    "specsTeaserAfter": "cuando estés listo para ver todo lo que necesitas para construir y enviar tu ZIP.",
+    "specsFoot": "Piensa en esta página como el briefing — la arena se abre cuando entras a la partida cronometrada."
+  }
+}

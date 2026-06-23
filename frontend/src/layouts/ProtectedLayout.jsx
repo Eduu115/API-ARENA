@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useLocalizedPath } from "../routes/LocaleLayout";
 import "./auth-layout.css";
 
 /**
@@ -8,6 +9,7 @@ import "./auth-layout.css";
 export default function ProtectedLayout() {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+  const lp = useLocalizedPath();
 
   if (isLoading) {
     return (
@@ -18,7 +20,7 @@ export default function ProtectedLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to={lp("/login")} replace state={{ from: location }} />;
   }
 
   return <Outlet />;

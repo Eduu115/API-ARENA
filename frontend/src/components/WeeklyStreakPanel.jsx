@@ -1,21 +1,20 @@
 import { useMemo } from 'react';
-
-const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+import { useTranslation } from 'react-i18next';
 
 function isoDayIndexUtc() {
   const d = new Date().getUTCDay();
   return d === 0 ? 6 : d - 1;
 }
 
-function formatCountdown(weekEndsAt) {
+function formatCountdown(weekEndsAt, t) {
   if (!weekEndsAt) return '';
   const ms = new Date(weekEndsAt).getTime() - Date.now();
-  if (ms <= 0) return 'Week ending soon';
+  if (ms <= 0) return t('streak.weekEndingSoon');
   const days = Math.floor(ms / (24 * 60 * 60 * 1000));
   const hours = Math.floor((ms % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-  if (days > 0) return `${days}d ${hours}h left this week`;
+  if (days > 0) return t('streak.countdownDays', { days, hours });
   const mins = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
-  return `${hours}h ${mins}m left this week`;
+  return t('streak.countdownHours', { hours, mins });
 }
 
 function ProgressRow({ label, value, target, color, large = false }) {
@@ -35,26 +34,29 @@ function ProgressRow({ label, value, target, color, large = false }) {
   );
 }
 
-function StreakGoals({ streak, large = false, showHint = true, layout = 'stack' }) {
+function StreakGoals({ streak, large = false, showHint = true, layout = 'stack', t }) {
   return (
     <div className={`ws-goals${layout === 'wide' ? ' ws-goals--wide' : ''}`}>
       {showHint && (
-        <p className="ws-goals-hint">Keep your streak — complete either path this week</p>
+        <p className="ws-goals-hint">{t('streak.goalsHint')}</p>
       )}
       <ProgressRow
-        label="Path A · Weekly XP"
+        label={t('streak.pathA')}
         value={streak.xpEarnedThisWeek ?? 0}
         target={streak.xpTarget ?? 120}
         color="var(--purple)"
         large={large}
       />
-      <div className="ws-goals-or" role="separator" aria-label="or">
+      <div className="ws-goals-or" role="separator" aria-label={t('streak.or')}>
         <span className="ws-goals-or-line" aria-hidden />
-        <span className="ws-goals-or-text">OR</span>
+        <span className="ws-goals-or-text">{t('streak.or')}</span>
         <span className="ws-goals-or-line" aria-hidden />
       </div>
       <ProgressRow
-        label={`Path B · ${streak.qualifyingRunsTarget ?? 3} runs ≥ ${streak.qualifyingScoreMin ?? 650}`}
+        label={t('streak.pathB', {
+          runs: streak.qualifyingRunsTarget ?? 3,
+          score: streak.qualifyingScoreMin ?? 650,
+        })}
         value={streak.qualifyingRunsThisWeek ?? 0}
         target={streak.qualifyingRunsTarget ?? 3}
         color="var(--cyan)"
@@ -64,11 +66,11 @@ function StreakGoals({ streak, large = false, showHint = true, layout = 'stack' 
   );
 }
 
-function WeekGrid({ streak, todayIdx, large = false }) {
+function WeekGrid({ streak, todayIdx, large = false, dayLabels }) {
   return (
     <>
       <div className={`db-streak-grid${large ? ' db-streak-grid--lg' : ''}`} aria-hidden>
-        {DAY_LABELS.map((label, i) => {
+        {dayLabels.map((label, i) => {
           let cls = 'db-streak-dot';
           if (large) cls += ' db-streak-dot--lg';
           if (streak.qualifiedThisWeek && i <= todayIdx) cls += ' active';
@@ -77,7 +79,7 @@ function WeekGrid({ streak, todayIdx, large = false }) {
         })}
       </div>
       <div className={`db-streak-days${large ? ' db-streak-days--lg' : ''}`} aria-hidden>
-        {DAY_LABELS.map((label, i) => (
+        {dayLabels.map((label, i) => (
           <div key={`lbl-${i}`} className="db-streak-day-label">{label}</div>
         ))}
       </div>
@@ -85,29 +87,33 @@ function WeekGrid({ streak, todayIdx, large = false }) {
   );
 }
 
+function weekUnitLabel(count, t) {
+  if (count === 1) return t('streak.weekStreak');
+  return t('streak.weeksStreak');
+}
+
 export default function WeeklyStreakPanel({ streak, variant = 'default' }) {
+  const { t } = useTranslation('dashboard');
   const compact = variant === 'compact';
   const minimal = variant === 'minimal';
   const hero = variant === 'hero';
   const todayIdx = isoDayIndexUtc();
+  const dayLabels = t('streak.days', { returnObjects: true });
 
   const statusLine = useMemo(() => {
-    if (!streak) return 'Loading streak…';
+    if (!streak) return t('streak.loadingShort');
     if (streak.qualifiedThisWeek) {
-      const via = streak.qualifiedVia === 'BOTH'
-        ? 'XP + qualifying runs'
-        : streak.qualifiedVia === 'RUNS'
-          ? 'qualifying runs'
-          : 'XP';
-      return `This week is secured via ${via}.`;
+      if (streak.qualifiedVia === 'BOTH') return t('streak.securedViaBoth');
+      if (streak.qualifiedVia === 'RUNS') return t('streak.securedViaRuns');
+      return t('streak.securedViaXp');
     }
-    return formatCountdown(streak.weekEndsAt);
-  }, [streak]);
+    return formatCountdown(streak.weekEndsAt, t);
+  }, [streak, t]);
 
   if (!streak) {
     return (
       <div className={`ws-panel${compact ? ' ws-compact' : ''}${minimal ? ' ws-minimal ws-minimal--loading' : ''}${hero ? ' ws-hero ws-hero--loading' : ''}`}>
-        <div className="ws-muted">{minimal ? 'Loading streak…' : 'Loading weekly streak…'}</div>
+        <div className="ws-muted">{minimal ? t('streak.loadingShort') : t('streak.loading')}</div>
       </div>
     );
   }
@@ -118,15 +124,15 @@ export default function WeeklyStreakPanel({ streak, variant = 'default' }) {
     return (
       <div
         className={`ws-minimal${streak.qualifiedThisWeek ? ' ws-minimal--secured' : ''}`}
-        aria-label="Weekly streak summary"
+        aria-label={t('streak.summaryAria')}
       >
         <span className="ws-minimal-flame" aria-hidden>⌁</span>
         <span className="ws-minimal-count">{streakWeeks}</span>
         <span className="ws-minimal-unit">
-          week{streakWeeks === 1 ? '' : 's'}
+          {t('streak.week', { count: streakWeeks })}
         </span>
         {streak.qualifiedThisWeek && (
-          <span className="ws-minimal-badge">Secured</span>
+          <span className="ws-minimal-badge">{t('streak.secured')}</span>
         )}
         <span className="ws-minimal-dot" aria-hidden>·</span>
         <span className="ws-minimal-status">{statusLine}</span>
@@ -138,41 +144,41 @@ export default function WeeklyStreakPanel({ streak, variant = 'default' }) {
     return (
       <section
         className={`ws-hero${streak.qualifiedThisWeek ? ' ws-hero--secured' : ''}`}
-        aria-label="Weekly streak"
+        aria-label={t('streak.panelAria')}
       >
         <div className="ws-hero-glow" aria-hidden />
         <div className="ws-hero-inner">
           <div className="ws-hero-top">
             <div className="ws-hero-main">
-              <div className="ws-hero-eyebrow">// Weekly streak</div>
+              <div className="ws-hero-eyebrow">{t('streak.eyebrow')}</div>
               <div className="ws-hero-count-block">
                 <span className="ws-hero-flame" aria-hidden>⌁</span>
                 <div className="ws-hero-count-text">
                   <span className="ws-hero-num">{streakWeeks}</span>
                   <span className="ws-hero-unit">
-                    week{streakWeeks === 1 ? '' : 's'} streak
+                    {weekUnitLabel(streakWeeks, t)}
                   </span>
                 </div>
               </div>
               {streak.qualifiedThisWeek && (
-                <span className="ws-hero-badge">Week secured</span>
+                <span className="ws-hero-badge">{t('streak.weekSecured')}</span>
               )}
               <p className="ws-hero-status">{statusLine}</p>
               {streak.longestStreakWeeks > 0 && (
                 <p className="ws-hero-best">
-                  Personal best: {streak.longestStreakWeeks} week{streak.longestStreakWeeks === 1 ? '' : 's'}
+                  {t('streak.personalBest', { count: streak.longestStreakWeeks })}
                 </p>
               )}
             </div>
 
             <div className="ws-hero-week">
-              <div className="ws-hero-side-label">This ISO week (UTC)</div>
-              <WeekGrid streak={streak} todayIdx={todayIdx} large />
+              <div className="ws-hero-side-label">{t('streak.thisIsoWeek')}</div>
+              <WeekGrid streak={streak} todayIdx={todayIdx} large dayLabels={dayLabels} />
             </div>
           </div>
 
           <div className="ws-hero-goals-band">
-            <StreakGoals streak={streak} large layout="wide" />
+            <StreakGoals streak={streak} large layout="wide" t={t} />
           </div>
         </div>
       </section>
@@ -184,23 +190,23 @@ export default function WeeklyStreakPanel({ streak, variant = 'default' }) {
       <div className="db-streak-top">
         <span className="db-streak-num">{streakWeeks}</span>
         <span className="db-streak-unit">
-          week{streakWeeks === 1 ? '' : 's'} streak
+          {weekUnitLabel(streakWeeks, t)}
         </span>
       </div>
 
-      <WeekGrid streak={streak} todayIdx={todayIdx} />
+      <WeekGrid streak={streak} todayIdx={todayIdx} dayLabels={dayLabels} />
 
       <div className="ws-status-line">{statusLine}</div>
 
       {streak.qualifiedThisWeek && (
-        <span className="ws-hero-badge ws-hero-badge--inline">Week secured</span>
+        <span className="ws-hero-badge ws-hero-badge--inline">{t('streak.weekSecured')}</span>
       )}
 
-      {!compact && <StreakGoals streak={streak} showHint={!compact} />}
+      {!compact && <StreakGoals streak={streak} showHint={!compact} t={t} />}
 
       {streak.longestStreakWeeks > 0 && (
         <div className="ws-best">
-          Best: {streak.longestStreakWeeks} week{streak.longestStreakWeeks === 1 ? '' : 's'}
+          {t('streak.best', { count: streak.longestStreakWeeks })}
         </div>
       )}
     </div>

@@ -1,7 +1,9 @@
-import { TICKER_ITEMS } from '../landing.data';
+import { useTranslation } from 'react-i18next';
 
 export default function TickerSection() {
-  const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  const { t } = useTranslation('landing');
+  const tickerItems = t('ticker.items', { returnObjects: true });
+  const items = Array.isArray(tickerItems) ? [...tickerItems, ...tickerItems] : [];
 
   return (
     <div className="ticker">

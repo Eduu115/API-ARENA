@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
+import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import { formatTeacherDate } from "./teacher.mock";
 import * as groupsApi from "../../lib/groupsApi";
 import * as challengesApi from "../../lib/challengesApi";
 import * as submissionsApi from "../../lib/submissionsApi";
 import SubmissionZipDownloadBlock from "../../components/teacher/SubmissionZipDownloadBlock";
+import { usePageMeta } from "../../lib/usePageMeta";
 
 export default function TeacherDashboard() {
-  const navigate = useNavigate();
+  const { t, i18n } = useTranslation("teacher");
+  const navigate = useNavigateLocalized();
+
+  usePageMeta({ title: t("dashboard.pageTitle"), path: "/teacher" });
   const [groups, setGroups] = useState([]);
   const [challenges, setChallenges] = useState([]);
   const [challengesLoading, setChallengesLoading] = useState(true);
@@ -71,7 +77,7 @@ export default function TeacherDashboard() {
     } catch (err) {
       setChallengeSubsError((m) => ({
         ...m,
-        [challengeId]: err?.message || "Could not load submissions",
+        [challengeId]: err?.message || t("dashboard.errorLoadSubmissions"),
       }));
       setChallengeSubmissions((m) => ({ ...m, [challengeId]: [] }));
     } finally {
@@ -102,7 +108,7 @@ export default function TeacherDashboard() {
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert(err?.message || "Error downloading submission");
+      alert(err?.message || t("dashboard.errorDownload"));
     } finally {
       setDownloadingSubmissionId(null);
     }
@@ -117,10 +123,10 @@ export default function TeacherDashboard() {
   const publishedCount = challenges.filter((c) => c?.isActive !== false).length;
 
   const kpis = [
-    { icon: "◎", label: "Pending corrections", value: String(pendingCorrectionsCount), color: "var(--warn)", barWidth: "70%" },
-    { icon: "◇", label: "Groups", value: String(groupCount), color: "var(--cyan)", barWidth: "45%" },
-    { icon: "⊕", label: "Challenges created", value: String(challengeCount), color: "var(--purple)", barWidth: "55%" },
-    { icon: "✓", label: "Published", value: String(publishedCount), color: "var(--green)", barWidth: "40%" },
+    { icon: "◎", label: t("dashboard.kpi.pendingCorrections"), value: String(pendingCorrectionsCount), color: "var(--warn)", barWidth: "70%" },
+    { icon: "◇", label: t("dashboard.kpi.groups"), value: String(groupCount), color: "var(--cyan)", barWidth: "45%" },
+    { icon: "⊕", label: t("dashboard.kpi.challengesCreated"), value: String(challengeCount), color: "var(--purple)", barWidth: "55%" },
+    { icon: "✓", label: t("dashboard.kpi.published"), value: String(publishedCount), color: "var(--green)", barWidth: "40%" },
   ];
 
   const dashboardChallenges = challenges.slice(0, 12);
@@ -129,21 +135,21 @@ export default function TeacherDashboard() {
     <TeacherLayout>
       <div className="ch-page-header" style={{ marginBottom: 28 }}>
         <div>
-          <div className="db-page-eyebrow">// Teacher Command Center</div>
+          <div className="db-page-eyebrow">{t("dashboard.eyebrow")}</div>
           <h1 className="db-page-title">
-            Teacher<em>Panel</em>
+            {t("dashboard.titleBefore")}<em>{t("dashboard.titleEm")}</em>
           </h1>
           <div className="db-page-sub">
-            Quick access to corrections, groups, your challenges, and every submission to them.
+            {t("dashboard.subtitle")}
           </div>
         </div>
         <div className="db-header-actions">
-          <Link to="/teacher/corrections" className="db-btn db-btn-primary">
-            Go to corrections
-          </Link>
-          <Link to="/teacher/challenges/new" className="db-btn">
-            Create challenge
-          </Link>
+          <LocaleLink to="/teacher/corrections" className="db-btn db-btn-primary">
+            {t("dashboard.goToCorrections")}
+          </LocaleLink>
+          <LocaleLink to="/teacher/challenges/new" className="db-btn">
+            {t("dashboard.createChallenge")}
+          </LocaleLink>
         </div>
       </div>
 
@@ -163,19 +169,19 @@ export default function TeacherDashboard() {
       <div className="db-content-grid">
         <div className="db-panel">
           <div className="db-panel-head">
-            <div className="db-panel-title">My challenges & submissions</div>
-            <Link to="/teacher/challenges" className="db-panel-action">
-              Full list →
-            </Link>
+            <div className="db-panel-title">{t("dashboard.challengesPanel.title")}</div>
+            <LocaleLink to="/teacher/challenges" className="db-panel-action">
+              {t("dashboard.challengesPanel.fullList")}
+            </LocaleLink>
           </div>
           <div style={{ padding: "6px 18px 14px", maxHeight: 520, overflowY: "auto" }}>
               {challengesLoading ? (
                 <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  Loading challenges...
+                  {t("dashboard.challengesPanel.loading")}
                 </div>
               ) : dashboardChallenges.length === 0 ? (
                 <div style={{ padding: 20, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  No challenges yet. Create one from the header.
+                  {t("dashboard.challengesPanel.empty")}
                 </div>
               ) : (
                 dashboardChallenges.map((ch) => {
@@ -212,11 +218,11 @@ export default function TeacherDashboard() {
                           <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted)", marginTop: 2 }}>
                             id {ch.id}
                             <span style={{ color: "var(--dim)", margin: "0 6px" }}>·</span>
-                            {ch.isActive === false ? "DRAFT" : "PUBLISHED"}
+                            {ch.isActive === false ? t("dashboard.challengesPanel.draft") : t("dashboard.challengesPanel.published")}
                           </div>
                         </div>
                         <span style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--cyan)", flexShrink: 0 }}>
-                          {expanded ? "▾ Hide" : "▸ All submissions"}
+                          {expanded ? t("dashboard.challengesPanel.hide") : t("dashboard.challengesPanel.allSubmissions")}
                         </span>
                       </button>
                       {expanded && (
@@ -229,7 +235,7 @@ export default function TeacherDashboard() {
                         >
                           {subsLoading ? (
                             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", padding: "8px 0" }}>
-                              Loading submissions...
+                              {t("dashboard.challengesPanel.loadingSubmissions")}
                             </div>
                           ) : subsErr ? (
                             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--red)", padding: "8px 0" }}>
@@ -237,13 +243,13 @@ export default function TeacherDashboard() {
                             </div>
                           ) : !subs || subs.length === 0 ? (
                             <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", padding: "8px 0" }}>
-                              No submissions yet for this challenge.
+                              {t("dashboard.challengesPanel.emptySubmissions")}
                             </div>
                           ) : (
                             subs.map((sub) => {
                               const who =
                                 (sub.submitterUsername && String(sub.submitterUsername).trim()) ||
-                                (sub.userId != null ? `user #${sub.userId}` : "—");
+                                (sub.userId != null ? t("dashboard.userFallback", { id: sub.userId }) : "—");
                               const score = Number(sub.totalScore) || 0;
                               const corrected = Boolean(sub.teacherCorrectionComplete);
                               return (
@@ -278,12 +284,12 @@ export default function TeacherDashboard() {
                                           corrected ? "td-correction-pill--ok" : "td-correction-pill--todo"
                                         }`}
                                       >
-                                        {corrected ? "CORRECTED" : "TODO"}
+                                        {corrected ? t("dashboard.status.corrected") : t("dashboard.status.todo")}
                                       </span>
                                       <span>@{who}</span>
                                     </div>
                                     <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--muted)", marginTop: 3 }}>
-                                      #{sub.id} · {sub.status} · score {score > 0 ? score.toFixed(1) : "—"}
+                                      #{sub.id} · {sub.status} · {t("dashboard.score")} {score > 0 ? score.toFixed(1) : "—"}
                                     </div>
                                   </div>
                                   <div style={{ display: "flex", gap: 6, alignItems: "flex-start" }}>
@@ -301,7 +307,7 @@ export default function TeacherDashboard() {
                                         cursor: "pointer",
                                       }}
                                     >
-                                      View
+                                      {t("dashboard.view")}
                                     </button>
                                     <button
                                       type="button"
@@ -317,7 +323,7 @@ export default function TeacherDashboard() {
                                         cursor: "pointer",
                                       }}
                                     >
-                                      Results
+                                      {t("dashboard.results")}
                                     </button>
                                     <SubmissionZipDownloadBlock
                                       zipDownloadExpiresAt={sub.zipDownloadExpiresAt}
@@ -341,15 +347,15 @@ export default function TeacherDashboard() {
         <div className="db-right-stack">
           <div className="db-panel">
             <div className="db-panel-head">
-              <div className="db-panel-title">Groups</div>
-              <Link to="/teacher/groups" className="db-panel-action">
-                Manage →
-              </Link>
+              <div className="db-panel-title">{t("dashboard.groupsPanel.title")}</div>
+              <LocaleLink to="/teacher/groups" className="db-panel-action">
+                {t("dashboard.groupsPanel.manage")}
+              </LocaleLink>
             </div>
             <div style={{ padding: "12px 18px" }}>
               {groups.length === 0 ? (
                 <div style={{ fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)", textAlign: "center", padding: 10 }}>
-                  No groups yet
+                  {t("dashboard.groupsPanel.empty")}
                 </div>
               ) : (
                 groups.map((g) => (
@@ -382,7 +388,7 @@ export default function TeacherDashboard() {
                             padding: "2px 7px",
                           }}
                         >
-                          Shared
+                          {t("dashboard.shared")}
                         </span>
                       )}
                     </span>
@@ -397,29 +403,29 @@ export default function TeacherDashboard() {
             <div className="db-panel-head">
               <div className="db-panel-title">
                 <span className="db-live-dot" />
-                Recent corrections
+                {t("dashboard.correctionsPanel.title")}
               </div>
-              <Link to="/teacher/corrections" className="db-panel-action">
-                View all →
-              </Link>
+              <LocaleLink to="/teacher/corrections" className="db-panel-action">
+                {t("dashboard.correctionsPanel.viewAll")}
+              </LocaleLink>
             </div>
 
             <div style={{ padding: "4px 0 10px" }}>
               {correctionQueueLoading ? (
                 <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  Loading recent submissions…
+                  {t("dashboard.correctionsPanel.loading")}
                 </div>
               ) : correctionQueue.length === 0 ? (
                 <div style={{ padding: 16, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-                  No completed submissions on your challenges yet.
+                  {t("dashboard.correctionsPanel.empty")}
                 </div>
               ) : (
                 correctionQueue.slice(0, 6).map((c) => {
                   const done = Boolean(c.teacherCorrectionComplete);
                   const who =
                     (c.submitterUsername && String(c.submitterUsername).trim()) ||
-                    (c.userId != null ? `user #${c.userId}` : "—");
-                  const title = c.challengeTitle || `Challenge #${c.challengeId}`;
+                    (c.userId != null ? t("dashboard.userFallback", { id: c.userId }) : "—");
+                  const title = c.challengeTitle || t("dashboard.challengeFallback", { id: c.challengeId });
                   const score = Number(c.totalScore) || 0;
                   const when = c.completedAt || c.createdAt;
                   return (
@@ -441,9 +447,9 @@ export default function TeacherDashboard() {
                         <div className="db-row-meta">
                           <span>@{who}</span>
                           <span style={{ color: "var(--dim)" }}>·</span>
-                          <span>{done ? "CORRECTED" : "NEEDS REVIEW"}</span>
+                          <span>{done ? t("dashboard.status.corrected") : t("dashboard.correctionsPanel.needsReview")}</span>
                           <span style={{ color: "var(--dim)" }}>·</span>
-                          <span>{formatTeacherDate(when)}</span>
+                          <span>{formatTeacherDate(when, i18n.language)}</span>
                         </div>
                       </div>
                       <div className="db-row-status" style={{ color: done ? "var(--green)" : "var(--warn)" }}>

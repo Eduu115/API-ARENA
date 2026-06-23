@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import LocaleLink from './LocaleLink';
+import { useTranslation } from 'react-i18next';
 import { getUserPublicProfile, getUserPublicAchievements, getUserPublicBadges } from '../lib/authApi';
 import { getPublicUserSubmissions } from '../lib/submissionsApi';
 import { getGlobalUserRank } from '../lib/leaderboardApi';
@@ -32,41 +33,51 @@ const bundleCache = new Map();
 
 const ONLINE_NOW_MS = 3 * 60 * 1000;
 
-function formatDate(iso) {
+function formatDate(iso, locale) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', {
+  const loc = locale?.startsWith('es') ? 'es-ES' : 'en-US';
+  return new Date(iso).toLocaleDateString(loc, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 }
 
-function formatLastOnline(iso) {
-  if (!iso) return 'Last online unknown';
+function formatLastOnline(iso, locale, t) {
+  if (!iso) return t('publicCard.lastOnlineUnknown');
   const seenAt = new Date(iso).getTime();
-  if (Number.isNaN(seenAt)) return 'Last online unknown';
+  if (Number.isNaN(seenAt)) return t('publicCard.lastOnlineUnknown');
 
   const diffMs = Date.now() - seenAt;
-  if (diffMs < ONLINE_NOW_MS) return 'Online now';
+  if (diffMs < ONLINE_NOW_MS) return t('publicCard.onlineNow');
 
-  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const rtfLocale = locale?.startsWith('es') ? 'es' : 'en';
+  const rtf = new Intl.RelativeTimeFormat(rtfLocale, { numeric: 'auto' });
   const seconds = Math.round(diffMs / 1000);
-  if (seconds < 60) return 'Last online just now';
+  if (seconds < 60) return t('publicCard.lastOnlineJustNow');
 
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return `Last online ${rtf.format(-minutes, 'minute')}`;
+  if (minutes < 60) {
+    return t('publicCard.lastOnlineRelative', { relative: rtf.format(-minutes, 'minute') });
+  }
 
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `Last online ${rtf.format(-hours, 'hour')}`;
+  if (hours < 24) {
+    return t('publicCard.lastOnlineRelative', { relative: rtf.format(-hours, 'hour') });
+  }
 
   const days = Math.round(hours / 24);
-  if (days < 30) return `Last online ${rtf.format(-days, 'day')}`;
+  if (days < 30) {
+    return t('publicCard.lastOnlineRelative', { relative: rtf.format(-days, 'day') });
+  }
 
   const months = Math.round(days / 30);
-  if (months < 12) return `Last online ${rtf.format(-months, 'month')}`;
+  if (months < 12) {
+    return t('publicCard.lastOnlineRelative', { relative: rtf.format(-months, 'month') });
+  }
 
   const years = Math.round(months / 12);
-  return `Last online ${rtf.format(-years, 'year')}`;
+  return t('publicCard.lastOnlineRelative', { relative: rtf.format(-years, 'year') });
 }
 
 function isOnlineNow(iso) {
@@ -83,6 +94,8 @@ function formatScore(score) {
 
 export default function UserProfileCard({ userId, onClose }) {
   const { user: currentUser, isAuthenticated } = useAuth();
+  const { t, i18n } = useTranslation('profile');
+  const { t: tf } = useTranslation('friends');
   const [profile, setProfile] = useState(null);
   const [achievements, setAchievements] = useState([]);
   const [displayedBadges, setDisplayedBadges] = useState([]);
@@ -222,7 +235,7 @@ export default function UserProfileCard({ userId, onClose }) {
       await friendsApi.sendFriendRequest(userId);
       await refreshFriendStatus();
     } catch (err) {
-      setFriendError(err?.message || 'Could not send friend request.');
+      setFriendError(err?.message || tf('errorSend'));
     } finally {
       setFriendBusy(false);
     }
@@ -236,7 +249,7 @@ export default function UserProfileCard({ userId, onClose }) {
       await friendsApi.acceptFriendRequest(friendRel.friendshipId);
       await refreshFriendStatus();
     } catch {
-      setFriendError('Could not accept request.');
+      setFriendError(tf('errorAccept'));
     } finally {
       setFriendBusy(false);
     }
@@ -250,7 +263,7 @@ export default function UserProfileCard({ userId, onClose }) {
       await friendsApi.cancelFriendRequest(friendRel.friendshipId);
       await refreshFriendStatus();
     } catch {
-      setFriendError('Could not update request.');
+      setFriendError(tf('errorUpdate'));
     } finally {
       setFriendBusy(false);
     }
@@ -258,14 +271,15 @@ export default function UserProfileCard({ userId, onClose }) {
 
   const handleUnfriend = async () => {
     if (!userId || friendBusy) return;
-    if (!window.confirm(`Remove ${profile?.username ?? 'this user'} from your friends?`)) return;
+    const name = profile?.username ?? tf('confirmUnfriendFallback');
+    if (!window.confirm(tf('confirmUnfriend', { name }))) return;
     setFriendBusy(true);
     setFriendError(null);
     try {
       await friendsApi.removeFriend(userId);
       await refreshFriendStatus();
     } catch {
-      setFriendError('Could not remove friend.');
+      setFriendError(tf('errorRemove'));
     } finally {
       setFriendBusy(false);
     }
@@ -277,13 +291,13 @@ export default function UserProfileCard({ userId, onClose }) {
     if (!isAuthenticated) {
       return (
         <div className="upc-friend-bar">
-          <Link
+          <LocaleLink
             to="/login"
             state={{ from: { pathname: window.location.pathname } }}
             className="upc-friend-btn upc-friend-btn--primary"
           >
-            Log in to add friend
-          </Link>
+            {tf('loginToAddFriend')}
+          </LocaleLink>
         </div>
       );
     }
@@ -291,7 +305,7 @@ export default function UserProfileCard({ userId, onClose }) {
     if (friendLoading) {
       return (
         <div className="upc-friend-bar">
-          <span className="upc-friend-status">Checking friendship…</span>
+          <span className="upc-friend-status">{tf('checkingFriendship')}</span>
         </div>
       );
     }
@@ -310,19 +324,19 @@ export default function UserProfileCard({ userId, onClose }) {
             onClick={handleAddFriend}
             disabled={friendBusy}
           >
-            {friendBusy ? 'Sending…' : 'Add friend'}
+            {friendBusy ? tf('sending') : tf('addFriend')}
           </button>
         )}
         {rel === 'PENDING_OUTGOING' && (
           <>
-            <span className="upc-friend-status upc-friend-status--pending">Request sent</span>
+            <span className="upc-friend-status upc-friend-status--pending">{tf('requestSent')}</span>
             <button
               type="button"
               className="upc-friend-btn upc-friend-btn--ghost"
               onClick={handleCancelRequest}
               disabled={friendBusy}
             >
-              {friendBusy ? '…' : 'Cancel request'}
+              {friendBusy ? '…' : tf('cancelRequest')}
             </button>
           </>
         )}
@@ -334,7 +348,7 @@ export default function UserProfileCard({ userId, onClose }) {
               onClick={handleAcceptFriend}
               disabled={friendBusy}
             >
-              {friendBusy ? '…' : 'Accept request'}
+              {friendBusy ? '…' : tf('acceptRequest')}
             </button>
             <button
               type="button"
@@ -342,20 +356,20 @@ export default function UserProfileCard({ userId, onClose }) {
               onClick={handleCancelRequest}
               disabled={friendBusy}
             >
-              Decline
+              {tf('decline')}
             </button>
           </>
         )}
         {rel === 'FRIEND' && (
           <>
-            <span className="upc-friend-status upc-friend-status--friend">Friends</span>
+            <span className="upc-friend-status upc-friend-status--friend">{tf('badgeFriends')}</span>
             <button
               type="button"
               className="upc-friend-btn upc-friend-btn--ghost"
               onClick={handleUnfriend}
               disabled={friendBusy}
             >
-              {friendBusy ? '…' : 'Unfriend'}
+              {friendBusy ? '…' : tf('unfriend')}
             </button>
           </>
         )}
@@ -369,21 +383,21 @@ export default function UserProfileCard({ userId, onClose }) {
         className="upc-panel challenges-page"
         role="dialog"
         aria-modal="true"
-        aria-label="Public profile"
+        aria-label={t('publicCard.dialogLabel')}
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" className="upc-close" onClick={onClose} aria-label="Close">
+        <button type="button" className="upc-close" onClick={onClose} aria-label={t('publicCard.close')}>
           ×
         </button>
 
         {loading ? (
           <div className="upc-state">
-            <div className="upc-state-label">// Loading operator file</div>
+            <div className="upc-state-label">{t('publicCard.loading')}</div>
             <div className="upc-state-dots" aria-hidden>···</div>
           </div>
         ) : error || !profile ? (
           <div className="upc-state">
-            <div className="upc-state-label">Could not load profile</div>
+            <div className="upc-state-label">{t('publicCard.loadError')}</div>
           </div>
         ) : (
           <div className="upc-scroll">
@@ -399,14 +413,14 @@ export default function UserProfileCard({ userId, onClose }) {
                     )}
                   </div>
                   <div className="upc-identity-text">
-                    <div className="ch-page-eyebrow">// Public profile</div>
+                    <div className="ch-page-eyebrow">{t('publicCard.eyebrow')}</div>
                     <h2 className="upc-name">
                       <span className="upc-name-user">{profile.username}</span>
-                      <span className="upc-name-level">· Lvl {profile.level ?? 1}</span>
+                      <span className="upc-name-level">· {t('publicCard.level', { n: profile.level ?? 1 })}</span>
                     </h2>
                     <p className={`upc-last-online${onlineNow ? ' upc-last-online--now' : ''}`}>
                       {onlineNow && <span className="upc-last-online-dot" aria-hidden />}
-                      {formatLastOnline(profile.lastSeenAt)}
+                      {formatLastOnline(profile.lastSeenAt, i18n.language, t)}
                     </p>
                     <div className="upc-badges">
                       <ProfileBadges
@@ -422,24 +436,24 @@ export default function UserProfileCard({ userId, onClose }) {
                 </div>
 
                 <div className={`upc-rank-block${unranked ? ' upc-rank-block--unranked' : ''}`}>
-                  <div className="upc-rank-label">Arena rating</div>
+                  <div className="upc-rank-label">{t('publicCard.arenaRating')}</div>
                   {unranked ? (
                     <>
-                      <div className="upc-rank-value upc-rank-value--unranked">UNRANKED</div>
+                      <div className="upc-rank-value upc-rank-value--unranked">{t('publicCard.unranked')}</div>
                       <div className="upc-rank-hint">
-                        {untilRanked} more challenge{untilRanked !== 1 ? 's' : ''} to classify
+                        {t('publicCard.rankMore', { count: untilRanked })}
                       </div>
                       <div className="upc-rank-progress" aria-hidden>
                         <div className="upc-rank-progress-fill" style={{ width: `${rankProgress}%` }} />
                       </div>
                       <div className="upc-rank-progress-meta">
-                        {solved} / {MIN_RANKED_CHALLENGES} completed
+                        {t('publicCard.completedProgress', { solved, min: MIN_RANKED_CHALLENGES })}
                       </div>
                     </>
                   ) : (
                     <>
-                      <div className="upc-rank-value">{profile.rating?.toLocaleString() ?? '—'}</div>
-                      <div className="upc-rank-hint">ELO rating</div>
+                      <div className="upc-rank-value">{profile.rating?.toLocaleString(i18n.language) ?? '—'}</div>
+                      <div className="upc-rank-hint">{t('publicCard.eloRating')}</div>
                     </>
                   )}
                 </div>
@@ -448,30 +462,30 @@ export default function UserProfileCard({ userId, onClose }) {
 
             <div className="upc-kpi-strip">
               <div className="upc-kpi" style={{ '--kpi-color': 'var(--purple)' }}>
-                <span className="upc-kpi-val">{profile.experiencePoints?.toLocaleString() ?? 0}</span>
+                <span className="upc-kpi-val">{profile.experiencePoints?.toLocaleString(i18n.language) ?? 0}</span>
                 <span className="upc-kpi-lbl">XP</span>
               </div>
               <div className="upc-kpi" style={{ '--kpi-color': 'var(--green)' }}>
                 <span className="upc-kpi-val">{profile.totalChallengesCompleted ?? 0}</span>
-                <span className="upc-kpi-lbl">Solved</span>
+                <span className="upc-kpi-lbl">{t('publicCard.kpiSolved')}</span>
               </div>
               <div className="upc-kpi" style={{ '--kpi-color': 'var(--warn)' }}>
                 <span className="upc-kpi-val">{profile.weeklyStreakCurrent ?? 0}</span>
-                <span className="upc-kpi-lbl">Week streak</span>
+                <span className="upc-kpi-lbl">{t('publicCard.kpiWeekStreak')}</span>
               </div>
               <div className="upc-kpi" style={{ '--kpi-color': 'var(--warn)' }}>
                 <span className="upc-kpi-val">{profile.totalTestsPassed ?? 0}</span>
-                <span className="upc-kpi-lbl">Tests passed</span>
+                <span className="upc-kpi-lbl">{t('publicCard.kpiTestsPassed')}</span>
               </div>
             </div>
 
             <div className="upc-main-grid">
               <section className="upc-section upc-section--about">
-                <h3 className="upc-section-title">About</h3>
+                <h3 className="upc-section-title">{t('publicCard.about')}</h3>
                 {profile.bio ? (
                   <p className="upc-bio">{profile.bio}</p>
                 ) : (
-                  <p className="upc-muted">No bio yet.</p>
+                  <p className="upc-muted">{t('publicCard.noBio')}</p>
                 )}
                 {profile.githubUsername && (
                   <a
@@ -490,14 +504,14 @@ export default function UserProfileCard({ userId, onClose }) {
 
               <section className="upc-section upc-section--achievements">
                 <div className="upc-section-head">
-                  <h3 className="upc-section-title">Achievements</h3>
+                  <h3 className="upc-section-title">{t('publicCard.achievements')}</h3>
                   <span className="upc-section-meta">
-                    {unlockedAchievements.length} unlocked
-                    {lockedCount > 0 ? ` · ${lockedCount} locked` : ''}
+                    {t('publicCard.unlockedMeta', { count: unlockedAchievements.length })}
+                    {lockedCount > 0 ? t('publicCard.lockedSuffix', { count: lockedCount }) : ''}
                   </span>
                 </div>
                 {achievements.length === 0 ? (
-                  <p className="upc-muted">No achievements to show.</p>
+                  <p className="upc-muted">{t('publicCard.noAchievements')}</p>
                 ) : (
                   <div className="upc-ach-grid">
                     {achievements.map((a) => {
@@ -528,7 +542,7 @@ export default function UserProfileCard({ userId, onClose }) {
                             <span className="upc-ach-name">{a.title}</span>
                             {!locked && a.unlockedAt && (
                               <time className="upc-ach-when" dateTime={a.unlockedAt}>
-                                {formatDate(a.unlockedAt)}
+                                {formatDate(a.unlockedAt, i18n.language)}
                               </time>
                             )}
                           </div>
@@ -542,25 +556,25 @@ export default function UserProfileCard({ userId, onClose }) {
 
             <section className="upc-section upc-section--subs">
               <div className="upc-section-head">
-                <h3 className="upc-section-title">Recent submissions</h3>
-                <span className="upc-section-meta">Latest completed runs</span>
+                <h3 className="upc-section-title">{t('publicCard.recentSubmissions')}</h3>
+                <span className="upc-section-meta">{t('publicCard.recentMeta')}</span>
               </div>
               {submissions.length === 0 ? (
-                <p className="upc-muted">No completed submissions yet.</p>
+                <p className="upc-muted">{t('publicCard.noSubmissions')}</p>
               ) : (
                 <ul className="upc-sub-list">
                   {submissions.map((s) => (
                     <li key={s.id} className="upc-sub-row">
                       <div className="upc-sub-main">
-                        <Link
+                        <LocaleLink
                           to={`/challenges/${s.challengeId}`}
                           className="upc-sub-title"
                           onClick={onClose}
                         >
-                          {s.challengeTitle || `Challenge #${s.challengeId}`}
-                        </Link>
+                          {s.challengeTitle || t('publicCard.challengeFallback', { id: s.challengeId })}
+                        </LocaleLink>
                         <time className="upc-sub-date" dateTime={s.completedAt || s.createdAt}>
-                          {formatDate(s.completedAt || s.createdAt)}
+                          {formatDate(s.completedAt || s.createdAt, i18n.language)}
                         </time>
                       </div>
                       <div className="upc-sub-score">{formatScore(s.totalScore)}</div>

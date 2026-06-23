@@ -1,9 +1,9 @@
-import { FEATURES } from '../landing.data';
+import { useTranslation } from 'react-i18next';
 
 const BADGE_COLORS = {
-  cyan:   'cyan',
+  cyan: 'cyan',
   purple: 'purple',
-  green:  'green',
+  green: 'green',
 };
 
 function BentoCell({ num, title, desc, wide, badges }) {
@@ -27,12 +27,15 @@ function BentoCell({ num, title, desc, wide, badges }) {
 }
 
 export default function FeaturesSection() {
+  const { t } = useTranslation('landing');
+  const features = t('features.items', { returnObjects: true });
+
   return (
     <section className="features-section">
       <div className="features-header">
         <div>
-          <div className="section-label">Arsenal</div>
-          <h2 className="section-title">Features that<br />matter.</h2>
+          <div className="section-label">{t('features.label')}</div>
+          <h2 className="section-title">{t('features.title1')}<br />{t('features.title2')}</h2>
         </div>
         <p style={{
           fontFamily: "'Share Tech Mono',monospace",
@@ -42,13 +45,12 @@ export default function FeaturesSection() {
           lineHeight: '1.8',
           letterSpacing: '0.5px',
         }}>
-          Multidimensional evaluation. It is not only whether your API works -
-          it is how well it works.
+          {t('features.aside')}
         </p>
       </div>
 
       <div className="bento-grid">
-        {FEATURES.map((feature) => (
+        {(Array.isArray(features) ? features : []).map((feature) => (
           <BentoCell key={feature.num} {...feature} />
         ))}
       </div>

@@ -51,13 +51,13 @@ export function AuthProvider({ children }) {
         let message = e?.message ?? "Sign-in error";
         if (
           e?.status === 403 &&
-          typeof message === "string" &&
-          message.toLowerCase().includes("email not verified")
+          (e?.code === "AUTH_EMAIL_NOT_VERIFIED" ||
+            (typeof message === "string" && message.toLowerCase().includes("email not verified")))
         ) {
           message =
             "Email not verified. Check your inbox or request a new link on the email verification page.";
         }
-        setError(message);
+        setError({ message, code: e?.code ?? e?.body?.code ?? null });
         return { success: false, error: message };
       }
     },
@@ -76,7 +76,7 @@ export function AuthProvider({ children }) {
         return { success: true, data };
       } catch (e) {
         const message = e?.message ?? "Registration error";
-        setError(message);
+        setError({ message, code: e?.code ?? e?.body?.code ?? null });
         return { success: false, error: message };
       }
     },

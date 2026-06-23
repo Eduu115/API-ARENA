@@ -1,0 +1,47 @@
+{
+  "pageTitle": "Ranking — Mejores desarrolladores API",
+  "pageDescription": "Rankings globales de ELO y nivel más leaderboards por challenge en API Arena.",
+  "eyebrow": "// Rankings globales",
+  "titleBefore": "Leader",
+  "titleEm": "board",
+  "modes": {
+    "elo": "ELO",
+    "eloDesc": "Rating competitivo (3+ challenges)",
+    "level": "Nivel",
+    "levelDesc": "Nivel de cuenta y XP",
+    "challenge": "Challenge",
+    "challengeDesc": "Mejor nota en un challenge"
+  },
+  "modeTabsAria": "Modo de ranking",
+  "challengeLabel": "Challenge",
+  "selectLoading": "Cargando challenges…",
+  "selectPlaceholder": "Selecciona un challenge…",
+  "hintChallengePrefix": "Ranking de",
+  "hintChallengeSuffix": "— mejor nota y luego menor tiempo.",
+  "hintElo": "El ranking ELO incluye jugadores con al menos 3 challenges completados.",
+  "loading": "Cargando rankings…",
+  "loadError": "Error al cargar el ranking",
+  "selectPrompt": "Selecciona un challenge arriba para ver su ranking.",
+  "emptyChallenge": "Aún no hay entregas en este challenge.",
+  "emptyGlobal": "Aún no hay entradas. ¡Completa un challenge para aparecer aquí!",
+  "podiumOnly": "Solo jugadores en el podio por ahora",
+  "columns": {
+    "rank": "Pos.",
+    "player": "Jugador",
+    "elo": "ELO",
+    "level": "Nivel",
+    "solved": "Resueltos",
+    "xp": "XP",
+    "score": "Nota",
+    "time": "Tiempo",
+    "date": "Fecha",
+    "seconds": "Segundos"
+  },
+  "labels": {
+    "lvl": "NIV",
+    "pts": "PTS",
+    "challengesSub": "{{count}} challenges",
+    "xpTotalSub": "{{xp}} XP total",
+    "bestSubmission": "Mejor entrega"
+  }
+}

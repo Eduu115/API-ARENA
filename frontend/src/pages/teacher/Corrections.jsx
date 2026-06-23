@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
+import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import "../submissions/submissions.css";
 import { formatTeacherDate } from "./teacher.mock";
 import * as groupsApi from "../../lib/groupsApi";
 import * as submissionsApi from "../../lib/submissionsApi";
+import { usePageMeta } from "../../lib/usePageMeta";
 
 export default function Corrections() {
-  const navigate = useNavigate();
+  const { t, i18n } = useTranslation("teacher");
+  const navigate = useNavigateLocalized();
+
+  usePageMeta({ title: t("corrections.pageTitle"), path: "/teacher/corrections" });
+
   const [groups, setGroups] = useState([]);
   const [groupId, setGroupId] = useState("all");
   const [status, setStatus] = useState("all");
@@ -33,7 +40,7 @@ export default function Corrections() {
       } catch (e) {
         if (!cancelled) {
           setQueue([]);
-          setLoadError(e?.message || "Could not load corrections queue");
+          setLoadError(e?.message || t("corrections.errorLoadQueue"));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -42,7 +49,7 @@ export default function Corrections() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (groupId === "all") {
@@ -102,29 +109,31 @@ export default function Corrections() {
       });
   }, [queue, groupId, status, query, memberUserIds, groupMembersLoading]);
 
+  const statusLabel = (done) => (done ? t("corrections.statusCorrected") : t("corrections.statusPending"));
+
   return (
     <TeacherLayout>
       <div className="ch-page-header" style={{ marginBottom: 20 }}>
         <div>
-          <div className="ch-page-eyebrow">// Corrections</div>
+          <div className="ch-page-eyebrow">{t("corrections.eyebrow")}</div>
           <h1 className="ch-page-title">
-            Review<em>Submissions</em>
+            {t("corrections.titleBefore")}<em>{t("corrections.titleEm")}</em>
           </h1>
         </div>
         <div className="ch-page-controls">
           <select className="ch-sort-select" value={groupId} onChange={(e) => setGroupId(e.target.value)}>
-            <option value="all">GROUP: ALL</option>
+            <option value="all">{t("corrections.filterGroupAll")}</option>
             {groups.map((g) => (
               <option key={g.id} value={g.id}>
-                GROUP: {g.name.toUpperCase()}
-                {g.shared ? " · SHARED" : ""}
+                {t("corrections.filterGroup", { name: g.name.toUpperCase() })}
+                {g.shared ? t("corrections.filterShared") : ""}
               </option>
             ))}
           </select>
           <select className="ch-sort-select" value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="all">STATUS: ALL</option>
-            <option value="PENDING">STATUS: NEEDS REVIEW</option>
-            <option value="CORRECTED">STATUS: CORRECTED</option>
+            <option value="all">{t("corrections.filterStatusAll")}</option>
+            <option value="PENDING">{t("corrections.filterNeedsReview")}</option>
+            <option value="CORRECTED">{t("corrections.filterCorrected")}</option>
           </select>
         </div>
       </div>
@@ -135,13 +144,13 @@ export default function Corrections() {
           <input
             type="text"
             className="ch-search-input"
-            placeholder="search by student, challenge, or id..."
+            placeholder={t("corrections.searchPlaceholder")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <span className="ch-results-count" style={{ marginLeft: "auto" }}>
-          <span>{filtered.length}</span> submissions
+          {t("corrections.submissionsCount", { count: filtered.length })}
         </span>
       </div>
 
@@ -163,7 +172,7 @@ export default function Corrections() {
 
       <div className="db-panel" style={{ marginTop: 14 }}>
         <div className="db-panel-head">
-          <div className="db-panel-title">Completed submissions</div>
+          <div className="db-panel-title">{t("corrections.completedSubmissions")}</div>
           <button
             type="button"
             className="db-panel-action"
@@ -177,38 +186,38 @@ export default function Corrections() {
                 .finally(() => setLoading(false));
             }}
           >
-            Refresh →
+            {t("corrections.refresh")}
           </button>
         </div>
 
         <div className="sub-table" style={{ border: "none" }}>
           <div className="sub-table-head">
-            <div className="sub-th">ID</div>
-            <div className="sub-th">Student</div>
-            <div className="sub-th">Challenge</div>
-            <div className="sub-th">Status</div>
-            <div className="sub-th sub-th-right">Score</div>
-            <div className="sub-th sub-th-right">Date</div>
+            <div className="sub-th">{t("corrections.table.id")}</div>
+            <div className="sub-th">{t("corrections.table.student")}</div>
+            <div className="sub-th">{t("corrections.table.challenge")}</div>
+            <div className="sub-th">{t("corrections.table.status")}</div>
+            <div className="sub-th sub-th-right">{t("corrections.table.score")}</div>
+            <div className="sub-th sub-th-right">{t("corrections.table.date")}</div>
           </div>
 
           {loading || (groupId !== "all" && groupMembersLoading) ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
-              Loading…
+              {t("corrections.loading")}
             </div>
           ) : filtered.length === 0 ? (
             <div style={{ padding: 40, textAlign: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--muted)" }}>
               {groupId !== "all" && memberUserIds && memberUserIds.size === 0
-                ? "This group has no students yet."
-                : "No submissions for these filters"}
+                ? t("corrections.emptyNoStudents")
+                : t("corrections.emptyNoFilters")}
             </div>
           ) : (
             filtered.map((row) => {
               const done = Boolean(row.teacherCorrectionComplete);
-              const uiStatus = done ? "CORRECTED" : "PENDING";
+              const uiStatus = statusLabel(done);
               const who =
                 (row.submitterUsername && String(row.submitterUsername).trim()) ||
-                (row.userId != null ? `user #${row.userId}` : "—");
-              const title = row.challengeTitle || `Challenge #${row.challengeId}`;
+                (row.userId != null ? t("corrections.userFallback", { id: row.userId }) : "—");
+              const title = row.challengeTitle || t("corrections.challengeFallback", { id: row.challengeId });
               const score = Number(row.totalScore) || 0;
               const when = row.completedAt || row.createdAt;
               return (
@@ -231,7 +240,7 @@ export default function Corrections() {
                   <div style={{ minWidth: 0 }}>
                     <div className="sub-row-challenge-title">{title}</div>
                     <div className="sub-row-challenge-meta">
-                      <span style={{ color: "var(--muted)" }}>challenge</span>
+                      <span style={{ color: "var(--muted)" }}>{t("corrections.challengeLabel")}</span>
                       <span style={{ color: "var(--dim)" }}>·</span>
                       <span>#{row.challengeId}</span>
                     </div>
@@ -244,7 +253,7 @@ export default function Corrections() {
                   <div className="sub-row-time" style={{ textAlign: "right" }}>
                     {score > 0 ? score.toFixed(1) : "—"}
                   </div>
-                  <div className="sub-row-time">{formatTeacherDate(when)}</div>
+                  <div className="sub-row-time">{formatTeacherDate(when, i18n.language)}</div>
                 </div>
               );
             })
@@ -253,9 +262,9 @@ export default function Corrections() {
       </div>
 
       <div style={{ marginTop: 16, textAlign: "center" }}>
-        <Link to="/teacher" className="db-panel-action">
-          ← Teacher dashboard
-        </Link>
+        <LocaleLink to="/teacher" className="db-panel-action">
+          {t("corrections.backToDashboard")}
+        </LocaleLink>
       </div>
     </TeacherLayout>
   );

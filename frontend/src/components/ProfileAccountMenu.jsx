@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import LocaleLink from "./LocaleLink";
+import { useTranslation } from "react-i18next";
 import "./ProfileAccountMenu.css";
 
 const AVATAR_BG = [
@@ -20,6 +21,8 @@ export default function ProfileAccountMenu({
   onLogout,
   onSwitchAccount,
 }) {
+  const { t } = useTranslation("common");
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === "Escape" && onClose();
@@ -49,7 +52,7 @@ export default function ProfileAccountMenu({
       <button
         type="button"
         className="pam-backdrop"
-        aria-label="Close account menu"
+        aria-label={t("accountMenu.closeBackdrop")}
         onClick={onClose}
       />
 
@@ -61,7 +64,7 @@ export default function ProfileAccountMenu({
         aria-labelledby="pam-sr-title"
       >
         <h2 id="pam-sr-title" className="pam-sr-only">
-          Account menu
+          {t("accountMenu.title")}
         </h2>
 
         <div className="pam-panel-accent" />
@@ -78,7 +81,7 @@ export default function ProfileAccountMenu({
                   <span className="pam-brand-arena">Arena</span>
                 </span>
               </div>
-              <button type="button" className="pam-close" onClick={onClose} aria-label="Close">
+              <button type="button" className="pam-close" onClick={onClose} aria-label={t("accountMenu.close")}>
                 ×
               </button>
             </header>
@@ -100,40 +103,40 @@ export default function ProfileAccountMenu({
               <p className="pam-status-line">
                 {roleLabel}
                 <span className="pam-status-dot"> · </span>
-                ACTIVE
+                {t("accountMenu.active")}
               </p>
               <div className="pam-elo-strip">
                 <span className="pam-elo-text">
-                  {unranked ? "• ELO —" : `• ELO ${rating}`}
+                  {unranked ? t("accountMenu.eloDash") : t("accountMenu.eloRating", { rating })}
                 </span>
               </div>
             </div>
 
-            <p className="pam-combat-label">COMBAT STATS</p>
-            <div className="pam-combat-grid" role="group" aria-label="Combat stats">
+            <p className="pam-combat-label">{t("accountMenu.combatStats")}</p>
+            <div className="pam-combat-grid" role="group" aria-label={t("accountMenu.combatStatsAria")}>
               <div className="pam-combat-cell">
                 <span className="pam-combat-val pam-v-level">{level}</span>
-                <span className="pam-combat-key">LEVEL</span>
+                <span className="pam-combat-key">{t("accountMenu.level")}</span>
               </div>
               <div className="pam-combat-cell">
                 <span className="pam-combat-val pam-v-solved">{solved}</span>
-                <span className="pam-combat-key">SOLVED</span>
+                <span className="pam-combat-key">{t("accountMenu.solved")}</span>
               </div>
               <div className="pam-combat-cell">
                 <span className="pam-combat-val pam-v-xp">{xp.toLocaleString()}</span>
-                <span className="pam-combat-key">XP</span>
+                <span className="pam-combat-key">{t("accountMenu.xp")}</span>
               </div>
               <div className="pam-combat-cell">
                 <span className="pam-combat-val pam-v-tests">{tests}</span>
-                <span className="pam-combat-key">TESTS</span>
+                <span className="pam-combat-key">{t("accountMenu.tests")}</span>
               </div>
             </div>
           </div>
 
-          <nav className="pam-footer" aria-label="Account actions">
-            <Link to="/perfil" className="pam-btn pam-btn-primary" onClick={onClose}>
-              Go to profile
-            </Link>
+          <nav className="pam-footer" aria-label={t("accountMenu.title")}>
+            <LocaleLink to="/perfil" className="pam-btn pam-btn-primary" onClick={onClose}>
+              {t("accountMenu.goToProfile")}
+            </LocaleLink>
             <button
               type="button"
               className="pam-btn pam-btn-muted"
@@ -142,7 +145,7 @@ export default function ProfileAccountMenu({
                 onSwitchAccount();
               }}
             >
-              Switch account
+              {t("accountMenu.switchAccount")}
             </button>
             <button
               type="button"
@@ -152,7 +155,7 @@ export default function ProfileAccountMenu({
                 onLogout();
               }}
             >
-              Log out
+              {t("accountMenu.logOut")}
             </button>
           </nav>
         </div>

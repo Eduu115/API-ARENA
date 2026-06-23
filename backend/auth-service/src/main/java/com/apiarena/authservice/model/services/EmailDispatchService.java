@@ -19,6 +19,7 @@ import org.springframework.web.util.HtmlUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.apiarena.authservice.config.EmailProperties;
+import com.apiarena.authservice.util.LocaleSupport;
 
 @Service
 public class EmailDispatchService {
@@ -44,13 +45,19 @@ public class EmailDispatchService {
         return base;
     }
 
-    public void sendVerificationEmail(String toEmail, String username, String token) {
-        String base = frontendBaseUrl();
-        URI link = UriComponentsBuilder.fromUriString(base + "/verify-email")
+    private String frontendLocalePath(String locale, String path) {
+        String normalized = LocaleSupport.normalize(locale);
+        String suffix = path.startsWith("/") ? path : "/" + path;
+        return frontendBaseUrl() + "/" + normalized + suffix;
+    }
+
+    public void sendVerificationEmail(String toEmail, String username, String token, String locale) {
+        String link = UriComponentsBuilder.fromUriString(frontendLocalePath(locale, "/verify-email"))
                 .queryParam("token", token)
                 .encode(StandardCharsets.UTF_8)
                 .build()
-                .toUri();
+                .toUri()
+                .toString();
 
         String apiKey = emailProperties.getResendApiKey();
         if (apiKey == null || apiKey.isBlank()) {
@@ -59,26 +66,43 @@ public class EmailDispatchService {
         }
 
         String safeName = username != null && !username.isBlank() ? username : "there";
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Verify your email</h1>
-                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 24px;">Confirm your API Arena account by clicking the button below.</p>
-                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Verify email</a>
-                  <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you did not create an account, you can ignore this message.</p>
-                </div>
-                """.formatted(safeName, link);
+        boolean es = "es".equals(LocaleSupport.normalize(locale));
+        String html;
+        String subject;
+        if (es) {
+            subject = "Verifica tu email de API Arena";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Verifica tu email</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
+                      <p style="line-height:1.5;margin:0 0 24px;">Confirma tu cuenta de API Arena haciendo clic en el botón.</p>
+                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Verificar email</a>
+                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">Si no creaste una cuenta, puedes ignorar este mensaje.</p>
+                    </div>
+                    """.formatted(safeName, link);
+        } else {
+            subject = "Verify your API Arena email";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Verify your email</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
+                      <p style="line-height:1.5;margin:0 0 24px;">Confirm your API Arena account by clicking the button below.</p>
+                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Verify email</a>
+                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you did not create an account, you can ignore this message.</p>
+                    </div>
+                    """.formatted(safeName, link);
+        }
 
-        postResend(toEmail, "Verify your API Arena email", html);
+        postResend(toEmail, subject, html);
     }
 
-    public void sendPasswordResetEmail(String toEmail, String username, String token) {
-        String base = frontendBaseUrl();
-        URI link = UriComponentsBuilder.fromUriString(base + "/reset-password")
+    public void sendPasswordResetEmail(String toEmail, String username, String token, String locale) {
+        String link = UriComponentsBuilder.fromUriString(frontendLocalePath(locale, "/reset-password"))
                 .queryParam("token", token)
                 .encode(StandardCharsets.UTF_8)
                 .build()
-                .toUri();
+                .toUri()
+                .toString();
 
         String apiKey = emailProperties.getResendApiKey();
         if (apiKey == null || apiKey.isBlank()) {
@@ -87,17 +111,34 @@ public class EmailDispatchService {
         }
 
         String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Reset your password</h1>
-                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 24px;">We received a request to reset your API Arena password. Click the button below to choose a new one. This link expires in 1 hour.</p>
-                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Reset password</a>
-                  <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you did not request this, you can safely ignore this email; your password will not change.</p>
-                </div>
-                """.formatted(safeName, link);
+        boolean es = "es".equals(LocaleSupport.normalize(locale));
+        String html;
+        String subject;
+        if (es) {
+            subject = "Restablece tu contraseña de API Arena";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Restablece tu contraseña</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
+                      <p style="line-height:1.5;margin:0 0 24px;">Recibimos una solicitud para restablecer tu contraseña. El enlace caduca en 1 hora.</p>
+                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Restablecer contraseña</a>
+                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">Si no lo solicitaste, ignora este email; tu contraseña no cambiará.</p>
+                    </div>
+                    """.formatted(safeName, link);
+        } else {
+            subject = "Reset your API Arena password";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Reset your password</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
+                      <p style="line-height:1.5;margin:0 0 24px;">We received a request to reset your API Arena password. Click the button below to choose a new one. This link expires in 1 hour.</p>
+                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Reset password</a>
+                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you did not request this, you can safely ignore this email; your password will not change.</p>
+                    </div>
+                    """.formatted(safeName, link);
+        }
 
-        postResend(toEmail, "Reset your API Arena password", html);
+        postResend(toEmail, subject, html);
     }
 
     /**
@@ -131,7 +172,7 @@ public class EmailDispatchService {
     /**
      * Welcome + beta messaging; separate from in-app IMPORTANT notification (no duplicate copy).
      */
-    public void sendWelcomeBetaLegacyEmail(String toEmail, String username) {
+    public void sendWelcomeBetaLegacyEmail(String toEmail, String username, String locale) {
         String apiKey = emailProperties.getResendApiKey();
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("RESEND_API_KEY not set; skip welcome email to {}", toEmail);
@@ -139,93 +180,146 @@ public class EmailDispatchService {
         }
 
         String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Welcome to API Arena</h1>
-                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 16px;">Thank you for trusting us and creating an account.</p>
-                  <p style="line-height:1.5;margin:0 0 16px;">We are currently in <strong style="color:#a78bfa;">beta</strong>. Your account is automatically marked as a <strong style="color:#22d3ee;">legacy</strong> account as an early supporter of this phase.</p>
-                  <p style="line-height:1.5;margin:0 0 24px;">Your email is verified — you're ready to use the full app. See you in the Arena.</p>
-                  <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
-                </div>
-                """.formatted(safeName);
+        boolean es = "es".equals(LocaleSupport.normalize(locale));
+        String html;
+        String subject;
+        if (es) {
+            subject = "Bienvenido a API Arena (beta)";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Bienvenido a API Arena</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
+                      <p style="line-height:1.5;margin:0 0 16px;">Gracias por confiar en nosotros y crear una cuenta.</p>
+                      <p style="line-height:1.5;margin:0 0 16px;">Estamos en <strong style="color:#a78bfa;">beta</strong>. Tu cuenta queda marcada como <strong style="color:#22d3ee;">legacy</strong> por apoyar esta fase temprana.</p>
+                      <p style="line-height:1.5;margin:0 0 24px;">Tu email está verificado — ya puedes usar la app completa. Nos vemos en la Arena.</p>
+                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— El equipo de API Arena</p>
+                    </div>
+                    """.formatted(safeName);
+        } else {
+            subject = "Welcome to API Arena (beta)";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Welcome to API Arena</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
+                      <p style="line-height:1.5;margin:0 0 16px;">Thank you for trusting us and creating an account.</p>
+                      <p style="line-height:1.5;margin:0 0 16px;">We are currently in <strong style="color:#a78bfa;">beta</strong>. Your account is automatically marked as a <strong style="color:#22d3ee;">legacy</strong> account as an early supporter of this phase.</p>
+                      <p style="line-height:1.5;margin:0 0 24px;">Your email is verified — you're ready to use the full app. See you in the Arena.</p>
+                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
+                    </div>
+                    """.formatted(safeName);
+        }
 
-        postResend(toEmail, "Welcome to API Arena (beta)", html);
+        postResend(toEmail, subject, html);
     }
 
     /**
      * Post-registration onboarding: quick tutorial and what is available during beta.
      */
-    public void sendFirstStepsBetaEmail(String toEmail, String username) {
+    public void sendFirstStepsBetaEmail(String toEmail, String username, String locale) {
         String apiKey = emailProperties.getResendApiKey();
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("RESEND_API_KEY not set; skip first-steps email to {}", toEmail);
             return;
         }
 
-        String base = frontendBaseUrl();
+        String loc = LocaleSupport.normalize(locale);
+        String login = frontendLocalePath(loc, "/login");
+        String challenges = frontendLocalePath(loc, "/challenges");
+        String dashboard = frontendLocalePath(loc, "/dashboard");
+        String submissions = frontendLocalePath(loc, "/submissions");
+        String leaderboard = frontendLocalePath(loc, "/leaderboard");
+        String notifications = frontendLocalePath(loc, "/notifications");
+        String friends = frontendLocalePath(loc, "/friends");
         String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
+        boolean es = "es".equals(loc);
+        String html;
+        String subject;
+        if (es) {
+            subject = "Tus primeros pasos en API Arena (beta)";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Tus primeros pasos</h1>
+                      <p style="line-height:1.5;margin:0 0 20px;">Hola %s,</p>
+                      <p style="line-height:1.5;margin:0 0 16px;">Una ruta corta para sacar partido a <strong style="color:#a78bfa;">API Arena</strong> mientras estamos en <strong>beta</strong>:</p>
+                      <ol style="line-height:1.6;margin:0 0 20px;padding-left:20px;color:#e8e8f0;">
+                        <li style="margin-bottom:10px;"><strong>Ya estás listo</strong> — tu email está verificado. <a href="%s" style="color:#22d3ee;">Inicia sesión</a> y explora <a href="%s" style="color:#22d3ee;">Challenges</a> o tu <a href="%s" style="color:#22d3ee;">Dashboard</a>.</li>
+                        <li style="margin-bottom:10px;"><strong>Envía tu API</strong> — sube un ZIP, ejecuta el pipeline sandbox y obtén nota.</li>
+                        <li style="margin-bottom:10px;"><strong>Sigue tu progreso</strong> — <a href="%s" style="color:#22d3ee;">Dashboard</a>, <a href="%s" style="color:#22d3ee;">Mis entregas</a> y <a href="%s" style="color:#22d3ee;">Leaderboard</a>.</li>
+                        <li style="margin-bottom:0;"><strong>Mantente al día</strong> — <a href="%s" style="color:#22d3ee;">Notificaciones</a> y <a href="%s" style="color:#22d3ee;">Amigos</a>.</li>
+                      </ol>
+                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— El equipo de API Arena</p>
+                    </div>
+                    """.formatted(safeName, login, challenges, dashboard, dashboard, submissions, leaderboard, notifications, friends);
+        } else {
+            subject = "Your first steps in API Arena (beta)";
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Your first steps</h1>
+                      <p style="line-height:1.5;margin:0 0 20px;">Hi %s,</p>
+                      <p style="line-height:1.5;margin:0 0 16px;">Here is a short path to get value from <strong style="color:#a78bfa;">API Arena</strong> while we are in <strong>beta</strong>:</p>
+                      <ol style="line-height:1.6;margin:0 0 20px;padding-left:20px;color:#e8e8f0;">
+                        <li style="margin-bottom:10px;"><strong>You're all set</strong> — your email is verified. <a href="%s" style="color:#22d3ee;">Sign in</a>, then explore <a href="%s" style="color:#22d3ee;">Challenges</a> or your <a href="%s" style="color:#22d3ee;">Dashboard</a>.</li>
+                        <li style="margin-bottom:10px;"><strong>Submit your API</strong> — upload a ZIP, run the sandbox pipeline, and get scored. From a challenge page, use Submit.</li>
+                        <li style="margin-bottom:10px;"><strong>Track progress</strong> — <a href="%s" style="color:#22d3ee;">Dashboard</a>, <a href="%s" style="color:#22d3ee;">My submissions</a>, and <a href="%s" style="color:#22d3ee;">Leaderboard</a>.</li>
+                        <li style="margin-bottom:0;"><strong>Stay in the loop</strong> — <a href="%s" style="color:#22d3ee;">Notifications</a> (bell in the top bar) and <a href="%s" style="color:#22d3ee;">Friends</a>.</li>
+                      </ol>
+                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
+                    </div>
+                    """.formatted(safeName, login, challenges, dashboard, dashboard, submissions, leaderboard, notifications, friends);
+        }
 
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Your first steps</h1>
-                  <p style="line-height:1.5;margin:0 0 20px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 16px;">Here is a short path to get value from <strong style="color:#a78bfa;">API Arena</strong> while we are in <strong>beta</strong>:</p>
-                  <ol style="line-height:1.6;margin:0 0 20px;padding-left:20px;color:#e8e8f0;">
-                    <li style="margin-bottom:10px;"><strong>You're all set</strong> — your email is verified. <a href="%s/login" style="color:#22d3ee;">Sign in</a>, then explore <a href="%s/challenges" style="color:#22d3ee;">Challenges</a> or your <a href="%s/dashboard" style="color:#22d3ee;">Dashboard</a>.</li>
-                    <li style="margin-bottom:10px;"><strong>Submit your API</strong> — upload a ZIP, run the sandbox pipeline, and get scored. From a challenge page, use Submit.</li>
-                    <li style="margin-bottom:10px;"><strong>Track progress</strong> — <a href="%s/dashboard" style="color:#22d3ee;">Dashboard</a>, <a href="%s/submissions" style="color:#22d3ee;">My submissions</a>, and <a href="%s/leaderboard" style="color:#22d3ee;">Leaderboard</a>.</li>
-                    <li style="margin-bottom:0;"><strong>Stay in the loop</strong> — <a href="%s/notifications" style="color:#22d3ee;">Notifications</a> (bell in the top bar) and <a href="%s/friends" style="color:#22d3ee;">Friends</a>.</li>
-                  </ol>
-                  <p style="font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#94a3b8;margin:0 0 12px;">Available in this beta</p>
-                  <ul style="line-height:1.55;margin:0 0 20px;padding-left:20px;color:#cbd5e1;font-size:14px;">
-                    <li>Challenge catalog, filters, and featured challenges</li>
-                    <li>ZIP submission, sandbox build, automated HTTP testing, scores &amp; logs</li>
-                    <li>XP, ELO, daily attempt limits, and submission completion events</li>
-                    <li>In-app notifications marked <strong>Important</strong> are also sent to your email</li>
-                    <li>Global and challenge leaderboards</li>
-                    <li>Public profiles and friends</li>
-                  </ul>
-                  <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">Things may change during beta—thank you for helping us shape the product. Questions? Reply to this email if your provider allows it, or use in-app notifications.</p>
-                  <p style="line-height:1.5;margin:16px 0 0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
-                </div>
-                """.formatted(safeName, base, base, base, base, base, base, base, base);
-
-        postResend(toEmail, "Your first steps in API Arena (beta)", html);
+        postResend(toEmail, subject, html);
     }
 
     /**
      * Opt-in alert when a challenge is published (Challenges page checkbox).
      */
-    public void sendNewChallengePublishedEmail(String toEmail, String username, String challengeTitle, long challengeId) {
+    public void sendNewChallengePublishedEmail(String toEmail, String username, String challengeTitle, long challengeId, String locale) {
         String apiKey = emailProperties.getResendApiKey();
         if (apiKey == null || apiKey.isBlank()) {
             log.warn("RESEND_API_KEY not set; skip new-challenge alert to {}", toEmail);
             return;
         }
 
-        String base = frontendBaseUrl();
-        String link = base + "/challenges/" + challengeId;
+        String loc = LocaleSupport.normalize(locale);
+        String link = frontendLocalePath(loc, "/challenges/" + challengeId);
+        String settingsLink = frontendLocalePath(loc, "/challenges");
         String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
         String safeTitle = HtmlUtils.htmlEscape(challengeTitle != null ? challengeTitle : "New challenge");
+        boolean es = "es".equals(loc);
 
-        String settingsLink = base + "/challenges";
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">New challenge in API Arena</h1>
-                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 20px;">A new challenge is available: <strong style="color:#a78bfa;">%s</strong></p>
-                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Open challenge</a>
-                  <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">You received this because you enabled new-challenge email alerts. <a href="%s" style="color:#22d3ee;">Unsubscribe / manage alerts</a> anytime from the Challenges page.</p>
-                </div>
-                """.formatted(safeName, safeTitle, link, settingsLink);
+        String html;
+        String subject;
+        if (es) {
+            subject = "[API Arena] Nuevo challenge: " + (challengeTitle != null ? challengeTitle : "publicado");
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Nuevo challenge en API Arena</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
+                      <p style="line-height:1.5;margin:0 0 20px;">Hay un nuevo challenge disponible: <strong style="color:#a78bfa;">%s</strong></p>
+                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Abrir challenge</a>
+                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">Recibiste esto porque activaste alertas de nuevos challenges. <a href="%s" style="color:#22d3ee;">Gestionar alertas</a> en la página de Challenges.</p>
+                    </div>
+                    """.formatted(safeName, safeTitle, link, settingsLink);
+        } else {
+            subject = "[API Arena] New challenge: " + (challengeTitle != null ? challengeTitle : "published");
+            html = """
+                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">New challenge in API Arena</h1>
+                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
+                      <p style="line-height:1.5;margin:0 0 20px;">A new challenge is available: <strong style="color:#a78bfa;">%s</strong></p>
+                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Open challenge</a>
+                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">You received this because you enabled new-challenge email alerts. <a href="%s" style="color:#22d3ee;">Unsubscribe / manage alerts</a> anytime from the Challenges page.</p>
+                    </div>
+                    """.formatted(safeName, safeTitle, link, settingsLink);
+        }
 
         // RFC 2369 / 8058: let mail clients offer a native unsubscribe action.
         Map<String, String> headers = new HashMap<>();
         headers.put("List-Unsubscribe", "<mailto:privacy@apiarena.net?subject=unsubscribe>, <" + settingsLink + ">");
         headers.put("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
 
-        postResend(toEmail, "[API Arena] New challenge: " + (challengeTitle != null ? challengeTitle : "published"), html, headers);
+        postResend(toEmail, subject, html, headers);
     }
 
     /**

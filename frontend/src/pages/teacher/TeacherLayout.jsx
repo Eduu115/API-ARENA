@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { stripLocalePathname } from "../../lib/localeRoutes";
+import { useTranslation } from "react-i18next";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
 import CustomCursor from "../../components/CustomCursor";
@@ -15,17 +18,19 @@ const TEACHER_NAV = [
 ];
 
 export default function TeacherLayout({ children }) {
+  const { t } = useTranslation("teacher");
   const { pathname } = useLocation();
+  const logicalPath = stripLocalePathname(pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const active = useMemo(() => {
-    const exact = TEACHER_NAV.find((n) => n.path === pathname);
+    const exact = TEACHER_NAV.find((n) => n.path === logicalPath);
     if (exact) return exact.path;
-    if (pathname.startsWith("/teacher/groups")) return "/teacher/groups";
-    if (pathname.startsWith("/teacher/challenges")) return "/teacher/challenges";
-    if (pathname.startsWith("/teacher/corrections")) return "/teacher/corrections";
+    if (logicalPath.startsWith("/teacher/groups")) return "/teacher/groups";
+    if (logicalPath.startsWith("/teacher/challenges")) return "/teacher/challenges";
+    if (logicalPath.startsWith("/teacher/corrections")) return "/teacher/corrections";
     return "/teacher";
-  }, [pathname]);
+  }, [logicalPath]);
 
   return (
     <div className="challenges-page teacher-page">
@@ -42,28 +47,28 @@ export default function TeacherLayout({ children }) {
 
         <aside className={`ch-sidebar${sidebarOpen ? " open" : ""}`}>
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Teacher</div>
+            <div className="ch-sidebar-label">{t("layout.teacher")}</div>
             <div style={{ padding: "10px 0 2px" }}>
               <div style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--muted)" }}>
-                // Teacher panel
+                {t("layout.teacherPanel")}
               </div>
               <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
-                <Link
+                <LocaleLink
                   to="/dashboard"
                   className="ch-filter-btn"
                   style={{ justifyContent: "space-between" }}
                 >
-                  <span>Go to dashboard</span>
+                  <span>{t("layout.goToDashboard")}</span>
                   <span className="ch-filter-count">→</span>
-                </Link>
+                </LocaleLink>
               </div>
             </div>
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Navigation</div>
+            <div className="ch-sidebar-label">{t("layout.navigation")}</div>
             {TEACHER_NAV.map((item) => (
-              <Link
+              <LocaleLink
                 key={item.path}
                 to={item.path}
                 className={`ch-filter-btn${active === item.path ? " ch-active" : ""}`}
@@ -71,24 +76,24 @@ export default function TeacherLayout({ children }) {
               >
                 <span className="ch-filter-label-inner">{item.label}</span>
                 <span className="ch-filter-count">{active === item.path ? "●" : ""}</span>
-              </Link>
+              </LocaleLink>
             ))}
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Shortcuts</div>
+            <div className="ch-sidebar-label">{t("layout.shortcuts")}</div>
             <div className="db-quick-stats" style={{ marginTop: 10 }}>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: "var(--cyan)" }}>
                   ✓
                 </div>
-                <div className="db-qs-label">Review</div>
+                <div className="db-qs-label">{t("layout.review")}</div>
               </div>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: "var(--green)" }}>
                   +
                 </div>
-                <div className="db-qs-label">Create</div>
+                <div className="db-qs-label">{t("layout.create")}</div>
               </div>
             </div>
           </div>
@@ -101,4 +106,3 @@ export default function TeacherLayout({ children }) {
     </div>
   );
 }
-

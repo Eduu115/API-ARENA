@@ -156,10 +156,10 @@ function clearStoredTokens() {
 async function getErrorMessage(res, body) {
 
 
-    if (body?.detail) return body.detail;
-
-
     if (body?.message) return body.message;
+
+
+    if (body?.detail) return body.detail;
 
 
     if (typeof body === "object" && body !== null && !Array.isArray(body)) {
@@ -265,6 +265,9 @@ async function request(path, options = {}) {
 
 
         err.body = body;
+
+
+        if (body?.code) err.code = body.code;
 
 
         throw err;
@@ -729,16 +732,26 @@ export async function getUserPublicAchievements(userId) {
 /** Global ELO ranking (students with ≥3 completed challenges). */
 export async function getEloLeaderboard() {
     const base = getBaseUrl();
-    const res = await fetch(`${base}/api/auth/leaderboard/elo`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let res;
+    try {
+        res = await fetch(`${base}/api/auth/leaderboard/elo`);
+    } catch {
+        throw new Error("Leaderboard service unavailable");
+    }
+    if (!res.ok) throw new Error(`Leaderboard request failed (${res.status})`);
     return res.json();
 }
 
 /** Global level / XP ranking. */
 export async function getLevelLeaderboard() {
     const base = getBaseUrl();
-    const res = await fetch(`${base}/api/auth/leaderboard/level`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    let res;
+    try {
+        res = await fetch(`${base}/api/auth/leaderboard/level`);
+    } catch {
+        throw new Error("Leaderboard service unavailable");
+    }
+    if (!res.ok) throw new Error(`Leaderboard request failed (${res.status})`);
     return res.json();
 }
 

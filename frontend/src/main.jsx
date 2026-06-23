@@ -1,4 +1,5 @@
 import './utils/theme-init.js'
+import './i18n/index.js'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles/fonts.css'

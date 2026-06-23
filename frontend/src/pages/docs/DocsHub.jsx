@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { useTranslation } from "react-i18next";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
 import CustomCursor from "../../components/CustomCursor";
 import { useAuth } from "../../context/AuthContext";
-import { CONSENT_CHANGED_EVENT } from "../../lib/cookieConsent";
 import { getDocsFeedbackSummary, submitDocsFeedback } from "../../lib/docsMetricsApi";
-import { persistDocsLocale, readStoredDocsLocale } from "../../lib/docsLocale";
 import "../challenges/challenges.css";
 import "./docsHub.css";
 import { getDocByIdMap, getDocDocuments } from "./docsContent";
 import { getDocsUi, getNextDocCtaLabel } from "./docsUi";
 import { usePageMeta } from "../../lib/usePageMeta";
+import { useLocalizedPath } from "../../routes/LocaleLayout";
 
 function SectionVisual({ visual }) {
   if (!visual?.type) return null;
@@ -94,9 +95,11 @@ function SectionVisual({ visual }) {
 
 export default function DocsHub() {
   const navigate = useNavigate();
+  const lp = useLocalizedPath();
   const { docId } = useParams();
   const { user, isAuthenticated } = useAuth();
-  const [locale, setLocale] = useState(() => readStoredDocsLocale() || "en");
+  const { i18n } = useTranslation();
+  const locale = i18n.language?.startsWith("es") ? "es" : "en";
   const docDocuments = useMemo(() => getDocDocuments(locale), [locale]);
   const docById = useMemo(() => getDocByIdMap(locale), [locale]);
   const ui = useMemo(() => getDocsUi(locale), [locale]);
@@ -117,23 +120,6 @@ export default function DocsHub() {
     if (docIndex < 0 || docIndex >= docDocuments.length - 1) return null;
     return docDocuments[docIndex + 1];
   }, [docIndex, docDocuments]);
-
-  const handleLocaleChange = useCallback((next) => {
-    const normalized = next === "es" ? "es" : "en";
-    setLocale(normalized);
-    persistDocsLocale(normalized);
-  }, []);
-
-  useEffect(() => {
-    const onConsentChanged = () => {
-      const stored = readStoredDocsLocale();
-      if (stored) {
-        setLocale(stored);
-      }
-    };
-    window.addEventListener(CONSENT_CHANGED_EVENT, onConsentChanged);
-    return () => window.removeEventListener(CONSENT_CHANGED_EVENT, onConsentChanged);
-  }, []);
   const isAdmin = String(user?.role || "").toUpperCase() === "ADMIN";
   const [savingId, setSavingId] = useState(null);
   const [feedbackDone, setFeedbackDone] = useState({});
@@ -141,13 +127,13 @@ export default function DocsHub() {
 
   useEffect(() => {
     if (!docId) {
-      navigate(`/docs/${docDocuments[0].id}`, { replace: true });
+      navigate(lp(`/docs/${docDocuments[0].id}`), { replace: true });
       return;
     }
     if (!docById[docId]) {
-      navigate(`/docs/${docDocuments[0].id}`, { replace: true });
+      navigate(lp(`/docs/${docDocuments[0].id}`), { replace: true });
     }
-  }, [docId, docById, docDocuments, navigate]);
+  }, [docId, docById, docDocuments, navigate, lp]);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -206,41 +192,16 @@ export default function DocsHub() {
                 <h1 className="ch-page-title">Arena<em>Docs</em></h1>
               </div>
               <div className="docs-hub-header-actions">
-                <div
-                  className="docs-locale-switch"
-                  role="group"
-                  aria-label={locale === "es" ? "Idioma de la documentación" : "Documentation language"}
-                >
-                  <button
-                    type="button"
-                    className={`docs-locale-btn${locale === "en" ? " is-active" : ""}`}
-                    aria-pressed={locale === "en"}
-                    onClick={() => handleLocaleChange("en")}
-                  >
-                    EN
-                  </button>
-                  <span className="docs-locale-divider" aria-hidden="true">
-                    |
-                  </span>
-                  <button
-                    type="button"
-                    className={`docs-locale-btn${locale === "es" ? " is-active" : ""}`}
-                    aria-pressed={locale === "es"}
-                    onClick={() => handleLocaleChange("es")}
-                  >
-                    ES
-                  </button>
-                </div>
-                <button className="docs-back-btn" onClick={() => navigate("/challenges")}>
+                <button className="docs-back-btn" onClick={() => navigate(lp("/challenges"))}>
                   {ui.backToChallenges}
                 </button>
               </div>
             </div>
 
             <nav className="docs-breadcrumb" aria-label="Breadcrumb">
-              <Link to="/">{ui.home}</Link>
+              <LocaleLink to="/">{ui.home}</LocaleLink>
               <span>/</span>
-              <Link to={`/docs/${docDocuments[0].id}`}>{ui.docs}</Link>
+              <LocaleLink to={`/docs/${docDocuments[0].id}`}>{ui.docs}</LocaleLink>
               <span>/</span>
               <span aria-current="page">{activeDoc.title}</span>
             </nav>
@@ -249,14 +210,14 @@ export default function DocsHub() {
               <aside className="docs-scrollspy">
                 <div className="docs-scrollspy-title">{ui.documents}</div>
                 {docDocuments.map((doc) => (
-                  <Link
+                  <LocaleLink
                     key={doc.id}
                     to={`/docs/${doc.id}`}
                     className={`docs-spy-item${activeDoc.id === doc.id ? " is-active" : ""}`}
                   >
                     <span className="docs-spy-item-title">{doc.title}</span>
                     <span className="docs-spy-item-sub">{doc.readTime}</span>
-                  </Link>
+                  </LocaleLink>
                 ))}
               </aside>
 
@@ -328,12 +289,12 @@ export default function DocsHub() {
                     {nextDoc ? (
                       <div className="docs-next-row">
                         <span className="docs-feedback-label">{ui.nextDocument}</span>
-                        <Link to={`/docs/${nextDoc.id}`} className="docs-next-btn">
+                        <LocaleLink to={`/docs/${nextDoc.id}`} className="docs-next-btn">
                           {getNextDocCtaLabel(activeDoc, nextDoc, locale)}
                           <span className="docs-next-btn-arrow" aria-hidden="true">
                             →
                           </span>
-                        </Link>
+                        </LocaleLink>
                         <span className="docs-next-meta">
                           {nextDoc.title}
                           {nextDoc.readTime ? ` · ${nextDoc.readTime}` : ""}
@@ -342,12 +303,12 @@ export default function DocsHub() {
                     ) : (
                       <div className="docs-next-row docs-next-row--end">
                         <span className="docs-feedback-label">{ui.endOfTrack}</span>
-                        <Link to={`/docs/${docDocuments[0].id}`} className="docs-feedback-btn">
+                        <LocaleLink to={`/docs/${docDocuments[0].id}`} className="docs-feedback-btn">
                           {ui.backToGettingStarted}
-                        </Link>
-                        <Link to="/challenges" className="docs-feedback-btn">
+                        </LocaleLink>
+                        <LocaleLink to="/challenges" className="docs-feedback-btn">
                           {ui.goToChallenges}
-                        </Link>
+                        </LocaleLink>
                       </div>
                     )}
                   </footer>

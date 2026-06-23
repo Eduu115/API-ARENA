@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import LocaleLink from '../../../components/LocaleLink';
+import { Trans, useTranslation } from 'react-i18next';
 import { LB_ENTRIES } from '../landing.data';
 
 function LeaderboardRow({ rank, initials, name, score, time, tier, avatarGradient, scoreColor }) {
@@ -32,21 +33,22 @@ function LeaderboardRow({ rank, initials, name, score, time, tier, avatarGradien
 }
 
 export default function LeaderboardSection() {
+  const { t } = useTranslation('landing');
+
   return (
     <section className="lb-section">
       <div className="lb-grid">
-
         <div>
           <div className="live-badge">
             <span className="live-dot" />
-            Live Leaderboard
+            {t('leaderboard.live')}
           </div>
           <div className="lb-table">
             <div className="lb-header-row">
-              <span className="lb-head-cell">Rank</span>
-              <span className="lb-head-cell">Player</span>
-              <span className="lb-head-cell">Score</span>
-              <span className="lb-head-cell" style={{ textAlign: 'right' }}>Time</span>
+              <span className="lb-head-cell">{t('leaderboard.colRank')}</span>
+              <span className="lb-head-cell">{t('leaderboard.colPlayer')}</span>
+              <span className="lb-head-cell">{t('leaderboard.colScore')}</span>
+              <span className="lb-head-cell" style={{ textAlign: 'right' }}>{t('leaderboard.colTime')}</span>
             </div>
             {LB_ENTRIES.map((entry) => (
               <LeaderboardRow key={entry.rank} {...entry} />
@@ -55,21 +57,17 @@ export default function LeaderboardSection() {
         </div>
 
         <div className="lb-right">
-          <div className="section-label">Competition</div>
+          <div className="section-label">{t('leaderboard.label')}</div>
           <h2 className="section-title">
-            Your code<br />vs the world.<br /><em>Real time.</em>
+            {t('leaderboard.title1')}<br />{t('leaderboard.title2')}<br /><em>{t('leaderboard.titleEm')}</em>
           </h2>
           <p className="lb-right-desc">
-            The leaderboard updates through WebSocket. Every incoming submission
-            and every position change appears instantly, no refresh needed.<br /><br />
-            The ELO system ensures that climbing one spot in the top 10
-            matters more than dominating the top 100.
+            <Trans i18nKey="leaderboard.desc" t={t} />
           </p>
-          <Link to="/leaderboard" className="btn-primary">
-            View Global Leaderboard
-          </Link>
+          <LocaleLink to="/leaderboard" className="btn-primary">
+            {t('leaderboard.cta')}
+          </LocaleLink>
         </div>
-
       </div>
     </section>
   );

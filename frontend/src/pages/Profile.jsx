@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import LocaleLink from '../components/LocaleLink';
+import { useNavigateLocalized, useLocalizedPath } from '../routes/LocaleLayout';
+import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
 import { getGlobalUserRank } from '../lib/leaderboardApi';
@@ -13,6 +15,7 @@ import AchievementList from '../components/AchievementList';
 import BadgeCollection from '../components/BadgeCollection';
 import ProfileBadges from '../components/ProfileBadges';
 import { recentUnlockedAchievements } from '../lib/achievementDisplay';
+import { usePageMeta } from '../lib/usePageMeta';
 import './challenges/challenges.css';
 import './dashboard/dashboard.css';
 import './Profile.css';
@@ -20,16 +23,18 @@ import './Profile.css';
 
 const PROFILE_ACH_PREVIEW = 4;
 
-function formatTimeStat(seconds) {
+function formatTimeStat(seconds, t) {
   const s = Number(seconds) || 0;
-  if (s < 3600) return `${Math.max(0, Math.round(s / 60))} min`;
+  if (s < 3600) return `${Math.max(0, Math.round(s / 60))} ${t('kpi.min')}`;
   const h = s / 3600;
-  return `${h.toFixed(1)} h`;
+  return `${h.toFixed(1)} ${t('kpi.hours')}`;
 }
 
 export default function Profile() {
+  const { t, i18n } = useTranslation('profile');
   const { user, isLoading, isAuthenticated, loadUser, logout } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
+  const lp = useLocalizedPath();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -54,9 +59,11 @@ export default function Profile() {
   const [bestPerChallengeStats, setBestPerChallengeStats] = useState(null);
   const [bestPerChallengeLoading, setBestPerChallengeLoading] = useState(true);
 
+  usePageMeta({ title: t('pageTitle'), path: '/perfil' });
+
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      navigate('/login', { replace: true, state: { from: { pathname: '/perfil' } } });
+      navigate('/login', { replace: true, state: { from: { pathname: lp('/perfil') } } });
     }
   }, [isLoading, isAuthenticated, user, navigate]);
 
@@ -168,57 +175,59 @@ export default function Profile() {
         avgBest != null
           ? `${Math.min((avgBest / (bestPerChallengeStats?.maxScoreScale ?? 1000)) * 100, 100)}%`
           : '0%';
+      const attempted = bestPerChallengeStats?.challengesAttempted ?? 0;
+      const avgHint =
+        attempted > 0
+          ? t('kpi.avgBestHintCount', { count: attempted })
+          : t('kpi.avgBestHint');
       return [
       {
         icon: '◈',
-        label: 'Avg best score',
+        label: t('kpi.avgBest'),
         value: avgBestLabel,
         color: 'var(--warn)',
         barWidth: avgBestBar,
         privateOnly: true,
-        hint:
-          bestPerChallengeStats?.challengesAttempted > 0
-            ? `Best attempt on each of ${bestPerChallengeStats.challengesAttempted} challenge${bestPerChallengeStats.challengesAttempted !== 1 ? 's' : ''} attempted (private)`
-            : 'Average of your best score per challenge attempted (private)',
+        hint: avgHint,
       },
       {
         icon: '⏱',
-        label: 'Time coding',
-        value: formatTimeStat(devSeconds),
+        label: t('kpi.timeCoding'),
+        value: formatTimeStat(devSeconds, t),
         color: 'var(--green)',
         barWidth: `${Math.min((devSeconds / 36000) * 100, 100)}%`,
       },
       {
         icon: '⌂',
-        label: 'Time on site',
-        value: formatTimeStat(browseSeconds),
+        label: t('kpi.timeOnSite'),
+        value: formatTimeStat(browseSeconds, t),
         color: 'var(--purple)',
         barWidth: `${Math.min((browseSeconds / 36000) * 100, 100)}%`,
       },
       {
         icon: '⊕',
-        label: 'Experience',
+        label: t('kpi.experience'),
         value: xp.toLocaleString(),
         color: 'var(--purple)',
         barWidth: `${Math.min((xp / 10000) * 100, 100)}%`,
       },
       {
         icon: '◎',
-        label: 'Challenges cleared',
+        label: t('kpi.challengesCleared'),
         value: String(solved),
         color: 'var(--green)',
         barWidth: `${Math.min(10 + solved * 8, 100)}%`,
       },
       {
         icon: '⊗',
-        label: 'Tests passed',
+        label: t('kpi.testsPassed'),
         value: String(testsPassed),
         color: 'var(--cyan)',
         barWidth: `${Math.min((testsPassed / 100) * 100, 100)}%`,
       },
     ];
     },
-    [user, xp, solved, testsPassed, bestPerChallengeStats, bestPerChallengeLoading]
+    [user, xp, solved, testsPassed, bestPerChallengeStats, bestPerChallengeLoading, t]
   );
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
@@ -248,7 +257,7 @@ export default function Profile() {
       <div className="challenges-page dashboard-page profile-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="ch-main profile-main">
-          <div className="profile-loading">Loading profile…</div>
+          <div className="profile-loading">{t('loading')}</div>
         </main>
         <BottomNav />
         <CustomCursor />
@@ -260,7 +269,8 @@ export default function Profile() {
     return null;
   }
 
-  const formatDate = (d) => (d ? new Date(d).toLocaleString('en-US') : '—');
+  const dateLocale = i18n.language?.startsWith('es') ? 'es-ES' : 'en-US';
+  const formatDate = (d) => (d ? new Date(d).toLocaleString(dateLocale) : '—');
 
   const handleEdit = () => {
     setForm({
@@ -284,7 +294,7 @@ export default function Profile() {
         if (Array.isArray(data)) setBadges(data);
       }).catch(() => {});
     } catch (err) {
-      setError(err?.message || 'Could not update profile');
+      setError(err?.message || t('updateError'));
     } finally {
       setSaving(false);
     }
@@ -321,7 +331,7 @@ export default function Profile() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (e) {
-      setPrivacyError(e?.message || 'Could not export your data.');
+      setPrivacyError(e?.message || t('exportError'));
     } finally {
       setExporting(false);
     }
@@ -335,7 +345,7 @@ export default function Profile() {
       await logout();
       navigate('/', { replace: true });
     } catch (e) {
-      setPrivacyError(e?.message || 'Could not delete your account.');
+      setPrivacyError(e?.message || t('deleteError'));
       setDeleting(false);
       setConfirmDelete(false);
     }
@@ -367,7 +377,7 @@ export default function Profile() {
               )}
             </div>
             <div className="db-profile-name">{user.username}</div>
-            <div className="db-profile-sub">{userRoleLabel(user)}</div>
+            <div className="db-profile-sub">{userRoleLabel(user, t)}</div>
             <div className="db-elo-badge">
               <span className="db-elo-dot" />
               ELO {elo}
@@ -375,29 +385,29 @@ export default function Profile() {
           </div>
 
           <div className="ch-sidebar-section" style={{ paddingBottom: 0 }}>
-            <div className="ch-sidebar-label">Combat stats</div>
+            <div className="ch-sidebar-label">{t('combatStats')}</div>
             <div className="db-quick-stats">
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: 'var(--green)' }}>{solved}</div>
-                <div className="db-qs-label">Solved</div>
+                <div className="db-qs-label">{t('solved')}</div>
               </div>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: 'var(--purple)' }}>{xp.toLocaleString()}</div>
-                <div className="db-qs-label">XP</div>
+                <div className="db-qs-label">{t('xp')}</div>
               </div>
               <div className="db-qs-cell">
                 <div className="db-qs-val" style={{ color: 'var(--warn)' }}>{testsPassed}</div>
-                <div className="db-qs-label">Tests</div>
+                <div className="db-qs-label">{t('tests')}</div>
               </div>
             </div>
           </div>
 
           <div className="ch-sidebar-section">
-            <div className="ch-sidebar-label">Achievements</div>
+            <div className="ch-sidebar-label">{t('achievementsSidebar')}</div>
             <div className="profile-sidebar-ach">
               {achievementsLoading
-                ? 'Loading…'
-                : `${unlockedCount} / ${achievements.length} unlocked`}
+                ? t('achievementsLoading')
+                : t('achievementsCount', { unlocked: unlockedCount, total: achievements.length })}
             </div>
           </div>
         </aside>
@@ -405,19 +415,19 @@ export default function Profile() {
         <main className="ch-main profile-main">
           <div className="profile-main-inner">
             <div className="profile-top-bar">
-              <Link to="/dashboard" className="profile-back-link">
-                ← Dashboard
-              </Link>
+              <LocaleLink to="/dashboard" className="profile-back-link">
+                {t('backDashboard')}
+              </LocaleLink>
               <div className="profile-head-actions">
                 <button type="button" className="profile-btn-ghost" onClick={handleSwitchAccount}>
-                  Switch account
+                  {t('switchAccount')}
                 </button>
                 <button
                   type="button"
                   className="profile-btn-logout"
                   onClick={() => setConfirmLogout(true)}
                 >
-                  Log out
+                  {t('logOut')}
                 </button>
               </div>
             </div>
@@ -434,10 +444,10 @@ export default function Profile() {
               </div>
 
               <div className="profile-identity-body">
-                <div className="profile-identity-eyebrow">// Operator file</div>
+                <div className="profile-identity-eyebrow">{t('eyebrow')}</div>
                 <h1 id="profile-identity-heading" className="profile-identity-name">
                   <span className="profile-identity-name-user">{user.username}</span>
-                  <span className="profile-identity-name-level">· Lvl {level}</span>
+                  <span className="profile-identity-name-level">{t('levelPrefix', { level })}</span>
                 </h1>
                 <ProfileBadges
                   profile={user}
@@ -453,7 +463,7 @@ export default function Profile() {
                   {user.emailVerified && (
                     <>
                       <span className="profile-identity-sep" aria-hidden>·</span>
-                      <span className="profile-inline-verified">Verified</span>
+                      <span className="profile-inline-verified">{t('verified')}</span>
                     </>
                   )}
                 </div>
@@ -465,7 +475,7 @@ export default function Profile() {
                         <p className="profile-hero-bio">{user.bio}</p>
                       ) : (
                         <p className="profile-hero-bio profile-hero-bio--empty">
-                          No bio yet — tell the arena who you are.
+                          {t('bioEmpty')}
                         </p>
                       )}
                     </div>
@@ -481,14 +491,14 @@ export default function Profile() {
                       </p>
                     )}
                     <button type="button" className="profile-btn-edit profile-btn-edit--hero" onClick={handleEdit}>
-                      Edit profile
+                      {t('editProfile')}
                     </button>
                   </div>
                 ) : (
                   <form className="profile-form profile-form--hero" onSubmit={handleSave}>
                     {error && <div className="profile-error">{error}</div>}
                     <div className="profile-form-group">
-                      <label htmlFor="avatarUrl">Avatar URL</label>
+                      <label htmlFor="avatarUrl">{t('avatarUrl')}</label>
                       <input
                         id="avatarUrl"
                         type="url"
@@ -498,17 +508,17 @@ export default function Profile() {
                       />
                     </div>
                     <div className="profile-form-group">
-                      <label htmlFor="bio">Bio</label>
+                      <label htmlFor="bio">{t('bio')}</label>
                       <textarea
                         id="bio"
                         rows={4}
                         value={form.bio}
                         onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
-                        placeholder="Short intro…"
+                        placeholder={t('bioPlaceholder')}
                       />
                     </div>
                     <div className="profile-form-group">
-                      <label htmlFor="githubUsername">GitHub username</label>
+                      <label htmlFor="githubUsername">{t('githubUsername')}</label>
                       <input
                         id="githubUsername"
                         type="text"
@@ -518,10 +528,10 @@ export default function Profile() {
                     </div>
                     <div className="profile-form-actions">
                       <button type="submit" className="profile-btn-save" disabled={saving}>
-                        {saving ? 'Saving…' : 'Save'}
+                        {saving ? t('saving') : t('save')}
                       </button>
                       <button type="button" className="profile-btn-cancel" onClick={handleCancel}>
-                        Cancel
+                        {t('cancel')}
                       </button>
                     </div>
                   </form>
@@ -529,10 +539,10 @@ export default function Profile() {
               </div>
             </section>
 
-            <section className="profile-strip" aria-label="Performance">
-              <div className="db-section-eyebrow">Combat overview</div>
+            <section className="profile-strip" aria-label={t('performanceAria')}>
+              <div className="db-section-eyebrow">{t('combatOverview')}</div>
               <p className="profile-strip-hint">
-                Avg best score is private — your highest attempt per challenge attempted, averaged.
+                {t('stripHint')}
               </p>
               <div className="db-kpi-grid profile-kpi-grid db-kpi-grid--secondary">
                 {kpiCards.map((card) => (
@@ -556,10 +566,10 @@ export default function Profile() {
             <section className="profile-block profile-block--badges" aria-labelledby="badges-heading">
               <div className="profile-block-head">
                 <h2 id="badges-heading" className="profile-block-title">
-                  Profile badges
+                  {t('badgesTitle')}
                 </h2>
                 <span className="profile-block-meta">
-                  {badgesLoading ? '…' : `${unlockedBadgeCount} unlocked`}
+                  {badgesLoading ? '…' : t('unlockedCount', { count: unlockedBadgeCount })}
                 </span>
               </div>
               <BadgeCollection
@@ -574,31 +584,31 @@ export default function Profile() {
             <section className="profile-block profile-block--ach-preview" aria-labelledby="ach-heading">
               <div className="profile-block-head">
                 <h2 id="ach-heading" className="profile-block-title">
-                  Achievements
+                  {t('achievementsTitle')}
                 </h2>
                 <span className="profile-block-meta">
                   {achievementsLoading
                     ? '…'
-                    : `${unlockedCount} unlocked`}
+                    : t('unlockedCount', { count: unlockedCount })}
                 </span>
               </div>
               <p className="profile-block-lead">
-                Latest milestones — synced from your stats and streaks.
+                {t('achievementsLead')}
               </p>
               {achievementsLoading ? (
-                <div className="profile-loading profile-loading--inline">Loading achievements…</div>
+                <div className="profile-loading profile-loading--inline">{t('loadingAchievements')}</div>
               ) : previewAchievements.length > 0 ? (
                 <AchievementList achievements={previewAchievements} />
               ) : (
                 <p className="profile-ach-empty">
-                  No achievements unlocked yet. Complete a challenge or verify your email to start.
+                  {t('achievementsEmpty')}
                 </p>
               )}
               {showViewAllAchievements && !achievementsLoading && (
                 <div className="profile-ach-view-all-wrap">
-                  <Link to="/perfil/achievements" className="profile-ach-view-all">
-                    View all achievements →
-                  </Link>
+                  <LocaleLink to="/perfil/achievements" className="profile-ach-view-all">
+                    {t('viewAllAchievements')}
+                  </LocaleLink>
                 </div>
               )}
             </section>
@@ -606,11 +616,11 @@ export default function Profile() {
             <section className="profile-block profile-block--streak" aria-labelledby="streak-heading">
               <div className="profile-block-head">
                 <h2 id="streak-heading" className="profile-block-title">
-                  Weekly streak
+                  {t('streakTitle')}
                 </h2>
-                <Link to="/dashboard" className="profile-streak-link">
-                  Full view →
-                </Link>
+                <LocaleLink to="/dashboard" className="profile-streak-link">
+                  {t('streakFullView')}
+                </LocaleLink>
               </div>
               <WeeklyStreakPanel streak={weeklyStreak} variant="minimal" />
             </section>
@@ -618,21 +628,21 @@ export default function Profile() {
             <section className="profile-block profile-block--meta" aria-labelledby="account-heading">
               <div className="profile-block-head">
                 <h2 id="account-heading" className="profile-block-title">
-                  Account
+                  {t('accountTitle')}
                 </h2>
               </div>
               <dl className="profile-meta-dl">
                 <div className="profile-meta-row">
-                  <dt>Joined</dt>
+                  <dt>{t('joined')}</dt>
                   <dd>{formatDate(user.createdAt)}</dd>
                 </div>
                 <div className="profile-meta-row">
-                  <dt>Last login</dt>
+                  <dt>{t('lastLogin')}</dt>
                   <dd>{formatDate(user.lastLogin)}</dd>
                 </div>
                 <div className="profile-meta-row">
-                  <dt>Status</dt>
-                  <dd>{user.isActive !== false ? 'Active' : 'Inactive'}</dd>
+                  <dt>{t('status')}</dt>
+                  <dd>{user.isActive !== false ? t('active') : t('inactive')}</dd>
                 </div>
               </dl>
             </section>
@@ -640,12 +650,15 @@ export default function Profile() {
             <section className="profile-block profile-block--meta" aria-labelledby="privacy-heading">
               <div className="profile-block-head">
                 <h2 id="privacy-heading" className="profile-block-title">
-                  Privacy &amp; data
+                  {t('privacyTitle')}
                 </h2>
               </div>
               <p className="profile-privacy-text">
-                You can download a copy of your personal data, or permanently delete your account.
-                See our <Link to="/privacidad">Privacy Policy</Link>.
+                <Trans
+                  i18nKey="privacyText"
+                  t={t}
+                  components={{ 1: <LocaleLink to="/privacidad" /> }}
+                />
               </p>
               {privacyError && (
                 <div className="auth-alert" role="alert" style={{ marginBottom: 12 }}>
@@ -659,14 +672,14 @@ export default function Profile() {
                   onClick={handleExportData}
                   disabled={exporting}
                 >
-                  {exporting ? 'Preparing…' : 'Export my data'}
+                  {exporting ? t('exporting') : t('exportData')}
                 </button>
                 <button
                   type="button"
                   className="profile-btn-logout"
                   onClick={() => setConfirmDelete(true)}
                 >
-                  Delete my account
+                  {t('deleteAccount')}
                 </button>
               </div>
             </section>
@@ -691,10 +704,10 @@ export default function Profile() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="profile-modal-header">
-                <h2 id="profile-logout-title">Log out?</h2>
+                <h2 id="profile-logout-title">{t('logoutTitle')}</h2>
               </div>
               <div className="profile-modal-body">
-                <p>You will need to sign in again to access your profile.</p>
+                <p>{t('logoutBody')}</p>
               </div>
               <div className="profile-modal-footer">
                 <button
@@ -702,10 +715,10 @@ export default function Profile() {
                   className="profile-modal-btn"
                   onClick={() => setConfirmLogout(false)}
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button type="button" className="profile-modal-btn profile-modal-btn--danger" onClick={handleLogout}>
-                  Log out
+                  {t('logOut')}
                 </button>
               </div>
             </div>
@@ -728,12 +741,11 @@ export default function Profile() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="profile-modal-header">
-                <h2 id="profile-delete-title">Delete your account?</h2>
+                <h2 id="profile-delete-title">{t('deleteTitle')}</h2>
               </div>
               <div className="profile-modal-body">
                 <p>
-                  This action is <strong>permanent</strong>. It deletes your profile, submissions,
-                  uploaded files and associated personal data. This cannot be undone.
+                  <Trans i18nKey="deleteBody" t={t} components={{ 1: <strong /> }} />
                 </p>
               </div>
               <div className="profile-modal-footer">
@@ -743,7 +755,7 @@ export default function Profile() {
                   onClick={() => setConfirmDelete(false)}
                   disabled={deleting}
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
@@ -751,7 +763,7 @@ export default function Profile() {
                   onClick={handleDeleteAccount}
                   disabled={deleting}
                 >
-                  {deleting ? 'Deleting…' : 'Delete forever'}
+                  {deleting ? t('deleting') : t('deleteForever')}
                 </button>
               </div>
             </div>
@@ -762,8 +774,8 @@ export default function Profile() {
   );
 }
 
-function userRoleLabel(u) {
+function userRoleLabel(u, t) {
   const role = u?.role ?? 'STUDENT';
-  const active = u?.isActive !== false ? 'Active' : 'Inactive';
+  const active = u?.isActive !== false ? t('active') : t('inactive');
   return `${role} · ${active}`;
 }

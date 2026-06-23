@@ -1,4 +1,8 @@
+import { useTranslation } from 'react-i18next';
+
 export default function CtaSection() {
+  const { t } = useTranslation('landing');
+
   return (
     <section className="cta-section">
       <div className="cta-bg-text">ARENA</div>
@@ -9,26 +13,26 @@ export default function CtaSection() {
           className="section-label"
           style={{ justifyContent: 'center', marginBottom: '24px' }}
         >
-          Season 01 · Early Access
+          {t('cta.label')}
         </div>
 
         <h2 className="cta-title">
-          <span className="white">Ready to</span>
-          <span className="outlined">join?</span>
+          <span className="white">{t('cta.titleWhite')}</span>
+          <span className="outlined">{t('cta.titleOutlined')}</span>
         </h2>
 
-        <p className="cta-sub">Early access open · No credit card required</p>
+        <p className="cta-sub">{t('cta.sub')}</p>
 
         <div className="cta-input-row">
           <input
             className="cta-input"
             type="email"
-            placeholder="your@email.com"
+            placeholder={t('cta.placeholder')}
           />
-          <button className="cta-btn">Join Arena</button>
+          <button className="cta-btn">{t('cta.button')}</button>
         </div>
 
-        <p className="cta-fine">312 developers already in the arena · Free during alpha</p>
+        <p className="cta-fine">{t('cta.fine')}</p>
       </div>
     </section>
   );

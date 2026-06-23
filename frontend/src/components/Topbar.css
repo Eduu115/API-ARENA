@@ -238,8 +238,12 @@
   pointer-events: none;
 }
 
-.arena-navbar__elo + .arena-nav-icon-btn {
-  margin-left: 6px;
+.arena-navbar__elo + .arena-locale-switch {
+  margin-left: 10px;
+}
+
+.arena-locale-switch + .arena-nav-icon-btn {
+  margin-left: 8px;
 }
 
 .arena-navbar__elo {

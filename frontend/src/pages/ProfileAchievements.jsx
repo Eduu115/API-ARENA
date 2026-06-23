@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import LocaleLink from '../components/LocaleLink';
+import { useNavigateLocalized, useLocalizedPath } from '../routes/LocaleLayout';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
 import Topbar from '../components/Topbar';
@@ -7,23 +9,28 @@ import BottomNav from '../components/BottomNav';
 import CustomCursor from '../components/CustomCursor';
 import AchievementList from '../components/AchievementList';
 import { sortAchievementsRecentFirst } from '../lib/achievementDisplay';
+import { usePageMeta } from '../lib/usePageMeta';
 import './challenges/challenges.css';
 import './dashboard/dashboard.css';
 import './Profile.css';
 
 export default function ProfileAchievements() {
+  const { t } = useTranslation('profile');
   const { user, isLoading, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
+  const lp = useLocalizedPath();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
+  usePageMeta({ title: t('achievementsPage.pageTitle'), path: '/perfil/achievements' });
+
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      navigate('/login', { replace: true, state: { from: { pathname: '/perfil/achievements' } } });
+      navigate('/login', { replace: true, state: { from: { pathname: lp('/perfil/achievements') } } });
     }
-  }, [isLoading, isAuthenticated, user, navigate]);
+  }, [isLoading, isAuthenticated, user, navigate, lp]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
@@ -55,12 +62,18 @@ export default function ProfileAchievements() {
 
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
 
+  const filterOptions = [
+    { id: 'all', label: t('achievementsPage.filterAll') },
+    { id: 'unlocked', label: t('achievementsPage.filterUnlocked') },
+    { id: 'locked', label: t('achievementsPage.filterLocked') },
+  ];
+
   if (isLoading || !isAuthenticated || !user) {
     return (
       <div className="challenges-page dashboard-page profile-page">
         <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
         <main className="ch-main profile-main">
-          <div className="profile-loading">Loading achievements…</div>
+          <div className="profile-loading">{t('achievementsPage.loadingAchievements')}</div>
         </main>
         <BottomNav />
         <CustomCursor />
@@ -84,27 +97,23 @@ export default function ProfileAchievements() {
         <main className="ch-main profile-main profile-main--achievements">
           <div className="profile-main-inner">
             <div className="profile-top-bar">
-              <Link to="/perfil" className="profile-back-link">
-                ← Profile
-              </Link>
+              <LocaleLink to="/perfil" className="profile-back-link">
+                {t('achievementsPage.backProfile')}
+              </LocaleLink>
             </div>
 
             <header className="profile-ach-page-head">
-              <div className="profile-identity-eyebrow">// Milestones</div>
-              <h1 className="profile-ach-page-title">Achievements</h1>
+              <div className="profile-identity-eyebrow">{t('achievementsPage.eyebrow')}</div>
+              <h1 className="profile-ach-page-title">{t('achievementsPage.title')}</h1>
               <p className="profile-ach-page-lead">
                 {loading
-                  ? 'Loading…'
-                  : `${unlockedCount} of ${achievements.length} unlocked — synced from your stats and streaks.`}
+                  ? t('achievementsPage.loading')
+                  : t('achievementsPage.lead', { unlocked: unlockedCount, total: achievements.length })}
               </p>
             </header>
 
-            <div className="profile-ach-filters" role="tablist" aria-label="Filter achievements">
-              {[
-                { id: 'all', label: 'All' },
-                { id: 'unlocked', label: 'Unlocked' },
-                { id: 'locked', label: 'Locked' },
-              ].map(({ id, label }) => (
+            <div className="profile-ach-filters" role="tablist" aria-label={t('achievementsPage.filterAria')}>
+              {filterOptions.map(({ id, label }) => (
                 <button
                   key={id}
                   type="button"
@@ -119,16 +128,18 @@ export default function ProfileAchievements() {
             </div>
 
             {loading ? (
-              <div className="profile-loading profile-loading--inline">Loading achievements…</div>
+              <div className="profile-loading profile-loading--inline">
+                {t('achievementsPage.loadingAchievements')}
+              </div>
             ) : (
               <AchievementList
                 achievements={filtered}
                 emptyMessage={
                   filter === 'unlocked'
-                    ? 'Nothing unlocked in this filter yet — keep playing.'
+                    ? t('achievementsPage.emptyUnlocked')
                     : filter === 'locked'
-                      ? 'You have unlocked every achievement so far.'
-                      : 'No achievements defined yet.'
+                      ? t('achievementsPage.emptyLocked')
+                      : t('achievementsPage.emptyAll')
                 }
               />
             )}

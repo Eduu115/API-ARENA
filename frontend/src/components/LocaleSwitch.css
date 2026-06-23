@@ -1,0 +1,38 @@
+.arena-locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--dim);
+  background: var(--bg1);
+  padding: 3px 6px;
+  flex-shrink: 0;
+}
+
+.arena-locale-switch__btn {
+  background: transparent;
+  border: none;
+  appearance: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 5px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.arena-locale-switch__btn:hover {
+  color: var(--white);
+}
+
+.arena-locale-switch__btn.is-active {
+  color: var(--cyan);
+}
+
+.arena-locale-switch__divider {
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  user-select: none;
+}
