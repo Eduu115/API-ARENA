@@ -267,14 +267,14 @@ export default function Replay() {
   };
 
   return (
-    <div className="challenges-page">
+    <div className="challenges-page replay-page">
       <CustomCursor />
       <div className="ch-grid-bg" />
       <div className="ch-layout" style={{ gridTemplateColumns: "1fr" }}>
         <Topbar onMenuToggle={() => setSidebarOpen((s) => !s)} sidebarOpen={sidebarOpen} />
         <main className="ch-main">
           <div className="rp-container">
-            <div className="ch-page-header" style={{ marginBottom: 28 }}>
+            <div className="ch-page-header rp-page-header">
               <div>
                 <div className="ch-page-eyebrow">{t("eyebrow")}</div>
                 <h1 className="ch-page-title">

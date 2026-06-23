@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Topbar from '../components/Topbar';
 import BottomNav from '../components/BottomNav';
@@ -38,14 +39,16 @@ function getRankClass(rank) {
 
 export default function Leaderboard() {
   const { t } = useTranslation('leaderboard');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const challengeFromUrl = searchParams.get('challenge') || '';
 
   usePageMeta({
     title: t('pageTitle'),
     description: t('pageDescription'),
-    path: '/leaderboard',
+    path: challengeFromUrl ? `/leaderboard?challenge=${challengeFromUrl}` : '/leaderboard',
   });
 
-  const [mode, setMode] = useState('elo');
+  const [mode, setMode] = useState(() => (challengeFromUrl ? 'challenge' : 'elo'));
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +57,9 @@ export default function Leaderboard() {
 
   const [challenges, setChallenges] = useState([]);
   const [challengesLoading, setChallengesLoading] = useState(false);
-  const [selectedChallengeId, setSelectedChallengeId] = useState('');
+  const [selectedChallengeId, setSelectedChallengeId] = useState(() =>
+    challengeFromUrl ? String(challengeFromUrl) : '',
+  );
 
   const { user } = useAuth();
 
@@ -143,10 +148,32 @@ export default function Leaderboard() {
 
   const closeProfile = useCallback(() => setSelectedUserId(null), []);
 
+  const syncChallengeQuery = useCallback(
+    (challengeId) => {
+      if (challengeId) {
+        setSearchParams({ challenge: String(challengeId) }, { replace: true });
+      } else if (searchParams.has('challenge')) {
+        setSearchParams({}, { replace: true });
+      }
+    },
+    [searchParams, setSearchParams],
+  );
+
   const handleModeChange = (nextMode) => {
     setMode(nextMode);
     if (nextMode !== 'challenge') {
       setSelectedChallengeId('');
+      syncChallengeQuery('');
+    }
+  };
+
+  const handleChallengeSelect = (challengeId) => {
+    setSelectedChallengeId(challengeId);
+    if (challengeId) {
+      setMode('challenge');
+      syncChallengeQuery(challengeId);
+    } else {
+      syncChallengeQuery('');
     }
   };
 
@@ -167,7 +194,7 @@ export default function Leaderboard() {
             </div>
           </div>
 
-          <div className="lb-controls">
+          <div className={`lb-controls${mode === 'challenge' ? ' lb-controls--challenge' : ''}`}>
             <div className="lb-tabs" role="tablist" aria-label={t('modeTabsAria')}>
               {modeTabs.map((m) => (
                 <button
@@ -184,41 +211,43 @@ export default function Leaderboard() {
               ))}
             </div>
 
-            {mode === 'challenge' && (
-              <div className="lb-challenge-filter">
-                <label className="lb-challenge-label" htmlFor="lb-challenge-select">
-                  {t('challengeLabel')}
-                </label>
-                <select
-                  id="lb-challenge-select"
-                  className="lb-challenge-select"
-                  value={selectedChallengeId}
-                  onChange={(e) => setSelectedChallengeId(e.target.value)}
-                  disabled={challengesLoading}
-                >
-                  <option value="">
-                    {challengesLoading ? t('selectLoading') : t('selectPlaceholder')}
+            <div
+              className="lb-challenge-filter"
+              aria-hidden={mode !== 'challenge'}
+            >
+              <label className="lb-challenge-label" htmlFor="lb-challenge-select">
+                {t('challengeLabel')}
+              </label>
+              <select
+                id="lb-challenge-select"
+                className="lb-challenge-select"
+                value={selectedChallengeId}
+                onChange={(e) => handleChallengeSelect(e.target.value)}
+                disabled={challengesLoading || mode !== 'challenge'}
+                tabIndex={mode === 'challenge' ? 0 : -1}
+              >
+                <option value="">
+                  {challengesLoading ? t('selectLoading') : t('selectPlaceholder')}
+                </option>
+                {challenges.map((c) => (
+                  <option key={c.id} value={String(c.id)}>
+                    {c.title}
                   </option>
-                  {challenges.map((c) => (
-                    <option key={c.id} value={String(c.id)}>
-                      {c.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+                ))}
+              </select>
+            </div>
           </div>
 
-          {mode === 'challenge' && selectedChallenge && (
-            <p className="lb-mode-hint">
-              {t('hintChallengePrefix')} <strong>{selectedChallenge.title}</strong> {t('hintChallengeSuffix')}
-            </p>
-          )}
-          {mode === 'elo' && (
-            <p className="lb-mode-hint">
-              {t('hintElo')}
-            </p>
-          )}
+          <div className="lb-mode-hint-slot" aria-live="polite">
+            {mode === 'elo' && (
+              <p className="lb-mode-hint">{t('hintElo')}</p>
+            )}
+            {mode === 'challenge' && selectedChallenge && (
+              <p className="lb-mode-hint">
+                {t('hintChallengePrefix')} <strong>{selectedChallenge.title}</strong> {t('hintChallengeSuffix')}
+              </p>
+            )}
+          </div>
 
           {loading ? (
             <div className="lb-state-message">{t('loading')}</div>
