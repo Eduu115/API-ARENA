@@ -18,7 +18,7 @@ alwaysApply: true
 | **ai-review-service** | 8086 | ✅ Operativo (v2 ready) | Endpoint interno `POST /internal/ai-review/analyze`, provider configurable (`heuristic|gemini`), fallback automático a heurístico, `aiScore` 0-200 + feedback estructurado; listo para API key por entorno |
 | **multiplayer-service** | 8088 | ❌ No creado | |
 | **metrics-service** | 8089 | ✅ Operativo | Agregados (`/api/metrics/overview`, `/api/metrics/submissions/daily`), feedback docs, **eventos de producto** (`POST /api/metrics/events`, **protegido con `X-Internal-Token`**: ingesta solo servidor-a-servidor, 401 sin token), **BI summary/export** (`/api/metrics/bi/summary`, `/api/metrics/bi/export?format=json|csv`), **export CSV programado (opt-in)** `METRICS_BI_EXPORT_ENABLED` + volumen `/app/bi-exports`, Prometheus; lectura de negocio restringida a ADMIN |
-| **notification-service** | 8090 | ✅ Completo | In-app + **WebSocket** `/ws/notifications` (JWT query); Kafka incl. **challengeTitle**; REST JWT; **importancia** `INFO|REMINDER|ALERTS|IMPORTANT`; **solo** `IMPORTANT` → email vía auth (mismo título/cuerpo); bienvenida in-app tras verificar email (auth → `POST /internal/notifications/welcome`); **achievement unlocked** auth → `POST /internal/notifications/achievement-unlocked` (tipo `ACHIEVEMENT_UNLOCKED`, push WS + toast frontend); revisión docente submission-service → `POST /internal/notifications/teacher-submission-review` (tipo `TEACHER_SUBMISSION_REVIEW`, INFO + push WS); query `minImportance`; frontend: `/notifications` + push toast global en topbar | |
+| **notification-service** | 8090 | ✅ Completo | In-app + **WebSocket** `/ws/notifications` (JWT query); Kafka incl. **challengeTitle**; REST JWT; **importancia** `INFO|REMINDER|ALERTS|IMPORTANT`; **solo** `IMPORTANT` → email vía auth (mismo título/cuerpo); bienvenida in-app tras verificar email (auth → `POST /internal/notifications/welcome`); **achievement unlocked** auth → `POST /internal/notifications/achievement-unlocked` (tipo `ACHIEVEMENT_UNLOCKED`, push WS + toast frontend); **nuevo challenge publicado** auth → `POST /internal/notifications/new-challenge-published` (tipo `NEW_CHALLENGE_PUBLISHED`, INFO + push WS; email dedicado aparte); revisión docente submission-service → `POST /internal/notifications/teacher-submission-review` (tipo `TEACHER_SUBMISSION_REVIEW`, INFO + push WS); query `minImportance`; frontend: `/notifications` + push toast global en topbar | |
 
 ## Infraestructura Docker
 
@@ -45,7 +45,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
 | `/forgot-password` | ForgotPassword | ✅ Solicitud de reset (respuesta genérica) |
 | `/reset-password` | ResetPassword | ✅ Nueva contraseña con `?token=` |
-| `/challenges` | Challenges | ✅ Sidebar **Email alerts** (solo STUDENT); tour catálogo 1ª vez |
+| `/challenges` | Challenges | ✅ Newsletter opt-in al pie del catálogo (STUDENT, email verificado); email + in-app al publicar challenge (`new_challenge_email_alerts` → auth + notification-service); tour catálogo 1ª vez |
 | `/challenges/:id` | ChallengeDetail | ✅ Resumen público (`/preview`); specs técnicas solo en submit; tour ficha 1ª vez |
 | `/challenges/:id/submit` | ChallengeSubmit | ✅ Timer (`deadlineAt`), límites, sesión; tour submit tras cerrar modal 1er envío |
 | `/dashboard` | Dashboard | ✅ Tour 1ª vez; **widget racha semanal** (sidebar + panel) vía `GET /api/auth/me/streak` |

@@ -5,13 +5,12 @@ import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
 import * as challengesApi from '../../lib/challengesApi';
-import * as authApi from '../../lib/authApi';
-import { useAuth } from '../../context/AuthContext';
 import './challenges.css';
 import TutorialTour from '../../components/tutorial/TutorialTour';
 import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
 import { useTourSteps } from '../../lib/tourSteps';
 import { usePageMeta } from '../../lib/usePageMeta';
+import ChallengeNewsletterBanner from '../../components/challenges/ChallengeNewsletterBanner';
 
 function mapApiToCard(api) {
   const diff = (api.difficulty || 'EASY').toLowerCase();
@@ -157,9 +156,7 @@ export default function Challenges() {
     description: t('pageDescription'),
     path: '/challenges',
   });
-  const { user, isAuthenticated, loadUser } = useAuth();
   const tourSteps = useTourSteps('challenges');
-  const [alertsSaving, setAlertsSaving] = useState(false);
   const [search, setSearch]           = useState('');
   const [diffFilter, setDiffFilter]   = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -421,42 +418,6 @@ export default function Challenges() {
             </div>
           </div>
 
-          {isAuthenticated && user?.role === 'STUDENT' && (
-            <div className="ch-sidebar-section">
-              <div className="ch-sidebar-label">{t('sidebar.emailAlerts')}</div>
-              <label className="ch-email-alert-row">
-                <input
-                  type="checkbox"
-                  checked={Boolean(user?.newChallengeEmailAlerts)}
-                  disabled={alertsSaving || !user?.emailVerified}
-                  onChange={async (e) => {
-                    const checked = e.target.checked;
-                    setAlertsSaving(true);
-                    try {
-                      await authApi.updateProfile({ newChallengeEmailAlerts: checked });
-                      await loadUser();
-                    } catch (err) {
-                      e.target.checked = !checked;
-                      alert(err?.message || t('sidebar.updatePrefError'));
-                    } finally {
-                      setAlertsSaving(false);
-                    }
-                  }}
-                />
-                <span className="ch-email-alert-copy">
-                  <strong>{t('sidebar.newChallengesEmail')}</strong>
-                  {' '}
-                  {t('sidebar.newChallengesEmailDesc')}
-                  {!user?.emailVerified ? (
-                    <span className="ch-email-alert-verify-note">
-                      {t('sidebar.verifyEmailNote')}
-                    </span>
-                  ) : null}
-                </span>
-              </label>
-            </div>
-          )}
-
         </aside>
 
         <main className="ch-main" data-tutorial="challenges-main">
@@ -590,6 +551,8 @@ export default function Challenges() {
               )}
             </>
           )}
+
+          {!loading && !error && <ChallengeNewsletterBanner />}
 
         </main>
       </div>

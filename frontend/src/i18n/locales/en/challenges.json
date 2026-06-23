@@ -8,6 +8,18 @@
   "new": "New",
   "solved": "solved",
   "points": "POINTS",
+  "newsletter": {
+    "eyebrow": "// challenge alerts",
+    "title": "Hear when new challenges drop",
+    "desc": "Opt in to get an email and an in-app alert whenever a new challenge is published in the catalog.",
+    "toggleLabel": "Notify me about new challenges",
+    "toggleHint": "Email + in-app notification when something new goes live.",
+    "enabled": "You are subscribed.",
+    "verifyEmail": "Verify your email to enable alerts.",
+    "loginCta": "Log in to subscribe",
+    "studentsOnly": "Challenge alerts are available for student accounts.",
+    "updateError": "Could not update your preference"
+  },
   "sidebar": {
     "search": "Search",
     "searchPlaceholder": "challenge name...",
