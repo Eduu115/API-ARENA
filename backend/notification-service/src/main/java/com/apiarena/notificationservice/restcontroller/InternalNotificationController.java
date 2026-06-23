@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.apiarena.notificationservice.model.dto.InternalAchievementUnlockedRequest;
+import com.apiarena.notificationservice.model.dto.InternalNewChallengePublishedRequest;
 import com.apiarena.notificationservice.model.dto.InternalTeacherSubmissionReviewRequest;
 import com.apiarena.notificationservice.model.dto.InternalWelcomeRequest;
 import com.apiarena.notificationservice.model.services.NotificationService;
@@ -56,6 +57,15 @@ public class InternalNotificationController {
             @Valid @RequestBody InternalAchievementUnlockedRequest body) {
         authorizeInternal(token);
         notificationService.createAchievementUnlockedNotification(body);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/new-challenge-published")
+    public ResponseEntity<Void> newChallengePublished(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @Valid @RequestBody InternalNewChallengePublishedRequest body) {
+        authorizeInternal(token);
+        notificationService.createNewChallengePublishedNotification(body);
         return ResponseEntity.accepted().build();
     }
 

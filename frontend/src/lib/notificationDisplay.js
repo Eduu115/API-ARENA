@@ -14,6 +14,13 @@ export function notificationActionPath(notification) {
   if (notification.type === 'ACHIEVEMENT_UNLOCKED') {
     return localePath(loc, '/perfil/achievements');
   }
+  if (notification.type === 'NEW_CHALLENGE_PUBLISHED') {
+    const cid = notification.metadata?.challengeId;
+    if (cid != null) {
+      return localePath(loc, `/challenges/${cid}`);
+    }
+    return localePath(loc, '/challenges');
+  }
   const sid = notification.metadata?.submissionId;
   if (sid != null) {
     return localePath(loc, `/submissions/${sid}`);
@@ -26,6 +33,9 @@ export function notificationActionLabel(notification) {
   if (!notification) return t('actions.open');
   if (notification.type === 'ACHIEVEMENT_UNLOCKED') {
     return t('actions.seeMore');
+  }
+  if (notification.type === 'NEW_CHALLENGE_PUBLISHED') {
+    return t('actions.viewChallenge');
   }
   const sid = notification.metadata?.submissionId;
   if (sid != null) {

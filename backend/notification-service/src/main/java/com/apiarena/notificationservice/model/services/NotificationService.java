@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.apiarena.notificationservice.kafka.SubmissionCompletedEvent;
 import com.apiarena.notificationservice.model.dto.InternalAchievementUnlockedRequest;
+import com.apiarena.notificationservice.model.dto.InternalNewChallengePublishedRequest;
 import com.apiarena.notificationservice.model.dto.InternalTeacherSubmissionReviewRequest;
 import com.apiarena.notificationservice.model.dto.NotificationDTO;
 import com.apiarena.notificationservice.model.entities.Notification;
@@ -30,6 +31,8 @@ public class NotificationService {
     public static final String TYPE_TEACHER_SUBMISSION_REVIEW = "TEACHER_SUBMISSION_REVIEW";
 
     public static final String TYPE_ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED";
+
+    public static final String TYPE_NEW_CHALLENGE_PUBLISHED = "NEW_CHALLENGE_PUBLISHED";
 
     private final NotificationRepository notificationRepository;
     private final ObjectMapper objectMapper;
@@ -226,6 +229,52 @@ public class NotificationService {
         long unread = notificationRepository.countByUserIdAndReadAtIsNull(body.userId());
         notificationPushService.pushNewNotification(body.userId(), dto, unread);
         notificationEmailDispatchService.mirrorNotificationToEmail(n);
+    }
+
+    /**
+     * In-app alert for students subscribed to new-challenge emails (INFO only — dedicated email is sent separately).
+     */
+    @Transactional
+    public void createNewChallengePublishedNotification(InternalNewChallengePublishedRequest body) {
+        if (body == null || body.userId() == null || body.challengeId() == null) {
+            return;
+        }
+
+        String loc = body.locale() != null && body.locale().trim().equalsIgnoreCase("es") ? "es" : "en";
+        String challengeLabel = body.challengeTitle() != null && !body.challengeTitle().isBlank()
+                ? "\"" + body.challengeTitle().trim() + "\""
+                : (loc.equals("es") ? "challenge #" + body.challengeId() : "challenge #" + body.challengeId());
+
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("challengeId", body.challengeId());
+        if (body.challengeTitle() != null && !body.challengeTitle().isBlank()) {
+            meta.put("challengeTitle", body.challengeTitle().trim());
+        }
+        String metadataJson;
+        try {
+            metadataJson = objectMapper.writeValueAsString(meta);
+        } catch (Exception e) {
+            metadataJson = "{}";
+        }
+
+        Notification n = new Notification();
+        n.setUserId(body.userId());
+        n.setType(TYPE_NEW_CHALLENGE_PUBLISHED);
+        n.setImportance(NotificationImportance.INFO);
+        if (loc.equals("es")) {
+            n.setTitle("Nuevo challenge publicado");
+            n.setBody(String.format("%s ya está en el catálogo. Ábrelo y compite.", challengeLabel));
+        } else {
+            n.setTitle("New challenge published");
+            n.setBody(String.format("%s is now in the catalog. Open it and compete.", challengeLabel));
+        }
+        n.setMetadataJson(metadataJson);
+        n.setSourceSubmissionId(null);
+
+        notificationRepository.save(n);
+        NotificationDTO dto = toDto(n);
+        long unread = notificationRepository.countByUserIdAndReadAtIsNull(body.userId());
+        notificationPushService.pushNewNotification(body.userId(), dto, unread);
     }
 
     @Transactional(readOnly = true)

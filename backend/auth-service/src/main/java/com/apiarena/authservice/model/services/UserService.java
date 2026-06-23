@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +26,8 @@ import jakarta.transaction.Transactional;
 @Service
 public class UserService implements IUserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
     private static final Duration LAST_SEEN_TOUCH_INTERVAL = Duration.ofMinutes(2);
 
     @Autowired
@@ -43,6 +47,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private AchievementService achievementService;
+
+    @Autowired
+    private NewChallengeNotificationDispatchService newChallengeNotificationDispatchService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -217,13 +224,18 @@ public class UserService implements IUserService {
         List<User> subscribers = userRepository.findByRoleAndEmailVerifiedTrueAndNewChallengeEmailAlertsTrue(
                 User.Role.STUDENT);
         String title = challengeTitle != null && !challengeTitle.isBlank() ? challengeTitle : "New challenge";
+        int notified = 0;
         for (User u : subscribers) {
             if (createdByUserId != null && createdByUserId.equals(u.getId())) {
                 continue;
             }
             emailDispatchService.sendNewChallengePublishedEmail(
                     u.getEmail(), u.getUsername(), title, challengeId, u.getPreferredLocale());
+            newChallengeNotificationDispatchService.notifySubscriber(
+                    u.getId(), challengeId, title, u.getPreferredLocale());
+            notified++;
         }
+        log.info("New challenge {} published: notified {} newsletter subscriber(s)", challengeId, notified);
     }
 
     @Override

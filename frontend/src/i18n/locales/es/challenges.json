@@ -8,6 +8,18 @@
   "new": "Nuevo",
   "solved": "resueltos",
   "points": "PUNTOS",
+  "newsletter": {
+    "eyebrow": "// alertas de challenges",
+    "title": "Entérate cuando salgan más desafíos",
+    "desc": "Activa las alertas para recibir un email y una notificación in-app cada vez que se publique un challenge nuevo en el catálogo.",
+    "toggleLabel": "Avísame cuando haya challenges nuevos",
+    "toggleHint": "Email + notificación in-app cuando se publique algo nuevo.",
+    "enabled": "Estás suscrito.",
+    "verifyEmail": "Verifica tu email para activar las alertas.",
+    "loginCta": "Inicia sesión para suscribirte",
+    "studentsOnly": "Las alertas de challenges están disponibles para cuentas de estudiante.",
+    "updateError": "No se pudo actualizar tu preferencia"
+  },
   "sidebar": {
     "search": "Buscar",
     "searchPlaceholder": "nombre del challenge...",
