@@ -41,15 +41,18 @@ jobs:
             docker compose ps
             auth_ok=0
             sub_ok=0
+            gw_ok=0
             curl -fsS http://localhost:8081/actuator/health >/dev/null 2>&1 && auth_ok=1 || true
             curl -fsS http://localhost:8083/actuator/health >/dev/null 2>&1 && sub_ok=1 || true
-            if [ "$auth_ok" = "1" ] && [ "$sub_ok" = "1" ]; then
-              echo "Auth and submission-service are healthy"
+            # Gateway readiness: /api/challenges exercises frontend nginx + challenge upstream.
+            curl -fsS http://localhost:3000/api/challenges >/dev/null 2>&1 && gw_ok=1 || true
+            if [ "$auth_ok" = "1" ] && [ "$sub_ok" = "1" ] && [ "$gw_ok" = "1" ]; then
+              echo "Auth, submission-service and the /api gateway are healthy"
               exit 0
             fi
             sleep 5
           done
-          echo "Timed out waiting for auth/submission health" >&2
+          echo "Timed out waiting for auth/submission/gateway health" >&2
           exit 1
 
       - name: Run e2e smoke script

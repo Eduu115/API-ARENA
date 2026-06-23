@@ -28,7 +28,7 @@ alwaysApply: true
 - **InfluxDB**: ✅ **integrado** en submission-service (serie `submission_pipeline`: duración, score, estado)
 - **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`)
 - **Prometheus + Grafana + Alertmanager**: ✅ `9090` / `3001` / `9093`; reglas `docker/prometheus/alerts.yml` (HTTP 5xx, heap JVM); datasource **InfluxDB** en Grafana (UID `influx-apiarena`; token alineado con `.env`); dashboards Operational Overview + Submission Pipeline Health
-- **Frontend (Nginx)**: ✅ puerto 3000; rutas **`/en/`** y **`/es/`** (redirect `/` → locale guardado o `Accept-Language`); SEO canonical + hreflang; nav/chrome labels siguen en inglés; **`LocaleLink`** + **`useNavigateLocalized`** en toda la app; sync `preferred_locale` ↔ URL vía `LocalePreferenceSync`
+- **Frontend (Nginx)**: ✅ puerto 3000; **edge proxy `/api/*` + `/ws/notifications`** a cada microservicio por la red interna (origen único; `VITE_API_BASE_URL` vacío = mismo origen; `api_proxy.conf` reenvía `X-Forwarded-For`/`X-Real-IP` para los rate limiters); microservicios Java publicados solo en loopback (`MICROSERVICE_BIND_IP=127.0.0.1` por defecto); dev: proxy equivalente en `vite.config.js`. Rutas **`/en/`** y **`/es/`** (redirect `/` → locale guardado o `Accept-Language`); SEO canonical + hreflang; nav/chrome labels siguen en inglés; **`LocaleLink`** + **`useNavigateLocalized`** en toda la app; sync `preferred_locale` ↔ URL vía `LocalePreferenceSync`
 
 ## Sistema de XP y ELO
 
@@ -109,6 +109,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 - Public profile **last seen**: columna `users.last_seen_at` (login + heartbeat navegación throttled 2 min); `lastSeenAt` en `GET /api/auth/users/{id}/profile`; modal perfil público “Online now” / “Last online …”.
 - Cooldown UX: en ficha del challenge no se entra a `/submit` con cuenta atrás visible; modal con tiempo restante; pantalla submit bloqueada con el mismo modal y sin arrancar timer/sesión hasta que la política permita.
 - Challenge público vs specs: ficha `/challenges/:id` solo preview (nombre, descripción, stats, teaser); endpoints/tests/hints solo vía `GET .../specs` en pantalla submit autenticada.
+- **API edge proxy (origen único)**: el contenedor `frontend` (nginx) enruta `/api/*` y `/ws/notifications` a cada servicio; el SPA usa rutas relativas (`VITE_API_BASE_URL` vacío) y deriva `wss://` de la página. Clientes JS unificados vía `frontend/src/lib/apiBase.js`. Puertos Java solo en loopback por defecto. Deploy NPM: un único proxy host → `apiarena-frontend:80` (ver `docs/DEPLOY-CLOUDFLARE-NPM.md`). `e2e-smoke.sh` corre contra `http://localhost:3000`.
 
 ## Lo que falta (priorizado) y orden de magnitud
 

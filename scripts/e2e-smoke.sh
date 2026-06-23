@@ -11,11 +11,14 @@ PASSWORD="${E2E_PASSWORD:-Arena2025!}"
 # Cloudflare Turnstile dummy token (works with test secret 1x000...AA in CI).
 TURNSTILE_TOKEN="${E2E_TURNSTILE_TOKEN:-XXXX.DUMMY.TOKEN.XXXX}"
 
-AUTH_URL="${AUTH_URL:-http://localhost:8081}"
-CHALLENGE_URL="${CHALLENGE_URL:-http://localhost:8082}"
-SUBMISSION_URL="${SUBMISSION_URL:-http://localhost:8083}"
-LEADERBOARD_URL="${LEADERBOARD_URL:-http://localhost:8087}"
-NOTIFICATION_URL="${NOTIFICATION_URL:-http://localhost:8090}"
+# All services sit behind the frontend /api edge proxy. API_BASE points at it;
+# per-service overrides remain for hitting a single service directly.
+API_BASE="${API_BASE:-http://localhost:3000}"
+AUTH_URL="${AUTH_URL:-$API_BASE}"
+CHALLENGE_URL="${CHALLENGE_URL:-$API_BASE}"
+SUBMISSION_URL="${SUBMISSION_URL:-$API_BASE}"
+LEADERBOARD_URL="${LEADERBOARD_URL:-$API_BASE}"
+NOTIFICATION_URL="${NOTIFICATION_URL:-$API_BASE}"
 
 if ! command -v curl >/dev/null || ! command -v jq >/dev/null; then
   echo "Required tools missing: curl and jq" >&2

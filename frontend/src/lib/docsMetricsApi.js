@@ -1,12 +1,5 @@
 import { getStoredTokens } from "./authApi.js";
-
-function getMetricsBaseUrl() {
-  const url = import.meta.env.VITE_METRICS_API_URL;
-  if (!url) {
-    return "http://localhost:8089";
-  }
-  return url.replace(/\/$/, "");
-}
+import { getApiBaseUrl as getMetricsBaseUrl } from "./apiBase.js";
 
 async function request(path, options = {}) {
   const base = getMetricsBaseUrl();

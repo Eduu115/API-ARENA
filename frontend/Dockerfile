@@ -4,19 +4,10 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Vite envs must be available at build time (ARG -> ENV).
-ARG VITE_AUTH_API_URL
-ARG VITE_CHALLENGES_API_URL
-ARG VITE_SUBMISSIONS_API_URL
-ARG VITE_LEADERBOARD_API_URL
-ARG VITE_NOTIFICATIONS_API_URL
-ARG VITE_METRICS_API_URL
+# Single origin: empty => same-origin; nginx proxies /api/* and /ws/* to each service.
+ARG VITE_API_BASE_URL
 ARG VITE_TURNSTILE_SITE_KEY
-ENV VITE_AUTH_API_URL=${VITE_AUTH_API_URL}
-ENV VITE_CHALLENGES_API_URL=${VITE_CHALLENGES_API_URL}
-ENV VITE_SUBMISSIONS_API_URL=${VITE_SUBMISSIONS_API_URL}
-ENV VITE_LEADERBOARD_API_URL=${VITE_LEADERBOARD_API_URL}
-ENV VITE_NOTIFICATIONS_API_URL=${VITE_NOTIFICATIONS_API_URL}
-ENV VITE_METRICS_API_URL=${VITE_METRICS_API_URL}
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV VITE_TURNSTILE_SITE_KEY=${VITE_TURNSTILE_SITE_KEY}
 
 # Copiar package files y descargar dependencias (capa cacheable)
@@ -37,6 +28,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copiar configuración personalizada de nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY api_proxy.conf /etc/nginx/api_proxy.conf
 
 # Exponer puerto
 EXPOSE 80
