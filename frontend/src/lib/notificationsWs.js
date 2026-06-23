@@ -1,15 +1,13 @@
 import { getStoredTokens } from "./authApi.js";
+import { getApiBaseUrl } from "./apiBase.js";
 
-function getBaseUrl() {
-  const url = import.meta.env.VITE_NOTIFICATIONS_API_URL;
-  if (!url) return "http://localhost:8090";
-  return url.replace(/\/$/, "");
-}
-
-function httpToWsUrl(base) {
-  if (base.startsWith("https://")) return "wss://" + base.slice(8);
-  if (base.startsWith("http://")) return "ws://" + base.slice(7);
-  return base;
+// ws(s):// origin for the notifications socket. When the API base is relative
+// (same-origin nginx/Vite proxy), derive it from the current page location.
+function getWsOrigin() {
+  const base = getApiBaseUrl();
+  if (base) return base.replace(/^http/, "ws"); // http->ws, https->wss
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${proto}//${window.location.host}`;
 }
 
 /**
@@ -24,7 +22,7 @@ export function connectNotificationsWs(callbacks = {}) {
     return () => {};
   }
   const wsUrl =
-    httpToWsUrl(getBaseUrl()) +
+    getWsOrigin() +
     "/ws/notifications?access_token=" +
     encodeURIComponent(tokens.accessToken);
   let ws;

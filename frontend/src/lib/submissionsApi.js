@@ -1,12 +1,5 @@
 import { getStoredTokens } from "./authApi.js";
-
-function getBaseUrl() {
-  const url = import.meta.env.VITE_SUBMISSIONS_API_URL;
-  if (!url) {
-    return "http://localhost:8083";
-  }
-  return url.replace(/\/$/, "");
-}
+import { getApiBaseUrl as getBaseUrl } from "./apiBase.js";
 
 async function request(path, options = {}) {
   const base = getBaseUrl();

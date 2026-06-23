@@ -1,22 +1,21 @@
 # Deploy `apiarena.net` con Cloudflare + Nginx Proxy Manager
 
-Este repo levanta todo por Docker Compose. Para producción con tu dominio en Cloudflare, la forma más limpia es:
+Este repo levanta todo por Docker Compose. Desde la incorporación del **edge proxy**
+(el contenedor `frontend` enruta `/api/*` y `/ws/*` a cada microservicio), el SPA
+usa un **único origen**: el navegador solo habla con `apiarena.net`.
 
-- **Nginx Proxy Manager (NPM)**: termina TLS y enruta por subdominios a los contenedores.
-- **Docker Compose**: levanta microservicios en una red interna (sin puertos publicados al host).
-- **Cloudflare**: DNS apuntando al servidor (A/AAAA) y proxy activado si quieres.
+- **Frontend (nginx)**: sirve el SPA y hace de gateway `/api` hacia los microservicios por la red interna de Docker.
+- **Nginx Proxy Manager (NPM)**: termina TLS y enruta un único host (`apiarena.net`) al contenedor `apiarena-frontend`.
+- **Docker Compose**: microservicios en red interna; sus puertos no se publican al exterior.
+- **Cloudflare**: DNS apuntando al servidor (A/AAAA), proxy opcional.
 
 ## 1) DNS en Cloudflare
 
-Crea estos registros (tipo **A** a la IP de tu servidor):
+Un único registro **A** a la IP de tu servidor:
 
-- `apiarena.net` → tu IP (frontend)
-- `auth.apiarena.net` → tu IP
-- `challenges.apiarena.net` → tu IP
-- `submissions.apiarena.net` → tu IP
-- `leaderboard.apiarena.net` → tu IP
-- `notifications.apiarena.net` → tu IP (**incluye WebSocket**)
-- `metrics.apiarena.net` → tu IP
+- `apiarena.net` → tu IP (frontend + API + WebSocket, todo por el mismo host)
+
+Ya **no** hacen falta los subdominios `auth.`, `challenges.`, `submissions.`, etc.
 
 Opcional (solo si vas a exponer observabilidad):
 
@@ -33,6 +32,7 @@ APP_EMAIL_FRONTEND_BASE_URL=https://apiarena.net
 
 # No expongas los servicios al público: solo NPM debe estar abierto (80/443).
 BIND_IP=127.0.0.1
+MICROSERVICE_BIND_IP=127.0.0.1
 
 # CORS para todos los servicios (origen del SPA)
 CORS_ALLOWED_ORIGINS=https://apiarena.net
@@ -45,13 +45,9 @@ JWT_REFRESH_EXPIRATION=604800000
 # Token interno entre servicios (auth/challenge/submission/etc.)
 INTERNAL_SERVICE_TOKEN=RELLENA_UN_TOKEN_INTERNO_LARGO_Y_ALEATORIO
 
-# URLs públicas que compila el frontend (Vite)
-VITE_AUTH_API_URL=https://auth.apiarena.net
-VITE_CHALLENGES_API_URL=https://challenges.apiarena.net
-VITE_SUBMISSIONS_API_URL=https://submissions.apiarena.net
-VITE_LEADERBOARD_API_URL=https://leaderboard.apiarena.net
-VITE_NOTIFICATIONS_API_URL=https://notifications.apiarena.net
-VITE_METRICS_API_URL=https://metrics.apiarena.net
+# Origen único de la API (Vite). Vacío => mismo origen: el nginx del frontend
+# enruta /api/* a cada servicio. No pongas las antiguas VITE_*_API_URL.
+VITE_API_BASE_URL=
 ```
 
 ## 3) Levantar stack en modo “prod detrás de NPM”
@@ -62,33 +58,26 @@ Desde la raíz:
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-Este override (`docker-compose.prod.yml`) quita los `ports:` del host para evitar exponer Postgres/Redis/Kafka y microservicios.
-
-Si tu servidor ya tiene servicios usando puertos típicos (p. ej. `8081`, `5432`, etc.), puedes mover los binds del host con variables tipo `AUTH_HOST_PORT`, `POSTGRES_HOST_PORT`, etc. (ver `docker-compose.yml`).
+El override (`docker-compose.prod.yml`) quita los `ports:` del host para no exponer
+Postgres/Redis/Kafka ni los microservicios. NPM llega al frontend por la red de Docker.
 
 ## 4) Configurar Nginx Proxy Manager
 
-En NPM crea un **Proxy Host** por cada dominio/subdominio:
+Crea **un único Proxy Host**:
 
 | Hostname | Forward Hostname | Forward Port |
 |---|---|---:|
 | `apiarena.net` | `apiarena-frontend` | 80 |
-| `auth.apiarena.net` | `apiarena-auth` | 8081 |
-| `challenges.apiarena.net` | `apiarena-challenge` | 8082 |
-| `submissions.apiarena.net` | `apiarena-submission` | 8083 |
-| `leaderboard.apiarena.net` | `apiarena-leaderboard` | 8087 |
-| `notifications.apiarena.net` | `apiarena-notification` | 8090 |
-| `metrics.apiarena.net` | `apiarena-metrics` | 8089 |
 
-En cada Proxy Host:
+En ese Proxy Host:
 
-- Activa **Websockets Support** (imprescindible en `notifications.apiarena.net`; recomendable en todos).
+- Activa **Websockets Support** (el bell de notificaciones usa `/ws/notifications`).
 - Pide certificado **Let’s Encrypt** desde NPM y activa **Force SSL**.
+
+> NPM debe estar en la misma red Docker que el stack para resolver `apiarena-frontend`.
 
 ## 5) Notas importantes
 
-- **WebSocket de notificaciones**: el frontend convierte `https://notifications...` a `wss://notifications...` automáticamente.
-- **CORS**: con `CORS_ALLOWED_ORIGINS=https://apiarena.net` los servicios aceptan el SPA. Si además quieres dev local, usa:
-  - `CORS_ALLOWED_ORIGINS=https://apiarena.net,http://localhost:3000,http://localhost:5173`
-- **No publiques puertos internos** en el host en producción; deja que NPM sea el único punto de entrada.
-
+- **WebSocket de notificaciones**: con origen único, el SPA deriva `wss://apiarena.net/ws/notifications` de la propia URL de la página.
+- **CORS**: al ser mismo origen, el SPA no necesita CORS hacia los microservicios. Mantén `CORS_ALLOWED_ORIGINS` por si accedes a algún servicio directamente en dev.
+- **No publiques puertos internos** en el host en producción; deja que NPM sea el único punto de entrada (80/443). Cierra 8081–8090 en el firewall.

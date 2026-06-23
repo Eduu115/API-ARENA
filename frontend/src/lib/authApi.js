@@ -2,34 +2,11 @@
 
 
 
+import { getApiBaseUrl } from "./apiBase.js";
+
 const AUTH_STORAGE_KEY = "apiarena_auth";
 
-
-
-
-
-function getBaseUrl() {
-
-
-    const url = import.meta.env.VITE_AUTH_API_URL;
-
-
-    if (!url) {
-
-
-        console.warn("VITE_AUTH_API_URL is not defined, using http://localhost:8081");
-
-
-        return "http://localhost:8081";
-
-
-    }
-
-
-    return url.replace(/\/$/, "");
-
-
-}
+const getBaseUrl = getApiBaseUrl;
 
 /**
  * Do not attach a stored Bearer token — avoids 403 on login/register when an old JWT is expired or invalid.

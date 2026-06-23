@@ -1,10 +1,5 @@
 import { getStoredTokens } from "./authApi.js";
-
-function getBaseUrl() {
-  const url = import.meta.env.VITE_LEADERBOARD_API_URL;
-  if (!url) return "http://localhost:8087";
-  return url.replace(/\/$/, "");
-}
+import { getApiBaseUrl as getBaseUrl } from "./apiBase.js";
 
 async function request(path) {
   const base = getBaseUrl();

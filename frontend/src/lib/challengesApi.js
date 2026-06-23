@@ -1,14 +1,7 @@
 import { getStoredTokens } from "./authApi.js";
+import { getApiBaseUrl as getBaseUrl } from "./apiBase.js";
 
 // This client centralizes challenge API calls and auth headers.
-
-function getBaseUrl() {
-  const url = import.meta.env.VITE_CHALLENGES_API_URL;
-  if (!url) {
-    return "http://localhost:8082";
-  }
-  return url.replace(/\/$/, "");
-}
 
 async function request(path, options = {}) {
   const base = getBaseUrl();
