@@ -28,7 +28,7 @@ alwaysApply: true
 - **InfluxDB**: ✅ **integrado** en submission-service (serie `submission_pipeline`: duración, score, estado)
 - **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`)
 - **Prometheus + Grafana + Alertmanager**: ✅ `9090` / `3001` / `9093`; reglas `docker/prometheus/alerts.yml` (HTTP 5xx, heap JVM); datasource **InfluxDB** en Grafana (UID `influx-apiarena`; token alineado con `.env`); dashboards Operational Overview + Submission Pipeline Health
-- **Frontend (Nginx)**: ✅ puerto 3000; rutas **`/en/`** y **`/es/`** (redirect `/` → locale guardado o `Accept-Language`); SEO canonical + hreflang; nav/chrome labels siguen en inglés
+- **Frontend (Nginx)**: ✅ puerto 3000; rutas **`/en/`** y **`/es/`** (redirect `/` → locale guardado o `Accept-Language`); SEO canonical + hreflang; nav/chrome labels siguen en inglés; **`LocaleLink`** + **`useNavigateLocalized`** en toda la app; sync `preferred_locale` ↔ URL vía `LocalePreferenceSync`
 
 ## Sistema de XP y ELO
 

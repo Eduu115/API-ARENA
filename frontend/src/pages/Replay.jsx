@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Link } from "react-router-dom";
+import LocaleLink from "../components/LocaleLink";
 import { useTranslation } from "react-i18next";
 import Topbar from "../components/Topbar";
 import BottomNav from "../components/BottomNav";
@@ -297,7 +297,7 @@ export default function Replay() {
                   {!listLoading && !listError && completedSubs.length === 0 && (
                     <div className="rp-sidebar-empty">
                       <p>{t("emptyList")}</p>
-                      <Link to="/challenges" className="rp-sidebar-link">{t("goChallenges")}</Link>
+                      <LocaleLink to="/challenges" className="rp-sidebar-link">{t("goChallenges")}</LocaleLink>
                     </div>
                   )}
                   {!listLoading && !listError && completedSubs.map((s) => (

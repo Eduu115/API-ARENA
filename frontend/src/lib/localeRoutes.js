@@ -33,9 +33,12 @@ export function parsePathname(pathname) {
  */
 export function localePath(locale, path = '/') {
   const loc = isValidLocale(locale) ? locale : DEFAULT_LOCALE;
-  const normalized = path.startsWith('/') ? path : `/${path}`;
-  if (normalized === '/') return `/${loc}`;
-  return `/${loc}${normalized}`;
+  const raw = path.startsWith('/') ? path : `/${path}`;
+  const qIndex = raw.search(/[?#]/);
+  const pathname = qIndex === -1 ? raw : raw.slice(0, qIndex);
+  const suffix = qIndex === -1 ? '' : raw.slice(qIndex);
+  if (pathname === '/') return `/${loc}${suffix}`;
+  return `/${loc}${pathname}${suffix}`;
 }
 
 /** @returns {AppLocale} */

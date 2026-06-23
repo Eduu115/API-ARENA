@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
@@ -38,7 +38,7 @@ function mapApiToCard(api) {
 
 function ChallengeCard({ challenge, spotlight = false }) {
   const { t } = useTranslation('challenges');
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const {
     id, title, difficulty, category, isNew,
     description, skills = [], submissions, solved, avgTime, points,

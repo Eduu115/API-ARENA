@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import LocaleLink from "../components/LocaleLink";
 import { useTranslation } from "react-i18next";
 import Topbar from "../components/Topbar";
 import BottomNav from "../components/BottomNav";
@@ -29,12 +29,12 @@ export default function NotFound() {
                 {t("notFound.description")}
               </p>
               <div style={{ display: "flex", gap: 12, marginTop: 24, flexWrap: "wrap" }}>
-                <Link to="/" className="auth-btn-outline" style={{ textDecoration: "none" }}>
+                <LocaleLink to="/" className="auth-btn-outline" style={{ textDecoration: "none" }}>
                   {t("notFound.backHome")}
-                </Link>
-                <Link to="/challenges" className="auth-link-quiet">
+                </LocaleLink>
+                <LocaleLink to="/challenges" className="auth-link-quiet">
                   {t("notFound.browseChallenges")} →
-                </Link>
+                </LocaleLink>
               </div>
             </div>
           </div>

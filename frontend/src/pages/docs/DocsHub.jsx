@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
 import { useTranslation } from "react-i18next";
 import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
@@ -198,9 +199,9 @@ export default function DocsHub() {
             </div>
 
             <nav className="docs-breadcrumb" aria-label="Breadcrumb">
-              <Link to="/">{ui.home}</Link>
+              <LocaleLink to="/">{ui.home}</LocaleLink>
               <span>/</span>
-              <Link to={`/docs/${docDocuments[0].id}`}>{ui.docs}</Link>
+              <LocaleLink to={`/docs/${docDocuments[0].id}`}>{ui.docs}</LocaleLink>
               <span>/</span>
               <span aria-current="page">{activeDoc.title}</span>
             </nav>
@@ -209,14 +210,14 @@ export default function DocsHub() {
               <aside className="docs-scrollspy">
                 <div className="docs-scrollspy-title">{ui.documents}</div>
                 {docDocuments.map((doc) => (
-                  <Link
+                  <LocaleLink
                     key={doc.id}
                     to={`/docs/${doc.id}`}
                     className={`docs-spy-item${activeDoc.id === doc.id ? " is-active" : ""}`}
                   >
                     <span className="docs-spy-item-title">{doc.title}</span>
                     <span className="docs-spy-item-sub">{doc.readTime}</span>
-                  </Link>
+                  </LocaleLink>
                 ))}
               </aside>
 
@@ -288,12 +289,12 @@ export default function DocsHub() {
                     {nextDoc ? (
                       <div className="docs-next-row">
                         <span className="docs-feedback-label">{ui.nextDocument}</span>
-                        <Link to={`/docs/${nextDoc.id}`} className="docs-next-btn">
+                        <LocaleLink to={`/docs/${nextDoc.id}`} className="docs-next-btn">
                           {getNextDocCtaLabel(activeDoc, nextDoc, locale)}
                           <span className="docs-next-btn-arrow" aria-hidden="true">
                             →
                           </span>
-                        </Link>
+                        </LocaleLink>
                         <span className="docs-next-meta">
                           {nextDoc.title}
                           {nextDoc.readTime ? ` · ${nextDoc.readTime}` : ""}
@@ -302,12 +303,12 @@ export default function DocsHub() {
                     ) : (
                       <div className="docs-next-row docs-next-row--end">
                         <span className="docs-feedback-label">{ui.endOfTrack}</span>
-                        <Link to={`/docs/${docDocuments[0].id}`} className="docs-feedback-btn">
+                        <LocaleLink to={`/docs/${docDocuments[0].id}`} className="docs-feedback-btn">
                           {ui.backToGettingStarted}
-                        </Link>
-                        <Link to="/challenges" className="docs-feedback-btn">
+                        </LocaleLink>
+                        <LocaleLink to="/challenges" className="docs-feedback-btn">
                           {ui.goToChallenges}
-                        </Link>
+                        </LocaleLink>
                       </div>
                     )}
                   </footer>

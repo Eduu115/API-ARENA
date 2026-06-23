@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import LocaleLink from '../../../components/LocaleLink';
 import { Trans, useTranslation } from 'react-i18next';
 import { LB_ENTRIES } from '../landing.data';
 
@@ -64,9 +64,9 @@ export default function LeaderboardSection() {
           <p className="lb-right-desc">
             <Trans i18nKey="leaderboard.desc" t={t} />
           </p>
-          <Link to="/leaderboard" className="btn-primary">
+          <LocaleLink to="/leaderboard" className="btn-primary">
             {t('leaderboard.cta')}
-          </Link>
+          </LocaleLink>
         </div>
       </div>
     </section>

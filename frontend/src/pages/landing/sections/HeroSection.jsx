@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import LocaleLink from '../../../components/LocaleLink';
 import { Trans, useTranslation } from 'react-i18next';
 import TerminalWindow from '../../../components/landing/TerminalWindow';
 import AlphaBadge from '../../../components/landing/AlphaBadge';
@@ -32,11 +32,11 @@ export default function HeroSection() {
         </p>
 
         <div className="hero-actions" data-tutorial="landing-hero-cta">
-          <Link to="/register" className="btn-primary">{t('hero.ctaPrimary')}</Link>
-          <Link to="/challenges" className="btn-secondary">
+          <LocaleLink to="/register" className="btn-primary">{t('hero.ctaPrimary')}</LocaleLink>
+          <LocaleLink to="/challenges" className="btn-secondary">
             {t('hero.ctaSecondary')}
             <ArrowRightIcon />
-          </Link>
+          </LocaleLink>
         </div>
 
         <div className="hero-stats">

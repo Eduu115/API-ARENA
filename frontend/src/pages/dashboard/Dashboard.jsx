@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import LocaleLink from '../../components/LocaleLink';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
+import { stripLocalePathname } from '../../lib/localeRoutes';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
@@ -27,8 +30,9 @@ const SIDEBAR_LINKS = [
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation('dashboard');
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const { pathname } = useLocation();
+  const logicalPath = stripLocalePathname(pathname);
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [featured, setFeatured] = useState([]);
@@ -130,9 +134,9 @@ export default function Dashboard() {
             <div className="ch-sidebar-label">{t('quickJump')}</div>
             <div className="db-jump-list">
               {SIDEBAR_LINKS.map(({ label, path, icon, primary }) => {
-                const active = pathname === path || pathname.startsWith(`${path}/`);
+                const active = logicalPath === path || logicalPath.startsWith(`${path}/`);
                 return (
-                  <Link
+                  <LocaleLink
                     key={path}
                     to={path}
                     className={[
@@ -146,7 +150,7 @@ export default function Dashboard() {
                     </span>
                     <span className="db-jump-link__label">{label}</span>
                     <span className="db-jump-link__arrow" aria-hidden>→</span>
-                  </Link>
+                  </LocaleLink>
                 );
               })}
             </div>
@@ -165,9 +169,9 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="db-header-actions">
-              <Link to="/challenges" className="db-btn db-btn-primary">
+              <LocaleLink to="/challenges" className="db-btn db-btn-primary">
                 {t('enterArena')}
-              </Link>
+              </LocaleLink>
             </div>
           </div>
 
@@ -188,7 +192,7 @@ export default function Dashboard() {
                 <span className="db-live-dot" />
                 {t('featured.title')}
               </div>
-              <Link to="/challenges" className="db-panel-action">{t('featured.catalog')}</Link>
+              <LocaleLink to="/challenges" className="db-panel-action">{t('featured.catalog')}</LocaleLink>
             </div>
             <p className="db-panel-lead">
               {t('featured.lead')}
@@ -248,9 +252,9 @@ export default function Dashboard() {
             ) : (
               <div className="db-panel-empty">
                 {t('featured.empty')}{' '}
-                <Link to="/challenges" className="db-panel-action" style={{ display: 'inline' }}>
+                <LocaleLink to="/challenges" className="db-panel-action" style={{ display: 'inline' }}>
                   {t('featured.browse')}
-                </Link>
+                </LocaleLink>
               </div>
             )}
           </div>

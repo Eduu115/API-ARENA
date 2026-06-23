@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import LocaleLink from './LocaleLink';
 import { useTranslation } from 'react-i18next';
 import { getUserPublicProfile, getUserPublicAchievements, getUserPublicBadges } from '../lib/authApi';
 import { getPublicUserSubmissions } from '../lib/submissionsApi';
@@ -291,13 +291,13 @@ export default function UserProfileCard({ userId, onClose }) {
     if (!isAuthenticated) {
       return (
         <div className="upc-friend-bar">
-          <Link
+          <LocaleLink
             to="/login"
             state={{ from: { pathname: window.location.pathname } }}
             className="upc-friend-btn upc-friend-btn--primary"
           >
             {tf('loginToAddFriend')}
-          </Link>
+          </LocaleLink>
         </div>
       );
     }
@@ -566,13 +566,13 @@ export default function UserProfileCard({ userId, onClose }) {
                   {submissions.map((s) => (
                     <li key={s.id} className="upc-sub-row">
                       <div className="upc-sub-main">
-                        <Link
+                        <LocaleLink
                           to={`/challenges/${s.challengeId}`}
                           className="upc-sub-title"
                           onClick={onClose}
                         >
                           {s.challengeTitle || t('publicCard.challengeFallback', { id: s.challengeId })}
-                        </Link>
+                        </LocaleLink>
                         <time className="upc-sub-date" dateTime={s.completedAt || s.createdAt}>
                           {formatDate(s.completedAt || s.createdAt, i18n.language)}
                         </time>

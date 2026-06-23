@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
-import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import i18n from '../i18n/index.js';
 import { isValidLocale, localePath, parsePathname, resolveEntryLocale } from '../lib/localeRoutes.js';
 import { setAppLocale } from '../lib/locale.js';
+import LocalePreferenceSync from '../components/LocalePreferenceSync.jsx';
 
 const LocaleContext = createContext({
   locale: 'en',
@@ -16,6 +17,23 @@ export function useAppLocale() {
 export function useLocalizedPath() {
   const { locale } = useAppLocale();
   return useCallback((path) => localePath(locale, path), [locale]);
+}
+
+/** navigate() wrapper that prefixes logical paths with the active locale. */
+export function useNavigateLocalized() {
+  const navigate = useNavigate();
+  const lp = useLocalizedPath();
+  return useCallback(
+    (to, options) => {
+      if (typeof to === 'number') return navigate(to);
+      if (typeof to === 'string') return navigate(lp(to), options);
+      if (to && typeof to === 'object' && to.pathname) {
+        return navigate({ ...to, pathname: lp(to.pathname) }, options);
+      }
+      return navigate(to, options);
+    },
+    [navigate, lp],
+  );
 }
 
 export function RootLocaleRedirect() {
@@ -51,6 +69,7 @@ export default function LocaleLayout() {
 
   return (
     <LocaleContext.Provider value={value}>
+      <LocalePreferenceSync />
       <Outlet />
     </LocaleContext.Provider>
   );

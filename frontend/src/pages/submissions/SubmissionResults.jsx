@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import { getMySubmissions, getSubmissionById } from '../../lib/submissionsApi';
 import { useAuth } from '../../context/AuthContext';
@@ -59,7 +60,7 @@ function normalizeAiReview(rawSuggestions, aiScoreRaw, fallbackSummary) {
 export default function SubmissionResults() {
   const { t } = useTranslation('submissions');
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const { user } = useAuth();
 
   const [sub, setSub] = useState(null);

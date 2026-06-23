@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import LocaleLink from "../LocaleLink";
 import { Trans, useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import { finishTutorial, isTutorialDone } from "../../lib/tutorialStorage";
@@ -180,13 +180,13 @@ export default function TutorialTour({
             <button type="button" className="tutorial-btn tutorial-btn-skip" onClick={handleSkip}>
               {t("chrome.skip")}
             </button>
-            <Link
+            <LocaleLink
               to={docsHref}
               className="tutorial-btn tutorial-btn-docs"
               onClick={() => closeTour("skip")}
             >
               {t("chrome.openDocs")}
-            </Link>
+            </LocaleLink>
             <button type="button" className="tutorial-btn tutorial-btn-next" onClick={handleNext}>
               {last ? t("chrome.done") : t("chrome.next")}
             </button>

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import { getMySubmissions } from '../../lib/submissionsApi';
 import Topbar from '../../components/Topbar';
@@ -36,7 +36,7 @@ const FILTER_VALUES = ['all', 'COMPLETED', 'FAILED', 'TESTING', 'BUILDING', 'PEN
 
 export default function MySubmissions() {
   const { t, i18n } = useTranslation('submissions');
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const [filter, setFilter] = useState('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [submissions, setSubmissions] = useState([]);

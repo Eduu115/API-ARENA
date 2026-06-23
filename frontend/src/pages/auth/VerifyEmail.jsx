@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
 import { useTranslation } from "react-i18next";
 import ThemeToggle from "../../components/ThemeToggle";
 import LocaleSwitch from "../../components/LocaleSwitch";
@@ -89,9 +90,9 @@ export default function VerifyEmail() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
+          <LocaleLink to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
-          </Link>
+          </LocaleLink>
           <div className="auth-page__toolbar-actions">
             <LocaleSwitch />
             <ThemeToggle />
@@ -101,13 +102,13 @@ export default function VerifyEmail() {
         <div className="auth-page__inner">
           <div className="auth-page__grid auth-page__grid--register">
             <div className="auth-page__col-copy auth-copy-block">
-              <Link to="/" className="auth-brand-row">
+              <LocaleLink to="/" className="auth-brand-row">
                 <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="36" height="36" />
                 <span className="ch-logo-text">
                   <span className="ch-api">API</span>
                   <span className="ch-arena">Arena</span>
                 </span>
-              </Link>
+              </LocaleLink>
 
               <div className="ch-page-eyebrow">{t("verifyEmail.eyebrow")}</div>
               <div className="auth-title-crt">
@@ -122,13 +123,13 @@ export default function VerifyEmail() {
               </p>
 
               <div className="auth-actions">
-                <Link to="/login" className="auth-btn-outline">
+                <LocaleLink to="/login" className="auth-btn-outline">
                   {t("signIn")}
                   <ArrowRightIcon width={16} height={16} />
-                </Link>
-                <Link to="/docs/primeros-pasos" className="auth-link-quiet">
+                </LocaleLink>
+                <LocaleLink to="/docs/primeros-pasos" className="auth-link-quiet">
                   {t("firstSteps")}
-                </Link>
+                </LocaleLink>
               </div>
             </div>
 
@@ -153,9 +154,9 @@ export default function VerifyEmail() {
                     <div className="auth-alert auth-alert--ok" role="status">
                       {displayVerifyMessage}
                     </div>
-                    <Link to="/login" className="auth-submit auth-submit--link">
+                    <LocaleLink to="/login" className="auth-submit auth-submit--link">
                       {t("logIn")}
-                    </Link>
+                    </LocaleLink>
                   </>
                 )}
 
@@ -209,7 +210,7 @@ export default function VerifyEmail() {
 
                 <div className="auth-footer-row">
                   <p>{t("verifyEmail.alreadyVerified")}</p>
-                  <Link to="/login">{t("backToSignIn")}</Link>
+                  <LocaleLink to="/login">{t("backToSignIn")}</LocaleLink>
                 </div>
               </div>
             </div>

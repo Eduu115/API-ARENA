@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import LocaleLink from '../components/LocaleLink';
+import { useNavigateLocalized, useLocalizedPath } from '../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
@@ -16,7 +17,8 @@ import './Profile.css';
 export default function ProfileAchievements() {
   const { t } = useTranslation('profile');
   const { user, isLoading, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
+  const lp = useLocalizedPath();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,9 +28,9 @@ export default function ProfileAchievements() {
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      navigate('/login', { replace: true, state: { from: { pathname: '/perfil/achievements' } } });
+      navigate('/login', { replace: true, state: { from: { pathname: lp('/perfil/achievements') } } });
     }
-  }, [isLoading, isAuthenticated, user, navigate]);
+  }, [isLoading, isAuthenticated, user, navigate, lp]);
 
   useEffect(() => {
     if (!isAuthenticated || !user) return;
@@ -95,9 +97,9 @@ export default function ProfileAchievements() {
         <main className="ch-main profile-main profile-main--achievements">
           <div className="profile-main-inner">
             <div className="profile-top-bar">
-              <Link to="/perfil" className="profile-back-link">
+              <LocaleLink to="/perfil" className="profile-back-link">
                 {t('achievementsPage.backProfile')}
-              </Link>
+              </LocaleLink>
             </div>
 
             <header className="profile-ach-page-head">

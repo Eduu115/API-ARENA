@@ -1,19 +1,21 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "../../components/ThemeToggle";
 import LocaleSwitch from "../../components/LocaleSwitch";
 import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
+import LocaleLink from "../../components/LocaleLink";
 import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
+import { updateProfile } from "../../lib/authApi";
 import { useLocalizedPath } from "../../routes/LocaleLayout";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
 export default function Login() {
-  const { t } = useTranslation("auth");
+  const { t, i18n } = useTranslation("auth");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +46,8 @@ export default function Login() {
     const result = await login(email, password, turnstileToken);
     setSubmitting(false);
     if (result?.success) {
+      const loc = i18n.language?.startsWith("es") ? "es" : "en";
+      updateProfile({ preferredLocale: loc }).catch(() => {});
       navigate(redirectTo, { replace: true });
       return;
     }
@@ -62,9 +66,9 @@ export default function Login() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
+          <LocaleLink to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
-          </Link>
+          </LocaleLink>
           <div className="auth-page__toolbar-actions">
             <LocaleSwitch />
             <ThemeToggle />
@@ -74,13 +78,13 @@ export default function Login() {
         <div className="auth-page__inner">
           <div className="auth-page__grid">
             <div className="auth-copy-block">
-              <Link to="/" className="auth-brand-row">
+              <LocaleLink to="/" className="auth-brand-row">
                 <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="36" height="36" />
                 <span className="ch-logo-text">
                   <span className="ch-api">API</span>
                   <span className="ch-arena">Arena</span>
                 </span>
-              </Link>
+              </LocaleLink>
 
               <div className="ch-page-eyebrow">{t("login.eyebrow")}</div>
               <div className="auth-title-crt">
@@ -95,13 +99,13 @@ export default function Login() {
               </p>
 
               <div className="auth-actions">
-                <Link to="/register" className="auth-btn-outline">
+                <LocaleLink to="/register" className="auth-btn-outline">
                   {t("login.createAccount")}
                   <ArrowRightIcon width={16} height={16} />
-                </Link>
-                <Link to="/challenges" className="auth-link-quiet">
+                </LocaleLink>
+                <LocaleLink to="/challenges" className="auth-link-quiet">
                   {t("login.viewChallenges")}
-                </Link>
+                </LocaleLink>
               </div>
             </div>
 
@@ -157,12 +161,12 @@ export default function Login() {
                       required
                     />
                     <div className="auth-forgot-wrap">
-                      <Link to="/forgot-password" className="auth-link-inline">
+                      <LocaleLink to="/forgot-password" className="auth-link-inline">
                         {t("login.forgotPassword")}
-                      </Link>
-                      <Link to="/verify-email" className="auth-link-inline" style={{ marginLeft: 12 }}>
+                      </LocaleLink>
+                      <LocaleLink to="/verify-email" className="auth-link-inline" style={{ marginLeft: 12 }}>
                         {t("login.verifyEmail")}
-                      </Link>
+                      </LocaleLink>
                     </div>
                   </div>
                 </div>
@@ -179,7 +183,7 @@ export default function Login() {
 
                 <div className="auth-footer-row">
                   <p>{t("teacherPrompt")}</p>
-                  <Link to="/login?mode=edu">{t("teacherSignIn")}</Link>
+                  <LocaleLink to="/login?mode=edu">{t("teacherSignIn")}</LocaleLink>
                 </div>
               </form>
             </div>

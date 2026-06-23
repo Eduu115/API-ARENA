@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
 import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import * as groupsApi from "../../lib/groupsApi";
@@ -9,7 +9,7 @@ import { usePageMeta } from "../../lib/usePageMeta";
 
 export default function TeacherGroups() {
   const { t } = useTranslation("teacher");
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
 
   usePageMeta({ title: t("groups.pageTitle"), path: "/teacher/groups" });
   const [groups, setGroups] = useState([]);

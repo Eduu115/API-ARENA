@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import LocaleLink from "../components/LocaleLink";
 import { useTranslation } from "react-i18next";
 import {
   acceptAll,
@@ -65,7 +65,7 @@ export default function CookieConsent() {
         {!customizing ? (
           <p className="cc-text">
             {t("cookieConsent.intro")}{" "}
-            <Link to="/cookies">{t("cookieConsent.cookiePolicy")}</Link>.
+            <LocaleLink to="/cookies">{t("cookieConsent.cookiePolicy")}</LocaleLink>.
           </p>
         ) : (
           <div className="cc-options">

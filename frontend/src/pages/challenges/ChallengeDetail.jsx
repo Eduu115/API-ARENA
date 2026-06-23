@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import * as challengesApi from '../../lib/challengesApi';
 import { getChallengeAttemptStatus } from '../../lib/submissionsApi';
@@ -20,7 +21,7 @@ import { usePageMeta } from '../../lib/usePageMeta';
 export default function ChallengeDetail() {
   const { t, i18n } = useTranslation('challenges');
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const { isAuthenticated, user } = useAuth();
   const staffBypass = user?.role === 'TEACHER' || user?.role === 'ADMIN';
   const [challenge, setChallenge] = useState(null);

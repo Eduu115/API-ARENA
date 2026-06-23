@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import LocaleLink from "./LocaleLink";
 import { useTranslation } from "react-i18next";
 import "./LoginPromptModal.css";
 
@@ -38,22 +39,22 @@ export default function LoginPromptModal({
         </h2>
         <p className="login-prompt-modal-text">{resolvedDescription}</p>
         <div className="login-prompt-modal-actions">
-          <Link
+          <LocaleLink
             to="/login"
             state={state}
             className="login-prompt-modal-btn login-prompt-modal-btn-primary"
             onClick={onClose}
           >
             {t("modals.login.signIn")}
-          </Link>
-          <Link
+          </LocaleLink>
+          <LocaleLink
             to="/register"
             state={state}
             className="login-prompt-modal-btn login-prompt-modal-btn-secondary"
             onClick={onClose}
           >
             {t("modals.login.createAccount")}
-          </Link>
+          </LocaleLink>
           <button type="button" className="login-prompt-modal-btn login-prompt-modal-btn-ghost" onClick={onClose}>
             {t("modals.login.cancel")}
           </button>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import * as challengesApi from '../../lib/challengesApi';
 import { useAuth } from '../../context/AuthContext';
@@ -208,7 +209,7 @@ function Section({ title, children }) {
 export default function ChallengeSubmit() {
   const { t, i18n } = useTranslation(['submissions', 'challenges']);
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const fileInputRef = useRef(null);
   const { user } = useAuth();
   const staffBypass = user?.role === 'TEACHER' || user?.role === 'ADMIN';

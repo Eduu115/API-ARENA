@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, Fragment } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { Trans, useTranslation } from 'react-i18next';
 import {
   getMySubmissions,
@@ -163,7 +164,7 @@ function sumTeacherBonusPointsFromDraftRows(rows) {
 
 export default function SubmissionDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
   const { user } = useAuth();
   const { t, i18n } = useTranslation('submissions');
 

@@ -1,4 +1,4 @@
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 import { LEGAL_DOCS, LEGAL_NAV, CONTROLLER } from "./legalContent";
 import { usePageMeta } from "../../lib/usePageMeta";
 import { openConsentManager } from "../../lib/cookieConsent";
@@ -46,23 +46,23 @@ export default function LegalPage() {
 
       <div className="legal-shell">
         <header className="legal-head">
-          <Link to="/" className="legal-brand">
+          <LocaleLink to="/" className="legal-brand">
             <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="32" height="32" />
             <span className="ch-logo-text">
               <span className="ch-api">API</span>
               <span className="ch-arena">Arena</span>
             </span>
-          </Link>
+          </LocaleLink>
 
           <nav className="legal-nav" aria-label="Documentos legales">
             {LEGAL_NAV.map((item) => (
-              <Link
+              <LocaleLink
                 key={item.slug}
                 to={`/${item.slug}`}
                 className={`legal-nav-item${item.slug === slug ? " is-active" : ""}`}
               >
                 {item.label}
-              </Link>
+              </LocaleLink>
             ))}
           </nav>
         </header>
@@ -92,9 +92,9 @@ export default function LegalPage() {
               Última actualización: {CONTROLLER.lastUpdated}. Para cualquier consulta:{" "}
               <a href={`mailto:${CONTROLLER.email}`}>{CONTROLLER.email}</a>.
             </p>
-            <Link to="/" className="legal-back">
+            <LocaleLink to="/" className="legal-back">
               ← Volver al inicio
-            </Link>
+            </LocaleLink>
           </footer>
         </article>
       </div>

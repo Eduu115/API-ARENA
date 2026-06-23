@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import LocaleLink from '../components/LocaleLink';
+import { useNavigateLocalized, useLocalizedPath } from '../routes/LocaleLayout';
 import { Trans, useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import * as authApi from '../lib/authApi';
@@ -32,7 +33,8 @@ function formatTimeStat(seconds, t) {
 export default function Profile() {
   const { t, i18n } = useTranslation('profile');
   const { user, isLoading, isAuthenticated, loadUser, logout } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
+  const lp = useLocalizedPath();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -61,7 +63,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || !user)) {
-      navigate('/login', { replace: true, state: { from: { pathname: '/perfil' } } });
+      navigate('/login', { replace: true, state: { from: { pathname: lp('/perfil') } } });
     }
   }, [isLoading, isAuthenticated, user, navigate]);
 
@@ -413,9 +415,9 @@ export default function Profile() {
         <main className="ch-main profile-main">
           <div className="profile-main-inner">
             <div className="profile-top-bar">
-              <Link to="/dashboard" className="profile-back-link">
+              <LocaleLink to="/dashboard" className="profile-back-link">
                 {t('backDashboard')}
-              </Link>
+              </LocaleLink>
               <div className="profile-head-actions">
                 <button type="button" className="profile-btn-ghost" onClick={handleSwitchAccount}>
                   {t('switchAccount')}
@@ -604,9 +606,9 @@ export default function Profile() {
               )}
               {showViewAllAchievements && !achievementsLoading && (
                 <div className="profile-ach-view-all-wrap">
-                  <Link to="/perfil/achievements" className="profile-ach-view-all">
+                  <LocaleLink to="/perfil/achievements" className="profile-ach-view-all">
                     {t('viewAllAchievements')}
-                  </Link>
+                  </LocaleLink>
                 </div>
               )}
             </section>
@@ -616,9 +618,9 @@ export default function Profile() {
                 <h2 id="streak-heading" className="profile-block-title">
                   {t('streakTitle')}
                 </h2>
-                <Link to="/dashboard" className="profile-streak-link">
+                <LocaleLink to="/dashboard" className="profile-streak-link">
                   {t('streakFullView')}
-                </Link>
+                </LocaleLink>
               </div>
               <WeeklyStreakPanel streak={weeklyStreak} variant="minimal" />
             </section>
@@ -655,7 +657,7 @@ export default function Profile() {
                 <Trans
                   i18nKey="privacyText"
                   t={t}
-                  components={{ 1: <Link to="/privacidad" /> }}
+                  components={{ 1: <LocaleLink to="/privacidad" /> }}
                 />
               </p>
               {privacyError && (

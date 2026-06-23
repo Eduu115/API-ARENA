@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "../../components/ThemeToggle";
 import LocaleSwitch from "../../components/LocaleSwitch";
 import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
+import LocaleLink from "../../components/LocaleLink";
 import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
 import { useLocalizedPath } from "../../routes/LocaleLayout";
@@ -112,9 +113,9 @@ export default function Register() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
+          <LocaleLink to="/" className="auth-page__back" title={t("backHome")} aria-label={t("backHome")}>
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
-          </Link>
+          </LocaleLink>
           <div className="auth-page__toolbar-actions">
             <LocaleSwitch />
             <ThemeToggle />
@@ -124,13 +125,13 @@ export default function Register() {
         <div className="auth-page__inner">
           <div className="auth-page__grid auth-page__grid--register">
             <div className="auth-page__col-copy auth-copy-block">
-              <Link to="/" className="auth-brand-row">
+              <LocaleLink to="/" className="auth-brand-row">
                 <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="36" height="36" />
                 <span className="ch-logo-text">
                   <span className="ch-api">API</span>
                   <span className="ch-arena">Arena</span>
                 </span>
-              </Link>
+              </LocaleLink>
 
               <div className="ch-page-eyebrow">{t("register.eyebrow")}</div>
               <div className="auth-title-crt">
@@ -142,13 +143,13 @@ export default function Register() {
               <p className="ch-card-desc auth-copy-lead">{t("register.lead")}</p>
 
               <div className="auth-actions">
-                <Link to="/login" className="auth-btn-outline">
+                <LocaleLink to="/login" className="auth-btn-outline">
                   {t("register.hasAccount")}
                   <ArrowRightIcon width={16} height={16} />
-                </Link>
-                <Link to="/leaderboard" className="auth-link-quiet">
+                </LocaleLink>
+                <LocaleLink to="/leaderboard" className="auth-link-quiet">
                   {t("register.viewLeaderboard")}
-                </Link>
+                </LocaleLink>
               </div>
             </div>
 
@@ -267,13 +268,13 @@ export default function Register() {
                     />
                     <span>
                       {t("register.consentBefore")}{" "}
-                      <Link to="/privacidad" target="_blank" rel="noopener noreferrer">
+                      <LocaleLink to="/privacidad" target="_blank" rel="noopener noreferrer">
                         {t("register.privacyPolicy")}
-                      </Link>{" "}
+                      </LocaleLink>{" "}
                       {t("register.consentMiddle")}{" "}
-                      <Link to="/terminos" target="_blank" rel="noopener noreferrer">
+                      <LocaleLink to="/terminos" target="_blank" rel="noopener noreferrer">
                         {t("register.termsOfUse")}
-                      </Link>
+                      </LocaleLink>
                       .
                     </span>
                   </label>
@@ -291,7 +292,7 @@ export default function Register() {
 
                 <div className="auth-footer-row">
                   <p>{t("teacherPrompt")}</p>
-                  <Link to="/login">{t("teacherSignIn")}</Link>
+                  <LocaleLink to="/login">{t("teacherSignIn")}</LocaleLink>
                 </div>
               </form>
             </div>

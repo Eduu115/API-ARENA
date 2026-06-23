@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
 import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import "../submissions/submissions.css";
@@ -10,7 +11,7 @@ import { usePageMeta } from "../../lib/usePageMeta";
 
 export default function Corrections() {
   const { t, i18n } = useTranslation("teacher");
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
 
   usePageMeta({ title: t("corrections.pageTitle"), path: "/teacher/corrections" });
 
@@ -261,9 +262,9 @@ export default function Corrections() {
       </div>
 
       <div style={{ marginTop: 16, textAlign: "center" }}>
-        <Link to="/teacher" className="db-panel-action">
+        <LocaleLink to="/teacher" className="db-panel-action">
           {t("corrections.backToDashboard")}
-        </Link>
+        </LocaleLink>
       </div>
     </TeacherLayout>
   );

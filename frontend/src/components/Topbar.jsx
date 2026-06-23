@@ -132,12 +132,12 @@ export default function Topbar({
 
   async function handleLogoutFromMenu() {
     await logout();
-    navigate("/", { replace: true });
+    navigate(lp("/"), { replace: true });
   }
 
   async function handleSwitchAccount() {
     await logout();
-    navigate("/login", { replace: true });
+    navigate(lp("/login"), { replace: true });
   }
 
   function renderNavLink({ label, path, icon }) {

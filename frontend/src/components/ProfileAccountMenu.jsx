@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import LocaleLink from "./LocaleLink";
 import { useTranslation } from "react-i18next";
 import "./ProfileAccountMenu.css";
 
@@ -134,9 +134,9 @@ export default function ProfileAccountMenu({
           </div>
 
           <nav className="pam-footer" aria-label={t("accountMenu.title")}>
-            <Link to="/perfil" className="pam-btn pam-btn-primary" onClick={onClose}>
+            <LocaleLink to="/perfil" className="pam-btn pam-btn-primary" onClick={onClose}>
               {t("accountMenu.goToProfile")}
-            </Link>
+            </LocaleLink>
             <button
               type="button"
               className="pam-btn pam-btn-muted"

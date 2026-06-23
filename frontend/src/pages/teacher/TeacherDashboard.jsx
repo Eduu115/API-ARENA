@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
 import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
 import { formatTeacherDate } from "./teacher.mock";
@@ -11,7 +12,7 @@ import { usePageMeta } from "../../lib/usePageMeta";
 
 export default function TeacherDashboard() {
   const { t, i18n } = useTranslation("teacher");
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
 
   usePageMeta({ title: t("dashboard.pageTitle"), path: "/teacher" });
   const [groups, setGroups] = useState([]);
@@ -143,12 +144,12 @@ export default function TeacherDashboard() {
           </div>
         </div>
         <div className="db-header-actions">
-          <Link to="/teacher/corrections" className="db-btn db-btn-primary">
+          <LocaleLink to="/teacher/corrections" className="db-btn db-btn-primary">
             {t("dashboard.goToCorrections")}
-          </Link>
-          <Link to="/teacher/challenges/new" className="db-btn">
+          </LocaleLink>
+          <LocaleLink to="/teacher/challenges/new" className="db-btn">
             {t("dashboard.createChallenge")}
-          </Link>
+          </LocaleLink>
         </div>
       </div>
 
@@ -169,9 +170,9 @@ export default function TeacherDashboard() {
         <div className="db-panel">
           <div className="db-panel-head">
             <div className="db-panel-title">{t("dashboard.challengesPanel.title")}</div>
-            <Link to="/teacher/challenges" className="db-panel-action">
+            <LocaleLink to="/teacher/challenges" className="db-panel-action">
               {t("dashboard.challengesPanel.fullList")}
-            </Link>
+            </LocaleLink>
           </div>
           <div style={{ padding: "6px 18px 14px", maxHeight: 520, overflowY: "auto" }}>
               {challengesLoading ? (
@@ -347,9 +348,9 @@ export default function TeacherDashboard() {
           <div className="db-panel">
             <div className="db-panel-head">
               <div className="db-panel-title">{t("dashboard.groupsPanel.title")}</div>
-              <Link to="/teacher/groups" className="db-panel-action">
+              <LocaleLink to="/teacher/groups" className="db-panel-action">
                 {t("dashboard.groupsPanel.manage")}
-              </Link>
+              </LocaleLink>
             </div>
             <div style={{ padding: "12px 18px" }}>
               {groups.length === 0 ? (
@@ -404,9 +405,9 @@ export default function TeacherDashboard() {
                 <span className="db-live-dot" />
                 {t("dashboard.correctionsPanel.title")}
               </div>
-              <Link to="/teacher/corrections" className="db-panel-action">
+              <LocaleLink to="/teacher/corrections" className="db-panel-action">
                 {t("dashboard.correctionsPanel.viewAll")}
-              </Link>
+              </LocaleLink>
             </div>
 
             <div style={{ padding: "4px 0 10px" }}>

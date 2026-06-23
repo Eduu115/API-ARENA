@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TeacherLayout from "./TeacherLayout";
@@ -57,9 +57,9 @@ export default function TeacherChallenges() {
           </h1>
         </div>
         <div className="ch-page-controls">
-          <Link to="/teacher/challenges/new" className="db-btn db-btn-primary">
+          <LocaleLink to="/teacher/challenges/new" className="db-btn db-btn-primary">
             {t("challenges.createChallenge")}
-          </Link>
+          </LocaleLink>
         </div>
       </div>
 
@@ -81,9 +81,9 @@ export default function TeacherChallenges() {
       <div className="db-panel">
         <div className="db-panel-head">
           <div className="db-panel-title">{t("challenges.list")}</div>
-          <Link to="/teacher/challenges/new" className="db-panel-action">
+          <LocaleLink to="/teacher/challenges/new" className="db-panel-action">
             {t("challenges.new")}
-          </Link>
+          </LocaleLink>
         </div>
 
         <div className="sub-table" style={{ border: "none" }}>

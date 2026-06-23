@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import LocaleLink from "../../components/LocaleLink";
+import { useNavigateLocalized } from "../../routes/LocaleLayout";
 import { useTranslation } from "react-i18next";
 import * as authApi from "../../lib/authApi";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -14,7 +16,7 @@ export default function ResetPassword() {
   const { t } = useTranslation("auth");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") || "";
-  const navigate = useNavigate();
+  const navigate = useNavigateLocalized();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -59,9 +61,9 @@ export default function ResetPassword() {
 
       <div className="auth-page__shell">
         <div className="auth-page__toolbar">
-          <Link to="/login" className="auth-page__back" title={t("backToLogin")} aria-label={t("backToLogin")}>
+          <LocaleLink to="/login" className="auth-page__back" title={t("backToLogin")} aria-label={t("backToLogin")}>
             <ArrowRightIcon width={20} height={20} style={{ transform: "rotate(180deg)" }} />
-          </Link>
+          </LocaleLink>
           <div className="auth-page__toolbar-actions">
             <LocaleSwitch />
             <ThemeToggle />
@@ -71,13 +73,13 @@ export default function ResetPassword() {
         <div className="auth-page__inner">
           <div className="auth-page__grid">
             <div className="auth-copy-block">
-              <Link to="/" className="auth-brand-row">
+              <LocaleLink to="/" className="auth-brand-row">
                 <img src="/icons/logo-hex-lg.svg" alt="API Arena" width="36" height="36" />
                 <span className="ch-logo-text">
                   <span className="ch-api">API</span>
                   <span className="ch-arena">Arena</span>
                 </span>
-              </Link>
+              </LocaleLink>
               <div className="ch-page-eyebrow">{t("resetPassword.eyebrow")}</div>
               <div className="auth-title-crt">
                 <h1 className="ch-page-title">
@@ -105,7 +107,7 @@ export default function ResetPassword() {
                 {!token && (
                   <div className="auth-alert" role="alert">
                     {t("resetPassword.missingTokenBefore")}{" "}
-                    <Link to="/forgot-password">{t("resetPassword.missingTokenLink")}</Link>.
+                    <LocaleLink to="/forgot-password">{t("resetPassword.missingTokenLink")}</LocaleLink>.
                   </div>
                 )}
 
@@ -164,7 +166,7 @@ export default function ResetPassword() {
 
                 <div className="auth-footer-row">
                   <p>{t("resetPassword.footerPrompt")}</p>
-                  <Link to="/login">{t("backToSignIn")}</Link>
+                  <LocaleLink to="/login">{t("backToSignIn")}</LocaleLink>
                 </div>
               </form>
             </div>

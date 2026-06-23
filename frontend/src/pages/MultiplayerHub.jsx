@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import LocaleLink from "../components/LocaleLink";
 import { useTranslation } from "react-i18next";
 import Topbar from "../components/Topbar";
 import BottomNav from "../components/BottomNav";
@@ -29,9 +29,9 @@ export default function MultiplayerHub() {
                 {t("multiplayer.description")}
               </p>
               <div style={{ marginTop: 24 }}>
-                <Link to="/challenges" className="auth-btn-outline" style={{ textDecoration: "none" }}>
+                <LocaleLink to="/challenges" className="auth-btn-outline" style={{ textDecoration: "none" }}>
                   {t("multiplayer.browseChallenges")} →
-                </Link>
+                </LocaleLink>
               </div>
             </div>
           </div>

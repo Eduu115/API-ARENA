@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import LocaleLink from '../../../components/LocaleLink';
 import { useTranslation } from 'react-i18next';
 import { FOOTER_LINKS } from '../landing.data';
 import { openConsentManager } from '../../../lib/cookieConsent';
@@ -41,7 +41,7 @@ export default function LandingFooter() {
           </a>
         ))}
         {legalLinks.map(({ label, to }) => (
-          <Link key={to} to={to}>{label}</Link>
+          <LocaleLink key={to} to={to}>{label}</LocaleLink>
         ))}
         <button type="button" onClick={openConsentManager}>
           {t('footer.cookiePrefs')}
