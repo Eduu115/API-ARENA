@@ -81,3 +81,5 @@ En ese Proxy Host:
 - **WebSocket de notificaciones**: con origen único, el SPA deriva `wss://apiarena.net/ws/notifications` de la propia URL de la página.
 - **CORS**: al ser mismo origen, el SPA no necesita CORS hacia los microservicios. Mantén `CORS_ALLOWED_ORIGINS` por si accedes a algún servicio directamente en dev.
 - **No publiques puertos internos** en el host en producción; deja que NPM sea el único punto de entrada (80/443). Cierra 8081–8090 en el firewall.
+- **Edge hardening (Phase 2)**: el nginx del frontend aplica rate limit (40 r/s, burst 80 por IP) y cabeceras de seguridad en `/api/*`, y devuelve 502/504/429 en JSON. No requiere cambios en NPM/Cloudflare.
+- **Monitorización externa (opcional)**: apunta un uptime check a `https://apiarena.net/api/gateway/health` y espera `overall: up` (JSON agregado del gateway + backends, refrescado cada 15s). La liveness del contenedor sigue en `/health` (texto plano).

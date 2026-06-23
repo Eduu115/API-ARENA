@@ -23,12 +23,21 @@ RUN npm run build
 # Stage 2: Production con nginx
 FROM nginx:alpine
 
+# curl: used by the gateway-health poller (busybox wget can't report status codes).
+RUN apk add --no-cache curl
+
 # Copiar los archivos construidos
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Copiar configuración personalizada de nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY api_proxy.conf /etc/nginx/api_proxy.conf
+
+# Aggregated gateway health: poller on PATH + entrypoint hook that backgrounds it.
+COPY gateway-health/poll-health.sh /usr/local/bin/poll-health.sh
+COPY gateway-health/40-gateway-health.sh /docker-entrypoint.d/40-gateway-health.sh
+RUN chmod +x /usr/local/bin/poll-health.sh /docker-entrypoint.d/40-gateway-health.sh \
+    && mkdir -p /var/cache && chown nginx:nginx /var/cache
 
 # Exponer puerto
 EXPOSE 80
