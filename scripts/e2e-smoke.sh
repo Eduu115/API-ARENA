@@ -30,6 +30,10 @@ if [ ! -f "$ZIP_PATH" ]; then
   exit 1
 fi
 
+echo "[E2E] gateway health"
+curl -fsS "$API_BASE/api/gateway/health" | jq -e '.overall == "up"' >/dev/null \
+  || echo "[E2E] WARN: gateway health overall != up (continuing)" >&2
+
 timestamp="$(date +%s)"
 email="e2e.${timestamp}@apiarena.dev"
 username="e2e_${timestamp}"
