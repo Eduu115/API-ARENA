@@ -42,6 +42,8 @@
 .DS_Store
 Thumbs.db
 *~
+# macOS/iCloud duplicate copies (e.g. "file 2.js")
+**/* 2.*
 
 # IDEs
 .vscode/
