@@ -33,6 +33,7 @@ import Notifications from "../pages/Notifications";
 import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
 import BrowsingTimeTracker from "../components/BrowsingTimeTracker";
 import CookieConsent from "../components/CookieConsent";
+import ProfileComplianceGate from "../components/ProfileComplianceGate";
 import LocaleLayout, { RootLocaleRedirect } from "./LocaleLayout";
 
 function AppRoutes() {
@@ -95,6 +96,7 @@ export default function RoutesConfig() {
       <ActiveChallengeSessionBanner />
       <CookieConsent />
       <Routes>{AppRoutes()}</Routes>
+      <ProfileComplianceGate />
     </BrowserRouter>
   );
 }
