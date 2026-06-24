@@ -667,6 +667,13 @@ export async function updateProfile(profileData) {
 
 }
 
+export async function completeProfileCompliance({ dateOfBirth, acceptTerms }) {
+    return request("/api/auth/me/profile-compliance", {
+        method: "PUT",
+        body: JSON.stringify({ dateOfBirth, acceptTerms: !!acceptTerms }),
+    });
+}
+
 
 
 

@@ -3,6 +3,7 @@ package com.apiarena.authservice.model.dto;
 import java.time.LocalDateTime;
 
 import com.apiarena.authservice.model.entities.User;
+import com.apiarena.authservice.util.ComplianceRules;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,6 +36,8 @@ public class UserDTO {
     private Boolean betaLegacy;
     private Boolean newChallengeEmailAlerts;
     private String preferredLocale;
+    /** True when date of birth or privacy consent is missing (legacy accounts). */
+    private Boolean requiresProfileCompliance;
 
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -58,7 +61,8 @@ public class UserDTO {
             user.getEmailVerified(),
             Boolean.TRUE.equals(user.getBetaLegacy()),
             Boolean.TRUE.equals(user.getNewChallengeEmailAlerts()),
-            user.getPreferredLocale() != null ? user.getPreferredLocale() : "en"
+            user.getPreferredLocale() != null ? user.getPreferredLocale() : "en",
+            ComplianceRules.requiresProfileCompliance(user)
         );
     }
 }
