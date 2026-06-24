@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -124,8 +125,9 @@ public class ChallengeController {
     public ResponseEntity<ChallengeDTO> createChallenge(@Valid @RequestBody CreateChallengeRequest request) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        assertCanUseDifficulty(request.getDifficulty(), authentication);
         Long userId = extractUserIdFromAuthentication(authentication);
-        
+
         ChallengeDTO challenge = challengeService.createChallenge(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(challenge);
     }
@@ -138,6 +140,8 @@ public class ChallengeController {
             @PathVariable Long id,
             @Valid @RequestBody UpdateChallengeRequest request
     ) {
+        assertCanUseDifficulty(request.getDifficulty(),
+                SecurityContextHolder.getContext().getAuthentication());
         ChallengeDTO challenge = challengeService.updateChallenge(id, request);
         return ResponseEntity.ok(challenge);
     }
@@ -149,6 +153,23 @@ public class ChallengeController {
     public ResponseEntity<Void> deleteChallenge(@PathVariable Long id) {
         challengeService.deleteChallenge(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * EXTREME is reserved for admin/console-authored challenges (anti-cheat): teachers
+     * must not be able to mint or escalate a challenge to EXTREME through the API.
+     */
+    private void assertCanUseDifficulty(String difficulty, Authentication authentication) {
+        if (difficulty != null && "EXTREME".equalsIgnoreCase(difficulty.trim())
+                && !hasAuthority(authentication, "ROLE_ADMIN")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "EXTREME challenges can only be created by administrators");
+        }
+    }
+
+    private boolean hasAuthority(Authentication authentication, String authority) {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> authority.equals(a.getAuthority()));
     }
 
     private Long extractUserIdFromAuthentication(Authentication authentication) {
