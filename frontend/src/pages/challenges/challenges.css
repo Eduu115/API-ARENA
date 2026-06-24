@@ -13,7 +13,7 @@
   --green:  var(--arena-success);
   --warn:   var(--arena-warning);
   --red:    var(--arena-error);
-  --extreme: #ff2d78;
+  --extreme: #7c3aed;
   --white:  var(--arena-text-primary);
   --text:   var(--arena-text-primary);
   --muted:  var(--arena-text-muted);
@@ -769,7 +769,7 @@
 .ch-badge-medium { color: var(--warn);   border-color: rgba(255,184,0,0.4);  background: rgba(255,184,0,0.06); }
 .ch-badge-hard   { color: var(--red);    border-color: rgba(255,77,106,0.4); background: rgba(255,77,106,0.06); }
 .ch-badge-expert { color: var(--purple); border-color: rgba(178,75,243,0.4); background: rgba(178,75,243,0.06); }
-.ch-badge-extreme { color: var(--extreme); border-color: rgba(255,45,120,0.45); background: rgba(255,45,120,0.08); }
+.ch-badge-extreme { color: var(--extreme); border-color: rgba(124,58,237,0.45); background: rgba(124,58,237,0.08); }
 .ch-badge-cat    { color: var(--muted);  border-color: var(--dim); background: none; }
 .ch-badge-legacy {
   color: var(--cyan);
