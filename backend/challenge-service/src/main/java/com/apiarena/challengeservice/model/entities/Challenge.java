@@ -140,7 +140,7 @@ public class Challenge {
     private Map<String, Object> learningObjectives;
 
     public enum Difficulty {
-        EASY, MEDIUM, HARD, EXPERT
+        EASY, MEDIUM, HARD, EXPERT, EXTREME
     }
 
     public enum Origin {

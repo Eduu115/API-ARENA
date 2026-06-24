@@ -4,7 +4,7 @@ import TeacherLayout from "./TeacherLayout";
 import * as challengesApi from "../../lib/challengesApi";
 import { usePageMeta } from "../../lib/usePageMeta";
 
-const DIFFICULTIES = ["EASY", "MEDIUM", "HARD", "EXPERT"];
+const DIFFICULTIES = ["EASY", "MEDIUM", "HARD", "EXPERT", "EXTREME"];
 
 export default function CreateChallenge() {
   const { t } = useTranslation("teacher");

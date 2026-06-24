@@ -16,3 +16,4 @@ avoid loading it twice.
 @.cursor/rules/api-arena-brand-identity.mdc
 @.cursor/rules/api-arena-commits-and-docs-language.mdc
 @.cursor/rules/api-arena-docker-rebuild.mdc
+@.cursor/rules/api-arena-no-volume-recreation.mdc

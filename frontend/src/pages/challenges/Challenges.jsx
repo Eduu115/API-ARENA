@@ -14,8 +14,8 @@ import ChallengeNewsletterBanner from '../../components/challenges/ChallengeNews
 
 function mapApiToCard(api) {
   const diff = (api.difficulty || 'EASY').toLowerCase();
-  const glowMap = { easy: 'ch-glow-green', medium: 'ch-glow-warn', hard: 'ch-glow-red', expert: 'ch-glow-purple' };
-  const accentMap = { easy: 'var(--green)', medium: 'var(--warn)', hard: 'var(--red)', expert: 'var(--purple)' };
+  const glowMap = { easy: 'ch-glow-green', medium: 'ch-glow-warn', hard: 'ch-glow-red', expert: 'ch-glow-purple', extreme: 'ch-glow-extreme' };
+  const accentMap = { easy: 'var(--green)', medium: 'var(--warn)', hard: 'var(--red)', expert: 'var(--purple)', extreme: 'var(--extreme)' };
   return {
     id: api.id,
     slug: api.slug,
@@ -51,6 +51,7 @@ function ChallengeCard({ challenge, spotlight = false }) {
     medium: 'ch-badge-medium',
     hard:   'ch-badge-hard',
     expert: 'ch-badge-expert',
+    extreme: 'ch-badge-extreme',
   }[difficulty] ?? 'ch-badge-cat';
 
   const hasScore = bestScore !== undefined && maxScore !== undefined;
@@ -67,7 +68,7 @@ function ChallengeCard({ challenge, spotlight = false }) {
         <div className="ch-card-head">
           <div className="ch-card-tags">
             <span className={`ch-badge ${diffBadgeClass}`}>
-              {['easy', 'medium', 'hard', 'expert'].includes(difficulty)
+              {['easy', 'medium', 'hard', 'expert', 'extreme'].includes(difficulty)
                 ? t(`difficulty.${difficulty}`)
                 : difficulty}
             </span>
@@ -208,6 +209,7 @@ export default function Challenges() {
       { val: 'medium', labelKey: 'difficulty.medium', dot: 'yellow' },
       { val: 'hard', labelKey: 'difficulty.hard', dot: 'red' },
       { val: 'expert', labelKey: 'difficulty.expert', dot: 'purple' },
+      { val: 'extreme', labelKey: 'difficulty.extreme', dot: 'extreme' },
     ],
     [],
   );
@@ -240,6 +242,7 @@ export default function Challenges() {
       medium: challenges.filter(c => c.difficulty === 'medium').length,
       hard:   challenges.filter(c => c.difficulty === 'hard').length,
       expert: challenges.filter(c => c.difficulty === 'expert').length,
+      extreme: challenges.filter(c => c.difficulty === 'extreme').length,
     };
   }, [challenges]);
 
@@ -274,7 +277,7 @@ export default function Challenges() {
         });
       case 'newest':   return [...list].reverse();
       case 'hardest':  return [...list].sort((a, b) => {
-        const order = { expert: 4, hard: 3, medium: 2, easy: 1 };
+        const order = { extreme: 5, expert: 4, hard: 3, medium: 2, easy: 1 };
         return (order[b.difficulty] ?? 0) - (order[a.difficulty] ?? 0);
       });
       case 'mostSolved': return [...list].sort((a, b) => (b.solved ?? 0) - (a.solved ?? 0));

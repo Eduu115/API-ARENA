@@ -478,6 +478,7 @@ export default function ChallengeSubmit() {
   const diffBadge = {
     easy: 'ch-badge-easy', medium: 'ch-badge-medium',
     hard: 'ch-badge-hard', expert: 'ch-badge-expert',
+    extreme: 'ch-badge-extreme',
   }[diff] ?? 'ch-badge-cat';
 
   if (loading) {

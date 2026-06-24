@@ -730,9 +730,9 @@ public class SubmissionService implements ISubmissionService {
     }
 
     private static final Map<String, Integer> DIFFICULTY_RATING = Map.of(
-            "EASY", 800, "MEDIUM", 1200, "HARD", 1600, "EXPERT", 2000);
+            "EASY", 800, "MEDIUM", 1200, "HARD", 1600, "EXPERT", 2000, "EXTREME", 2400);
     private static final Map<String, Double> DIFFICULTY_ELO_MULTIPLIER = Map.of(
-            "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8);
+            "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8, "EXTREME", 2.2);
     private static final int MIN_RANKED_CHALLENGES = 3;
     /** Extra ELO weight when a repeat completion scores below the player's previous best on this challenge. */
     private static final double ELO_REPEAT_REGRESSION_WEIGHT = 0.35;

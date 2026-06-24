@@ -43,6 +43,7 @@
     "medium": "Medium",
     "hard": "Hard",
     "expert": "Expert",
+    "extreme": "Extreme",
     "allTag": "ALL DIFFICULTIES"
   },
   "status": {

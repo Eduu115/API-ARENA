@@ -13,6 +13,7 @@
   --green:  var(--arena-success);
   --warn:   var(--arena-warning);
   --red:    var(--arena-error);
+  --extreme: #ff2d78;
   --white:  var(--arena-text-primary);
   --text:   var(--arena-text-primary);
   --muted:  var(--arena-text-muted);
@@ -399,6 +400,7 @@
 .ch-filter-dot.yellow { background: var(--warn);   box-shadow: 0 0 6px var(--warn); }
 .ch-filter-dot.red    { background: var(--red);    box-shadow: 0 0 6px var(--red); }
 .ch-filter-dot.purple { background: var(--purple); box-shadow: 0 0 6px var(--purple); }
+.ch-filter-dot.extreme { background: var(--extreme); box-shadow: 0 0 6px var(--extreme); }
 
 .ch-filter-count {
   font-family: var(--font-mono);
@@ -767,6 +769,7 @@
 .ch-badge-medium { color: var(--warn);   border-color: rgba(255,184,0,0.4);  background: rgba(255,184,0,0.06); }
 .ch-badge-hard   { color: var(--red);    border-color: rgba(255,77,106,0.4); background: rgba(255,77,106,0.06); }
 .ch-badge-expert { color: var(--purple); border-color: rgba(178,75,243,0.4); background: rgba(178,75,243,0.06); }
+.ch-badge-extreme { color: var(--extreme); border-color: rgba(255,45,120,0.45); background: rgba(255,45,120,0.08); }
 .ch-badge-cat    { color: var(--muted);  border-color: var(--dim); background: none; }
 .ch-badge-legacy {
   color: var(--cyan);
@@ -1059,6 +1062,7 @@
 .ch-glow-warn   { --accent-color: var(--warn); }
 .ch-glow-red    { --accent-color: var(--red); }
 .ch-glow-purple { --accent-color: var(--purple); }
+.ch-glow-extreme { --accent-color: var(--extreme); }
 
 @keyframes ch-card-in {
   from { opacity: 0; transform: translateY(16px); }

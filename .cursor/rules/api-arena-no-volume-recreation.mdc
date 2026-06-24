@@ -1,0 +1,48 @@
+---
+description: CRÍTICO — entorno de PRODUCCIÓN. Nunca recrear/borrar volúmenes Docker. Los cambios de BD se aplican SIEMPRE con migraciones idempotentes en caliente.
+alwaysApply: true
+---
+
+# 🚨 NUNCA recrear volúmenes — es PRODUCCIÓN
+
+API Arena se despliega en un **entorno de producción con datos reales** (usuarios,
+challenges, submissions, ZIPs). Los volúmenes Docker **NO SE TOCAN**.
+
+## Prohibido (destruye datos reales)
+
+- ❌ `docker compose down -v` (el `-v` borra los volúmenes con nombre).
+- ❌ `docker volume rm ...`, `docker volume prune`, `docker system prune --volumes`.
+- ❌ Cualquier reinicio que pase por recrear el volumen de Postgres (u otros) para
+  "que se reaplique `init-db.sql`". `init-db.sql` **solo** corre en la primera
+  creación del volumen; reaplicarlo borrando el volumen = pérdida total de datos.
+- ❌ Recrear Mongo / InfluxDB / Redis con borrado de volumen por la misma razón.
+
+Reiniciar contenedores sí está permitido: `down` (sin `-v`), `restart`,
+`up -d --build <servicio>`. Eso conserva los volúmenes.
+
+## Obligatorio: migraciones idempotentes en caliente
+
+Todo cambio de esquema o de datos se entrega como un **SQL idempotente** suelto en
+`docker/postgres/` (convención existente: `alter-*.sql` para esquema, `seed-*.sql`
+para inserts) y se aplica contra el contenedor **vivo**:
+
+```bash
+docker exec -i apiarena-postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+  < docker/postgres/<fichero>.sql
+```
+
+Reglas de la migración:
+
+- Idempotente: `CREATE TABLE/INDEX IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`,
+  `INSERT ... ON CONFLICT (...) DO NOTHING`. Re-ejecutarla no debe cambiar nada.
+- FKs defensivas: resolver referencias con subquery NULL-safe en vez de IDs
+  hardcodeados (p. ej. `created_by = (SELECT id FROM users WHERE username='profoak')`).
+- Mantener el **mismo cambio también en `init-db.sql`** para despliegues nuevos.
+- No hay Flyway/Liquibase: las migraciones son estos scripts aplicados a mano.
+
+## Orden de despliegue
+
+Desplegar el **binario nuevo ANTES (o a la vez) que aplicar el seed/migración**,
+nunca al revés. Ejemplo real: `difficulty` se mapea `@Enumerated(EnumType.STRING)`;
+insertar filas con un valor de enum nuevo contra un `challenge-service` viejo lo hace
+devolver 500 al leerlas. **Código primero, datos después.**

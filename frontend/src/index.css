@@ -162,6 +162,10 @@
     @apply bg-secondary;
   }
 
+  .challenge-card.difficulty-extreme::before {
+    background-color: #ff2d78;
+  }
+
   .progress-container {
     @apply w-full h-2 bg-background-tertiary rounded-full overflow-hidden relative;
   }

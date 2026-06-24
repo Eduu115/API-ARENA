@@ -120,6 +120,7 @@ export default function ChallengeDetail() {
     medium: 'ch-badge-medium',
     hard: 'ch-badge-hard',
     expert: 'ch-badge-expert',
+    extreme: 'ch-badge-extreme',
   }[diff] ?? 'ch-badge-cat';
 
   if (loading) {
