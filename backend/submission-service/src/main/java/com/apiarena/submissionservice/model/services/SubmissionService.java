@@ -164,6 +164,33 @@ public class SubmissionService implements ISubmissionService {
         return computeChallengeAttemptStatus(userId, challengeId);
     }
 
+    /**
+     * Records an abandoned attempt: a started session left without submitting still spends an
+     * attempt and starts the cooldown, exactly like a real submission would (anti-spam). Stored as
+     * an ABANDONED submission row so the existing cooldown/daily-limit queries pick it up.
+     * Only recorded when the user is currently allowed to submit, which makes it idempotent against
+     * double calls (the first abandon opens the cooldown, so a second call is a no-op) and a no-op
+     * for staff or when the user already has an active attempt/cooldown.
+     */
+    @Override
+    @Transactional
+    public void recordAbandonedAttempt(Long userId, Long challengeId, boolean staffBypass) {
+        if (staffBypass || userId == null || challengeId == null) {
+            return;
+        }
+        ChallengeAttemptStatusDTO status = computeChallengeAttemptStatus(userId, challengeId);
+        if (!status.allowed()) {
+            return;
+        }
+        Submission abandoned = Submission.builder()
+                .userId(userId)
+                .challengeId(challengeId)
+                .status(Submission.Status.ABANDONED)
+                .build();
+        submissionRepository.save(abandoned);
+        log.info("Recorded abandoned attempt for user {} on challenge {}", userId, challengeId);
+    }
+
     private ChallengeAttemptStatusDTO computeChallengeAttemptStatus(Long userId, Long challengeId) {
         Map<String, Object> ch = fetchChallengeData(challengeId);
         int timeLimitMin = ch.get("timeLimitMinutes") != null
@@ -953,7 +980,9 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public List<SubmissionSummaryDTO> getMySubmissions(Long userId) {
-        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .filter(s -> s.getStatus() != Submission.Status.ABANDONED) // abandoned attempts are cooldown-only, not real submissions
+                .toList();
         Set<Long> challengeIds = submissions.stream()
                 .map(Submission::getChallengeId)
                 .filter(Objects::nonNull)

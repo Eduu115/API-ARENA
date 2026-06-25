@@ -38,7 +38,7 @@ public class SubmissionStatusCacheDTO {
             case PENDING -> 0;
             case BUILDING -> 33;
             case TESTING -> 66;
-            case COMPLETED, FAILED -> 100;
+            case COMPLETED, FAILED, ABANDONED -> 100;
         };
     }
 }

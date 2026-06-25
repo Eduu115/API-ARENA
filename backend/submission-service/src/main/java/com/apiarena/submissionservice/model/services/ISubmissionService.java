@@ -27,6 +27,8 @@ public interface ISubmissionService {
 
     ChallengeAttemptStatusDTO getChallengeAttemptStatus(Long userId, Long challengeId);
 
+    void recordAbandonedAttempt(Long userId, Long challengeId, boolean staffBypass);
+
     SubmissionDTO getSubmissionById(Long id, Long userId, boolean isAdmin, boolean isTeacher);
 
     LogsResponse getLogs(Long id, Long userId, boolean isAdmin, boolean isTeacher);

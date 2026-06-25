@@ -204,6 +204,8 @@ public class Submission {
         BUILDING,
         TESTING,
         COMPLETED,
-        FAILED
+        FAILED,
+        /** The user started the timed session but left without submitting; counts as a spent attempt for cooldown/daily limits. */
+        ABANDONED
     }
 }

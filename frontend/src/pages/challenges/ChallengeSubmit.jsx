@@ -9,7 +9,7 @@ import {
   setChallengeSession,
   challengeSessionKey,
 } from '../../lib/challengeSessionStorage';
-import { createSubmission, getChallengeAttemptStatus, getMySubmissions } from '../../lib/submissionsApi';
+import { createSubmission, getChallengeAttemptStatus, getMySubmissions, abandonChallengeAttempt } from '../../lib/submissionsApi';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
 import CustomCursor from '../../components/CustomCursor';
@@ -214,6 +214,30 @@ export default function ChallengeSubmit() {
   const { user } = useAuth();
   const staffBypass = user?.role === 'TEACHER' || user?.role === 'ADMIN';
   const tourSteps = useTourSteps('challengeSubmit');
+
+  // Abandon tracking: leaving an active session without submitting spends an attempt + cooldown.
+  const submittedRef = useRef(false);
+  const abandonInfoRef = useRef({ id, userId: user?.id, staffBypass });
+  useEffect(() => {
+    abandonInfoRef.current = { id, userId: user?.id, staffBypass };
+  }, [id, user?.id, staffBypass]);
+  useEffect(() => {
+    // On real unmount only (in-app navigation away). A page refresh does not run this,
+    // so refreshing keeps the session; closing the tab is the accepted miss.
+    return () => {
+      const { id: cid, userId, staffBypass: bypass } = abandonInfoRef.current;
+      if (bypass || !userId || submittedRef.current || !cid) return;
+      const raw = localStorage.getItem(challengeSessionKey(userId));
+      if (!raw) return; // no active timed session → nothing was started
+      try {
+        if (String(JSON.parse(raw).challengeId) !== String(cid)) return;
+      } catch {
+        return;
+      }
+      abandonChallengeAttempt(cid).catch(() => {});
+      clearChallengeSession(userId);
+    };
+  }, []);
 
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -461,6 +485,7 @@ export default function ChallengeSubmit() {
           ? Math.max(0, Math.min(totalSeconds, totalSeconds - secondsLeft))
           : undefined;
       const result = await createSubmission(id, file, developmentTimeSeconds);
+      submittedRef.current = true; // a real submission already spent the attempt — don't also record an abandon
       if (user?.id) clearChallengeSession(user.id);
       const subId = result?.id || result?.submissionId;
       if (subId) {

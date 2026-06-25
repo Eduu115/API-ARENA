@@ -91,6 +91,21 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionService.getChallengeAttemptStatus(userId, challengeId));
     }
 
+    @PostMapping("/challenge/{challengeId}/abandon")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Abandon challenge attempt",
+            description = "Records a spent attempt + cooldown when a started session is left without submitting (anti-spam)")
+    public ResponseEntity<Void> abandonChallengeAttempt(@PathVariable Long challengeId) {
+        Long userId = extractUserIdFromAuthentication();
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID not found in token.");
+        }
+        boolean staffBypass = hasRole("ROLE_ADMIN") || hasRole("ROLE_TEACHER");
+        submissionService.recordAbandonedAttempt(userId, challengeId, staffBypass);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @SecurityRequirement(name = "bearerAuth")
