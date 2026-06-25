@@ -70,6 +70,7 @@ export default function SubmissionResults() {
   const [error, setError] = useState(null);
   const [revealed, setRevealed] = useState(false);
   const [showEloZeroHelp, setShowEloZeroHelp] = useState(false);
+  const [celebrateRank, setCelebrateRank] = useState(false);
 
   usePageMeta({
     title: sub ? submissionLabel || t('results.challengeFallback', { id: sub.challengeId }) : t('results.loading'),
@@ -109,6 +110,19 @@ export default function SubmissionResults() {
       });
   }, [id, t]);
 
+  // First time the (own) user becomes ranked: celebrate once (localStorage-gated per user).
+  useEffect(() => {
+    if (!sub || !profile || !user?.id) return;
+    if (Number(user.id) !== Number(sub.userId)) return;
+    const ranked = (profile.totalChallengesCompleted ?? 0) >= MIN_RANKED_CHALLENGES;
+    const eloApplied = (sub.eloChange || 0) !== 0;
+    if (!ranked || !eloApplied) return;
+    const key = `apiarena_first_rank_celebrated_${user.id}`;
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    setCelebrateRank(true);
+  }, [sub, profile, user?.id]);
+
   const xpDisplay = useCountUp(sub?.xpEarned, 1400, 800);
   const eloAbsDisplay = useCountUp(sub?.eloChange, 1200, 1200);
   const scoreDisplay = useCountUp(sub ? Math.round(Number(sub.totalScore) || 0) : 0, 1000, 400);
@@ -120,7 +134,7 @@ export default function SubmissionResults() {
         <CustomCursor />
         <div className="ch-grid-bg" />
         <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} hideElo />
           <main className="ch-main">
             <div className="sr-loading">{t('results.loading')}</div>
           </main>
@@ -136,7 +150,7 @@ export default function SubmissionResults() {
         <CustomCursor />
         <div className="ch-grid-bg" />
         <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
+          <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} hideElo />
           <main className="ch-main">
             <div className="sr-error">
               <p>{error || t('results.notFound')}</p>
@@ -170,8 +184,28 @@ export default function SubmissionResults() {
       <CustomCursor />
       <div className="ch-grid-bg" />
       <div className="ch-layout" style={{ gridTemplateColumns: '1fr' }}>
-        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
+        <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} hideElo />
         <main className="ch-main">
+          {celebrateRank && (
+            <div className="sr-rankup" role="dialog" aria-label={t('results.rankedTitle')} onClick={() => setCelebrateRank(false)}>
+              <div className="sr-rankup-glow" />
+              {Array.from({ length: 16 }).map((_, i) => (
+                <span key={i} className={`sr-confetti sr-confetti-${i % 8}`} />
+              ))}
+              <div className="sr-rankup-card" onClick={(e) => e.stopPropagation()}>
+                <div className="sr-rankup-spark">★</div>
+                <div className="sr-rankup-title">{t('results.rankedTitle')}</div>
+                <div className="sr-rankup-elo">
+                  <span className="sr-rankup-elo-val">{Math.round(profile?.rating ?? user?.rating ?? 0)}</span>
+                  <span className="sr-rankup-elo-lbl">ELO</span>
+                </div>
+                <div className="sr-rankup-sub">{t('results.rankedSubtitle')}</div>
+                <button className="sr-rankup-btn" onClick={() => setCelebrateRank(false)}>
+                  {t('results.rankedDismiss')}
+                </button>
+              </div>
+            </div>
+          )}
           <div className={`sr-container ${revealed ? 'sr-revealed' : ''}`}>
             <div className="sr-header">
               <div className="sr-header-label">{t('results.complete')}</div>
