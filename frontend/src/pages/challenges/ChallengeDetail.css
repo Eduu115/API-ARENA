@@ -403,3 +403,37 @@
   padding-top: 32px;
   border-top: 1px solid var(--dim);
 }
+
+/* "Already completed / best score" indicator on the challenge hero */
+.chd-hero-best {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 4px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid var(--dim);
+}
+.chd-hero-best.is-completed {
+  color: var(--green);
+  border-color: rgba(0, 255, 163, 0.4);
+  background: rgba(0, 255, 163, 0.07);
+}
+.chd-hero-best.is-attempted {
+  color: var(--warn);
+  border-color: rgba(255, 184, 0, 0.4);
+  background: rgba(255, 184, 0, 0.07);
+}
+.chd-hero-best-icon {
+  font-weight: 800;
+}
+.chd-hero-best-score {
+  color: var(--text);
+  font-weight: 500;
+}
+.chd-hero-best-score strong {
+  color: var(--green);
+  font-weight: 800;
+}

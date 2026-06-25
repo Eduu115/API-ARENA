@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import * as challengesApi from '../../lib/challengesApi';
-import { getChallengeAttemptStatus } from '../../lib/submissionsApi';
+import { getChallengeAttemptStatus, getMySubmissions } from '../../lib/submissionsApi';
 import { useAuth } from '../../context/AuthContext';
 import Topbar from '../../components/Topbar';
 import BottomNav from '../../components/BottomNav';
@@ -31,6 +31,7 @@ export default function ChallengeDetail() {
   const [attemptPolicy, setAttemptPolicy] = useState(null);
   const [policyLoading, setPolicyLoading] = useState(false);
   const [attemptBlockModalOpen, setAttemptBlockModalOpen] = useState(false);
+  const [myStats, setMyStats] = useState(null);
   const tourSteps = useTourSteps('challengeDetail');
 
   const policyBlocks = useMemo(
@@ -113,6 +114,35 @@ export default function ChallengeDetail() {
       cancelled = true;
     };
   }, [id, isAuthenticated, staffBypass]);
+
+  // My history for this challenge: best score + whether I've ever completed it.
+  useEffect(() => {
+    if (!id || !isAuthenticated) {
+      setMyStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const subs = await getMySubmissions();
+        const mine = (Array.isArray(subs) ? subs : []).filter(
+          (s) => Number(s.challengeId) === Number(id),
+        );
+        const completed = mine.filter((s) => s.status === 'COMPLETED');
+        const best = completed.length
+          ? Math.max(...completed.map((s) => Number(s.totalScore) || 0))
+          : null;
+        if (!cancelled) {
+          setMyStats({ attempts: mine.length, completed: completed.length > 0, best });
+        }
+      } catch {
+        if (!cancelled) setMyStats(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, isAuthenticated]);
 
   const diff = challenge?.difficulty?.toLowerCase() || 'easy';
   const diffBadgeClass = {
@@ -223,6 +253,24 @@ export default function ChallengeDetail() {
                 </span>
               )}
             </div>
+            {myStats && myStats.attempts > 0 && (
+              <div className={`chd-hero-best ${myStats.completed ? 'is-completed' : 'is-attempted'}`}>
+                {myStats.completed ? (
+                  <>
+                    <span className="chd-hero-best-icon">✓</span>
+                    <span className="chd-hero-best-label">{t('detail.alreadyCompleted')}</span>
+                    {myStats.best != null && (
+                      <span className="chd-hero-best-score">
+                        {t('detail.bestScore')}: <strong>{Math.round(myStats.best)}</strong>
+                        {' / '}{challenge.maxScore ?? 1000}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="chd-hero-best-label">{t('detail.attemptedNotCompleted')}</span>
+                )}
+              </div>
+            )}
             <h1 className="chd-hero-title">{challenge.title}</h1>
             <p className="chd-hero-slug">/{challenge.slug}</p>
 
