@@ -658,55 +658,33 @@ public class SubmissionService implements ISubmissionService {
         submissionRepository.save(submission);
     }
 
+    /** Suite component caps as produced by testing-service (correctness/performance/design). */
+    private static final int SUITE_MAX_CORRECTNESS = 600;
+    private static final int SUITE_MAX_PERFORMANCE = 200;
+    private static final int SUITE_MAX_DESIGN = 200;
+
+    /**
+     * Map the suite scores onto the 800-point technical rubric (correctness 300, performance 300,
+     * design 200). Each component earns ONLY the fraction it actually achieved against its own cap
+     * — there is no refill to 800 — so failing tests, slow endpoints and wrong response shapes
+     * genuinely lower the technical score. A flawless run (600/200/200) still yields 300+300+200=800.
+     * ({@code total} is the suite's 0-1000 aggregate, kept for the call site/telemetry.)
+     */
     private ScoreBreakdown buildTechnicalBreakdown(int total, int correctness, int performance, int design) {
-        int sum = Math.max(0, correctness) + Math.max(0, performance) + Math.max(0, design);
-        if (sum > 0) {
-            int corrWeighted = (int) Math.round(300.0 * Math.max(0, correctness) / sum);
-            int perfWeighted = (int) Math.round(300.0 * Math.max(0, performance) / sum);
-            int designWeighted = (int) Math.round(200.0 * Math.max(0, design) / sum);
-
-            corrWeighted = Math.max(0, Math.min(300, corrWeighted));
-            perfWeighted = Math.max(0, Math.min(300, perfWeighted));
-            designWeighted = Math.max(0, Math.min(200, designWeighted));
-
-            int technicalTotal = corrWeighted + perfWeighted + designWeighted;
-            int remaining = 800 - technicalTotal;
-            if (remaining > 0) {
-                int corrRoom = 300 - corrWeighted;
-                int perfRoom = 300 - perfWeighted;
-                int designRoom = 200 - designWeighted;
-                int totalRoom = corrRoom + perfRoom + designRoom;
-                if (totalRoom > 0) {
-                    int addCorr = (int) Math.floor((double) remaining * corrRoom / totalRoom);
-                    int addPerf = (int) Math.floor((double) remaining * perfRoom / totalRoom);
-                    int addDesign = Math.min(remaining - addCorr - addPerf, designRoom);
-
-                    corrWeighted += Math.min(addCorr, corrRoom);
-                    perfWeighted += Math.min(addPerf, perfRoom);
-                    designWeighted += Math.min(addDesign, designRoom);
-
-                    int used = addCorr + addPerf + addDesign;
-                    int leftover = remaining - used;
-                    while (leftover > 0) {
-                        boolean applied = false;
-                        if (corrWeighted < 300) { corrWeighted++; leftover--; applied = true; }
-                        if (leftover <= 0) break;
-                        if (perfWeighted < 300) { perfWeighted++; leftover--; applied = true; }
-                        if (leftover <= 0) break;
-                        if (designWeighted < 200) { designWeighted++; leftover--; applied = true; }
-                        if (!applied) break;
-                    }
-                }
-            }
-
-            technicalTotal = corrWeighted + perfWeighted + designWeighted;
-            return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, Math.max(0, Math.min(800, technicalTotal)));
-        }
-        int technicalTotal = Math.max(0, Math.min(800, (int) Math.round(Math.max(0, total) * 0.8)));
-        int corrWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
-        int perfWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
-        int designWeighted = Math.max(0, technicalTotal - corrWeighted - perfWeighted); // 200/800
+        int corrWeighted = scaleComponent(correctness, SUITE_MAX_CORRECTNESS, 300);
+        int perfWeighted = scaleComponent(performance, SUITE_MAX_PERFORMANCE, 300);
+        int designWeighted = scaleComponent(design, SUITE_MAX_DESIGN, 200);
+        int technicalTotal = Math.max(0, Math.min(800, corrWeighted + perfWeighted + designWeighted));
         return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, technicalTotal);
+    }
+
+    /** Fraction of {@code achieved} against {@code cap}, scaled to {@code weight} (clamped 0..weight). */
+    private static int scaleComponent(int achieved, int cap, int weight) {
+        if (cap <= 0) {
+            return 0;
+        }
+        double frac = Math.max(0.0, Math.min(1.0, (double) achieved / cap));
+        return (int) Math.round(weight * frac);
     }
 
     private record ScoreBreakdown(int correctness, int performance, int design, int technicalTotal) {}
