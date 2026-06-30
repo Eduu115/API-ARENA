@@ -13,11 +13,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.apiarena.authservice.exception.ApiException;
+
+import com.apiarena.authservice.model.dto.ProfileComplianceRequest;
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.entities.User;
+import com.apiarena.authservice.util.AccountStatus;
+import com.apiarena.authservice.util.ComplianceRules;
 import com.apiarena.authservice.util.LocaleSupport;
 import com.apiarena.authservice.repository.UserRepository;
 
@@ -55,6 +60,7 @@ public class UserService implements IUserService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        AccountStatus.requireLoginAllowed(user, email);
         return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())
             .password(user.getPasswordHash())
@@ -72,7 +78,10 @@ public class UserService implements IUserService {
     @Override
     public PublicProfileDTO getPublicProfile(Long id) {
         User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        if (!AccountStatus.isLoginAllowed(user)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
         var streakState = weeklyStreakService.findState(id).orElse(null);
         return PublicProfileDTO.fromEntity(user, streakState);
     }
@@ -112,6 +121,28 @@ public class UserService implements IUserService {
 
         User savedUser = userRepository.save(user);
         achievementService.syncForUserId(userId);
+        return UserDTO.fromEntity(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO completeProfileCompliance(Long userId, ProfileComplianceRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        if (!ComplianceRules.requiresProfileCompliance(user)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_COMPLIANCE_ALREADY_COMPLETE",
+                    "Profile compliance data is already on file");
+        }
+
+        ComplianceRules.validateDateOfBirth(request.getDateOfBirth());
+        ComplianceRules.requireTermsAccepted(request.isAcceptTerms());
+
+        user.setDateOfBirth(request.getDateOfBirth());
+        user.setPrivacyConsentAt(LocalDateTime.now());
+        user.setPrivacyConsentVersion(ComplianceRules.CURRENT_CONSENT_VERSION);
+
+        User savedUser = userRepository.save(user);
         return UserDTO.fromEntity(savedUser);
     }
 
@@ -299,5 +330,14 @@ public class UserService implements IUserService {
         // group memberships linked to this user.
         refreshTokenService.revokeAllUserTokens(user);
         userRepository.delete(user);
+    }
+
+    @Override
+    @Transactional
+    public void deactivateAccount(String email) {
+        User user = getUserEntityByEmail(email);
+        user.setIsActive(false);
+        userRepository.save(user);
+        refreshTokenService.revokeAllUserTokens(user);
     }
 }

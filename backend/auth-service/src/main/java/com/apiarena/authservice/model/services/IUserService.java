@@ -2,6 +2,7 @@ package com.apiarena.authservice.model.services;
 
 import org.springframework.security.core.userdetails.UserDetailsService;
 
+import com.apiarena.authservice.model.dto.ProfileComplianceRequest;
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
@@ -17,6 +18,9 @@ public interface IUserService extends UserDetailsService {
     UserDTO getUserByEmail(String email);
 
     UserDTO updateProfile(Long userId, UpdateProfileRequest request);
+
+    /** Record date of birth and privacy consent for legacy accounts missing compliance data. */
+    UserDTO completeProfileCompliance(Long userId, ProfileComplianceRequest request);
 
     void updateLastLogin(String email);
 
@@ -38,4 +42,10 @@ public interface IUserService extends UserDetailsService {
 
     /** GDPR right to erasure: delete the account and associated personal data. */
     void deleteAccount(String email);
+
+    /**
+     * Soft deactivation: account cannot log in and existing sessions are revoked.
+     * Intended for admin manual off-boarding and future self-service delete flows.
+     */
+    void deactivateAccount(String email);
 }

@@ -24,6 +24,7 @@ import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.ForgotPasswordRequest;
 import com.apiarena.authservice.model.dto.LoginRequest;
 import com.apiarena.authservice.model.dto.ResetPasswordRequest;
+import com.apiarena.authservice.model.dto.ProfileComplianceRequest;
 import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
@@ -185,6 +186,16 @@ public class AuthController {
         String email = authentication.getName();
         UserDTO currentUser = userService.getUserByEmail(email);
         UserDTO updatedUser = userService.updateProfile(currentUser.getId(), request);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PutMapping("/me/profile-compliance")
+    @Operation(summary = "Complete profile compliance", description = "Legacy accounts must provide date of birth and accept Privacy Policy / Terms")
+    public ResponseEntity<UserDTO> completeProfileCompliance(@Valid @RequestBody ProfileComplianceRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        UserDTO currentUser = userService.getUserByEmail(email);
+        UserDTO updatedUser = userService.completeProfileCompliance(currentUser.getId(), request);
         return ResponseEntity.ok(updatedUser);
     }
 

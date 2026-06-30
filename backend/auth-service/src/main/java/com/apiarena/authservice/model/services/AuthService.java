@@ -2,7 +2,6 @@ package com.apiarena.authservice.model.services;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.HexFormat;
@@ -29,6 +28,8 @@ import com.apiarena.authservice.model.entities.RefreshToken;
 import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.exception.ApiException;
 import com.apiarena.authservice.repository.UserRepository;
+import com.apiarena.authservice.util.AccountStatus;
+import com.apiarena.authservice.util.ComplianceRules;
 import com.apiarena.authservice.util.LocaleSupport;
 
 @Service
@@ -58,12 +59,6 @@ public class AuthService implements IAuthService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    /** Minimum age to give valid consent on your own in Spain (LOPDGDD art. 7). */
-    private static final int MIN_AGE_YEARS = 14;
-
-    /** Version of the Privacy Policy / Terms in force; bump when the legal texts change. */
-    private static final String CURRENT_CONSENT_VERSION = "1.0";
-
     private static String newVerificationToken() {
         byte[] bytes = new byte[32];
         SECURE_RANDOM.nextBytes(bytes);
@@ -77,22 +72,8 @@ public class AuthService implements IAuthService {
         String email = request.getEmail().trim().toLowerCase();
 
         LocalDate dob = request.getDateOfBirth();
-        if (dob == null) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_DOB_REQUIRED", "Date of birth is required");
-        }
-        LocalDate today = LocalDate.now();
-        if (dob.isAfter(today)) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_DOB_PAST", "Date of birth must be in the past");
-        }
-        if (Period.between(dob, today).getYears() < MIN_AGE_YEARS) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_AGE_MIN",
-                    "You must be at least " + MIN_AGE_YEARS + " years old to register");
-        }
-
-        if (!request.isAcceptTerms()) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_TERMS_REQUIRED",
-                    "You must accept the Privacy Policy and Terms to register");
-        }
+        ComplianceRules.validateDateOfBirth(dob);
+        ComplianceRules.requireTermsAccepted(request.isAcceptTerms());
 
         if (userRepository.existsByEmail(email)) {
             throw new ApiException(HttpStatus.CONFLICT, "AUTH_EMAIL_ALREADY_REGISTERED", "Email already registered");
@@ -124,7 +105,7 @@ public class AuthService implements IAuthService {
         );
         u.setDateOfBirth(dob);
         u.setPrivacyConsentAt(LocalDateTime.now());
-        u.setPrivacyConsentVersion(CURRENT_CONSENT_VERSION);
+        u.setPrivacyConsentVersion(ComplianceRules.CURRENT_CONSENT_VERSION);
         u.setPasswordChangedAt(LocalDateTime.now());
         u.setPreferredLocale(preferredLocale);
 
@@ -159,6 +140,10 @@ public class AuthService implements IAuthService {
 
         User user = userService.getUserEntityByEmail(email);
 
+        if (!AccountStatus.isLoginAllowed(user)) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTH_INVALID_CREDENTIALS", "Invalid email or password");
+        }
+
         if (!Boolean.TRUE.equals(user.getEmailVerified())) {
             throw new ApiException(HttpStatus.FORBIDDEN, "AUTH_EMAIL_NOT_VERIFIED",
                     "Email not verified. Check your inbox or resend the verification link.");
@@ -182,6 +167,11 @@ public class AuthService implements IAuthService {
         RefreshToken refreshToken = refreshTokenService.verifyRefreshToken(request.getRefreshToken());
 
         User user = refreshToken.getUser();
+
+        if (!AccountStatus.isLoginAllowed(user)) {
+            refreshTokenService.revokeRefreshToken(request.getRefreshToken());
+            throw new SecurityException("Invalid refresh token");
+        }
 
         UserDetails userDetails = userService.loadUserByUsername(user.getEmail());
         Map<String, Object> claims = new HashMap<>();
@@ -211,6 +201,9 @@ public class AuthService implements IAuthService {
         }
         User user = userRepository.findByEmailVerificationToken(token.trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification link."));
+        if (!AccountStatus.isLoginAllowed(user)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid verification link.");
+        }
         if (user.getEmailVerificationExpiresAt() == null
                 || user.getEmailVerificationExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -242,7 +235,7 @@ public class AuthService implements IAuthService {
             return;
         }
         userRepository.findByEmailIgnoreCase(email.trim()).ifPresent(user -> {
-            if (Boolean.TRUE.equals(user.getEmailVerified())) {
+            if (!AccountStatus.isLoginAllowed(user) || Boolean.TRUE.equals(user.getEmailVerified())) {
                 return;
             }
             String token = newVerificationToken();
@@ -262,6 +255,9 @@ public class AuthService implements IAuthService {
         }
         // Silent on purpose: never reveal whether an account exists for this email.
         userRepository.findByEmailIgnoreCase(email.trim()).ifPresent(user -> {
+            if (!AccountStatus.isLoginAllowed(user)) {
+                return;
+            }
             String token = newVerificationToken();
             user.setPasswordResetToken(token);
             user.setPasswordResetExpiresAt(LocalDateTime.now().plusHours(1));
@@ -283,6 +279,9 @@ public class AuthService implements IAuthService {
         }
         User user = userRepository.findByPasswordResetToken(token.trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or used reset link."));
+        if (!AccountStatus.isLoginAllowed(user)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or used reset link.");
+        }
         if (user.getPasswordResetExpiresAt() == null
                 || user.getPasswordResetExpiresAt().isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

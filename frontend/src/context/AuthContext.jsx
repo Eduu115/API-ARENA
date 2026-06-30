@@ -91,6 +91,12 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, [user?.id]);
 
+  const completeProfileCompliance = useCallback(async (payload) => {
+    const updated = await authApi.completeProfileCompliance(payload);
+    setUser(updated ?? null);
+    return updated;
+  }, []);
+
   const value = {
     user,
     isLoading,
@@ -100,6 +106,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     loadUser,
+    completeProfileCompliance,
     isAuthenticated: !!user,
   };
 
