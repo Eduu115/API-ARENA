@@ -22,10 +22,13 @@ import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.dto.ModerationRecordDTO;
 import com.apiarena.authservice.model.dto.ModerationStatsDTO;
 import com.apiarena.authservice.model.entities.AdminAuditLog;
+import com.apiarena.authservice.model.entities.AdminCapability;
+import com.apiarena.authservice.model.entities.AdminPermission;
 import com.apiarena.authservice.model.entities.ModerationRecord;
 import com.apiarena.authservice.model.entities.RefreshToken;
 import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.repository.AdminAuditLogRepository;
+import com.apiarena.authservice.repository.AdminPermissionRepository;
 import com.apiarena.authservice.repository.ModerationRecordRepository;
 import com.apiarena.authservice.repository.UserRepository;
 
@@ -46,6 +49,7 @@ public class AdminService {
     private final IUserService userService;
     private final IJwtService jwtService;
     private final AdminAuditLogRepository auditRepository;
+    private final AdminPermissionRepository permissionRepository;
     private final ModerationRecordRepository moderationRepository;
 
     public Page<AdminUserDTO> searchUsers(String query, User.Role role, Boolean active, int page, int size) {
@@ -155,13 +159,22 @@ public class AdminService {
     }
 
     @Transactional
-    public AdminUserDTO setRole(Long id, User.Role role, String actingEmail) {
+    public AdminUserDTO setRole(Long id, User.Role role, List<AdminCapability> capabilities, String actingEmail) {
         User user = loadUser(id);
         requireNotSelf(user, actingEmail, "your own role");
         User.Role previous = user.getRole();
+        // Only the supreme admin (all capabilities) may create, alter or demote an admin.
+        if (role == User.Role.ADMIN || previous == User.Role.ADMIN) {
+            requireSupreme(actingEmail);
+        }
         user.setRole(role);
         userRepository.save(user);
         audit(actingEmail, "SET_ROLE", user, previous + " → " + role);
+        if (role == User.Role.ADMIN) {
+            if (capabilities != null) syncCapabilities(id, capabilities, actingEmail);
+        } else {
+            permissionRepository.deleteByAdminUserId(id); // demotion strips all capabilities
+        }
         return AdminUserDTO.fromEntity(user);
     }
 
@@ -268,6 +281,94 @@ public class AdminService {
     public Page<AdminAuditRowDTO> auditLog(int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100));
         return auditRepository.findAllByOrderByCreatedAtDesc(pageable).map(AdminAuditRowDTO::fromEntity);
+    }
+
+    // ---- Admin capabilities (orthogonal to Role; gate BI vs moderation) ----
+
+    /** Capabilities of a given admin, sorted for stable output. */
+    public List<AdminCapability> capabilitiesOf(Long userId) {
+        return permissionRepository.findByAdminUserId(userId).stream()
+                .map(AdminPermission::getCapability)
+                .sorted()
+                .toList();
+    }
+
+    /** Capabilities of the acting admin (by email from the JWT). */
+    public List<AdminCapability> myCapabilities(String actingEmail) {
+        return capabilitiesOf(loadUserByEmail(actingEmail).getId());
+    }
+
+    /** Throw 403 unless the acting admin holds the capability. Call from gated endpoints. */
+    public void requireCapability(String actingEmail, AdminCapability capability) {
+        if (!permissionRepository.existsByAdminUserIdAndCapability(
+                loadUserByEmail(actingEmail).getId(), capability)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "ADMIN_MISSING_CAPABILITY",
+                    "This action requires the " + capability + " capability");
+        }
+    }
+
+    /** Supreme = holds every capability. The only admin allowed to manage other admins. */
+    public boolean isSupreme(Long userId) {
+        return capabilitiesOf(userId).size() == AdminCapability.values().length;
+    }
+
+    private void requireSupreme(String actingEmail) {
+        if (!isSupreme(loadUserByEmail(actingEmail).getId())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "ADMIN_NOT_SUPREME",
+                    "Only an admin with all capabilities can manage admins");
+        }
+    }
+
+    @Transactional
+    public List<AdminCapability> grantCapability(Long id, AdminCapability capability, String actingEmail) {
+        requireSupreme(actingEmail);
+        User user = loadUser(id);
+        requireAdmin(user);
+        if (!permissionRepository.existsByAdminUserIdAndCapability(id, capability)) {
+            permissionRepository.save(new AdminPermission(id, capability, actingEmail));
+            audit(actingEmail, "GRANT_CAPABILITY", user, capability.name());
+        }
+        return capabilitiesOf(id);
+    }
+
+    @Transactional
+    public List<AdminCapability> revokeCapability(Long id, AdminCapability capability, String actingEmail) {
+        requireSupreme(actingEmail);
+        User user = loadUser(id);
+        requireNotSelf(user, actingEmail, "your own capabilities");
+        permissionRepository.deleteByAdminUserIdAndCapability(id, capability);
+        audit(actingEmail, "REVOKE_CAPABILITY", user, capability.name());
+        return capabilitiesOf(id);
+    }
+
+    /** Make the admin's capabilities exactly {@code desired} (add missing, drop extra). */
+    private void syncCapabilities(Long userId, List<AdminCapability> desired, String actingEmail) {
+        java.util.Set<AdminCapability> want = new java.util.HashSet<>(desired);
+        java.util.Set<AdminCapability> have = new java.util.HashSet<>(capabilitiesOf(userId));
+        for (AdminCapability c : want) {
+            if (!have.contains(c)) {
+                permissionRepository.save(new AdminPermission(userId, c, actingEmail));
+                audit(actingEmail, "GRANT_CAPABILITY", loadUser(userId), c.name());
+            }
+        }
+        for (AdminCapability c : have) {
+            if (!want.contains(c)) {
+                permissionRepository.deleteByAdminUserIdAndCapability(userId, c);
+                audit(actingEmail, "REVOKE_CAPABILITY", loadUser(userId), c.name());
+            }
+        }
+    }
+
+    private void requireAdmin(User user) {
+        if (user.getRole() != User.Role.ADMIN) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "ADMIN_CAPABILITY_NON_ADMIN",
+                    "Capabilities can only be granted to ADMIN accounts");
+        }
+    }
+
+    private User loadUserByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email.trim())
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "ADMIN_USER_NOT_FOUND", "User not found"));
     }
 
     private void audit(String actor, String action, User target, String detail) {
