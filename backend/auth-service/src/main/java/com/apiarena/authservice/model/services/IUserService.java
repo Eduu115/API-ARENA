@@ -48,4 +48,10 @@ public interface IUserService extends UserDetailsService {
      * Intended for admin manual off-boarding and future self-service delete flows.
      */
     void deactivateAccount(String email);
+
+    /** True while a deleted account's email is still reserved (blocks re-registration until purge). */
+    boolean isEmailReserved(String email);
+
+    /** Scheduled purge of deletion archives past their retention window. Returns how many were removed. */
+    int purgeExpiredAccountDeletions();
 }

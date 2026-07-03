@@ -170,6 +170,44 @@ public class EmailDispatchService {
     }
 
     /**
+     * Confirms a deferred account deletion: the account is gone, the email is reserved until {@code reservedUntil},
+     * it's irreversible, and full/immediate erasure of the archived copy is via the privacy contact.
+     */
+    public void sendAccountDeletionEmail(String toEmail, String username,
+            java.time.LocalDateTime reservedUntil, String locale) {
+        String apiKey = emailProperties.getResendApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("RESEND_API_KEY not set; skip account deletion email to {}", toEmail);
+            return;
+        }
+        boolean es = "es".equalsIgnoreCase(locale);
+        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim())
+                : (es ? "hola" : "there");
+        String until = reservedUntil.toLocalDate().toString();
+        String privacy = emailProperties.getSupportPrivacyEmail();
+
+        String subject = es ? "API Arena — tu cuenta ha sido eliminada" : "API Arena — your account has been deleted";
+        String heading = es ? "Tu cuenta ha sido eliminada" : "Your account has been deleted";
+        String body = es
+                ? ("<p style=\"line-height:1.5;margin:0 0 16px;\">Hola %s,</p>"
+                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Hemos eliminado tu cuenta de API Arena. Esta acción es <strong>irreversible</strong>.</p>"
+                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Tu dirección de correo queda <strong>reservada hasta el %s</strong> (unas 2 semanas), el tiempo que tardamos en trasladar tu información a un almacén aparte y liberar la cuenta por completo. Durante ese periodo no podrás crear una cuenta nueva con este correo.</p>"
+                        + "<p style=\"line-height:1.5;margin:0 0 8px;\">Si quieres que borremos <strong>todos tus datos de forma completa</strong>, incluida la copia archivada, escríbenos a <a href=\"mailto:%s\" style=\"color:#22d3ee;\">%s</a>.</p>")
+                        .formatted(safeName, until, privacy, privacy)
+                : ("<p style=\"line-height:1.5;margin:0 0 16px;\">Hi %s,</p>"
+                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Your API Arena account has been deleted. This action is <strong>irreversible</strong>.</p>"
+                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Your email address is <strong>reserved until %s</strong> (about 2 weeks) while we move your information to a separate store and fully release the account. You can't create a new account with this email during that period.</p>"
+                        + "<p style=\"line-height:1.5;margin:0 0 8px;\">If you want us to erase <strong>all of your data completely</strong>, including the archived copy, email us at <a href=\"mailto:%s\" style=\"color:#22d3ee;\">%s</a>.</p>")
+                        .formatted(safeName, until, privacy, privacy);
+
+        String html = ("<div style=\"font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;\">"
+                + "<h1 style=\"font-size:20px;margin:0 0 16px;color:#22d3ee;\">%s</h1>%s</div>")
+                .formatted(heading, body);
+
+        postResend(toEmail, subject, html);
+    }
+
+    /**
      * Welcome + beta messaging; separate from in-app IMPORTANT notification (no duplicate copy).
      */
     public void sendWelcomeBetaLegacyEmail(String toEmail, String username, String locale) {

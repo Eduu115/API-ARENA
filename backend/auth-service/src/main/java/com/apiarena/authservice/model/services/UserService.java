@@ -24,10 +24,14 @@ import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.util.AccountStatus;
 import com.apiarena.authservice.util.ComplianceRules;
 import com.apiarena.authservice.util.LocaleSupport;
+import com.apiarena.authservice.model.entities.AccountDeletion;
+import com.apiarena.authservice.repository.AccountDeletionRepository;
 import com.apiarena.authservice.repository.AdminPermissionRepository;
 import com.apiarena.authservice.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -45,6 +49,16 @@ public class UserService implements IUserService {
 
     @Autowired
     private AdminPermissionRepository adminPermissionRepository;
+
+    @Autowired
+    private AccountDeletionRepository accountDeletionRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    /** Days a deleted account's email stays reserved and its archive kept before the purge job removes it. */
+    @Value("${app.account-deletion.retention-days:14}")
+    private int deletionRetentionDays;
 
     @Autowired
     private EmailDispatchService emailDispatchService;
@@ -351,15 +365,51 @@ public class UserService implements IUserService {
     public void deleteAccount(String email) {
         User user = getUserEntityByEmail(email);
         Long userId = user.getId();
+        String normalizedEmail = user.getEmail().trim().toLowerCase();
+
+        // Archive a JSON snapshot to a separate store and reserve the email for the retention window.
+        LocalDateTime purgeAfter = LocalDateTime.now().plusDays(deletionRetentionDays);
+        String snapshot = serializeSnapshot(exportUserData(email));
+        accountDeletionRepository.save(new AccountDeletion(normalizedEmail, user.getUsername(), snapshot, purgeAfter));
 
         // Best-effort cross-service erasure of submissions, ZIPs and replays.
         submissionPurgeDispatchService.purgeUserData(userId);
 
-        // Invalidate sessions, then delete the account. Postgres ON DELETE CASCADE removes
-        // refresh tokens, friendships, notifications, achievements, leaderboard entries and
-        // group memberships linked to this user.
+        // Free the live account now. Postgres ON DELETE CASCADE removes refresh tokens, friendships,
+        // notifications, achievements, leaderboard entries and group memberships linked to this user.
         refreshTokenService.revokeAllUserTokens(user);
         userRepository.delete(user);
+
+        // Inform the user (best-effort): deleted, email reserved until purgeAfter, contact for full erasure.
+        emailDispatchService.sendAccountDeletionEmail(
+                normalizedEmail, user.getUsername(), purgeAfter, user.getPreferredLocale());
+    }
+
+    /** True while a deleted account's email is still reserved (blocks re-registration until purge). */
+    @Override
+    public boolean isEmailReserved(String email) {
+        return accountDeletionRepository.existsByEmailIgnoreCase(email.trim().toLowerCase());
+    }
+
+    /** Scheduled purge: drop archives past their retention window; the email frees up then. */
+    @Override
+    @Transactional
+    public int purgeExpiredAccountDeletions() {
+        List<AccountDeletion> due = accountDeletionRepository.findByPurgeAfterBefore(LocalDateTime.now());
+        if (!due.isEmpty()) {
+            accountDeletionRepository.deleteAll(due);
+        }
+        return due.size();
+    }
+
+    private String serializeSnapshot(java.util.Map<String, Object> data) {
+        try {
+            return objectMapper.writeValueAsString(data);
+        } catch (Exception e) {
+            // Never block the deletion on a serialization hiccup; keep a minimal marker instead.
+            log.error("Failed to serialize deletion snapshot: {}", e.getMessage());
+            return "{}";
+        }
     }
 
     @Override

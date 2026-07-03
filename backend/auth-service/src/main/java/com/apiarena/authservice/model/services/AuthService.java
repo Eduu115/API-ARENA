@@ -27,6 +27,7 @@ import com.apiarena.authservice.model.dto.VerifyEmailResponseDTO;
 import com.apiarena.authservice.model.entities.RefreshToken;
 import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.exception.ApiException;
+import com.apiarena.authservice.repository.AccountDeletionRepository;
 import com.apiarena.authservice.repository.UserRepository;
 import com.apiarena.authservice.util.AccountStatus;
 import com.apiarena.authservice.util.ComplianceRules;
@@ -37,6 +38,8 @@ public class AuthService implements IAuthService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private AccountDeletionRepository accountDeletionRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
@@ -77,6 +80,12 @@ public class AuthService implements IAuthService {
 
         if (userRepository.existsByEmail(email)) {
             throw new ApiException(HttpStatus.CONFLICT, "AUTH_EMAIL_ALREADY_REGISTERED", "Email already registered");
+        }
+
+        if (accountDeletionRepository.existsByEmailIgnoreCase(email)) {
+            throw new ApiException(HttpStatus.CONFLICT, "AUTH_EMAIL_RESERVED",
+                    "This email belonged to a recently deleted account and is reserved for a short period. "
+                            + "For immediate and complete erasure, contact privacy@apiarena.net.");
         }
 
         if (userRepository.existsByUsername(request.getUsername())) {
