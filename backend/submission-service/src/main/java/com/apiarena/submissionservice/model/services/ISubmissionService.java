@@ -37,6 +37,8 @@ public interface ISubmissionService {
 
     List<SubmissionSummaryDTO> getMySubmissions(Long userId);
 
+    List<com.apiarena.submissionservice.model.dto.AdminSubmissionRowDTO> getUserSubmissionsForAdmin(Long userId);
+
     BestPerChallengeStatsDTO getMyBestPerChallengeStats(Long userId);
 
     List<SubmissionSummaryDTO> getPublicUserSubmissions(Long userId, int limit);

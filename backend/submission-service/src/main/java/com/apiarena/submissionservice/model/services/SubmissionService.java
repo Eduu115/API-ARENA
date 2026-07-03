@@ -1001,6 +1001,27 @@ public class SubmissionService implements ISubmissionService {
     }
 
     @Override
+    public List<com.apiarena.submissionservice.model.dto.AdminSubmissionRowDTO> getUserSubmissionsForAdmin(Long userId) {
+        // Admin console: full control — includes ABANDONED attempts, with time-to-submit per row.
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        Set<Long> challengeIds = submissions.stream()
+                .map(Submission::getChallengeId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> titleByChallengeId = new HashMap<>();
+        for (Long cid : challengeIds) {
+            Map<String, Object> ch = fetchChallengeData(cid);
+            if (ch != null && ch.get("title") != null) {
+                titleByChallengeId.put(cid, Objects.toString(ch.get("title")));
+            }
+        }
+        return submissions.stream()
+                .map(s -> com.apiarena.submissionservice.model.dto.AdminSubmissionRowDTO.fromEntity(
+                        s, titleByChallengeId.get(s.getChallengeId())))
+                .toList();
+    }
+
+    @Override
     public BestPerChallengeStatsDTO getMyBestPerChallengeStats(Long userId) {
         List<Object[]> rows = submissionRepository.findBestScorePerChallengeByUserId(userId);
         if (rows.isEmpty()) {
