@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getStats } from "../../lib/adminApi";
+import { getModerationStats, getStats } from "../../lib/adminApi";
 
 const SEGMENTS = [
   { key: "students", label: "Students", color: "var(--a-accent)" },
@@ -7,18 +7,36 @@ const SEGMENTS = [
   { key: "admins", label: "Admins", color: "var(--a-warn)" },
 ];
 
+const CATEGORY_LABELS = {
+  UNCATEGORIZED: "Uncategorized",
+  CHEATING: "Cheating",
+  TOXICITY: "Toxicity",
+  HARASSMENT: "Harassment",
+  SPAM: "Spam",
+  INAPPROPRIATE: "Inappropriate",
+  MULTI_ACCOUNT: "Multi-account",
+  SECURITY: "Security",
+  AUTO_WARNINGS: "Auto (warnings)",
+  OTHER: "Other",
+};
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
+  const [mod, setMod] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     getStats()
       .then(setStats)
       .catch((e) => setError(e?.message ?? "Failed to load stats"));
+    getModerationStats()
+      .then(setMod)
+      .catch(() => setMod(null));
   }, []);
 
   const total = stats?.total ?? 0;
   const denom = Math.max(1, (stats?.students ?? 0) + (stats?.teachers ?? 0) + (stats?.admins ?? 0));
+  const catMax = Math.max(1, ...(mod?.byCategory ?? []).map((c) => c.count));
 
   return (
     <div>
@@ -80,6 +98,38 @@ export default function AdminDashboard() {
           <div className="admin-metric__label">Banned</div>
         </div>
       </div>
+
+      <h2 className="admin-h2">Moderation analytics</h2>
+      <section className="admin-hero">
+        <div className="admin-panel admin-hero__main">
+          <div className="admin-hero__value" style={{ fontSize: "clamp(40px, 4vw, 60px)" }}>
+            {mod?.totalBans ?? "—"}
+          </div>
+          <div className="admin-hero__label">Total bans issued</div>
+          <div className="admin-muted" style={{ marginTop: 10 }}>
+            {mod?.totalUnbans ?? 0} unbans recorded
+          </div>
+        </div>
+
+        <div className="admin-panel">
+          <div className="admin-distro__title">Bans by category</div>
+          {!mod || mod.byCategory.length === 0 ? (
+            <div className="admin-muted">No bans recorded yet.</div>
+          ) : (
+            <div className="admin-catbars">
+              {mod.byCategory.map((c) => (
+                <div className="admin-catbar" key={c.category}>
+                  <span className="admin-catbar__label">{CATEGORY_LABELS[c.category] || c.category}</span>
+                  <span className="admin-catbar__track">
+                    <span className="admin-catbar__fill" style={{ width: `${(c.count / catMax) * 100}%` }} />
+                  </span>
+                  <span className="admin-catbar__count">{c.count}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

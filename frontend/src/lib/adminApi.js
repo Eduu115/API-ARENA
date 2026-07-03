@@ -32,6 +32,10 @@ export function getStats() {
   return request("/api/auth/admin/stats");
 }
 
+export function getModerationStats() {
+  return request("/api/auth/admin/moderation/stats");
+}
+
 export function searchUsers({ query = "", role = "", active = "", page = 0, size = 25 } = {}) {
   const p = new URLSearchParams();
   if (query) p.set("query", query);

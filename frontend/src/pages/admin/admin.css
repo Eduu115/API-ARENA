@@ -353,6 +353,53 @@
   border-radius: 3px;
 }
 
+/* ── Moderation analytics: category bars ─────────────── */
+.admin-catbars {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+.admin-catbar {
+  display: grid;
+  grid-template-columns: 150px 1fr 40px;
+  align-items: center;
+  gap: 12px;
+}
+.admin-catbar__label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--a-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.admin-catbar__track {
+  height: 12px;
+  border-radius: 999px;
+  background: var(--a-panel-2);
+  overflow: hidden;
+}
+.admin-catbar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--a-danger), color-mix(in srgb, var(--a-danger) 60%, var(--a-accent2)));
+  transition: width 0.5s ease;
+}
+.admin-catbar__count {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 16px;
+  text-align: right;
+}
+@media (max-width: 640px) {
+  .admin-catbar {
+    grid-template-columns: 96px 1fr 34px;
+  }
+}
+
 /* ── Metric strip (single surface, hairline dividers — no card-per-number) ── */
 .admin-metrics {
   display: grid;
