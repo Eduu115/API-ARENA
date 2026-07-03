@@ -40,8 +40,11 @@ public interface IUserService extends UserDetailsService {
     /** GDPR portability: structured snapshot of the user's personal data. */
     java.util.Map<String, Object> exportUserData(String email);
 
-    /** GDPR right to erasure: delete the account and associated personal data. */
+    /** Self-service deletion (deferred): archives a snapshot, reserves the email and emails the user. */
     void deleteAccount(String email);
+
+    /** Admin/staff erasure (immediate): wipes the account now, with no archive, reservation or email. */
+    void eraseAccountImmediately(String email);
 
     /**
      * Soft deactivation: account cannot log in and existing sessions are revoked.

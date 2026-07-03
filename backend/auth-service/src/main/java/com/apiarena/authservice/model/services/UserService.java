@@ -360,29 +360,45 @@ public class UserService implements IUserService {
         return root;
     }
 
+    /**
+     * Self-service deletion (deferred): archives a snapshot, reserves the email for the retention window,
+     * frees the live account and emails the user. Full/immediate erasure of the archive is via privacy contact.
+     */
     @Override
     @Transactional
     public void deleteAccount(String email) {
         User user = getUserEntityByEmail(email);
-        Long userId = user.getId();
         String normalizedEmail = user.getEmail().trim().toLowerCase();
+        String username = user.getUsername();
+        String locale = user.getPreferredLocale();
 
-        // Archive a JSON snapshot to a separate store and reserve the email for the retention window.
         LocalDateTime purgeAfter = LocalDateTime.now().plusDays(deletionRetentionDays);
         String snapshot = serializeSnapshot(exportUserData(email));
-        accountDeletionRepository.save(new AccountDeletion(normalizedEmail, user.getUsername(), snapshot, purgeAfter));
+        accountDeletionRepository.save(new AccountDeletion(normalizedEmail, username, snapshot, purgeAfter));
 
-        // Best-effort cross-service erasure of submissions, ZIPs and replays.
-        submissionPurgeDispatchService.purgeUserData(userId);
+        hardErase(user);
 
-        // Free the live account now. Postgres ON DELETE CASCADE removes refresh tokens, friendships,
-        // notifications, achievements, leaderboard entries and group memberships linked to this user.
+        emailDispatchService.sendAccountDeletionEmail(normalizedEmail, username, purgeAfter, locale);
+    }
+
+    /**
+     * Admin/staff erasure (immediate): wipes the account now with no archive, no email reservation and no
+     * notification email. Used by the admin console; the self-service path uses the deferred flow instead.
+     */
+    @Override
+    @Transactional
+    public void eraseAccountImmediately(String email) {
+        hardErase(getUserEntityByEmail(email));
+    }
+
+    /**
+     * Purge the live account: cross-service submission/ZIP data, sessions, then the row. Postgres ON DELETE
+     * CASCADE removes refresh tokens, friendships, notifications, achievements, leaderboard and group links.
+     */
+    private void hardErase(User user) {
+        submissionPurgeDispatchService.purgeUserData(user.getId());
         refreshTokenService.revokeAllUserTokens(user);
         userRepository.delete(user);
-
-        // Inform the user (best-effort): deleted, email reserved until purgeAfter, contact for full erasure.
-        emailDispatchService.sendAccountDeletionEmail(
-                normalizedEmail, user.getUsername(), purgeAfter, user.getPreferredLocale());
     }
 
     /** True while a deleted account's email is still reserved (blocks re-registration until purge). */

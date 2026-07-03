@@ -311,14 +311,14 @@ public class AdminService {
         return new AuthResponse(UserDTO.fromEntity(user), accessToken, refreshToken.getRawToken());
     }
 
-    /** GDPR-grade deletion: purges submissions/replays (cross-service) then the account. */
+    /** GDPR-grade deletion: immediate erasure (no archive/reservation/email — that's the self-service path). */
     @Transactional
     public void deleteUser(Long id, String actingEmail) {
         User user = loadUser(id);
         requireNotSelf(user, actingEmail, "your own account");
         // Audit before the row disappears.
         audit(actingEmail, "DELETE", user, user.getEmail());
-        userService.deleteAccount(user.getEmail());
+        userService.eraseAccountImmediately(user.getEmail());
     }
 
     public AdminStatsDTO stats() {
