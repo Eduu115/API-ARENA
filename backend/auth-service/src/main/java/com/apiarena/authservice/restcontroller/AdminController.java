@@ -153,6 +153,12 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/moderation/stats")
+    @Operation(summary = "Moderation analytics", description = "Total bans/unbans and ban breakdown by category")
+    public ResponseEntity<com.apiarena.authservice.model.dto.ModerationStatsDTO> moderationStats() {
+        return ResponseEntity.ok(adminService.moderationStats());
+    }
+
     @GetMapping("/audit")
     @Operation(summary = "Audit log", description = "Recent admin actions (most recent first)")
     public ResponseEntity<Page<AdminAuditRowDTO>> audit(

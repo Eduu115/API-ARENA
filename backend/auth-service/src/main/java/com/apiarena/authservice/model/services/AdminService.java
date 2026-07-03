@@ -20,6 +20,7 @@ import com.apiarena.authservice.model.dto.AdminUserDTO;
 import com.apiarena.authservice.model.dto.AuthResponse;
 import com.apiarena.authservice.model.dto.UserDTO;
 import com.apiarena.authservice.model.dto.ModerationRecordDTO;
+import com.apiarena.authservice.model.dto.ModerationStatsDTO;
 import com.apiarena.authservice.model.entities.AdminAuditLog;
 import com.apiarena.authservice.model.entities.ModerationRecord;
 import com.apiarena.authservice.model.entities.RefreshToken;
@@ -86,6 +87,17 @@ public class AdminService {
     public List<ModerationRecordDTO> moderationHistory(Long id) {
         return moderationRepository.findByUserIdOrderByCreatedAtDesc(id).stream()
                 .map(ModerationRecordDTO::fromEntity).toList();
+    }
+
+    /** Aggregate moderation analytics: total bans/unbans and ban breakdown by category. */
+    public ModerationStatsDTO moderationStats() {
+        List<ModerationStatsDTO.CategoryCount> byCategory = moderationRepository.banCountByCategory().stream()
+                .map(r -> new ModerationStatsDTO.CategoryCount((String) r[0], ((Number) r[1]).longValue()))
+                .toList();
+        return new ModerationStatsDTO(
+                moderationRepository.countByType("BAN"),
+                moderationRepository.countByType("UNBAN"),
+                byCategory);
     }
 
     /** Issue a warning; the WARN_THRESHOLD-th one auto-bans (permanent). Emails + audits each step. */
