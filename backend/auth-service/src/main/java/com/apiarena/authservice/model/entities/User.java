@@ -149,6 +149,30 @@ public class User {
     @Column(name = "preferred_locale", nullable = false, length = 5)
     private String preferredLocale = "en";
 
+    /** ADMIN 2FA: Base32 TOTP shared secret (null until enrolled). Only used for ADMIN accounts. */
+    @Column(name = "totp_secret", length = 64)
+    private String totpSecret;
+
+    /** ADMIN 2FA: true once the admin has confirmed a TOTP code during enrolment. */
+    @Column(name = "totp_enabled", nullable = false)
+    private Boolean totpEnabled = false;
+
+    /** Moderation: number of warnings accumulated (auto-ban at 3). */
+    @Column(nullable = false)
+    private Integer warnings = 0;
+
+    /** Moderation: reason recorded when the account was banned. */
+    @Column(name = "ban_reason", length = 500)
+    private String banReason;
+
+    /** Moderation: when the ban was applied. */
+    @Column(name = "banned_at")
+    private LocalDateTime bannedAt;
+
+    /** Moderation: temporary ban expiry (null = permanent). Auto-lifted at next login when past. */
+    @Column(name = "banned_until")
+    private LocalDateTime bannedUntil;
+
     public User(String username, String email, String passwordHash, Role role) {
         this.username = username;
         this.email = email;

@@ -7,6 +7,7 @@ import LocaleSwitch from "../../components/LocaleSwitch";
 import TurnstileWidget from "../../components/TurnstileWidget";
 import ArrowRightIcon from "../../components/icons/ArrowRightIcon";
 import LocaleLink from "../../components/LocaleLink";
+import AdminTwoFactor from "../../components/auth/AdminTwoFactor";
 import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
 import { updateProfile } from "../../lib/authApi";
@@ -27,6 +28,7 @@ export default function Login() {
   const lp = useLocalizedPath();
   const location = useLocation();
   const redirectTo = location.state?.from?.pathname || lp("/dashboard");
+  const [twoFactor, setTwoFactor] = useState(null); // { pendingToken, enrolled }
 
   useEffect(() => {
     clearError();
@@ -45,6 +47,10 @@ export default function Login() {
     setSubmitting(true);
     const result = await login(email, password, turnstileToken);
     setSubmitting(false);
+    if (result?.twoFactorRequired) {
+      setTwoFactor({ pendingToken: result.pendingToken, enrolled: result.enrolled });
+      return;
+    }
     if (result?.success) {
       const loc = i18n.language?.startsWith("es") ? "es" : "en";
       updateProfile({ preferredLocale: loc }).catch(() => {});
@@ -110,6 +116,13 @@ export default function Login() {
             </div>
 
             <div className="auth-form-card">
+              {twoFactor ? (
+                <AdminTwoFactor
+                  pendingToken={twoFactor.pendingToken}
+                  enrolled={twoFactor.enrolled}
+                  onSuccess={() => navigate("/admin", { replace: true })}
+                />
+              ) : (
               <form className="auth-form" onSubmit={handleSubmit}>
                 <div className="auth-form__head">
                   <div>
@@ -186,6 +199,7 @@ export default function Login() {
                   <LocaleLink to="/login?mode=edu">{t("teacherSignIn")}</LocaleLink>
                 </div>
               </form>
+              )}
             </div>
           </div>
         </div>

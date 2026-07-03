@@ -164,6 +164,33 @@ public class SubmissionService implements ISubmissionService {
         return computeChallengeAttemptStatus(userId, challengeId);
     }
 
+    /**
+     * Records an abandoned attempt: a started session left without submitting still spends an
+     * attempt and starts the cooldown, exactly like a real submission would (anti-spam). Stored as
+     * an ABANDONED submission row so the existing cooldown/daily-limit queries pick it up.
+     * Only recorded when the user is currently allowed to submit, which makes it idempotent against
+     * double calls (the first abandon opens the cooldown, so a second call is a no-op) and a no-op
+     * for staff or when the user already has an active attempt/cooldown.
+     */
+    @Override
+    @Transactional
+    public void recordAbandonedAttempt(Long userId, Long challengeId, boolean staffBypass) {
+        if (staffBypass || userId == null || challengeId == null) {
+            return;
+        }
+        ChallengeAttemptStatusDTO status = computeChallengeAttemptStatus(userId, challengeId);
+        if (!status.allowed()) {
+            return;
+        }
+        Submission abandoned = Submission.builder()
+                .userId(userId)
+                .challengeId(challengeId)
+                .status(Submission.Status.ABANDONED)
+                .build();
+        submissionRepository.save(abandoned);
+        log.info("Recorded abandoned attempt for user {} on challenge {}", userId, challengeId);
+    }
+
     private ChallengeAttemptStatusDTO computeChallengeAttemptStatus(Long userId, Long challengeId) {
         Map<String, Object> ch = fetchChallengeData(challengeId);
         int timeLimitMin = ch.get("timeLimitMinutes") != null
@@ -658,55 +685,33 @@ public class SubmissionService implements ISubmissionService {
         submissionRepository.save(submission);
     }
 
+    /** Suite component caps as produced by testing-service (correctness/performance/design). */
+    private static final int SUITE_MAX_CORRECTNESS = 600;
+    private static final int SUITE_MAX_PERFORMANCE = 200;
+    private static final int SUITE_MAX_DESIGN = 200;
+
+    /**
+     * Map the suite scores onto the 800-point technical rubric (correctness 300, performance 300,
+     * design 200). Each component earns ONLY the fraction it actually achieved against its own cap
+     * — there is no refill to 800 — so failing tests, slow endpoints and wrong response shapes
+     * genuinely lower the technical score. A flawless run (600/200/200) still yields 300+300+200=800.
+     * ({@code total} is the suite's 0-1000 aggregate, kept for the call site/telemetry.)
+     */
     private ScoreBreakdown buildTechnicalBreakdown(int total, int correctness, int performance, int design) {
-        int sum = Math.max(0, correctness) + Math.max(0, performance) + Math.max(0, design);
-        if (sum > 0) {
-            int corrWeighted = (int) Math.round(300.0 * Math.max(0, correctness) / sum);
-            int perfWeighted = (int) Math.round(300.0 * Math.max(0, performance) / sum);
-            int designWeighted = (int) Math.round(200.0 * Math.max(0, design) / sum);
-
-            corrWeighted = Math.max(0, Math.min(300, corrWeighted));
-            perfWeighted = Math.max(0, Math.min(300, perfWeighted));
-            designWeighted = Math.max(0, Math.min(200, designWeighted));
-
-            int technicalTotal = corrWeighted + perfWeighted + designWeighted;
-            int remaining = 800 - technicalTotal;
-            if (remaining > 0) {
-                int corrRoom = 300 - corrWeighted;
-                int perfRoom = 300 - perfWeighted;
-                int designRoom = 200 - designWeighted;
-                int totalRoom = corrRoom + perfRoom + designRoom;
-                if (totalRoom > 0) {
-                    int addCorr = (int) Math.floor((double) remaining * corrRoom / totalRoom);
-                    int addPerf = (int) Math.floor((double) remaining * perfRoom / totalRoom);
-                    int addDesign = Math.min(remaining - addCorr - addPerf, designRoom);
-
-                    corrWeighted += Math.min(addCorr, corrRoom);
-                    perfWeighted += Math.min(addPerf, perfRoom);
-                    designWeighted += Math.min(addDesign, designRoom);
-
-                    int used = addCorr + addPerf + addDesign;
-                    int leftover = remaining - used;
-                    while (leftover > 0) {
-                        boolean applied = false;
-                        if (corrWeighted < 300) { corrWeighted++; leftover--; applied = true; }
-                        if (leftover <= 0) break;
-                        if (perfWeighted < 300) { perfWeighted++; leftover--; applied = true; }
-                        if (leftover <= 0) break;
-                        if (designWeighted < 200) { designWeighted++; leftover--; applied = true; }
-                        if (!applied) break;
-                    }
-                }
-            }
-
-            technicalTotal = corrWeighted + perfWeighted + designWeighted;
-            return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, Math.max(0, Math.min(800, technicalTotal)));
-        }
-        int technicalTotal = Math.max(0, Math.min(800, (int) Math.round(Math.max(0, total) * 0.8)));
-        int corrWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
-        int perfWeighted = (int) Math.round(technicalTotal * 0.375); // 300/800
-        int designWeighted = Math.max(0, technicalTotal - corrWeighted - perfWeighted); // 200/800
+        int corrWeighted = scaleComponent(correctness, SUITE_MAX_CORRECTNESS, 300);
+        int perfWeighted = scaleComponent(performance, SUITE_MAX_PERFORMANCE, 300);
+        int designWeighted = scaleComponent(design, SUITE_MAX_DESIGN, 200);
+        int technicalTotal = Math.max(0, Math.min(800, corrWeighted + perfWeighted + designWeighted));
         return new ScoreBreakdown(corrWeighted, perfWeighted, designWeighted, technicalTotal);
+    }
+
+    /** Fraction of {@code achieved} against {@code cap}, scaled to {@code weight} (clamped 0..weight). */
+    private static int scaleComponent(int achieved, int cap, int weight) {
+        if (cap <= 0) {
+            return 0;
+        }
+        double frac = Math.max(0.0, Math.min(1.0, (double) achieved / cap));
+        return (int) Math.round(weight * frac);
     }
 
     private record ScoreBreakdown(int correctness, int performance, int design, int technicalTotal) {}
@@ -730,9 +735,9 @@ public class SubmissionService implements ISubmissionService {
     }
 
     private static final Map<String, Integer> DIFFICULTY_RATING = Map.of(
-            "EASY", 800, "MEDIUM", 1200, "HARD", 1600, "EXPERT", 2000);
+            "EASY", 800, "MEDIUM", 1200, "HARD", 1600, "EXPERT", 2000, "EXTREME", 2400);
     private static final Map<String, Double> DIFFICULTY_ELO_MULTIPLIER = Map.of(
-            "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8);
+            "EASY", 0.0, "MEDIUM", 1.0, "HARD", 1.4, "EXPERT", 1.8, "EXTREME", 2.2);
     private static final int MIN_RANKED_CHALLENGES = 3;
     /** Extra ELO weight when a repeat completion scores below the player's previous best on this challenge. */
     private static final double ELO_REPEAT_REGRESSION_WEIGHT = 0.35;
@@ -975,7 +980,9 @@ public class SubmissionService implements ISubmissionService {
 
     @Override
     public List<SubmissionSummaryDTO> getMySubmissions(Long userId) {
-        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .filter(s -> s.getStatus() != Submission.Status.ABANDONED) // abandoned attempts are cooldown-only, not real submissions
+                .toList();
         Set<Long> challengeIds = submissions.stream()
                 .map(Submission::getChallengeId)
                 .filter(Objects::nonNull)
@@ -990,6 +997,27 @@ public class SubmissionService implements ISubmissionService {
         return submissions.stream()
                 .map(s -> SubmissionSummaryDTO.fromEntity(s, titleByChallengeId.get(s.getChallengeId()),
                         zipDownloadExpiresAtIso(s)))
+                .toList();
+    }
+
+    @Override
+    public List<com.apiarena.submissionservice.model.dto.AdminSubmissionRowDTO> getUserSubmissionsForAdmin(Long userId) {
+        // Admin console: full control — includes ABANDONED attempts, with time-to-submit per row.
+        List<Submission> submissions = submissionRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        Set<Long> challengeIds = submissions.stream()
+                .map(Submission::getChallengeId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        Map<Long, String> titleByChallengeId = new HashMap<>();
+        for (Long cid : challengeIds) {
+            Map<String, Object> ch = fetchChallengeData(cid);
+            if (ch != null && ch.get("title") != null) {
+                titleByChallengeId.put(cid, Objects.toString(ch.get("title")));
+            }
+        }
+        return submissions.stream()
+                .map(s -> com.apiarena.submissionservice.model.dto.AdminSubmissionRowDTO.fromEntity(
+                        s, titleByChallengeId.get(s.getChallengeId())))
                 .toList();
     }
 

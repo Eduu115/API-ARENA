@@ -1,0 +1,33 @@
+---
+description: Commits pequeños y frecuentes, uno por feature/fix cuando funcione y esté verificado.
+alwaysApply: true
+---
+
+# Commit workflow: pequeño, frecuente, verde
+
+Aplica a Claude Code y a Cursor. Complementa `api-arena-commits-and-docs-language`
+(idioma inglés, sin atribución de herramientas/IA) y `api-arena-docker-rebuild`.
+
+## Regla
+
+- **Un commit por unidad lógica**: una feature acabada o un fix concreto. No agrupar
+  cambios no relacionados en el mismo commit.
+- **Commitear cuando funciona**, no antes: el cambio debe estar **verificado** primero
+  (compila / `npm run build` + lint del front / test o smoke-test relevante). Nada de
+  commits que rompen el build.
+- **Frecuente y pequeño**: preferir varios commits acotados a un commit gigante. Si una
+  tarea tiene backend + frontend, valen commits separados por capa cuando cada uno se
+  sostiene por sí mismo.
+- **Mensaje**: Conventional Commits en inglés (`feat:`, `fix:`, `chore:`, `refactor:`,
+  `docs:`), imperativo, con scope cuando ayude (`feat(admin): …`). **Sin** trailers ni
+  footers que nombren Cursor/Claude/IA (ver regla de idioma).
+- **Rama**: nunca commitear directamente en `main`; usar rama de feature/fix.
+- **Orden**: verificar → `git add` de lo relacionado → commit. Si hay varias features
+  listas, hacer varios commits, no uno.
+- **WIP**: solo commitear trabajo a medias si el usuario lo pide explícitamente
+  (`wip:`), y no dejarlo como estado final.
+
+## Objetivo
+
+Historial legible y bisecable: cada commit deja el repo en verde y describe un cambio
+entendible por sí solo.

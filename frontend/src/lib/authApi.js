@@ -20,7 +20,9 @@ function isPublicAuthPath(path) {
         p === "/api/auth/verify-email" ||
         p === "/api/auth/resend-verification" ||
         p === "/api/auth/forgot-password" ||
-        p === "/api/auth/reset-password"
+        p === "/api/auth/reset-password" ||
+        p === "/api/auth/admin/2fa/enroll" ||
+        p === "/api/auth/admin/2fa/verify"
     );
 }
 
@@ -778,6 +780,26 @@ export async function getUserPublicBadges(userId) {
     const res = await fetch(`${base}/api/auth/users/${userId}/badges`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
+}
+
+/** ADMIN 2FA step 1: get a TOTP secret to add to an authenticator app. */
+export async function enrollAdmin2fa(pendingToken) {
+    return request("/api/auth/admin/2fa/enroll", {
+        method: "POST",
+        body: JSON.stringify({ pendingToken }),
+    });
+}
+
+/** ADMIN 2FA step 2: verify the TOTP code; on success stores the real tokens. */
+export async function verifyAdmin2fa(pendingToken, code) {
+    const data = await request("/api/auth/admin/2fa/verify", {
+        method: "POST",
+        body: JSON.stringify({ pendingToken, code }),
+    });
+    if (data?.accessToken) {
+        setStoredTokens(data.accessToken, data.refreshToken ?? null);
+    }
+    return data;
 }
 
 export {

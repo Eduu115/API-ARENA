@@ -60,12 +60,27 @@ public class UserService implements IUserService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        liftExpiredBan(user);
         AccountStatus.requireLoginAllowed(user, email);
         return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())
             .password(user.getPasswordHash())
             .roles(user.getRole().name())
             .build();
+    }
+
+    /** Temporary bans auto-expire: reactivate on the next login/auth check once the deadline passes. */
+    private void liftExpiredBan(User user) {
+        if (!Boolean.TRUE.equals(user.getIsActive())
+                && user.getBannedUntil() != null
+                && LocalDateTime.now().isAfter(user.getBannedUntil())) {
+            user.setIsActive(true);
+            user.setBanReason(null);
+            user.setBannedAt(null);
+            user.setBannedUntil(null);
+            user.setWarnings(0);
+            userRepository.save(user);
+        }
     }
 
     @Override

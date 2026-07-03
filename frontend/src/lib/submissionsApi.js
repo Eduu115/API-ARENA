@@ -42,6 +42,11 @@ export async function getChallengeAttemptStatus(challengeId) {
   return request(`/api/submissions/challenge/${challengeId}/attempt-status`);
 }
 
+/** Record an abandoned attempt (spends an attempt + starts cooldown like a real submission). */
+export async function abandonChallengeAttempt(challengeId) {
+  return request(`/api/submissions/challenge/${challengeId}/abandon`, { method: "POST" });
+}
+
 /** Current user submission list (requires JWT). */
 export async function getMySubmissions() {
   return request("/api/submissions/my");

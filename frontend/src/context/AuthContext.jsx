@@ -45,6 +45,15 @@ export function AuthProvider({ children }) {
       setError(null);
       try {
         const data = await authApi.login({ email, password, turnstileToken });
+        // ADMIN bunker: password OK but TOTP still required — do NOT set a session yet.
+        if (data?.twoFactorRequired) {
+          return {
+            success: true,
+            twoFactorRequired: true,
+            pendingToken: data.pendingToken,
+            enrolled: !!data.twoFactorEnrolled,
+          };
+        }
         setUser(data?.user ?? null);
         return { success: true, data };
       } catch (e) {
@@ -91,6 +100,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, [user?.id]);
 
+  const enrollAdmin2fa = useCallback((pendingToken) => authApi.enrollAdmin2fa(pendingToken), []);
+
+  const verifyAdmin2fa = useCallback(async (pendingToken, code) => {
+    const data = await authApi.verifyAdmin2fa(pendingToken, code);
+    setUser(data?.user ?? null);
+    return data;
+  }, []);
+
   const completeProfileCompliance = useCallback(async (payload) => {
     const updated = await authApi.completeProfileCompliance(payload);
     setUser(updated ?? null);
@@ -107,6 +124,8 @@ export function AuthProvider({ children }) {
     logout,
     loadUser,
     completeProfileCompliance,
+    enrollAdmin2fa,
+    verifyAdmin2fa,
     isAuthenticated: !!user,
   };
 

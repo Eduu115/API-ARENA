@@ -37,6 +37,7 @@ export default function Topbar({
   onMenuToggle,
   sidebarOpen,
   showSidebarToggle = true,
+  hideElo = false,
 }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -210,6 +211,7 @@ export default function Topbar({
 
           {isAuthenticated ? (
           <div className="arena-navbar__actions">
+            {!hideElo && (
             <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? undefined : t("topbar.ratingTitle", { rating })}>
               <span className="arena-navbar__elo-lbl">ELO</span>
               <span className={`arena-navbar__elo-val${isUnranked ? " arena-navbar__elo-val--unranked" : ""}`}>
@@ -231,6 +233,7 @@ export default function Topbar({
                 </span>
               )}
             </div>
+            )}
 
             <LocaleSwitch />
 

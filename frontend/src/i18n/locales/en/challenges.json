@@ -43,6 +43,7 @@
     "medium": "Medium",
     "hard": "Hard",
     "expert": "Expert",
+    "extreme": "Extreme",
     "allTag": "ALL DIFFICULTIES"
   },
   "status": {
@@ -111,6 +112,9 @@
     "attempts": "Attempts",
     "completed": "Completed",
     "averageScore": "Average score",
+    "alreadyCompleted": "Already completed",
+    "attemptedNotCompleted": "Attempted — not completed yet",
+    "bestScore": "Best score",
     "created": "Created:",
     "updated": "Updated:",
     "description": "Description",

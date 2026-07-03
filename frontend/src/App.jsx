@@ -1,13 +1,7 @@
 import RoutesConfig from "./routes/RoutesConfig";
-import ProfileComplianceGate from "./components/ProfileComplianceGate";
 
 function App() {
-  return (
-    <>
-      <RoutesConfig />
-      <ProfileComplianceGate />
-    </>
-  );
+  return <RoutesConfig />;
 }
 
 export default App;
