@@ -63,7 +63,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  width: 224px;
+  width: 260px;
   flex-shrink: 0;
   height: 100vh;
   background: color-mix(in srgb, var(--a-panel) 88%, transparent);
@@ -71,7 +71,7 @@
   border-right: 1px solid var(--a-border);
   display: flex;
   flex-direction: column;
-  padding: 22px 14px;
+  padding: 20px 8px;
 }
 
 .admin-brand {
