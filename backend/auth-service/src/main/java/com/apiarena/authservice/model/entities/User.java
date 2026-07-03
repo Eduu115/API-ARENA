@@ -121,10 +121,6 @@ public class User {
     @Column(name = "new_challenge_email_alerts", nullable = false)
     private Boolean newChallengeEmailAlerts = false;
 
-    /** JSON array of profile badge codes the user chose to display (max 5). Rank badges are not stored here. */
-    @Column(name = "displayed_profile_badges", columnDefinition = "TEXT")
-    private String displayedProfileBadges = "[]";
-
     /** Last time the account password was set or changed (register / reset). */
     @Column(name = "password_changed_at")
     private LocalDateTime passwordChangedAt;

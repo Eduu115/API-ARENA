@@ -1,5 +1,6 @@
 package com.apiarena.authservice.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,8 @@ public interface UserProfileBadgeRepository extends JpaRepository<UserProfileBad
     boolean existsByUser_IdAndBadge_Id(Long userId, Long badgeId);
 
     Optional<UserProfileBadge> findByUser_IdAndBadge_Id(Long userId, Long badgeId);
+
+    List<UserProfileBadge> findByUser_Id(Long userId);
 
     @Modifying
     @Transactional

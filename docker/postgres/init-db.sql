@@ -832,12 +832,11 @@ CREATE TABLE IF NOT EXISTS user_profile_badges (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     badge_id BIGINT NOT NULL REFERENCES profile_badge_definitions(id) ON DELETE CASCADE,
     unlocked_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    displayed BOOLEAN NOT NULL DEFAULT FALSE,
     CONSTRAINT uq_user_profile_badges_user_badge UNIQUE (user_id, badge_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_profile_badges_user ON user_profile_badges(user_id);
-
-ALTER TABLE users ADD COLUMN IF NOT EXISTS displayed_profile_badges TEXT DEFAULT '[]';
 
 -- Weekly streak (auth-service)
 CREATE TABLE IF NOT EXISTS user_streak_state (
