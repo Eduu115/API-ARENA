@@ -108,39 +108,42 @@
 
 .admin-nav {
   position: static;
-  margin-top: 30px;
+  margin-top: 28px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .admin-nav__link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 44px;
+  gap: 14px;
+  width: 100%;
+  min-height: 54px;
   box-sizing: border-box;
   color: var(--a-muted);
   text-decoration: none;
-  padding: 0 14px;
-  border-radius: 10px;
-  font-size: 15px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 15.5px;
   font-weight: 600;
   line-height: 1;
-  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--a-panel-2) 38%, transparent);
+  border: 1px solid var(--a-hair);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .admin-nav__ico {
-  flex: 0 0 20px;
+  flex: 0 0 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--a-faint);
 }
 .admin-nav__link:hover {
   background: var(--a-panel-2);
   color: var(--a-text);
+  border-color: var(--a-accent-line);
 }
 .admin-nav__link.active {
   background: var(--a-accent-soft);
@@ -570,6 +573,40 @@
   background: var(--a-accent-soft);
 }
 
+/* Role tag — bespoke cut-corner chip (not a generic neon pill), colored per role. */
+.admin-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  color: var(--role, var(--a-accent));
+  background: color-mix(in srgb, var(--role, var(--a-accent)) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--role, var(--a-accent)) 45%, transparent);
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+}
+.admin-role::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  background: var(--role, var(--a-accent));
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px var(--role, var(--a-accent));
+}
+.admin-role--student {
+  --role: var(--a-accent);
+}
+.admin-role--teacher {
+  --role: var(--a-accent2);
+}
+.admin-role--admin {
+  --role: var(--a-warn);
+}
+
 .admin-dot {
   display: inline-block;
   width: 10px;
@@ -631,11 +668,14 @@
 }
 .admin-spec__row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
   padding: 13px 20px;
   border-bottom: 1px solid var(--a-hair);
+}
+.admin-spec__row--wide {
+  grid-column: 1 / -1;
 }
 .admin-spec__row dt {
   font-family: var(--font-mono);
@@ -648,8 +688,7 @@
 .admin-spec__row dd {
   margin: 0;
   font-weight: 600;
-  text-align: right;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 /* ── Action toolbar (god mode) ───────────────────────── */

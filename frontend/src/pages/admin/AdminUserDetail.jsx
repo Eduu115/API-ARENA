@@ -22,9 +22,9 @@ import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
 import { fmtDate, fmtDuration, isOnline } from "./adminFormat";
 
-function Row({ label, children }) {
+function Row({ label, wide, children }) {
   return (
-    <div className="admin-spec__row">
+    <div className={`admin-spec__row${wide ? " admin-spec__row--wide" : ""}`}>
       <dt>{label}</dt>
       <dd>{children ?? "—"}</dd>
     </div>
@@ -318,14 +318,16 @@ export default function AdminUserDetail() {
         <section className="admin-spec">
           <div className="admin-spec__head">Identity</div>
           <dl className="admin-spec__grid">
-            <Row label="Email">
+            <Row label="Email" wide>
               <span className="admin-mono">{user.email}</span>{" "}
               <span className={`admin-pill ${user.emailVerified ? "admin-pill--ok" : "admin-pill--warn"}`}>
                 {user.emailVerified ? "verified" : "unverified"}
               </span>
             </Row>
             <Row label="Role">
-              <span className="admin-pill admin-pill--accent">{user.role}</span>
+              <span className={`admin-role admin-role--${String(user.role || "").toLowerCase()}`}>
+                {user.role}
+              </span>
             </Row>
             <Row label="Status">
               <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
@@ -338,7 +340,11 @@ export default function AdminUserDetail() {
                 {user.warnings ?? 0} / 3
               </span>
             </Row>
-            {!user.isActive && <Row label="Ban reason">{user.banReason || "—"}</Row>}
+            {!user.isActive && (
+              <Row label="Ban reason" wide>
+                {user.banReason || "—"}
+              </Row>
+            )}
             {!user.isActive && (
               <Row label="Ban expiry">{user.bannedUntil ? fmtDate(user.bannedUntil) : "Permanent"}</Row>
             )}
