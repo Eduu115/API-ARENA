@@ -19,3 +19,11 @@ export function isOnline(lastSeenAt) {
   const t = new Date(lastSeenAt).getTime();
   return !Number.isNaN(t) && Date.now() - t < 5 * 60 * 1000;
 }
+
+/** Human label for an admin's capability set: Supreme / Operational / BI / combinations. */
+export function adminTypeLabel(caps) {
+  if (!caps) return null;
+  if (caps.length === 0) return "no capabilities";
+  if (["MODERATION", "BI"].every((c) => caps.includes(c))) return "Supreme";
+  return caps.map((c) => (c === "MODERATION" ? "Operational" : "BI")).join(" · ");
+}

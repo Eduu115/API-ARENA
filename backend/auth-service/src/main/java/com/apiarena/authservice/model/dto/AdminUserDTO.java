@@ -1,7 +1,9 @@
 package com.apiarena.authservice.model.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.apiarena.authservice.model.entities.AdminCapability;
 import com.apiarena.authservice.model.entities.User;
 
 import lombok.Builder;
@@ -15,6 +17,8 @@ public class AdminUserDTO {
     private String username;
     private String email;
     private String role;
+    /** Only populated for ADMIN accounts: which admin capabilities they hold (empty = none, both = supreme). */
+    private List<AdminCapability> capabilities;
     private Boolean isActive;
     private Boolean emailVerified;
     private Boolean totpEnabled;

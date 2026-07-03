@@ -6,7 +6,7 @@ import AdminCapsModal from "./AdminCapsModal";
 import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
 import { useAdminCaps } from "./useAdminCaps";
-import { fmtDate, isOnline } from "./adminFormat";
+import { adminTypeLabel, fmtDate, isOnline } from "./adminFormat";
 
 const ROLES = ["STUDENT", "TEACHER", "ADMIN"];
 
@@ -193,6 +193,11 @@ export default function AdminUsers() {
                       </option>
                     ))}
                   </select>
+                  {u.role === "ADMIN" && (
+                    <span className="admin-pill admin-pill--muted" style={{ marginLeft: 6 }} title="Admin type (capabilities)">
+                      {adminTypeLabel(u.capabilities) ?? "…"}
+                    </span>
+                  )}
                   {u.role === "ADMIN" && supreme && me?.id !== u.id && (
                     <button
                       type="button"

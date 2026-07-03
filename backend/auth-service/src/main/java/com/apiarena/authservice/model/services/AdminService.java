@@ -55,11 +55,33 @@ public class AdminService {
     public Page<AdminUserDTO> searchUsers(String query, User.Role role, Boolean active, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100),
                 Sort.by(Sort.Direction.DESC, "createdAt"));
-        return userRepository.adminSearch(query, role, active, pageable).map(AdminUserDTO::fromEntity);
+        Page<AdminUserDTO> result = userRepository.adminSearch(query, role, active, pageable)
+                .map(AdminUserDTO::fromEntity);
+        enrichCapabilities(result.getContent());
+        return result;
     }
 
     public AdminUserDTO getUser(Long id) {
-        return AdminUserDTO.fromEntity(loadUser(id));
+        return withCapabilities(AdminUserDTO.fromEntity(loadUser(id)));
+    }
+
+    /** Attach capabilities to an admin DTO (no-op for non-admins). */
+    private AdminUserDTO withCapabilities(AdminUserDTO dto) {
+        if ("ADMIN".equals(dto.getRole())) dto.setCapabilities(capabilitiesOf(dto.getId()));
+        return dto;
+    }
+
+    /** Batch-load capabilities for the admins in a page (one query, no N+1). */
+    private void enrichCapabilities(java.util.List<AdminUserDTO> dtos) {
+        java.util.List<Long> adminIds = dtos.stream()
+                .filter(d -> "ADMIN".equals(d.getRole())).map(AdminUserDTO::getId).toList();
+        if (adminIds.isEmpty()) return;
+        java.util.Map<Long, java.util.List<AdminCapability>> byUser = permissionRepository.findByAdminUserIdIn(adminIds)
+                .stream().collect(java.util.stream.Collectors.groupingBy(AdminPermission::getAdminUserId,
+                        java.util.stream.Collectors.mapping(AdminPermission::getCapability, java.util.stream.Collectors.toList())));
+        dtos.forEach(d -> {
+            if ("ADMIN".equals(d.getRole())) d.setCapabilities(byUser.getOrDefault(d.getId(), java.util.List.of()));
+        });
     }
 
     /** Ban with a category, reason, optional description and optional expiry. Emails + records history. */
@@ -175,7 +197,7 @@ public class AdminService {
         } else {
             permissionRepository.deleteByAdminUserId(id); // demotion strips all capabilities
         }
-        return AdminUserDTO.fromEntity(user);
+        return withCapabilities(AdminUserDTO.fromEntity(user));
     }
 
     @Transactional

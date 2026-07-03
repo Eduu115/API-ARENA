@@ -21,7 +21,7 @@ import { setAdminEscape } from "../../lib/adminEscape";
 import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
 import { useAdminCaps } from "./useAdminCaps";
-import { fmtDate, fmtDuration, isOnline } from "./adminFormat";
+import { adminTypeLabel, fmtDate, fmtDuration, isOnline } from "./adminFormat";
 
 function Row({ label, wide, children }) {
   return (
@@ -338,6 +338,11 @@ export default function AdminUserDetail() {
               <span className={`admin-role admin-role--${String(user.role || "").toLowerCase()}`}>
                 {user.role}
               </span>
+              {user.role === "ADMIN" && (
+                <span className="admin-pill admin-pill--muted" style={{ marginLeft: 8 }} title="Admin type (capabilities)">
+                  {adminTypeLabel(user.capabilities) ?? "…"}
+                </span>
+              )}
             </Row>
             <Row label="Status">
               <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
