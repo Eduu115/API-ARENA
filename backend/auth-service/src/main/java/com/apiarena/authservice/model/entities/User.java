@@ -98,6 +98,11 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    /** Voluntary/admin deactivation (baja): set when the account is deactivated without a ban. Distinguishes
+     *  a "baja" (is_active=false, no ban) from a ban (which sets ban_reason/banned_at). Cleared on reactivate. */
+    @Column(name = "deactivated_at")
+    private LocalDateTime deactivatedAt;
+
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
@@ -120,10 +125,6 @@ public class User {
     /** Student opt-in: transactional email when a new challenge is published (verified email only). */
     @Column(name = "new_challenge_email_alerts", nullable = false)
     private Boolean newChallengeEmailAlerts = false;
-
-    /** JSON array of profile badge codes the user chose to display (max 5). Rank badges are not stored here. */
-    @Column(name = "displayed_profile_badges", columnDefinition = "TEXT")
-    private String displayedProfileBadges = "[]";
 
     /** Last time the account password was set or changed (register / reset). */
     @Column(name = "password_changed_at")

@@ -94,6 +94,14 @@ export function getUserCapabilities(id) {
   return request(`/api/auth/admin/users/${id}/capabilities`);
 }
 
+export function deactivateUser(id) {
+  return request(`/api/auth/admin/users/${id}/deactivate`, { method: "POST" });
+}
+
+export function reactivateUser(id) {
+  return request(`/api/auth/admin/users/${id}/reactivate`, { method: "POST" });
+}
+
 export function verifyEmail(id) {
   return request(`/api/auth/admin/users/${id}/verify-email`, { method: "POST" });
 }

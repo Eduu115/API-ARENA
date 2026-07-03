@@ -367,6 +367,7 @@ public class UserService implements IUserService {
     public void deactivateAccount(String email) {
         User user = getUserEntityByEmail(email);
         user.setIsActive(false);
+        user.setDeactivatedAt(LocalDateTime.now());
         userRepository.save(user);
         refreshTokenService.revokeAllUserTokens(user);
     }

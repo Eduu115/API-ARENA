@@ -84,6 +84,20 @@ public class AdminController {
         return ResponseEntity.ok(adminService.unban(id, request.getReason(), request.getDescription(), auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
+    @PostMapping("/users/{id}/deactivate")
+    @Operation(summary = "Deactivate account", description = "Baja: deactivate without banning or deleting data; revokes sessions. Reversible.")
+    public ResponseEntity<AdminUserDTO> deactivate(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(adminService.deactivate(id, auth.getName()));
+    }
+
+    @PreAuthorize(MODERATION)
+    @PostMapping("/users/{id}/reactivate")
+    @Operation(summary = "Reactivate account", description = "Reactivate a deactivated (baja) account. Bans use unban.")
+    public ResponseEntity<AdminUserDTO> reactivate(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(adminService.reactivate(id, auth.getName()));
+    }
+
     @GetMapping("/users/{id}/moderation")
     @Operation(summary = "Moderation history", description = "Ban/unban records with the form answers")
     public ResponseEntity<java.util.List<com.apiarena.authservice.model.dto.ModerationRecordDTO>> moderation(

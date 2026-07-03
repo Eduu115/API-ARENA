@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { banUser, getUserCapabilities, searchUsers, setUserRole, unbanUser } from "../../lib/adminApi";
+import {
+  banUser,
+  getUserCapabilities,
+  reactivateUser,
+  searchUsers,
+  setUserRole,
+  unbanUser,
+} from "../../lib/adminApi";
 import AdminCapsModal from "./AdminCapsModal";
 import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
@@ -51,6 +58,18 @@ export default function AdminUsers() {
       setBanning(null);
     } catch (e) {
       window.alert(e?.message ?? "Ban failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function confirmReactivate(u) {
+    if (!window.confirm(`Reactivate ${u.username}? Their account will be usable again.`)) return;
+    setBusyId(u.id);
+    try {
+      patchRow(await reactivateUser(u.id));
+    } catch (e) {
+      window.alert(e?.message ?? "Action failed");
     } finally {
       setBusyId(null);
     }
@@ -212,23 +231,42 @@ export default function AdminUsers() {
                   )}
                 </td>
                 <td>
-                  <span className={`admin-pill ${u.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
-                    {u.isActive ? "Active" : "Banned"}
+                  <span className={`admin-pill ${u.isActive ? "admin-pill--ok" : u.deactivatedAt ? "admin-pill--muted" : "admin-pill--bad"}`}>
+                    {u.isActive ? "Active" : u.deactivatedAt ? "Deactivated" : "Banned"}
                   </span>
                 </td>
                 <td className="admin-mono">{u.rating}</td>
                 <td className="admin-muted">{fmtDate(u.lastSeenAt)}</td>
                 <td>
-                  {canModerate && (
-                    <button
-                      type="button"
-                      className={`admin-btn admin-btn--sm ${u.isActive ? "admin-btn--danger" : ""}`}
-                      disabled={busyId === u.id}
-                      onClick={() => (u.isActive ? setBanning(u) : setUnbanning(u))}
-                    >
-                      {u.isActive ? "Ban…" : "Unban…"}
-                    </button>
-                  )}
+                  {canModerate &&
+                    (u.isActive ? (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm admin-btn--danger"
+                        disabled={busyId === u.id}
+                        onClick={() => setBanning(u)}
+                      >
+                        Ban…
+                      </button>
+                    ) : u.deactivatedAt ? (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm"
+                        disabled={busyId === u.id}
+                        onClick={() => confirmReactivate(u)}
+                      >
+                        Reactivate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm"
+                        disabled={busyId === u.id}
+                        onClick={() => setUnbanning(u)}
+                      >
+                        Unban…
+                      </button>
+                    ))}
                 </td>
               </tr>
             ))}
