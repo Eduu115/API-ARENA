@@ -22,6 +22,8 @@ public interface IJwtService {
 
     String generateRefreshToken(UserDetails userDetails);
 
+    String generatePendingTwoFactorToken(String email, Long userId);
+
     boolean isTokenValid(String token, UserDetails userDetails);
 
     boolean isTokenExpired(String token);

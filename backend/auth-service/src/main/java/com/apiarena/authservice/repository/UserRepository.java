@@ -1,8 +1,11 @@
 package com.apiarena.authservice.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +13,22 @@ import org.springframework.data.repository.query.Param;
 import com.apiarena.authservice.model.entities.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
+
+    /** Admin console: paginated search by username/email with optional role + active filters. */
+    @Query("SELECT u FROM User u WHERE "
+            + "(:q IS NULL OR :q = '' OR LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%'))) "
+            + "AND (:role IS NULL OR u.role = :role) "
+            + "AND (:active IS NULL OR u.isActive = :active)")
+    Page<User> adminSearch(@Param("q") String q, @Param("role") User.Role role,
+            @Param("active") Boolean active, Pageable pageable);
+
+    long countByRole(User.Role role);
+
+    long countByIsActive(boolean isActive);
+
+    long countByLastSeenAtAfter(LocalDateTime cutoff);
+
     Optional<User> findByEmail(String email);
     Optional<User> findByEmailIgnoreCase(String email);
     Optional<User> findByUsername(String username);

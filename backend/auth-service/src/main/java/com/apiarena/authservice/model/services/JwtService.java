@@ -76,6 +76,20 @@ public class JwtService implements IJwtService {
         return generateToken(new HashMap<>(), userDetails, jwtProperties.getRefreshExpiration());
     }
 
+    /** Short-lived (5 min) token that only proves password (factor 1) passed, pending TOTP (factor 2). */
+    @Override
+    public String generatePendingTwoFactorToken(String email, Long userId) {
+        long now = System.currentTimeMillis();
+        return Jwts.builder()
+                .claim("twoFactorPending", true)
+                .claim("userId", userId)
+                .subject(email)
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + 5 * 60 * 1000L))
+                .signWith(getSignInKey())
+                .compact();
+    }
+
     private String generateToken(
             Map<String, Object> extraClaims,
             UserDetails userDetails,
