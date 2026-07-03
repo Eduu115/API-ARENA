@@ -24,7 +24,12 @@ import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.util.AccountStatus;
 import com.apiarena.authservice.util.ComplianceRules;
 import com.apiarena.authservice.util.LocaleSupport;
+import com.apiarena.authservice.repository.AdminPermissionRepository;
 import com.apiarena.authservice.repository.UserRepository;
+
+import java.util.ArrayList;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import jakarta.transaction.Transactional;
 
@@ -37,6 +42,9 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AdminPermissionRepository adminPermissionRepository;
 
     @Autowired
     private EmailDispatchService emailDispatchService;
@@ -62,10 +70,17 @@ public class UserService implements IUserService {
             .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
         liftExpiredBan(user);
         AccountStatus.requireLoginAllowed(user, email);
+        // ROLE_* plus, for admins, one CAP_* authority per granted capability (gates BI vs moderation).
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        if (user.getRole() == User.Role.ADMIN) {
+            adminPermissionRepository.findByAdminUserId(user.getId()).forEach(p ->
+                authorities.add(new SimpleGrantedAuthority("CAP_" + p.getCapability().name())));
+        }
         return org.springframework.security.core.userdetails.User.builder()
             .username(user.getEmail())
             .password(user.getPasswordHash())
-            .roles(user.getRole().name())
+            .authorities(authorities)
             .build();
     }
 

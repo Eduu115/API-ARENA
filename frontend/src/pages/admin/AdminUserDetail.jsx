@@ -20,7 +20,8 @@ import {
 import { setAdminEscape } from "../../lib/adminEscape";
 import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
-import { fmtDate, fmtDuration, isOnline } from "./adminFormat";
+import { useAdminCaps } from "./useAdminCaps";
+import { adminTypeLabel, fmtDate, fmtDuration, isOnline } from "./adminFormat";
 
 function Row({ label, wide, children }) {
   return (
@@ -43,6 +44,7 @@ export default function AdminUserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { loadUser, user: me } = useAuth();
+  const { canModerate } = useAdminCaps();
   const [user, setUser] = useState(null);
   const [subs, setSubs] = useState(null);
   const [moderation, setModeration] = useState([]);
@@ -231,7 +233,14 @@ export default function AdminUserDetail() {
         </div>
       )}
 
+      {!canModerate && (
+        <div className="admin-muted" style={{ marginBottom: 10 }}>
+          You don't hold the Moderation capability — moderation actions are hidden.
+        </div>
+      )}
+
       {/* God-mode command bar */}
+      {canModerate && (
       <div className="admin-toolbar" role="group" aria-label="User actions">
         <div className="admin-toolbar__group">
           {user.isActive ? (
@@ -313,6 +322,7 @@ export default function AdminUserDetail() {
           </button>
         </div>
       </div>
+      )}
 
       <div className="admin-hero" style={{ marginTop: 18 }}>
         <section className="admin-spec">
@@ -328,6 +338,11 @@ export default function AdminUserDetail() {
               <span className={`admin-role admin-role--${String(user.role || "").toLowerCase()}`}>
                 {user.role}
               </span>
+              {user.role === "ADMIN" && (
+                <span className="admin-pill admin-pill--muted" style={{ marginLeft: 8 }} title="Admin type (capabilities)">
+                  {adminTypeLabel(user.capabilities) ?? "…"}
+                </span>
+              )}
             </Row>
             <Row label="Status">
               <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
@@ -457,15 +472,17 @@ export default function AdminUserDetail() {
       </div>
 
       {/* Danger zone */}
-      <div className="admin-danger-zone">
-        <div>
-          <div className="admin-danger-zone__title">Danger zone</div>
-          <div className="admin-muted">Permanently erase this account and all of its data (GDPR).</div>
+      {canModerate && (
+        <div className="admin-danger-zone">
+          <div>
+            <div className="admin-danger-zone__title">Danger zone</div>
+            <div className="admin-muted">Permanently erase this account and all of its data (GDPR).</div>
+          </div>
+          <button className="admin-btn admin-btn--danger" disabled={busy || isSelf} onClick={onDelete}>
+            Delete account
+          </button>
         </div>
-        <button className="admin-btn admin-btn--danger" disabled={busy || isSelf} onClick={onDelete}>
-          Delete account
-        </button>
-      </div>
+      )}
 
       {/* Message composer */}
       {modal === "message" && (
