@@ -69,6 +69,12 @@
   "deleteBody": "Esta acción es <1>permanente</1>. Borra tu perfil, entregas, archivos subidos y datos personales asociados. No se puede deshacer.",
   "deleting": "Eliminando…",
   "deleteForever": "Eliminar para siempre",
+  "deactivateAccount": "Darme de baja",
+  "deactivateError": "No se pudo dar de baja tu cuenta.",
+  "deactivateTitle": "¿Darte de baja?",
+  "deactivateBody": "Tu cuenta quedará <1>desactivada</1> y se cerrará tu sesión. No se borra nada: tus datos se conservan y un administrador puede reactivarla más tarde. Si lo que quieres es borrar tus datos, usa «Eliminar mi cuenta».",
+  "deactivating": "Dando de baja…",
+  "deactivateConfirm": "Darme de baja",
   "badges": {
     "loading": "Cargando insignias…",
     "empty": "Aún no hay insignias. Completa challenges e hitos para desbloquear coleccionables.",

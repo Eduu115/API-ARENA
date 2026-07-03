@@ -69,6 +69,12 @@
   "deleteBody": "This action is <1>permanent</1>. It deletes your profile, submissions, uploaded files and associated personal data. This cannot be undone.",
   "deleting": "Deleting…",
   "deleteForever": "Delete forever",
+  "deactivateAccount": "Deactivate my account",
+  "deactivateError": "Could not deactivate your account.",
+  "deactivateTitle": "Deactivate your account?",
+  "deactivateBody": "Your account will be <1>deactivated</1> and you'll be signed out. Nothing is deleted — your data is kept and an admin can reactivate it later. To erase your data instead, use \"Delete my account\".",
+  "deactivating": "Deactivating…",
+  "deactivateConfirm": "Deactivate",
   "badges": {
     "loading": "Loading badges…",
     "empty": "No badges yet. Complete challenges and milestones to unlock collectibles.",

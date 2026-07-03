@@ -110,6 +110,38 @@ public class AdminService {
         return AdminUserDTO.fromEntity(user);
     }
 
+    /** Baja: deactivate an account without banning or deleting data. Reversible via {@link #reactivate}. */
+    @Transactional
+    public AdminUserDTO deactivate(Long id, String actingEmail) {
+        User user = loadUser(id);
+        requireNotSelf(user, actingEmail, "your own account");
+        if (user.getBannedAt() != null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "ADMIN_ACCOUNT_BANNED",
+                    "Account is banned; unban it instead of deactivating");
+        }
+        user.setIsActive(false);
+        user.setDeactivatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        refreshTokenService.revokeAllUserTokens(user);
+        audit(actingEmail, "DEACTIVATE", user, null);
+        return AdminUserDTO.fromEntity(user);
+    }
+
+    /** Reactivate a deactivated (baja) account. Bans are handled by unban, not here. */
+    @Transactional
+    public AdminUserDTO reactivate(Long id, String actingEmail) {
+        User user = loadUser(id);
+        if (user.getDeactivatedAt() == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "ADMIN_NOT_DEACTIVATED",
+                    "Account is not deactivated" + (user.getBannedAt() != null ? "; use unban" : ""));
+        }
+        user.setIsActive(true);
+        user.setDeactivatedAt(null);
+        userRepository.save(user);
+        audit(actingEmail, "REACTIVATE", user, null);
+        return AdminUserDTO.fromEntity(user);
+    }
+
     public List<ModerationRecordDTO> moderationHistory(Long id) {
         return moderationRepository.findByUserIdOrderByCreatedAtDesc(id).stream()
                 .map(ModerationRecordDTO::fromEntity).toList();

@@ -26,6 +26,7 @@ public class AdminUserDTO {
     private String banReason;
     private LocalDateTime bannedAt;
     private LocalDateTime bannedUntil;
+    private LocalDateTime deactivatedAt;
     private Integer rating;
     private Integer level;
     private Integer experiencePoints;
@@ -55,6 +56,7 @@ public class AdminUserDTO {
                 .banReason(u.getBanReason())
                 .bannedAt(u.getBannedAt())
                 .bannedUntil(u.getBannedUntil())
+                .deactivatedAt(u.getDeactivatedAt())
                 .rating(u.getRating())
                 .level(u.getLevel())
                 .experiencePoints(u.getExperiencePoints())

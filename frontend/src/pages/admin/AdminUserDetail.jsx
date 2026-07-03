@@ -5,8 +5,10 @@ import {
   adjustUser,
   banUser,
   clearWarnings,
+  deactivateUser,
   deleteUser,
   forceLogout,
+  reactivateUser,
   getModeration,
   getUser,
   getUserSubmissions,
@@ -218,7 +220,11 @@ export default function AdminUserDetail() {
       </div>
       <h1 className="admin-h1">
         <span className={`admin-dot ${isOnline(user.lastSeenAt) ? "admin-dot--on" : ""}`} /> {user.username}
-        {!user.isActive && <span className="admin-badge admin-badge--banned">BANNED</span>}
+        {!user.isActive && (
+          <span className="admin-badge admin-badge--banned">
+            {user.deactivatedAt ? "DEACTIVATED" : "BANNED"}
+          </span>
+        )}
       </h1>
 
       {toast && (
@@ -244,12 +250,32 @@ export default function AdminUserDetail() {
       <div className="admin-toolbar" role="group" aria-label="User actions">
         <div className="admin-toolbar__group">
           {user.isActive ? (
+            <>
+              <button
+                className="admin-btn admin-btn--danger admin-btn--sm"
+                disabled={busy || isSelf}
+                onClick={() => setModal("ban")}
+              >
+                Ban…
+              </button>
+              <button
+                className="admin-btn admin-btn--sm"
+                disabled={busy || isSelf}
+                onClick={() =>
+                  run("Account deactivated", () => deactivateUser(id),
+                    `Deactivate ${user.username}? Their data is kept and it can be reactivated later.`)
+                }
+              >
+                Deactivate…
+              </button>
+            </>
+          ) : user.deactivatedAt ? (
             <button
-              className="admin-btn admin-btn--danger admin-btn--sm"
-              disabled={busy || isSelf}
-              onClick={() => setModal("ban")}
+              className="admin-btn admin-btn--sm"
+              disabled={busy}
+              onClick={() => run("Account reactivated", () => reactivateUser(id), `Reactivate ${user.username}?`)}
             >
-              Ban…
+              Reactivate
             </button>
           ) : (
             <button className="admin-btn admin-btn--sm" disabled={busy} onClick={() => setModal("unban")}>
@@ -345,8 +371,8 @@ export default function AdminUserDetail() {
               )}
             </Row>
             <Row label="Status">
-              <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
-                {user.isActive ? "Active" : "Banned"}
+              <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : user.deactivatedAt ? "admin-pill--muted" : "admin-pill--bad"}`}>
+                {user.isActive ? "Active" : user.deactivatedAt ? "Deactivated" : "Banned"}
               </span>
             </Row>
             <Row label="2FA">{user.totpEnabled ? "Enabled" : "—"}</Row>

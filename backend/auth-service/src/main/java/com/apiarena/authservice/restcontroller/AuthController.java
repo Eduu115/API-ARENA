@@ -210,6 +210,14 @@ public class AuthController {
                 .body(data);
     }
 
+    @PostMapping("/me/deactivate")
+    @Operation(summary = "Deactivate my account", description = "Voluntary baja: deactivates the account and revokes sessions without deleting any data. An admin can reactivate it later.")
+    public ResponseEntity<Void> deactivateMyAccount() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        userService.deactivateAccount(authentication.getName());
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/me")
     @Operation(summary = "Delete my account", description = "GDPR right to erasure: permanently deletes the current user's account and associated personal data")
     public ResponseEntity<Void> deleteMyAccount() {

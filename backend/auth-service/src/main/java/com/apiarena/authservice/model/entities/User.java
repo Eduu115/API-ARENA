@@ -98,6 +98,11 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    /** Voluntary/admin deactivation (baja): set when the account is deactivated without a ban. Distinguishes
+     *  a "baja" (is_active=false, no ban) from a ban (which sets ban_reason/banned_at). Cleared on reactivate. */
+    @Column(name = "deactivated_at")
+    private LocalDateTime deactivatedAt;
+
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified = false;
 
