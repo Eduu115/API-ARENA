@@ -66,7 +66,7 @@
   "logoutTitle": "Log out?",
   "logoutBody": "You will need to sign in again to access your profile.",
   "deleteTitle": "Delete your account?",
-  "deleteBody": "This action is <1>permanent</1>. It deletes your profile, submissions, uploaded files and associated personal data. This cannot be undone.",
+  "deleteBody": "This is <1>irreversible</1>. Your account, submissions and uploaded files are removed now. A copy of your data is archived and your email stays reserved for about 2 weeks, then permanently purged — you can't sign up again with this email until then. For immediate, complete erasure of the archived copy, email privacy@apiarena.net.",
   "deleting": "Deleting…",
   "deleteForever": "Delete forever",
   "deactivateAccount": "Deactivate my account",

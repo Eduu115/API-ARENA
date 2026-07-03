@@ -24,10 +24,14 @@ import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.util.AccountStatus;
 import com.apiarena.authservice.util.ComplianceRules;
 import com.apiarena.authservice.util.LocaleSupport;
+import com.apiarena.authservice.model.entities.AccountDeletion;
+import com.apiarena.authservice.repository.AccountDeletionRepository;
 import com.apiarena.authservice.repository.AdminPermissionRepository;
 import com.apiarena.authservice.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -45,6 +49,16 @@ public class UserService implements IUserService {
 
     @Autowired
     private AdminPermissionRepository adminPermissionRepository;
+
+    @Autowired
+    private AccountDeletionRepository accountDeletionRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    /** Days a deleted account's email stays reserved and its archive kept before the purge job removes it. */
+    @Value("${app.account-deletion.retention-days:14}")
+    private int deletionRetentionDays;
 
     @Autowired
     private EmailDispatchService emailDispatchService;
@@ -346,20 +360,72 @@ public class UserService implements IUserService {
         return root;
     }
 
+    /**
+     * Self-service deletion (deferred): archives a snapshot, reserves the email for the retention window,
+     * frees the live account and emails the user. Full/immediate erasure of the archive is via privacy contact.
+     */
     @Override
     @Transactional
     public void deleteAccount(String email) {
         User user = getUserEntityByEmail(email);
-        Long userId = user.getId();
+        String normalizedEmail = user.getEmail().trim().toLowerCase();
+        String username = user.getUsername();
+        String locale = user.getPreferredLocale();
 
-        // Best-effort cross-service erasure of submissions, ZIPs and replays.
-        submissionPurgeDispatchService.purgeUserData(userId);
+        LocalDateTime purgeAfter = LocalDateTime.now().plusDays(deletionRetentionDays);
+        String snapshot = serializeSnapshot(exportUserData(email));
+        accountDeletionRepository.save(new AccountDeletion(normalizedEmail, username, snapshot, purgeAfter));
 
-        // Invalidate sessions, then delete the account. Postgres ON DELETE CASCADE removes
-        // refresh tokens, friendships, notifications, achievements, leaderboard entries and
-        // group memberships linked to this user.
+        hardErase(user);
+
+        emailDispatchService.sendAccountDeletionEmail(normalizedEmail, username, purgeAfter, locale);
+    }
+
+    /**
+     * Admin/staff erasure (immediate): wipes the account now with no archive, no email reservation and no
+     * notification email. Used by the admin console; the self-service path uses the deferred flow instead.
+     */
+    @Override
+    @Transactional
+    public void eraseAccountImmediately(String email) {
+        hardErase(getUserEntityByEmail(email));
+    }
+
+    /**
+     * Purge the live account: cross-service submission/ZIP data, sessions, then the row. Postgres ON DELETE
+     * CASCADE removes refresh tokens, friendships, notifications, achievements, leaderboard and group links.
+     */
+    private void hardErase(User user) {
+        submissionPurgeDispatchService.purgeUserData(user.getId());
         refreshTokenService.revokeAllUserTokens(user);
         userRepository.delete(user);
+    }
+
+    /** True while a deleted account's email is still reserved (blocks re-registration until purge). */
+    @Override
+    public boolean isEmailReserved(String email) {
+        return accountDeletionRepository.existsByEmailIgnoreCase(email.trim().toLowerCase());
+    }
+
+    /** Scheduled purge: drop archives past their retention window; the email frees up then. */
+    @Override
+    @Transactional
+    public int purgeExpiredAccountDeletions() {
+        List<AccountDeletion> due = accountDeletionRepository.findByPurgeAfterBefore(LocalDateTime.now());
+        if (!due.isEmpty()) {
+            accountDeletionRepository.deleteAll(due);
+        }
+        return due.size();
+    }
+
+    private String serializeSnapshot(java.util.Map<String, Object> data) {
+        try {
+            return objectMapper.writeValueAsString(data);
+        } catch (Exception e) {
+            // Never block the deletion on a serialization hiccup; keep a minimal marker instead.
+            log.error("Failed to serialize deletion snapshot: {}", e.getMessage());
+            return "{}";
+        }
     }
 
     @Override

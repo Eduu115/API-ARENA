@@ -22,4 +22,9 @@ public class EmailProperties {
      * Resend API key (Bearer). If blank, verification links are only logged (local dev).
      */
     private String resendApiKey = "";
+
+    /**
+     * Contact address for full/immediate data erasure requests (shown in the account-deletion email).
+     */
+    private String supportPrivacyEmail = "privacy@apiarena.net";
 }
