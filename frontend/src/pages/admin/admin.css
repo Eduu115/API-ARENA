@@ -838,6 +838,14 @@
   margin-bottom: 16px;
   font-size: 13.5px;
 }
+.admin-alert--ok {
+  background: var(--arena-success-10, color-mix(in srgb, var(--a-ok) 12%, transparent));
+  border-color: color-mix(in srgb, var(--a-ok) 35%, transparent);
+  color: var(--a-ok);
+}
+.admin-export-hint {
+  font-size: 13px;
+}
 .admin-toast {
   position: sticky;
   top: 12px;
