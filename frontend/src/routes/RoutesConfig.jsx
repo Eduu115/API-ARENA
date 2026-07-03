@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
 import Landing from "../pages/landing/Landing";
 import ChallengeDetail from "../pages/challenges/ChallengeDetail";
@@ -28,6 +28,11 @@ import TeacherGroups from "../pages/teacher/TeacherGroups";
 import ChallengeSubmit from "../pages/challenges/ChallengeSubmit";
 import ProtectedLayout from "../layouts/ProtectedLayout";
 import TeacherLayout from "../layouts/TeacherLayout";
+import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUsers from "../pages/admin/AdminUsers";
+import AdminUserDetail from "../pages/admin/AdminUserDetail";
+import AdminAudit from "../pages/admin/AdminAudit";
 import Friends from "../pages/friends/Friends";
 import Notifications from "../pages/Notifications";
 import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
@@ -40,6 +45,15 @@ function AppRoutes() {
   return (
     <>
       <Route path="/" element={<RootLocaleRedirect />} />
+
+      {/* Isolated admin bunker — outside LocaleLayout, no locale, no normal-site chrome. */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="users/:id" element={<AdminUserDetail />} />
+        <Route path="audit" element={<AdminAudit />} />
+      </Route>
+
       <Route path="/:locale" element={<LocaleLayout />}>
         <Route index element={<Landing />} />
         <Route path="login" element={<Login />} />
@@ -89,14 +103,25 @@ function AppRoutes() {
   );
 }
 
-export default function RoutesConfig() {
+/** Site-level widgets (banners, cookie consent, trackers) — never inside the admin bunker. */
+function SiteChrome() {
+  const { pathname } = useLocation();
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return null;
   return (
-    <BrowserRouter>
+    <>
       <BrowsingTimeTracker />
       <ActiveChallengeSessionBanner />
       <CookieConsent />
-      <Routes>{AppRoutes()}</Routes>
       <ProfileComplianceGate />
+    </>
+  );
+}
+
+export default function RoutesConfig() {
+  return (
+    <BrowserRouter>
+      <SiteChrome />
+      <Routes>{AppRoutes()}</Routes>
     </BrowserRouter>
   );
 }
