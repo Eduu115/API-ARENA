@@ -250,34 +250,14 @@ export default function AdminUserDetail() {
       <div className="admin-toolbar" role="group" aria-label="User actions">
         <div className="admin-toolbar__group">
           {user.isActive ? (
-            <>
-              <button
-                className="admin-btn admin-btn--danger admin-btn--sm"
-                disabled={busy || isSelf}
-                onClick={() => setModal("ban")}
-              >
-                Ban…
-              </button>
-              <button
-                className="admin-btn admin-btn--sm"
-                disabled={busy || isSelf}
-                onClick={() =>
-                  run("Account deactivated", () => deactivateUser(id),
-                    `Deactivate ${user.username}? Their data is kept and it can be reactivated later.`)
-                }
-              >
-                Deactivate…
-              </button>
-            </>
-          ) : user.deactivatedAt ? (
             <button
-              className="admin-btn admin-btn--sm"
-              disabled={busy}
-              onClick={() => run("Account reactivated", () => reactivateUser(id), `Reactivate ${user.username}?`)}
+              className="admin-btn admin-btn--danger admin-btn--sm"
+              disabled={busy || isSelf}
+              onClick={() => setModal("ban")}
             >
-              Reactivate
+              Ban…
             </button>
-          ) : (
+          ) : user.deactivatedAt ? null : (
             <button className="admin-btn admin-btn--sm" disabled={busy} onClick={() => setModal("unban")}>
               Unban…
             </button>
@@ -499,14 +479,49 @@ export default function AdminUserDetail() {
 
       {/* Danger zone */}
       {canModerate && (
-        <div className="admin-danger-zone">
-          <div>
-            <div className="admin-danger-zone__title">Danger zone</div>
-            <div className="admin-muted">Permanently erase this account and all of its data (GDPR).</div>
+        <div className="admin-danger-zone admin-danger-zone--stack">
+          <div className="admin-danger-zone__title">Danger zone</div>
+
+          {(user.isActive || user.deactivatedAt) && (
+            <div className="admin-danger-zone__row">
+              <div className="admin-muted">
+                {user.deactivatedAt
+                  ? "This account is deactivated (baja). Reactivating restores access — no data was lost."
+                  : "Deactivate (baja): the account can't sign in but keeps all of its data. Reversible, not a ban."}
+              </div>
+              {user.deactivatedAt ? (
+                <button
+                  className="admin-btn admin-btn--sm"
+                  disabled={busy}
+                  onClick={() =>
+                    run("Account reactivated", () => reactivateUser(id), `Reactivate ${user.username}?`)
+                  }
+                >
+                  Reactivate account
+                </button>
+              ) : (
+                <button
+                  className="admin-btn admin-btn--sm"
+                  disabled={busy || isSelf}
+                  onClick={() =>
+                    run("Account deactivated", () => deactivateUser(id),
+                      `Deactivate ${user.username}? Their data is kept and it can be reactivated later.`)
+                  }
+                >
+                  Deactivate account
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="admin-danger-zone__row">
+            <div className="admin-muted">
+              Delete: erase this account and all of its data now (GDPR). Immediate and irreversible.
+            </div>
+            <button className="admin-btn admin-btn--danger" disabled={busy || isSelf} onClick={onDelete}>
+              Delete account
+            </button>
           </div>
-          <button className="admin-btn admin-btn--danger" disabled={busy || isSelf} onClick={onDelete}>
-            Delete account
-          </button>
         </div>
       )}
 
