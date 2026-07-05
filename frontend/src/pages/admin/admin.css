@@ -739,6 +739,21 @@
   color: var(--a-danger);
   letter-spacing: 0.5px;
 }
+.admin-danger-zone--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+.admin-danger-zone__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-danger-zone__row + .admin-danger-zone__row {
+  padding-top: 12px;
+  border-top: 1px solid var(--arena-error-30);
+}
 
 /* ── Modal ───────────────────────────────────────────── */
 .admin-modal__backdrop {
