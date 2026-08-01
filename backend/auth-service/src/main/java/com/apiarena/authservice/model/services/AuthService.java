@@ -158,9 +158,12 @@ public class AuthService implements IAuthService {
                     "Email not verified. Check your inbox or resend the verification link.");
         }
 
-        // ADMIN bunker: password is only factor 1. Do not issue tokens yet — hand back a
-        // short-lived pending token; the client must complete TOTP (factor 2) to get real tokens.
-        if (user.getRole() == User.Role.ADMIN) {
+        // Second factor required when the admin bunker mandates it, or any user opted into TOTP.
+        // Password is only factor 1: don't issue tokens yet — hand back a short-lived pending
+        // token; the client must complete TOTP (factor 2) to get real tokens.
+        boolean requiresTwoFactor = user.getRole() == User.Role.ADMIN
+                || Boolean.TRUE.equals(user.getTotpEnabled());
+        if (requiresTwoFactor) {
             return AuthResponse.builder()
                     .user(UserDTO.fromEntity(user))
                     .twoFactorRequired(true)

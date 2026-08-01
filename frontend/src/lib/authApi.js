@@ -477,6 +477,27 @@ export async function deleteMyAccount() {
     return request("/api/auth/me", { method: "DELETE" });
 }
 
+/** Voluntary 2FA — begin setup: get a TOTP secret + otpauth URI (QR) for the current user. */
+export async function enrollMy2fa() {
+    return request("/api/auth/me/2fa/enroll", { method: "POST" });
+}
+
+/** Voluntary 2FA — confirm the first code to turn 2FA on. Returns the updated user. */
+export async function enableMy2fa(code) {
+    return request("/api/auth/me/2fa/enable", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+    });
+}
+
+/** Voluntary 2FA — turn 2FA off (requires a current code). Returns the updated user. */
+export async function disableMy2fa(code) {
+    return request("/api/auth/me/2fa/disable", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+    });
+}
+
 
 
 

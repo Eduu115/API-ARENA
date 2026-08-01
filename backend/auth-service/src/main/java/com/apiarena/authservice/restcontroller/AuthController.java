@@ -29,6 +29,8 @@ import com.apiarena.authservice.model.dto.PublicProfileDTO;
 import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
 import com.apiarena.authservice.model.dto.ResendVerificationRequest;
+import com.apiarena.authservice.model.dto.TwoFactorCodeRequest;
+import com.apiarena.authservice.model.dto.TwoFactorEnrollResponse;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UsageDeltaRequest;
 import com.apiarena.authservice.model.dto.UserDTO;
@@ -38,6 +40,7 @@ import com.apiarena.authservice.model.services.AchievementService;
 import com.apiarena.authservice.model.services.IAuthService;
 import com.apiarena.authservice.model.services.IUserService;
 import com.apiarena.authservice.model.services.TurnstileVerificationService;
+import com.apiarena.authservice.model.services.UserTwoFactorService;
 import com.apiarena.authservice.model.services.WeeklyStreakService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -61,6 +64,8 @@ public class AuthController {
     private WeeklyStreakService weeklyStreakService;
     @Autowired
     private TurnstileVerificationService turnstileVerificationService;
+    @Autowired
+    private UserTwoFactorService userTwoFactorService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account. No tokens are returned; use /login to get access and refresh tokens.")
@@ -197,6 +202,27 @@ public class AuthController {
         UserDTO currentUser = userService.getUserByEmail(email);
         UserDTO updatedUser = userService.completeProfileCompliance(currentUser.getId(), request);
         return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/me/2fa/enroll")
+    @Operation(summary = "Begin 2FA setup", description = "Return a TOTP secret/QR to add to an authenticator app")
+    public ResponseEntity<TwoFactorEnrollResponse> enrollTwoFactor() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userTwoFactorService.enroll(email));
+    }
+
+    @PostMapping("/me/2fa/enable")
+    @Operation(summary = "Enable 2FA", description = "Confirm the first TOTP code to turn on 2FA for the current user")
+    public ResponseEntity<UserDTO> enableTwoFactor(@Valid @RequestBody TwoFactorCodeRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userTwoFactorService.enable(email, request.getCode().trim()));
+    }
+
+    @PostMapping("/me/2fa/disable")
+    @Operation(summary = "Disable 2FA", description = "Turn off 2FA; requires a valid current TOTP code")
+    public ResponseEntity<UserDTO> disableTwoFactor(@Valid @RequestBody TwoFactorCodeRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userTwoFactorService.disable(email, request.getCode().trim()));
     }
 
     @GetMapping("/me/export")

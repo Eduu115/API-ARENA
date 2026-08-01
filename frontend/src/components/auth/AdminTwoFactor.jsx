@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "../../context/AuthContext";
 
 /**
- * ADMIN 2FA step. On first login (enrolled=false) it fetches a TOTP secret to add manually
- * to an authenticator app; then it verifies the 6-digit code and unlocks the bunker.
- * ponytail: manual key entry, no QR image (no dep, and the secret never leaves for a 3rd-party QR service).
+ * ADMIN 2FA step. On first login (enrolled=false) it fetches a TOTP secret, renders it as a QR
+ * to scan (manual key hidden behind a collapse); then it verifies the 6-digit code and unlocks the bunker.
+ * ponytail: qrcode.react renders the QR client-side, so the secret never leaves for a 3rd-party QR service.
  */
 export default function AdminTwoFactor({ pendingToken, enrolled, onSuccess }) {
   const { enrollAdmin2fa, verifyAdmin2fa } = useAuth();
@@ -63,23 +64,31 @@ export default function AdminTwoFactor({ pendingToken, enrolled, onSuccess }) {
       {!enrolled && (
         <div className="auth-fields">
           <p className="ch-card-desc">
-            Add this account to your authenticator app (Google Authenticator, Authy…) using the key below,
-            then enter the 6-digit code.
+            Scan this QR with your authenticator app (Google Authenticator, Authy…), then enter the 6-digit code.
           </p>
-          <div>
-            <label className="auth-label">Setup key (Base32)</label>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {otpauthUri ? (
+              <div style={{ background: "#fff", padding: 12, borderRadius: 8 }}>
+                <QRCodeSVG value={otpauthUri} size={176} />
+              </div>
+            ) : (
+              <span className="ch-card-desc">…</span>
+            )}
+          </div>
+          <details>
+            <summary className="auth-link-inline" style={{ cursor: "pointer" }}>
+              Enter key manually
+            </summary>
+            <label className="auth-label" style={{ marginTop: 8 }}>
+              Setup key (Base32)
+            </label>
             <code
               className="auth-input"
               style={{ display: "block", wordBreak: "break-all", userSelect: "all" }}
             >
               {secret || "…"}
             </code>
-          </div>
-          {otpauthUri && (
-            <a className="auth-link-inline" href={otpauthUri}>
-              Open in authenticator app
-            </a>
-          )}
+          </details>
         </div>
       )}
 
