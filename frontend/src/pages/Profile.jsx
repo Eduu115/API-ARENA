@@ -14,6 +14,7 @@ import WeeklyStreakPanel from '../components/WeeklyStreakPanel';
 import AchievementList from '../components/AchievementList';
 import BadgeCollection from '../components/BadgeCollection';
 import ProfileBadges from '../components/ProfileBadges';
+import TwoFactorSection from '../components/TwoFactorSection';
 import { recentUnlockedAchievements } from '../lib/achievementDisplay';
 import { usePageMeta } from '../lib/usePageMeta';
 import './challenges/challenges.css';
@@ -646,6 +647,8 @@ export default function Profile() {
                 </div>
               </dl>
             </section>
+
+            <TwoFactorSection enabled={user.twoFactorEnabled === true} onChanged={loadUser} />
 
             <section className="profile-block profile-block--meta" aria-labelledby="privacy-heading">
               <div className="profile-block-head">
