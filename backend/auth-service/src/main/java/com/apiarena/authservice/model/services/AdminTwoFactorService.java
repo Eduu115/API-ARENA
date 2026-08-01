@@ -34,7 +34,11 @@ public class AdminTwoFactorService {
     private final IRefreshTokenService refreshTokenService;
     private final IUserService userService;
 
-    /** First login: generate + persist a secret (disabled) so the admin can add it to their app. */
+    /**
+     * First login: return a secret (disabled) so the admin can scan it. Idempotent — reuses the
+     * existing unverified secret so re-opening/retrying enrolment keeps the same QR instead of
+     * invalidating what was already scanned (a fresh secret each call = a new account every time).
+     */
     @Transactional
     public TwoFactorEnrollResponse enroll(String pendingToken) {
         User user = requirePendingAdmin(pendingToken);
@@ -42,10 +46,13 @@ public class AdminTwoFactorService {
             throw new ApiException(HttpStatus.CONFLICT, "AUTH_2FA_ALREADY_ENROLLED",
                     "This admin already has 2FA enabled");
         }
-        String secret = totpService.generateSecret();
-        user.setTotpSecret(secret);
-        user.setTotpEnabled(false);
-        userRepository.save(user);
+        String secret = user.getTotpSecret();
+        if (secret == null || secret.isBlank()) {
+            secret = totpService.generateSecret();
+            user.setTotpSecret(secret);
+            user.setTotpEnabled(false);
+            userRepository.save(user);
+        }
         return new TwoFactorEnrollResponse(secret, totpService.otpauthUri(secret, user.getEmail()));
     }
 
