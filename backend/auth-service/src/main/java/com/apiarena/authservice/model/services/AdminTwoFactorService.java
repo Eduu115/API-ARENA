@@ -106,8 +106,9 @@ public class AdminTwoFactorService {
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "AUTH_2FA_PENDING_INVALID",
                         "Invalid 2FA session"));
-        if (user.getRole() != User.Role.ADMIN || !AccountStatus.isLoginAllowed(user)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, "AUTH_2FA_FORBIDDEN", "Not an active admin account");
+        boolean eligible = user.getRole() == User.Role.ADMIN || Boolean.TRUE.equals(user.getTotpEnabled());
+        if (!eligible || !AccountStatus.isLoginAllowed(user)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "AUTH_2FA_FORBIDDEN", "2FA not available for this account");
         }
         return user;
     }

@@ -38,6 +38,8 @@ public class UserDTO {
     private String preferredLocale;
     /** True when date of birth or privacy consent is missing (legacy accounts). */
     private Boolean requiresProfileCompliance;
+    /** True when the account has TOTP two-factor enabled. */
+    private Boolean twoFactorEnabled;
 
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -62,7 +64,8 @@ public class UserDTO {
             Boolean.TRUE.equals(user.getBetaLegacy()),
             Boolean.TRUE.equals(user.getNewChallengeEmailAlerts()),
             user.getPreferredLocale() != null ? user.getPreferredLocale() : "en",
-            ComplianceRules.requiresProfileCompliance(user)
+            ComplianceRules.requiresProfileCompliance(user),
+            Boolean.TRUE.equals(user.getTotpEnabled())
         );
     }
 }
