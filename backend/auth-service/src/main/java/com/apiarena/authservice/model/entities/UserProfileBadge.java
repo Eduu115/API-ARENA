@@ -36,4 +36,8 @@ public class UserProfileBadge {
 
     @Column(name = "unlocked_at", nullable = false)
     private LocalDateTime unlockedAt;
+
+    /** User chose to show this owned badge on their profile (max 5, enforced in the service). */
+    @Column(nullable = false)
+    private boolean displayed = false;
 }

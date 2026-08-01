@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { getAudit } from "../../lib/adminApi";
+import {
+  buildAuditReport,
+  downloadAuditJson,
+  downloadAuditPdf,
+  fetchAllAuditEvents,
+} from "../../lib/adminAuditReport";
 import { fmtDate } from "./adminFormat";
 
 function actionPill(action) {
@@ -12,9 +19,12 @@ function actionPill(action) {
 }
 
 export default function AdminAudit() {
+  const { user } = useAuth();
   const [page, setPage] = useState(0);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(null);
+  const [exportMsg, setExportMsg] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,12 +36,76 @@ export default function AdminAudit() {
     };
   }, [page]);
 
+  async function buildFullReport() {
+    setExportMsg(null);
+    const events = await fetchAllAuditEvents();
+    return buildAuditReport(events, { generatedBy: user?.email ?? null });
+  }
+
+  async function handleJsonExport() {
+    setExporting("json");
+    try {
+      const report = await buildFullReport();
+      downloadAuditJson(report);
+      setExportMsg(`JSON exported — ${report.summary.totalEvents} events included.`);
+    } catch (e) {
+      setExportMsg(e?.message ?? "JSON export failed");
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  async function handlePdfExport() {
+    setExporting("pdf");
+    try {
+      const report = await buildFullReport();
+      await downloadAuditPdf(report);
+      setExportMsg(`PDF report generated — ${report.summary.totalEvents} events analysed.`);
+    } catch (e) {
+      setExportMsg(e?.message ?? "PDF export failed");
+    } finally {
+      setExporting(null);
+    }
+  }
+
   const rows = data?.content ?? [];
+  const busy = exporting != null;
 
   return (
     <div>
       <div className="admin-eyebrow">Accountability</div>
       <h1 className="admin-h1">Audit log</h1>
+      <p className="admin-muted" style={{ maxWidth: 640, marginBottom: 16 }}>
+        Immutable trail of admin console actions. Export the full log as JSON for external tooling, or generate a
+        narrative PDF brief that interprets moderation volume, risk actions, and administrator activity.
+      </p>
+
+      <div className="admin-toolbar">
+        <div className="admin-toolbar__group">
+          <button
+            type="button"
+            className="admin-btn admin-btn--primary"
+            disabled={busy}
+            onClick={handleJsonExport}
+          >
+            {exporting === "json" ? "Exporting…" : "↓ Download JSON"}
+          </button>
+          <button
+            type="button"
+            className="admin-btn admin-btn--accent2"
+            disabled={busy}
+            onClick={handlePdfExport}
+          >
+            {exporting === "pdf" ? "Generating…" : "◎ Generate PDF report"}
+          </button>
+        </div>
+        <span className="admin-toolbar__sep" aria-hidden="true" />
+        <span className="admin-muted admin-export-hint">
+          {data ? `${data.totalElements} events in log` : "Loading…"}
+        </span>
+      </div>
+
+      {exportMsg && <div className="admin-alert admin-alert--ok">{exportMsg}</div>}
       {error && <div className="admin-alert">{error}</div>}
 
       <div className="admin-table-wrap">

@@ -79,11 +79,27 @@ export function clearWarnings(id) {
   return request(`/api/auth/admin/users/${id}/clear-warnings`, { method: "POST" });
 }
 
-export function setUserRole(id, role) {
+export function setUserRole(id, role, capabilities) {
   return request(`/api/auth/admin/users/${id}/role`, {
     method: "POST",
-    body: JSON.stringify({ role }),
+    body: JSON.stringify(capabilities ? { role, capabilities } : { role }),
   });
+}
+
+export function getMyCapabilities() {
+  return request(`/api/auth/admin/me/capabilities`);
+}
+
+export function getUserCapabilities(id) {
+  return request(`/api/auth/admin/users/${id}/capabilities`);
+}
+
+export function deactivateUser(id) {
+  return request(`/api/auth/admin/users/${id}/deactivate`, { method: "POST" });
+}
+
+export function reactivateUser(id) {
+  return request(`/api/auth/admin/users/${id}/reactivate`, { method: "POST" });
 }
 
 export function verifyEmail(id) {

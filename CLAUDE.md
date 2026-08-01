@@ -18,3 +18,4 @@ avoid loading it twice.
 @.cursor/rules/api-arena-commit-workflow.mdc
 @.cursor/rules/api-arena-docker-rebuild.mdc
 @.cursor/rules/api-arena-no-volume-recreation.mdc
+@.cursor/rules/api-arena-data-modeling.mdc

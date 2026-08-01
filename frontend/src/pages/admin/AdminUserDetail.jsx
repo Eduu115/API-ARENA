@@ -5,8 +5,10 @@ import {
   adjustUser,
   banUser,
   clearWarnings,
+  deactivateUser,
   deleteUser,
   forceLogout,
+  reactivateUser,
   getModeration,
   getUser,
   getUserSubmissions,
@@ -20,7 +22,8 @@ import {
 import { setAdminEscape } from "../../lib/adminEscape";
 import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
-import { fmtDate, fmtDuration, isOnline } from "./adminFormat";
+import { useAdminCaps } from "./useAdminCaps";
+import { adminTypeLabel, fmtDate, fmtDuration, isOnline } from "./adminFormat";
 
 function Row({ label, wide, children }) {
   return (
@@ -43,6 +46,7 @@ export default function AdminUserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { loadUser, user: me } = useAuth();
+  const { canModerate } = useAdminCaps();
   const [user, setUser] = useState(null);
   const [subs, setSubs] = useState(null);
   const [moderation, setModeration] = useState([]);
@@ -216,7 +220,11 @@ export default function AdminUserDetail() {
       </div>
       <h1 className="admin-h1">
         <span className={`admin-dot ${isOnline(user.lastSeenAt) ? "admin-dot--on" : ""}`} /> {user.username}
-        {!user.isActive && <span className="admin-badge admin-badge--banned">BANNED</span>}
+        {!user.isActive && (
+          <span className="admin-badge admin-badge--banned">
+            {user.deactivatedAt ? "DEACTIVATED" : "BANNED"}
+          </span>
+        )}
       </h1>
 
       {toast && (
@@ -231,7 +239,14 @@ export default function AdminUserDetail() {
         </div>
       )}
 
+      {!canModerate && (
+        <div className="admin-muted" style={{ marginBottom: 10 }}>
+          You don't hold the Moderation capability — moderation actions are hidden.
+        </div>
+      )}
+
       {/* God-mode command bar */}
+      {canModerate && (
       <div className="admin-toolbar" role="group" aria-label="User actions">
         <div className="admin-toolbar__group">
           {user.isActive ? (
@@ -242,7 +257,7 @@ export default function AdminUserDetail() {
             >
               Ban…
             </button>
-          ) : (
+          ) : user.deactivatedAt ? null : (
             <button className="admin-btn admin-btn--sm" disabled={busy} onClick={() => setModal("unban")}>
               Unban…
             </button>
@@ -313,6 +328,7 @@ export default function AdminUserDetail() {
           </button>
         </div>
       </div>
+      )}
 
       <div className="admin-hero" style={{ marginTop: 18 }}>
         <section className="admin-spec">
@@ -328,10 +344,15 @@ export default function AdminUserDetail() {
               <span className={`admin-role admin-role--${String(user.role || "").toLowerCase()}`}>
                 {user.role}
               </span>
+              {user.role === "ADMIN" && (
+                <span className="admin-pill admin-pill--muted" style={{ marginLeft: 8 }} title="Admin type (capabilities)">
+                  {adminTypeLabel(user.capabilities) ?? "…"}
+                </span>
+              )}
             </Row>
             <Row label="Status">
-              <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
-                {user.isActive ? "Active" : "Banned"}
+              <span className={`admin-pill ${user.isActive ? "admin-pill--ok" : user.deactivatedAt ? "admin-pill--muted" : "admin-pill--bad"}`}>
+                {user.isActive ? "Active" : user.deactivatedAt ? "Deactivated" : "Banned"}
               </span>
             </Row>
             <Row label="2FA">{user.totpEnabled ? "Enabled" : "—"}</Row>
@@ -457,15 +478,52 @@ export default function AdminUserDetail() {
       </div>
 
       {/* Danger zone */}
-      <div className="admin-danger-zone">
-        <div>
+      {canModerate && (
+        <div className="admin-danger-zone admin-danger-zone--stack">
           <div className="admin-danger-zone__title">Danger zone</div>
-          <div className="admin-muted">Permanently erase this account and all of its data (GDPR).</div>
+
+          {(user.isActive || user.deactivatedAt) && (
+            <div className="admin-danger-zone__row">
+              <div className="admin-muted">
+                {user.deactivatedAt
+                  ? "This account is deactivated (baja). Reactivating restores access — no data was lost."
+                  : "Deactivate (baja): the account can't sign in but keeps all of its data. Reversible, not a ban."}
+              </div>
+              {user.deactivatedAt ? (
+                <button
+                  className="admin-btn admin-btn--sm"
+                  disabled={busy}
+                  onClick={() =>
+                    run("Account reactivated", () => reactivateUser(id), `Reactivate ${user.username}?`)
+                  }
+                >
+                  Reactivate account
+                </button>
+              ) : (
+                <button
+                  className="admin-btn admin-btn--sm"
+                  disabled={busy || isSelf}
+                  onClick={() =>
+                    run("Account deactivated", () => deactivateUser(id),
+                      `Deactivate ${user.username}? Their data is kept and it can be reactivated later.`)
+                  }
+                >
+                  Deactivate account
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="admin-danger-zone__row">
+            <div className="admin-muted">
+              Delete: erase this account and all of its data now (GDPR). Immediate and irreversible.
+            </div>
+            <button className="admin-btn admin-btn--danger" disabled={busy || isSelf} onClick={onDelete}>
+              Delete account
+            </button>
+          </div>
         </div>
-        <button className="admin-btn admin-btn--danger" disabled={busy || isSelf} onClick={onDelete}>
-          Delete account
-        </button>
-      </div>
+      )}
 
       {/* Message composer */}
       {modal === "message" && (

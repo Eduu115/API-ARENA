@@ -18,7 +18,7 @@ export const CONTROLLER = {
   site: "https://apiarena.net",
   context:
     "Proyecto Fin de Grado (TFG) de un Ciclo Formativo de Grado Superior. Titularidad y autoría: Eduardo Serrano Trenado.",
-  lastUpdated: "11 de junio de 2026",
+  lastUpdated: "3 de julio de 2026",
   consentVersion: "1.0",
 };
 
@@ -133,7 +133,8 @@ export const LEGAL_DOCS = {
         body: [
           {
             list: [
-              "Datos de cuenta: mientras la cuenta esté activa; se eliminan o anonimizan tras la baja, salvo obligación legal de conservación.",
+              "Datos de cuenta (baja / desactivación): si desactivas tu cuenta (baja), permanece inactiva y tus datos se conservan hasta que solicites su eliminación o un administrador la reactive.",
+              `Datos de cuenta (eliminación): al eliminar tu cuenta, se suprime de inmediato de los sistemas en producción. Se conserva una copia archivada y tu dirección de correo queda reservada durante un periodo limitado (por defecto 14 días) para completar el traslado y la liberación de la cuenta, tras el cual se purga por completo. Puedes solicitar la eliminación total e inmediata, incluida la copia archivada, escribiendo a ${C.email}.`,
               "Ficheros ZIP de envíos: durante el periodo de disponibilidad definido (por defecto 90 días) y después se eliminan.",
               "Datos de replay/diagnóstico: se eliminan transcurrido el periodo de retención (por defecto 30 días).",
               "Tokens de verificación y sesión: caducan automáticamente (verificación 48 h; sesión según configuración).",
@@ -165,6 +166,7 @@ export const LEGAL_DOCS = {
         body: [
           "Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad, así como retirar tu consentimiento en cualquier momento.",
           `Para ejercerlos, escribe a ${C.email}. Desde tu perfil también puedes exportar tus datos y eliminar tu cuenta.`,
+          `La eliminación de la cuenta desde el perfil conlleva la supresión inmediata en producción y la conservación de una copia archivada durante un periodo limitado (por defecto 14 días), con tu dirección de correo reservada, antes de su purga definitiva. Para una supresión total e inmediata de dicha copia, escribe a ${C.email}.`,
           "Si consideras que no hemos atendido correctamente tu solicitud, puedes reclamar ante la Agencia Española de Protección de Datos (www.aepd.es).",
         ],
       },
@@ -280,7 +282,8 @@ export const LEGAL_DOCS = {
       {
         heading: "6. Baja y eliminación de cuenta",
         body: [
-          "Puedes dar de baja tu cuenta en cualquier momento desde tu perfil. Esto eliminará tus datos personales asociados, salvo los que debamos conservar por obligación legal.",
+          "Puedes desactivar tu cuenta (darte de baja) en cualquier momento desde tu perfil: quedará inactiva y tus datos se conservarán, pudiendo reactivarse más adelante.",
+          `También puedes eliminar tu cuenta: se suprimirá de inmediato de los sistemas en producción y tu dirección de correo quedará reservada durante un periodo limitado (por defecto 14 días), en el que se conserva una copia archivada antes de purgarse por completo; durante ese periodo no podrás registrarte de nuevo con ese correo. La eliminación es irreversible. Para una eliminación total e inmediata, incluida la copia archivada, escribe a ${C.email}. En todo caso, conservaremos los datos que debamos por obligación legal.`,
         ],
       },
       {

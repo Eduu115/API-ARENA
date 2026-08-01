@@ -739,6 +739,21 @@
   color: var(--a-danger);
   letter-spacing: 0.5px;
 }
+.admin-danger-zone--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+.admin-danger-zone__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.admin-danger-zone__row + .admin-danger-zone__row {
+  padding-top: 12px;
+  border-top: 1px solid var(--arena-error-30);
+}
 
 /* ── Modal ───────────────────────────────────────────── */
 .admin-modal__backdrop {
@@ -837,6 +852,14 @@
   padding: 11px 15px;
   margin-bottom: 16px;
   font-size: 13.5px;
+}
+.admin-alert--ok {
+  background: var(--arena-success-10, color-mix(in srgb, var(--a-ok) 12%, transparent));
+  border-color: color-mix(in srgb, var(--a-ok) 35%, transparent);
+  color: var(--a-ok);
+}
+.admin-export-hint {
+  font-size: 13px;
 }
 .admin-toast {
   position: sticky;

@@ -464,6 +464,13 @@ export async function exportMyData() {
 }
 
 /**
+ * Voluntary baja: deactivate the current account without deleting data. Sessions are revoked.
+ */
+export async function deactivateMyAccount() {
+    return request("/api/auth/me/deactivate", { method: "POST" });
+}
+
+/**
  * GDPR right to erasure: permanently delete the current account.
  */
 export async function deleteMyAccount() {

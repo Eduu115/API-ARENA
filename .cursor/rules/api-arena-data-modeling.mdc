@@ -1,0 +1,30 @@
+---
+description: Modelado de datos — normalizar por defecto (tablas/relaciones). Columnas array solo como excepción justificada, nunca por costumbre.
+alwaysApply: true
+---
+
+# 🗄️ Modelado de datos — normalizar por defecto
+
+Una infraestructura sólida mejora fluidez y rendimiento. El modelo de datos se
+diseña **pensado**, no por inercia.
+
+## Regla
+
+Ante una relación 1-a-N o N-a-N, la opción por defecto es **una tabla nueva con
+su relación** (FK / tabla puente), **no** una columna array/JSON dentro de la
+fila.
+
+- ✅ Tablas y relaciones normalizadas por defecto.
+- ⚠️ Columna `array` / `jsonb` **solo** cuando esté específicamente justificada
+  (p. ej. lista corta, sin identidad propia, que nunca se consulta ni se une
+  por sus elementos, o un requisito concreto de rendimiento/forma de dato).
+
+## Obligatorio antes de proponer un array
+
+Si en algún momento se plantea un array/JSON para modelar una relación, hay que
+**contemplarlo y plantearlo explícitamente** frente a la alternativa
+normalizada, con el motivo. Nunca elegir array "por costumbre" o por ser el
+diff más corto. Si no hay una razón específica, se hace con tabla + relación.
+
+> Un array te ahorra un JOIN hoy y te cobra integridad referencial, índices,
+> consultas y migraciones mañana. La tabla es la base sólida.

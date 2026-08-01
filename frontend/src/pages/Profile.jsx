@@ -54,6 +54,8 @@ export default function Profile() {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [privacyError, setPrivacyError] = useState(null);
   const [globalRank, setGlobalRank] = useState(null);
@@ -335,6 +337,20 @@ export default function Profile() {
       setPrivacyError(e?.message || t('exportError'));
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleDeactivateAccount = async () => {
+    setPrivacyError(null);
+    setDeactivating(true);
+    try {
+      await authApi.deactivateMyAccount();
+      await logout();
+      navigate('/', { replace: true });
+    } catch (e) {
+      setPrivacyError(e?.message || t('deactivateError'));
+      setDeactivating(false);
+      setConfirmDeactivate(false);
     }
   };
 
@@ -679,6 +695,13 @@ export default function Profile() {
                 </button>
                 <button
                   type="button"
+                  className="profile-btn-ghost"
+                  onClick={() => setConfirmDeactivate(true)}
+                >
+                  {t('deactivateAccount')}
+                </button>
+                <button
+                  type="button"
                   className="profile-btn-logout"
                   onClick={() => setConfirmDelete(true)}
                 >
@@ -729,6 +752,50 @@ export default function Profile() {
           document.body
         )}
 
+      {confirmDeactivate &&
+        createPortal(
+          <div
+            className="profile-modal-backdrop"
+            role="presentation"
+            onClick={() => !deactivating && setConfirmDeactivate(false)}
+          >
+            <div
+              className="profile-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="profile-deactivate-title"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="profile-modal-header">
+                <h2 id="profile-deactivate-title">{t('deactivateTitle')}</h2>
+              </div>
+              <div className="profile-modal-body">
+                <p>
+                  <Trans i18nKey="deactivateBody" t={t} components={{ 1: <strong /> }} />
+                </p>
+              </div>
+              <div className="profile-modal-footer">
+                <button
+                  type="button"
+                  className="profile-modal-btn"
+                  onClick={() => setConfirmDeactivate(false)}
+                  disabled={deactivating}
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="button"
+                  className="profile-modal-btn profile-modal-btn--danger"
+                  onClick={handleDeactivateAccount}
+                  disabled={deactivating}
+                >
+                  {deactivating ? t('deactivating') : t('deactivateConfirm')}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
       {confirmDelete &&
         createPortal(
           <div

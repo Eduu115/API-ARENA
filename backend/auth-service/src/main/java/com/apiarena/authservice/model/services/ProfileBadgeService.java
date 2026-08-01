@@ -20,8 +20,6 @@ import com.apiarena.authservice.model.entities.UserStreakState;
 import com.apiarena.authservice.repository.ProfileBadgeDefinitionRepository;
 import com.apiarena.authservice.repository.UserProfileBadgeRepository;
 import com.apiarena.authservice.repository.UserRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,7 +36,6 @@ public class ProfileBadgeService {
     private final ProfileBadgeDefinitionRepository definitionRepository;
     private final UserProfileBadgeRepository userBadgeRepository;
     private final WeeklyStreakService weeklyStreakService;
-    private final ObjectMapper objectMapper;
 
     @Transactional
     public List<ProfileBadgeDTO> listForCurrentUserEmail(String email) {
@@ -58,17 +55,14 @@ public class ProfileBadgeService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
         syncBadges(user);
-        Set<String> displayedCodes = new HashSet<>(readDisplayedCodes(user));
         List<ProfileBadgeDefinition> defs = definitionRepository.findAllByOrderBySortOrderAsc();
         List<ProfileBadgeDisplayDTO> out = new ArrayList<>();
         for (ProfileBadgeDefinition def : defs) {
             if (DEPRECATED_BADGE_CODES.contains(def.getCode())) {
                 continue;
             }
-            if (!displayedCodes.contains(def.getCode())) {
-                continue;
-            }
-            if (!userBadgeRepository.existsByUser_IdAndBadge_Id(user.getId(), def.getId())) {
+            var ub = userBadgeRepository.findByUser_IdAndBadge_Id(user.getId(), def.getId());
+            if (ub.isEmpty() || !ub.get().isDisplayed()) {
                 continue;
             }
             out.add(ProfileBadgeDisplayDTO.builder()
@@ -109,8 +103,14 @@ public class ProfileBadgeService {
             throw new IllegalArgumentException("You can display at most " + MAX_DISPLAYED_BADGES + " badges.");
         }
 
-        user.setDisplayedProfileBadges(writeDisplayedCodes(sanitized));
-        userRepository.save(user);
+        Set<String> chosen = new HashSet<>(sanitized);
+        for (UserProfileBadge ub : userBadgeRepository.findByUser_Id(userId)) {
+            boolean shouldDisplay = chosen.contains(ub.getBadge().getCode());
+            if (ub.isDisplayed() != shouldDisplay) {
+                ub.setDisplayed(shouldDisplay);
+                userBadgeRepository.save(ub);
+            }
+        }
         return listForUser(user);
     }
 
@@ -126,7 +126,6 @@ public class ProfileBadgeService {
 
     private List<ProfileBadgeDTO> listForUser(User user) {
         syncBadges(user);
-        Set<String> displayedCodes = new HashSet<>(readDisplayedCodes(user));
         List<ProfileBadgeDefinition> defs = definitionRepository.findAllByOrderBySortOrderAsc();
         List<ProfileBadgeDTO> out = new ArrayList<>(defs.size());
         for (ProfileBadgeDefinition def : defs) {
@@ -145,7 +144,7 @@ public class ProfileBadgeService {
                     .sortOrder(def.getSortOrder() != null ? def.getSortOrder() : 0)
                     .unlocked(unlocked)
                     .unlockedAt(unlocked ? ub.get().getUnlockedAt() : null)
-                    .displayed(unlocked && displayedCodes.contains(def.getCode()))
+                    .displayed(unlocked && ub.get().isDisplayed())
                     .build());
         }
         return out;
@@ -192,32 +191,6 @@ public class ProfileBadgeService {
         ub.setBadge(def);
         ub.setUnlockedAt(LocalDateTime.now(ZoneOffset.UTC));
         userBadgeRepository.save(ub);
-    }
-
-    private List<String> readDisplayedCodes(User user) {
-        String raw = user.getDisplayedProfileBadges();
-        if (raw == null || raw.isBlank()) {
-            return List.of();
-        }
-        try {
-            List<String> parsed = objectMapper.readValue(raw, new TypeReference<List<String>>() {});
-            if (parsed == null) {
-                return List.of();
-            }
-            return parsed.stream()
-                    .filter(code -> code != null && !DEPRECATED_BADGE_CODES.contains(code))
-                    .toList();
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
-
-    private String writeDisplayedCodes(List<String> codes) {
-        try {
-            return objectMapper.writeValueAsString(codes != null ? codes : List.of());
-        } catch (Exception e) {
-            return "[]";
-        }
     }
 
     private static int n(Integer v) {

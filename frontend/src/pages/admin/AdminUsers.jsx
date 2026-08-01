@@ -1,9 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { banUser, searchUsers, setUserRole, unbanUser } from "../../lib/adminApi";
+import { useAuth } from "../../context/AuthContext";
+import {
+  banUser,
+  getUserCapabilities,
+  reactivateUser,
+  searchUsers,
+  setUserRole,
+  unbanUser,
+} from "../../lib/adminApi";
+import AdminCapsModal from "./AdminCapsModal";
 import BanModal from "./BanModal";
 import UnbanModal from "./UnbanModal";
-import { fmtDate, isOnline } from "./adminFormat";
+import { useAdminCaps } from "./useAdminCaps";
+import { adminTypeLabel, fmtDate, isOnline } from "./adminFormat";
 
 const ROLES = ["STUDENT", "TEACHER", "ADMIN"];
 
@@ -17,6 +27,9 @@ export default function AdminUsers() {
   const [busyId, setBusyId] = useState(null);
   const [banning, setBanning] = useState(null); // user pending ban (opens the form)
   const [unbanning, setUnbanning] = useState(null); // user pending unban (opens the form)
+  const [capsEditing, setCapsEditing] = useState(null); // { user, initial } for the capabilities modal
+  const { user: me } = useAuth();
+  const { supreme, canModerate } = useAdminCaps();
 
   const load = useCallback(async () => {
     setError(null);
@@ -50,6 +63,18 @@ export default function AdminUsers() {
     }
   }
 
+  async function confirmReactivate(u) {
+    if (!window.confirm(`Reactivate ${u.username}? Their account will be usable again.`)) return;
+    setBusyId(u.id);
+    try {
+      patchRow(await reactivateUser(u.id));
+    } catch (e) {
+      window.alert(e?.message ?? "Action failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function confirmUnban(payload) {
     const u = unbanning;
     setBusyId(u.id);
@@ -63,12 +88,40 @@ export default function AdminUsers() {
     }
   }
 
+  // Open the capability picker: which kind of admin. Pre-loads existing caps for admins.
+  async function openCaps(u) {
+    setBusyId(u.id);
+    try {
+      const initial = u.role === "ADMIN" ? await getUserCapabilities(u.id) : [];
+      setCapsEditing({ user: u, initial });
+    } catch (e) {
+      window.alert(e?.message ?? "Action failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   async function onChangeRole(u, newRole) {
     if (newRole === u.role) return;
+    // Promoting to ADMIN: pick the capability set instead of a blind confirm.
+    if (newRole === "ADMIN") return openCaps(u);
     if (!window.confirm(`Change ${u.username} from ${u.role} to ${newRole}?`)) return;
     setBusyId(u.id);
     try {
       patchRow(await setUserRole(u.id, newRole));
+    } catch (e) {
+      window.alert(e?.message ?? "Action failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function confirmCaps(capabilities) {
+    const u = capsEditing.user;
+    setBusyId(u.id);
+    try {
+      patchRow(await setUserRole(u.id, "ADMIN", capabilities));
+      setCapsEditing(null);
     } catch (e) {
       window.alert(e?.message ?? "Action failed");
     } finally {
@@ -149,32 +202,71 @@ export default function AdminUsers() {
                   <select
                     className="admin-input admin-input--sm"
                     value={u.role}
-                    disabled={busyId === u.id}
+                    disabled={busyId === u.id || (u.role === "ADMIN" && !supreme)}
                     onChange={(e) => onChangeRole(u, e.target.value)}
+                    title={u.role === "ADMIN" && !supreme ? "Only a supreme admin can change an admin" : undefined}
                   >
                     {ROLES.map((r) => (
-                      <option key={r} value={r}>
+                      <option key={r} value={r} disabled={r === "ADMIN" && !supreme}>
                         {r}
                       </option>
                     ))}
                   </select>
+                  {u.role === "ADMIN" && (
+                    <span className="admin-pill admin-pill--muted" style={{ marginLeft: 6 }} title="Admin type (capabilities)">
+                      {adminTypeLabel(u.capabilities) ?? "…"}
+                    </span>
+                  )}
+                  {u.role === "ADMIN" && supreme && me?.id !== u.id && (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--sm admin-btn--ghost"
+                      disabled={busyId === u.id}
+                      style={{ marginLeft: 6 }}
+                      onClick={() => openCaps(u)}
+                      title="Edit admin capabilities"
+                    >
+                      Caps…
+                    </button>
+                  )}
                 </td>
                 <td>
-                  <span className={`admin-pill ${u.isActive ? "admin-pill--ok" : "admin-pill--bad"}`}>
-                    {u.isActive ? "Active" : "Banned"}
+                  <span className={`admin-pill ${u.isActive ? "admin-pill--ok" : u.deactivatedAt ? "admin-pill--muted" : "admin-pill--bad"}`}>
+                    {u.isActive ? "Active" : u.deactivatedAt ? "Deactivated" : "Banned"}
                   </span>
                 </td>
                 <td className="admin-mono">{u.rating}</td>
                 <td className="admin-muted">{fmtDate(u.lastSeenAt)}</td>
                 <td>
-                  <button
-                    type="button"
-                    className={`admin-btn admin-btn--sm ${u.isActive ? "admin-btn--danger" : ""}`}
-                    disabled={busyId === u.id}
-                    onClick={() => (u.isActive ? setBanning(u) : setUnbanning(u))}
-                  >
-                    {u.isActive ? "Ban…" : "Unban…"}
-                  </button>
+                  {canModerate &&
+                    (u.isActive ? (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm admin-btn--danger"
+                        disabled={busyId === u.id}
+                        onClick={() => setBanning(u)}
+                      >
+                        Ban…
+                      </button>
+                    ) : u.deactivatedAt ? (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm"
+                        disabled={busyId === u.id}
+                        onClick={() => confirmReactivate(u)}
+                      >
+                        Reactivate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn--sm"
+                        disabled={busyId === u.id}
+                        onClick={() => setUnbanning(u)}
+                      >
+                        Unban…
+                      </button>
+                    ))}
                 </td>
               </tr>
             ))}
@@ -227,6 +319,15 @@ export default function AdminUsers() {
           busy={busyId === unbanning.id}
           onCancel={() => setUnbanning(null)}
           onConfirm={confirmUnban}
+        />
+      )}
+      {capsEditing && (
+        <AdminCapsModal
+          username={capsEditing.user.username}
+          initial={capsEditing.initial}
+          busy={busyId === capsEditing.user.id}
+          onCancel={() => setCapsEditing(null)}
+          onConfirm={confirmCaps}
         />
       )}
     </div>

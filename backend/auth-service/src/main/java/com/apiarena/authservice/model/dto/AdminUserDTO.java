@@ -1,7 +1,9 @@
 package com.apiarena.authservice.model.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.apiarena.authservice.model.entities.AdminCapability;
 import com.apiarena.authservice.model.entities.User;
 
 import lombok.Builder;
@@ -15,6 +17,8 @@ public class AdminUserDTO {
     private String username;
     private String email;
     private String role;
+    /** Only populated for ADMIN accounts: which admin capabilities they hold (empty = none, both = supreme). */
+    private List<AdminCapability> capabilities;
     private Boolean isActive;
     private Boolean emailVerified;
     private Boolean totpEnabled;
@@ -22,6 +26,7 @@ public class AdminUserDTO {
     private String banReason;
     private LocalDateTime bannedAt;
     private LocalDateTime bannedUntil;
+    private LocalDateTime deactivatedAt;
     private Integer rating;
     private Integer level;
     private Integer experiencePoints;
@@ -51,6 +56,7 @@ public class AdminUserDTO {
                 .banReason(u.getBanReason())
                 .bannedAt(u.getBannedAt())
                 .bannedUntil(u.getBannedUntil())
+                .deactivatedAt(u.getDeactivatedAt())
                 .rating(u.getRating())
                 .level(u.getLevel())
                 .experiencePoints(u.getExperiencePoints())

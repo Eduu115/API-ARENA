@@ -39,6 +39,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminController {
 
+    /** Operational (moderation) actions: any ADMIN holding the MODERATION capability. Reads stay ADMIN-wide. */
+    private static final String MODERATION = "hasRole('ADMIN') and hasAuthority('CAP_MODERATION')";
+
     private final AdminService adminService;
 
     @GetMapping("/stats")
@@ -64,6 +67,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getUser(id));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/ban")
     @Operation(summary = "Ban user", description = "Category/reason/description + optional expiry; revokes sessions, emails, records history")
     public ResponseEntity<AdminUserDTO> ban(
@@ -72,11 +76,26 @@ public class AdminController {
                 request.getDescription(), request.getUntil(), auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/unban")
     @Operation(summary = "Unban user", description = "Reactivates the account (reason/description recorded) and clears ban + warnings")
     public ResponseEntity<AdminUserDTO> unban(
             @PathVariable Long id, @Valid @RequestBody UnbanRequest request, Authentication auth) {
         return ResponseEntity.ok(adminService.unban(id, request.getReason(), request.getDescription(), auth.getName()));
+    }
+
+    @PreAuthorize(MODERATION)
+    @PostMapping("/users/{id}/deactivate")
+    @Operation(summary = "Deactivate account", description = "Baja: deactivate without banning or deleting data; revokes sessions. Reversible.")
+    public ResponseEntity<AdminUserDTO> deactivate(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(adminService.deactivate(id, auth.getName()));
+    }
+
+    @PreAuthorize(MODERATION)
+    @PostMapping("/users/{id}/reactivate")
+    @Operation(summary = "Reactivate account", description = "Reactivate a deactivated (baja) account. Bans use unban.")
+    public ResponseEntity<AdminUserDTO> reactivate(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(adminService.reactivate(id, auth.getName()));
     }
 
     @GetMapping("/users/{id}/moderation")
@@ -86,6 +105,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.moderationHistory(id));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/warn")
     @Operation(summary = "Warn user", description = "Adds a warning (auto-ban at 3), emails the user")
     public ResponseEntity<AdminUserDTO> warn(
@@ -93,6 +113,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.warn(id, request.getReason(), auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/clear-warnings")
     @Operation(summary = "Clear warnings")
     public ResponseEntity<AdminUserDTO> clearWarnings(@PathVariable Long id, Authentication auth) {
@@ -100,18 +121,21 @@ public class AdminController {
     }
 
     @PostMapping("/users/{id}/role")
-    @Operation(summary = "Set role", description = "Promote/demote STUDENT / TEACHER / ADMIN")
+    @Operation(summary = "Set role", description = "Promote/demote STUDENT / TEACHER / ADMIN; ADMIN carries capabilities (supreme only)")
     public ResponseEntity<AdminUserDTO> setRole(
             @PathVariable Long id, @Valid @RequestBody SetRoleRequest request, Authentication auth) {
-        return ResponseEntity.ok(adminService.setRole(id, request.getRole(), auth.getName()));
+        return ResponseEntity.ok(
+                adminService.setRole(id, request.getRole(), request.getCapabilities(), auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/verify-email")
     @Operation(summary = "Force-verify email")
     public ResponseEntity<AdminUserDTO> verifyEmail(@PathVariable Long id, Authentication auth) {
         return ResponseEntity.ok(adminService.verifyEmail(id, auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/logout")
     @Operation(summary = "Force logout", description = "Revoke all of the user's sessions")
     public ResponseEntity<Void> forceLogout(@PathVariable Long id, Authentication auth) {
@@ -119,12 +143,14 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/reset-2fa")
     @Operation(summary = "Reset 2FA", description = "Clear TOTP so the user re-enrols next login")
     public ResponseEntity<AdminUserDTO> resetTwoFactor(@PathVariable Long id, Authentication auth) {
         return ResponseEntity.ok(adminService.resetTwoFactor(id, auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/message")
     @Operation(summary = "Message user", description = "Send an email + in-app notification")
     public ResponseEntity<Void> message(
@@ -133,6 +159,7 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/adjust")
     @Operation(summary = "Adjust ELO/XP", description = "Signed deltas; level recomputed from XP")
     public ResponseEntity<AdminUserDTO> adjust(
@@ -140,12 +167,14 @@ public class AdminController {
         return ResponseEntity.ok(adminService.adjust(id, request.getRatingDelta(), request.getXpDelta(), auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @PostMapping("/users/{id}/impersonate")
     @Operation(summary = "Impersonate", description = "Mint tokens to act as this user (audited)")
     public ResponseEntity<AuthResponse> impersonate(@PathVariable Long id, Authentication auth) {
         return ResponseEntity.ok(adminService.impersonate(id, auth.getName()));
     }
 
+    @PreAuthorize(MODERATION)
     @DeleteMapping("/users/{id}")
     @Operation(summary = "Delete account", description = "GDPR-grade erasure of the account and its data")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication auth) {
@@ -157,6 +186,38 @@ public class AdminController {
     @Operation(summary = "Moderation analytics", description = "Total bans/unbans and ban breakdown by category")
     public ResponseEntity<com.apiarena.authservice.model.dto.ModerationStatsDTO> moderationStats() {
         return ResponseEntity.ok(adminService.moderationStats());
+    }
+
+    @GetMapping("/me/capabilities")
+    @Operation(summary = "My capabilities", description = "Capabilities of the acting admin, to gate the console UI")
+    public ResponseEntity<java.util.List<com.apiarena.authservice.model.entities.AdminCapability>> myCapabilities(
+            Authentication auth) {
+        return ResponseEntity.ok(adminService.myCapabilities(auth.getName()));
+    }
+
+    @GetMapping("/users/{id}/capabilities")
+    @Operation(summary = "Admin capabilities", description = "Capabilities granted to an admin account")
+    public ResponseEntity<java.util.List<com.apiarena.authservice.model.entities.AdminCapability>> capabilities(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(adminService.capabilitiesOf(id));
+    }
+
+    @PostMapping("/users/{id}/capabilities/{capability}")
+    @Operation(summary = "Grant capability", description = "Give an ADMIN account a capability (MODERATION / BI)")
+    public ResponseEntity<java.util.List<com.apiarena.authservice.model.entities.AdminCapability>> grantCapability(
+            @PathVariable Long id,
+            @PathVariable com.apiarena.authservice.model.entities.AdminCapability capability,
+            Authentication auth) {
+        return ResponseEntity.ok(adminService.grantCapability(id, capability, auth.getName()));
+    }
+
+    @DeleteMapping("/users/{id}/capabilities/{capability}")
+    @Operation(summary = "Revoke capability", description = "Remove a capability from an admin account")
+    public ResponseEntity<java.util.List<com.apiarena.authservice.model.entities.AdminCapability>> revokeCapability(
+            @PathVariable Long id,
+            @PathVariable com.apiarena.authservice.model.entities.AdminCapability capability,
+            Authentication auth) {
+        return ResponseEntity.ok(adminService.revokeCapability(id, capability, auth.getName()));
     }
 
     @GetMapping("/audit")
