@@ -37,8 +37,8 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 | Ruta | Componente | Estado |
 |------|------------|--------|
-| `/` | Landing | ✅ Sin tour (tours solo tras login + email verificado, 1ª visita por cuenta); footer con enlaces legales + **Cookie preferences** + **About** |
-| `/about` | AboutPage | ✅ Pública EN/ES sobre el desarrollador. Historia, motivación, trayectoria, stack, cronología, enlaces, contacto y Gubia son placeholders `TODO(content)` (sin biografía inventada). Enlace en el nav de la landing y en el footer. |
+| `/` | Landing | ✅ Sin tour (tours solo tras login + email verificado, 1ª visita por cuenta); footer con enlaces legales + **Cookie preferences** + **About** + sello discreto “Developed by Gubia” (enlace a gubiadigital.es; logo kit aún wordmark de texto) |
+| `/about` | AboutPage | ✅ Pública EN/ES sobre el desarrollador. Historia, motivación, trayectoria, stack, cronología, enlaces y contacto son placeholders `TODO(content)`. La URL de Gubia es https://gubiadigital.es. Enlace en el nav de la landing y en el footer. |
 | (global) | CookieConsent | ✅ Banner de consentimiento (necesarias siempre + **preferences** opt-in + analytics reservado); gating de persistencia de tema/tutoriales según consentimiento; reabrible desde footer y página `/cookies` |
 | (global) | ProfileComplianceGate | ✅ Modal bloqueante tras login si `requiresProfileCompliance` (cuentas legacy sin fecha de nacimiento / consentimiento GDPR) |
 | `/login` | Login | ✅ |
@@ -87,6 +87,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 ## Hecho recientemente (resumen)
 
+- **Developed by Gubia**: sello discreto en el footer de la landing y en el footer global de la app, una línea en el layout compartido de los emails transaccionales, Organization JSON-LD como creator/publisher de WebSite y SoftwareApplication, `<meta name="author">`, y una línea en `llms.txt`. La URL oficial y el logo kit siguen en TODO(content); el mark es un wordmark de texto.
 - **Lighthouse rutas públicas**: code-split por ruta, solo fuentes latinas de marca (Barlow Condensed, Syne, Share Tech Mono), gzip nginx nivel 6 y `Cache-Control` immutable en `/assets/`. Medido sin contenedor nginx (daemon Docker parado) con un estático que replica esas cabeceras: móvil Performance 92–95 y Accessibility / Best Practices / SEO a 100 en `/en/`, `/es/`, `/en/challenges`, `/en/docs`, `/en/login`. Informes en `docs/perf/`. `scripts/lighthouse-check.sh` falla por debajo de 90; no está en CI (hace falta Chrome y unas diez pasadas).
 - Kafka: producer en submission-service, consumer en leaderboard-service, `docker-compose` con `depends_on` kafka.  
 - Anti-farm: cooldown + 3 intentos/día UTC; endpoint `attempt-status`; staff sin límite.  

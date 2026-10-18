@@ -1,3 +1,4 @@
+import { GUBIA_NAME, GUBIA_WORDMARK, gubiaUrlOrNull } from "../brand/gubia.js";
 import { localePath } from "../lib/localeRoutes.js";
 
 export const SITE_URL = "https://apiarena.net";
@@ -107,6 +108,22 @@ function orgId() {
   return `${SITE_URL}/#organization`;
 }
 
+function gubiaOrgId() {
+  return `${SITE_URL}/#gubia`;
+}
+
+function gubiaOrganization() {
+  const node = {
+    "@type": "Organization",
+    "@id": gubiaOrgId(),
+    name: GUBIA_NAME,
+    logo: `${SITE_URL}${GUBIA_WORDMARK}`,
+  };
+  const url = gubiaUrlOrNull();
+  if (url) node.url = url;
+  return node;
+}
+
 export function siteNodes(locale = "en") {
   const loc = locale === "es" ? "es" : "en";
   const home = absoluteUrl(loc, "/");
@@ -123,6 +140,7 @@ export function siteNodes(locale = "en") {
       logo: `${SITE_URL}/icons/logo-hex-lg.svg`,
       description,
     },
+    gubiaOrganization(),
     {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
@@ -131,7 +149,8 @@ export function siteNodes(locale = "en") {
       alternateName: ["APIArena", "API-Arena"],
       description,
       inLanguage: ["en", "es"],
-      publisher: { "@id": orgId() },
+      creator: { "@id": gubiaOrgId() },
+      publisher: { "@id": gubiaOrgId() },
     },
     {
       "@type": "SoftwareApplication",
@@ -143,6 +162,8 @@ export function siteNodes(locale = "en") {
       description,
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+      creator: { "@id": gubiaOrgId() },
+      publisher: { "@id": gubiaOrgId() },
       provider: { "@id": orgId() },
     },
     {

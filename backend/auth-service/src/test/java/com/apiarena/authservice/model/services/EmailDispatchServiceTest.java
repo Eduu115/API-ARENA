@@ -278,6 +278,9 @@ class EmailDispatchServiceTest {
         assertTrue(email.html().contains(BASE + "/" + locale + "/cookies"));
         assertTrue(email.html().contains(BASE + "/" + locale + "/terminos"));
         assertTrue(email.text().contains(BASE + "/" + locale + "/privacidad"));
+        assertTrue(email.html().contains("Developed by <a href=\"#\""));
+        assertTrue(email.html().contains(">Gubia</a>"));
+        assertTrue(email.text().contains("Developed by Gubia"));
         assertFalse(email.html().contains("%s"), "unreplaced %s in html");
         assertFalse(email.text().contains("%s"), "unreplaced %s in text");
         assertFalse(email.html().contains("{{"), email.html());

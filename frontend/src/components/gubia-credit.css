@@ -1,0 +1,34 @@
+.gubia-credit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 0;
+  color: var(--muted, var(--arena-text-muted));
+  font-family: "Share Tech Mono", "Share Tech Mono Fallback", monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  line-height: 1;
+}
+
+.gubia-credit a {
+  display: inline-flex;
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.gubia-credit a:hover {
+  color: var(--cyan, var(--arena-primary));
+  opacity: 1;
+}
+
+.gubia-credit img {
+  display: block;
+  height: 18px;
+  width: 72px;
+}
+
+/* Landing stays dark. Only the app footer follows the light theme. */
+[data-theme="light"] .app-footer .gubia-credit img {
+  filter: brightness(0.55);
+}
