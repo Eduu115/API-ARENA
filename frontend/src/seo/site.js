@@ -243,6 +243,51 @@ export function docGraph(locale, { homeName, docsName, docTitle, docDescription,
   ]);
 }
 
+const GUBIA_ID = `${SITE_URL}/#gubia`;
+const DEVELOPER_ID = `${SITE_URL}/#developer`;
+
+/**
+ * Person + AboutPage for /about. Biography fields stay TODO(content).
+ * Gubia links to https://gubiadigital.es; the company blurb is still a placeholder.
+ */
+export function aboutGraph(locale, { homeName, aboutName, description }) {
+  const loc = locale === "es" ? "es" : "en";
+  const url = absoluteUrl(loc, "/about");
+  return graph([
+    ...siteNodes(loc),
+    {
+      "@type": "Organization",
+      "@id": GUBIA_ID,
+      name: "Gubia",
+      url: "https://gubiadigital.es",
+      description: "TODO(content)",
+    },
+    {
+      "@type": "Person",
+      "@id": DEVELOPER_ID,
+      name: "TODO(content)",
+      description: "TODO(content)",
+      url,
+      affiliation: { "@id": GUBIA_ID },
+    },
+    {
+      "@type": "AboutPage",
+      "@id": `${url}#about`,
+      url,
+      name: aboutName,
+      description,
+      inLanguage: loc,
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      mainEntity: { "@id": DEVELOPER_ID },
+      about: [{ "@id": DEVELOPER_ID }, { "@id": GUBIA_ID }],
+    },
+    breadcrumbNode([
+      { name: homeName, url: absoluteUrl(loc, "/") },
+      { name: aboutName, url },
+    ], url),
+  ]);
+}
+
 export function challengeCatalogGraph(locale, { homeName, challengesName }) {
   const url = absoluteUrl(locale, "/challenges");
   return graph([

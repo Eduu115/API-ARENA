@@ -87,6 +87,10 @@ These links are previews (title, description, difficulty, category, time limit, 
 - [Distributed Saga Order Orchestration](https://apiarena.net/en/challenges/distributed-saga-orchestration) (EXTREME). Spanish: https://apiarena.net/es/challenges/distributed-saga-orchestration
 - [High-Throughput Time-Series Ingestion](https://apiarena.net/en/challenges/timeseries-ingestion) (EXTREME). Spanish: https://apiarena.net/es/challenges/timeseries-ingestion
 
+## Developer
+
+A public about page exists at https://apiarena.net/en/about and https://apiarena.net/es/about. Biography, background, timeline, links, contact, and company details are forthcoming.
+
 ## Crawler policy
 
 Public pages may be indexed by search engines and by GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, Applebot-Extended. Private account, teacher, and admin areas are disallowed in https://apiarena.net/robots.txt.

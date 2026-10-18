@@ -37,7 +37,8 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 | Ruta | Componente | Estado |
 |------|------------|--------|
-| `/` | Landing | ✅ Sin tour (tours solo tras login + email verificado, 1ª visita por cuenta); footer con enlaces legales + **Cookie preferences** |
+| `/` | Landing | ✅ Sin tour (tours solo tras login + email verificado, 1ª visita por cuenta); footer con enlaces legales + **Cookie preferences** + **About** |
+| `/about` | AboutPage | ✅ Pública EN/ES sobre el desarrollador. Historia, motivación, trayectoria, stack, cronología, enlaces, contacto y Gubia son placeholders `TODO(content)` (sin biografía inventada). Enlace en el nav de la landing y en el footer. |
 | (global) | CookieConsent | ✅ Banner de consentimiento (necesarias siempre + **preferences** opt-in + analytics reservado); gating de persistencia de tema/tutoriales según consentimiento; reabrible desde footer y página `/cookies` |
 | (global) | ProfileComplianceGate | ✅ Modal bloqueante tras login si `requiresProfileCompliance` (cuentas legacy sin fecha de nacimiento / consentimiento GDPR) |
 | `/login` | Login | ✅ |

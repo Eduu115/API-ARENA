@@ -29,6 +29,7 @@ const SubmissionResults = lazy(() => import("../pages/submissions/SubmissionResu
 const Replay = lazy(() => import("../pages/Replay"));
 const DocsHub = lazy(() => import("../pages/docs/DocsHub"));
 const LegalPage = lazy(() => import("../pages/legal/LegalPage"));
+const AboutPage = lazy(() => import("../pages/about/AboutPage"));
 const TeacherDashboard = lazy(() => import("../pages/teacher/TeacherDashboard"));
 const Corrections = lazy(() => import("../pages/teacher/Corrections"));
 const TeacherChallenges = lazy(() => import("../pages/teacher/TeacherChallenges"));
@@ -76,6 +77,7 @@ function AppRoutes() {
         <Route path="docs" element={<DocsHub />} />
         <Route path="docs/:docId" element={<DocsHub />} />
 
+        <Route path="about" element={<AboutPage />} />
         <Route path="aviso-legal" element={<LegalPage />} />
         <Route path="privacidad" element={<LegalPage />} />
         <Route path="cookies" element={<LegalPage />} />

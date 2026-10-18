@@ -19,6 +19,7 @@ import {
   SITE_URL,
   absoluteUrl,
   buildHeadMeta,
+  aboutGraph,
   challengePreviewGraph,
   docGraph,
   homeGraph,
@@ -148,7 +149,7 @@ function robotsTxt() {
     "# rule set, so they receive the same Allow and the same Disallow.",
     "# A separate User-agent group would NOT inherit these Disallow lines.",
     "#",
-    "# Allowed: landing, docs, challenge previews, leaderboard, and legal pages",
+    "# Allowed: landing, docs, challenge previews, leaderboard, about, and legal pages",
     "# in /en and /es, plus /llms.txt and /llms-full.txt.",
     "# Disallowed: account, teacher, admin, and other private areas.",
     "# Public challenge pages are previews. Technical specs are not in the crawl surface.",
@@ -235,6 +236,10 @@ Catalog: ${absoluteUrl("en", "/challenges")} and ${absoluteUrl("es", "/challenge
 These links are previews (title, description, difficulty, category, time limit, XP). They do not include endpoint lists, hidden tests, or hints.
 
 ${challengeLinks}
+
+## Developer
+
+A public about page exists at ${absoluteUrl("en", "/about")} and ${absoluteUrl("es", "/about")}. Biography, background, timeline, links, contact, and company details are forthcoming.
 
 ## Crawler policy
 
@@ -336,7 +341,7 @@ function syncFile(rel, next) {
   }
 }
 
-function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
+function collectPages(landing, challengesJson, leaderboard, docs, challenges, about) {
   const pages = [];
   for (const locale of ["en", "es"]) {
     pages.push({
@@ -384,6 +389,14 @@ function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
         priority: "0.3",
       });
     }
+    pages.push({
+      locale,
+      path: "/about",
+      title: about[locale].meta.title,
+      description: about[locale].meta.description,
+      changefreq: "monthly",
+      priority: "0.5",
+    });
     for (const challenge of challenges) {
       pages.push({
         locale,
@@ -428,8 +441,12 @@ const docs = {
   en: getDocDocuments("en"),
   es: getDocDocuments("es"),
 };
+const about = {
+  en: readJson(join(root, "src/i18n/locales/en/about.json")),
+  es: readJson(join(root, "src/i18n/locales/es/about.json")),
+};
 const challenges = publicChallenges();
-const pages = collectPages(landing, challengesJson, leaderboard, docs, challenges);
+const pages = collectPages(landing, challengesJson, leaderboard, docs, challenges, about);
 const paths = uniquePaths(pages);
 
 const docIdsEn = docs.en.map((doc) => doc.id).join("|");
@@ -453,6 +470,7 @@ for (const snippet of [
   'path="privacidad"',
   'path="cookies"',
   'path="terminos"',
+  'path="about"',
 ]) {
   if (!routes.includes(snippet)) fail(`RoutesConfig is missing ${snippet}`);
 }
@@ -533,6 +551,19 @@ const challengeJson = JSON.stringify(challengeLd);
 if (/expectStatus|required_endpoints|hints/.test(challengeJson)) {
   fail("Challenge JSON-LD includes technical spec fields");
 }
+
+const aboutLd = aboutGraph("en", {
+  homeName: about.en.breadcrumb.home,
+  aboutName: about.en.meta.title,
+  description: about.en.meta.description,
+});
+const aboutTypes = jsonLdTypes(aboutLd);
+for (const type of ["Person", "AboutPage", "BreadcrumbList"]) {
+  if (!aboutTypes.has(type)) fail(`About JSON-LD missing ${type}`);
+}
+const aboutLdJson = JSON.stringify(aboutLd);
+if (!aboutLdJson.includes(`${SITE_URL}/#gubia`)) fail("About JSON-LD missing Gubia organization");
+if (!aboutLdJson.includes("TODO(content)")) fail("About JSON-LD dropped the content placeholder");
 
 const generated = {
   "public/robots.txt": robotsTxt(),
@@ -636,6 +667,12 @@ if (llmsFull.includes("expectStatus") || llms.includes("expectStatus")) {
 }
 for (const fact of ["800", "200", "ZIP", "sandbox", "ELO"]) {
   if (!llms.includes(fact)) fail(`llms.txt missing ${fact}`);
+}
+if (!llms.includes(absoluteUrl("en", "/about")) || !llms.includes(absoluteUrl("es", "/about"))) {
+  fail("llms.txt missing the about page");
+}
+if (!llms.includes("company details are forthcoming")) {
+  fail("llms.txt about summary invents or drops the forthcoming notice");
 }
 
 if (errors.length) {
