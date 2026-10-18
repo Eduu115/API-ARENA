@@ -300,7 +300,6 @@ export default function Register() {
                   <p>
                     <LocaleLink to="/teachers">{t("teacherPrompt")}</LocaleLink>
                   </p>
-                  <LocaleLink to="/login">{t("teacherSignIn")}</LocaleLink>
                 </div>
               </form>
             </div>

@@ -2,6 +2,35 @@
   max-width: 880px;
 }
 
+.content-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 22px;
+  border-bottom: 1px solid var(--dim);
+}
+
+.content-tab {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 10px 14px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.content-tab:hover {
+  color: var(--white);
+}
+
+.content-tab--active {
+  color: var(--cyan);
+  border-bottom-color: var(--cyan);
+}
+
 .content-wrap--wide {
   max-width: 1180px;
 }

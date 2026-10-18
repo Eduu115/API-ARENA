@@ -1,4 +1,10 @@
 {
+  "tabs": {
+    "aria": "News, changelog and roadmap",
+    "news": "News",
+    "changelog": "Changelog",
+    "roadmap": "Roadmap"
+  },
   "news": {
     "pageTitle": "News",
     "pageDescription": "Product news from API Arena: releases, community notes and what shipped in the arena.",

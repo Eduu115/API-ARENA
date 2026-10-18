@@ -43,16 +43,16 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/about` | AboutPage | ✅ Pública EN/ES sobre el desarrollador. Historia, motivación, trayectoria, stack, cronología, enlaces y contacto son placeholders `TODO(content)`. La URL de Gubia es https://gubiadigital.es. Enlace en el nav de la landing y en el footer. |
 | (global) | CookieConsent | ✅ Banner de consentimiento (necesarias siempre + **preferences** opt-in + analytics reservado); gating de persistencia de tema/tutoriales según consentimiento; reabrible desde footer y página `/cookies` |
 | (global) | ProfileComplianceGate | ✅ Modal bloqueante tras login si `requiresProfileCompliance` (cuentas legacy sin fecha de nacimiento / consentimiento GDPR) |
-| `/login` | Login | ✅ Enlace “Are you a teacher?” a la guía pública `/teachers`. Tras la contraseña, 2FA pide el método primario (TOTP o email) y permite cambiar |
-| `/teachers` | TeacherOnboarding | ✅ Guía pública “For teachers” (estilo Docs, EN/ES): rol (grupos, retos propios, correcciones, co-profesor), pasos cuenta → verificar email → 2FA → formulario → revisión manual; CTA a `/teacher/apply` (ruta del formulario en otro ticket); SEO title/description/canonical/hreflang + sitemap |
-| `/register` | Register | ✅ |
+| `/login` | Login | ✅ Enlace “Are you a teacher?” a `/teachers`. Sesión ya abierta → redirect a dashboard. Tras la contraseña, 2FA pide el método primario (TOTP o email) y permite cambiar |
+| `/teachers` | TeacherOnboarding | ✅ Guía pública “For teachers” (estilo Docs, EN/ES): el copy sigue el locale de la URL (`t(..., { lng })`), no un `i18n.language` stale. CTA a `/teacher/apply` (formulario en otro ticket) |
+| `/register` | Register | ✅ Sin botón “Sign in (education account)”; queda el enlace a `/teachers` |
 | `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
 | `/forgot-password` | ForgotPassword | ✅ Solicitud de reset (respuesta genérica) |
 | `/reset-password` | ResetPassword | ✅ Nueva contraseña con `?token=` |
 | `/challenges` | Challenges | ✅ Newsletter opt-in al pie del catálogo (STUDENT, email verificado); email + in-app al publicar challenge (`new_challenge_email_alerts` → auth + notification-service); tour catálogo 1ª vez |
 | `/challenges/:id` | ChallengeDetail | ✅ Resumen público (`/preview`); specs técnicas solo en submit; tour ficha 1ª vez |
 | `/challenges/:id/submit` | ChallengeSubmit | ✅ Timer (`deadlineAt`), límites, sesión; tour submit tras cerrar modal 1er envío |
-| `/dashboard` | Dashboard | ✅ Tour 1ª vez; **widget racha semanal** (sidebar + panel) vía `GET /api/auth/me/streak` |
+| `/dashboard` | Dashboard | ✅ Tour 1ª vez; **widget racha semanal** (sidebar + panel) vía `GET /api/auth/me/streak`; CTA “Authenticate as a teacher” para STUDENT |
 | `/submissions` | MySubmissions | ✅ (título del challenge vía `challengeTitle` en `GET /api/submissions/my`) |
 | `/submissions/:id` | SubmissionDetail | ✅ |
 | `/submissions/:id/results` | SubmissionResults | ✅ |
@@ -62,9 +62,9 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/friends` | Friends | ✅ |
 | `/social` | Social | ✅ Beta. Nav label stays English **Social** + BETA badge. Tabs All / Activity / Posts, infinite scroll, i18n EN/ES. Flag off shows a disabled state. |
 | `/notifications` | Notifications | ✅ Campana en topbar + WebSocket + lista |
-| `/{locale}/news` + `/{locale}/news/:slug` | NewsList / NewsArticle | ✅ Public news from content-service; SEO title, description, canonical, hreflang, JSON-LD BlogPosting |
-| `/{locale}/changelog` | Changelog | ✅ Published changelog entries |
-| `/{locale}/roadmap` | Roadmap | ✅ Phases and items from the API (DONE timeline, IN_PROGRESS highlighted as Now / Present, PLANNED as Next). Copy is not hardcoded |
+| `/{locale}/news` + `/{locale}/news/:slug` | NewsList / NewsArticle | ✅ Public news from content-service; SEO title, description, canonical, hreflang, JSON-LD BlogPosting. Topbar/footer group News + Changelog + Roadmap as **News & Upcoming** (English chrome); in-page tabs switch the three routes |
+| `/{locale}/changelog` | Changelog | ✅ Published changelog entries; same News & Upcoming tabs |
+| `/{locale}/roadmap` | Roadmap | ✅ Phases and items from the API (DONE timeline, IN_PROGRESS highlighted as Now / Present, PLANNED as Next). Copy is not hardcoded; same News & Upcoming tabs |
 | `/admin/content` | AdminContent | ✅ Editor for admins holding CONTENT (`useAdminCaps` checks the capabilities array for `CONTENT`). Markdown toolbar, live preview, .md import, draft / publish / archive, re-translate |
 | `/docs` + `/docs/:docId` | DocsHub | ✅ Mini-routing, feedback; orden de guías: **Getting Started** → **First Steps** → **Preconfigure Project** → resto; CTA “Continue learning” al pie; `/docs` redirige al primer documento; tours `DOCS_PATHS` apuntan a Getting Started; **switch EN | ES** en cabecera (contenido + chrome del hub traducido; persistencia en `localStorage` con consentimiento de cookies *preferences*) |
 | `/replay` | Replay | ✅ Timeline real; filtros etapa + HTTP/tests; salto a fallo; flechas; metadata JSON por evento; índice `testIndex` |

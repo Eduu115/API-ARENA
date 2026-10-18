@@ -1,4 +1,10 @@
 {
+  "tabs": {
+    "aria": "Noticias, changelog y hoja de ruta",
+    "news": "Noticias",
+    "changelog": "Changelog",
+    "roadmap": "Hoja de ruta"
+  },
   "news": {
     "pageTitle": "Noticias",
     "pageDescription": "Noticias de API Arena: lanzamientos, notas de la comunidad y lo que ha llegado a la arena.",
