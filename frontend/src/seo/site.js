@@ -349,6 +349,32 @@ export function challengePreviewGraph(locale, {
   ]);
 }
 
+export function blogPostingGraph(locale, {
+  title,
+  description,
+  slug,
+  publishedAt,
+  updatedAt,
+  image,
+}) {
+  const url = absoluteUrl(locale, `/news/${slug}`);
+  const article = {
+    "@type": "BlogPosting",
+    "@id": `${url}#article`,
+    headline: title,
+    description: description || title,
+    url,
+    mainEntityOfPage: url,
+    inLanguage: locale === "es" ? "es" : "en",
+    author: { "@id": orgId() },
+    publisher: { "@id": orgId() },
+    image: image || OG_IMAGE,
+  };
+  if (publishedAt) article.datePublished = publishedAt;
+  if (updatedAt) article.dateModified = updatedAt;
+  return graph([...siteNodes(locale), article]);
+}
+
 export function jsonLdTypes(data) {
   const types = new Set();
   const nodes = data?.["@graph"] || (data ? [data] : []);

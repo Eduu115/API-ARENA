@@ -1,0 +1,45 @@
+{
+  "news": {
+    "pageTitle": "Noticias",
+    "pageDescription": "Noticias de API Arena: lanzamientos, notas de la comunidad y lo que ha llegado a la arena.",
+    "eyebrow": "// Noticias",
+    "titleBefore": "Noticias de la ",
+    "titleEm": "arena",
+    "empty": "Todavía no hay noticias publicadas.",
+    "read": "Leer"
+  },
+  "changelog": {
+    "pageTitle": "Changelog",
+    "pageDescription": "Historial de versiones de API Arena: qué cambió, cuándo se publicó y las notas de cada entrega.",
+    "eyebrow": "// Changelog",
+    "titleBefore": "Qué ",
+    "titleEm": "publicamos",
+    "empty": "Todavía no hay entradas de changelog.",
+    "version": "Versión"
+  },
+  "roadmap": {
+    "pageTitle": "Hoja de ruta",
+    "pageDescription": "Hacia dónde va API Arena: hitos terminados, lo que está en curso ahora y lo que viene después.",
+    "eyebrow": "// Hoja de ruta",
+    "titleBefore": "Hoja de ",
+    "titleEm": "ruta",
+    "now": "Ahora / Presente",
+    "next": "Siguiente",
+    "done": "Completado",
+    "empty": "La hoja de ruta todavía no está publicada.",
+    "status": {
+      "DONE": "Hecho",
+      "IN_PROGRESS": "En curso",
+      "PLANNED": "Planificado"
+    }
+  },
+  "states": {
+    "loading": "Cargando…",
+    "error": "No se ha podido cargar esta página.",
+    "notFound": "Esta noticia no está publicada.",
+    "fallback": "Mostrando el idioma disponible."
+  },
+  "article": {
+    "back": "Todas las noticias"
+  }
+}

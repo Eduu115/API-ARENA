@@ -73,6 +73,60 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/teachers"/>
   </url>
   <url>
+    <loc>https://apiarena.net/en/news</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/news"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/news"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/news"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/news</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/news"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/news"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/news"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/changelog</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/changelog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/changelog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/changelog"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/changelog</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/changelog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/changelog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/changelog"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/roadmap</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/roadmap"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/roadmap"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/roadmap"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/roadmap</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/roadmap"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/roadmap"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/roadmap"/>
+  </url>
+  <url>
     <loc>https://apiarena.net/en/docs/guia-para-empezar</loc>
     <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>

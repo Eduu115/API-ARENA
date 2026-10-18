@@ -42,6 +42,12 @@ const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("../pages/admin/AdminUsers"));
 const AdminUserDetail = lazy(() => import("../pages/admin/AdminUserDetail"));
 const AdminAudit = lazy(() => import("../pages/admin/AdminAudit"));
+const AdminContent = lazy(() => import("../pages/admin/AdminContent"));
+const AdminContentEditor = lazy(() => import("../pages/admin/AdminContentEditor"));
+const NewsList = lazy(() => import("../pages/content/NewsList"));
+const NewsArticle = lazy(() => import("../pages/content/NewsArticle"));
+const Changelog = lazy(() => import("../pages/content/Changelog"));
+const Roadmap = lazy(() => import("../pages/content/Roadmap"));
 const Friends = lazy(() => import("../pages/friends/Friends"));
 const Notifications = lazy(() => import("../pages/Notifications"));
 const Social = lazy(() => import("../pages/social/Social"));
@@ -61,6 +67,9 @@ function AppRoutes() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="users/:id" element={<AdminUserDetail />} />
         <Route path="audit" element={<AdminAudit />} />
+        <Route path="content" element={<AdminContent />} />
+        <Route path="content/new" element={<AdminContentEditor />} />
+        <Route path="content/:id" element={<AdminContentEditor />} />
       </Route>
 
       <Route path="/:locale" element={<LocaleLayout />}>
@@ -75,6 +84,10 @@ function AppRoutes() {
         <Route path="challenges/:id" element={<ChallengeDetail />} />
 
         <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="news" element={<NewsList />} />
+        <Route path="news/:slug" element={<NewsArticle />} />
+        <Route path="changelog" element={<Changelog />} />
+        <Route path="roadmap" element={<Roadmap />} />
         <Route path="multiplayer" element={<MultiplayerHub />} />
         <Route path="docs" element={<DocsHub />} />
         <Route path="docs/:docId" element={<DocsHub />} />
