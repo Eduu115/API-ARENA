@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icons/logo-hex-sm.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      document.documentElement.lang =
+        location.pathname === "/es" || location.pathname.startsWith("/es/") ? "es" : "en";
+    </script>
 
     <title>API Arena — Compete. Build. Conquer. | Real API Challenges for Developers</title>
     <meta name="description" content="API Arena (APIArena) is a competitive platform where developers ship real Spring Boot APIs as ZIPs, get them built and tested in a sandbox, and climb XP and ELO rankings. Practice REST API design with real HTTP tests, replays and leaderboards." />

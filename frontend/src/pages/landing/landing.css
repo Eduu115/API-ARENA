@@ -9,7 +9,7 @@
   --bg2: #111628;
   --bg3: #1A2040;
   --text: #E8EAF6;
-  --muted: #5A6080;
+  --muted: #7d879e;
   --landing-nav-h: 78px;
 }
 
@@ -822,8 +822,7 @@ nav {
 .tag-soon-label {
   font-size: 9px;
   letter-spacing: 0.1em;
-  color: var(--purple);
-  opacity: 0.95;
+  color: #c084fc;
   white-space: nowrap;
 }
 .about-right { position: relative; }
@@ -844,7 +843,6 @@ nav {
   line-height: 1.55;
   letter-spacing: 0.04em;
   color: var(--muted);
-  opacity: 0.9;
   max-width: 42ch;
   position: relative;
   z-index: 1;
@@ -1188,7 +1186,7 @@ nav {
   text-transform: uppercase;
   padding: 4px 8px;
   border: 1px solid rgba(178, 75, 243, 0.45);
-  color: var(--purple);
+  color: #c084fc;
   background: rgba(178, 75, 243, 0.08);
   vertical-align: middle;
 }
@@ -1211,7 +1209,7 @@ nav {
   text-transform: uppercase;
 }
 .mini-badge.cyan { border: 1px solid var(--cyan); color: var(--cyan); }
-.mini-badge.purple { border: 1px solid var(--purple); color: var(--purple); }
+.mini-badge.purple { border: 1px solid var(--purple); color: #c084fc; }
 .mini-badge.green { border: 1px solid var(--green); color: var(--green); }
 .mini-badge.warn { border: 1px solid var(--warning); color: var(--warning); }
 .bento-extra {

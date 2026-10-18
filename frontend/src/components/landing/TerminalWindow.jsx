@@ -25,7 +25,7 @@ function ScoreRow({ label, score, max, pct, color, gradient }) {
           style={{ width: `${pct}%`, background: gradient }}
         />
       </div>
-      <span className="score-val" style={{ color }}>
+      <span className="score-val" style={{ color: color === '#B24BF3' ? '#c084fc' : color }}>
         {score}<span className="score-val-max">/{max}</span>
       </span>
     </div>
