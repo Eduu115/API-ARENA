@@ -40,6 +40,7 @@ export default function LandingFooter() {
             {linkLabels?.[footerLinkKeys[i]] ?? footerLinkKeys[i]}
           </a>
         ))}
+        <LocaleLink to="/about">About</LocaleLink>
         {legalLinks.map(({ label, to }) => (
           <LocaleLink key={to} to={to}>{label}</LocaleLink>
         ))}

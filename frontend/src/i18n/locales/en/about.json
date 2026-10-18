@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "title": "About the developer",
+    "description": "About the developer of API Arena. Biography, background, timeline, links, and contact on this page are still forthcoming."
+  },
+  "breadcrumb": {
+    "aria": "Breadcrumb",
+    "home": "Home",
+    "about": "About"
+  },
+  "eyebrow": "Developer",
+  "titleBefore": "About",
+  "titleEm": "the developer",
+  "lede": "This page is about the person who builds API Arena. The biography is not published yet.",
+  "notice": "Missing facts are marked TODO(content).",
+  "portrait": "TODO(content)",
+  "nameLabel": "Name",
+  "name": "TODO(content)",
+  "roleLabel": "Role",
+  "role": "TODO(content)",
+  "story": {
+    "heading": "Story",
+    "body": "TODO(content)"
+  },
+  "motivation": {
+    "heading": "Motivation",
+    "body": "TODO(content)"
+  },
+  "background": {
+    "heading": "Background",
+    "body": "TODO(content)"
+  },
+  "stack": {
+    "heading": "Stack",
+    "items": ["TODO(content)", "TODO(content)", "TODO(content)"]
+  },
+  "timeline": {
+    "heading": "Project timeline",
+    "items": [
+      { "when": "TODO(content)", "what": "TODO(content)" },
+      { "when": "TODO(content)", "what": "TODO(content)" },
+      { "when": "TODO(content)", "what": "TODO(content)" }
+    ]
+  },
+  "links": {
+    "heading": "Links",
+    "items": [
+      { "label": "TODO(content)", "href": "TODO(content)" },
+      { "label": "TODO(content)", "href": "TODO(content)" }
+    ]
+  },
+  "contact": {
+    "heading": "Contact",
+    "body": "TODO(content)"
+  },
+  "company": {
+    "heading": "Gubia",
+    "name": "Gubia",
+    "body": "TODO(content)",
+    "urlLabel": "URL",
+    "url": "TODO(content)"
+  }
+}

@@ -5,7 +5,7 @@
 # rule set, so they receive the same Allow and the same Disallow.
 # A separate User-agent group would NOT inherit these Disallow lines.
 #
-# Allowed: landing, docs, challenge previews, leaderboard, and legal pages
+# Allowed: landing, docs, challenge previews, leaderboard, about, and legal pages
 # in /en and /es, plus /llms.txt and /llms-full.txt.
 # Disallowed: account, teacher, admin, and other private areas.
 # Public challenge pages are previews. Technical specs are not in the crawl surface.
