@@ -34,7 +34,7 @@ export default function Login() {
   const lp = useLocalizedPath();
   const location = useLocation();
   const redirectTo = location.state?.from?.pathname || lp("/dashboard");
-  const [twoFactor, setTwoFactor] = useState(null); // { pendingToken, enrolled }
+  const [twoFactor, setTwoFactor] = useState(null);
 
   useEffect(() => {
     clearError();
@@ -54,7 +54,14 @@ export default function Login() {
     const result = await login(email, password, turnstileToken);
     setSubmitting(false);
     if (result?.twoFactorRequired) {
-      setTwoFactor({ pendingToken: result.pendingToken, enrolled: result.enrolled });
+      setTwoFactor({
+        pendingToken: result.pendingToken,
+        enrolled: result.enrolled,
+        primaryMethod: result.primaryMethod,
+        methods: result.methods,
+        emailAllowed: result.emailAllowed,
+        role: result.role,
+      });
       return;
     }
     if (result?.success) {
@@ -126,7 +133,12 @@ export default function Login() {
                 <AdminTwoFactor
                   pendingToken={twoFactor.pendingToken}
                   enrolled={twoFactor.enrolled}
-                  onSuccess={() => navigate("/admin", { replace: true })}
+                  primaryMethod={twoFactor.primaryMethod}
+                  methods={twoFactor.methods}
+                  emailAllowed={twoFactor.emailAllowed}
+                  onSuccess={() =>
+                    navigate(twoFactor.role === "ADMIN" ? "/admin" : redirectTo, { replace: true })
+                  }
                 />
               ) : (
               <form className="auth-form" onSubmit={handleSubmit}>

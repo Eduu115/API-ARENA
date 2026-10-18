@@ -73,6 +73,8 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/auth/admin/2fa/enroll",
                                 "/api/auth/admin/2fa/verify",
+                                "/api/auth/2fa/email/send",
+                                "/api/auth/2fa/email/verify",
                                 "/api/auth/users/*/profile",
                                 "/api/auth/users/*/achievements",
                                 "/api/auth/users/*/badges",

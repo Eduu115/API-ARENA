@@ -22,7 +22,9 @@ function isPublicAuthPath(path) {
         p === "/api/auth/forgot-password" ||
         p === "/api/auth/reset-password" ||
         p === "/api/auth/admin/2fa/enroll" ||
-        p === "/api/auth/admin/2fa/verify"
+        p === "/api/auth/admin/2fa/verify" ||
+        p === "/api/auth/2fa/email/send" ||
+        p === "/api/auth/2fa/email/verify"
     );
 }
 
@@ -498,6 +500,30 @@ export async function disableMy2fa(code) {
     });
 }
 
+/** Email a code to enable or disable email 2FA. purpose is ENABLE or DISABLE. */
+export async function sendMyEmail2fa(purpose) {
+    return request("/api/auth/me/2fa/email/send", {
+        method: "POST",
+        body: JSON.stringify({ purpose }),
+    });
+}
+
+/** Confirm the emailed code and turn email 2FA on. */
+export async function enableMyEmail2fa(code) {
+    return request("/api/auth/me/2fa/email/enable", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+    });
+}
+
+/** Confirm the emailed code and turn email 2FA off. */
+export async function disableMyEmail2fa(code) {
+    return request("/api/auth/me/2fa/email/disable", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+    });
+}
+
 
 
 
@@ -816,6 +842,26 @@ export async function enrollAdmin2fa(pendingToken) {
         method: "POST",
         body: JSON.stringify({ pendingToken }),
     });
+}
+
+/** Email a one-time login code for the pending 2FA step. */
+export async function sendLoginEmail2fa(pendingToken) {
+    return request("/api/auth/2fa/email/send", {
+        method: "POST",
+        body: JSON.stringify({ pendingToken }),
+    });
+}
+
+/** Finish login with an email code; on success stores the real tokens. */
+export async function verifyLoginEmail2fa(pendingToken, code) {
+    const data = await request("/api/auth/2fa/email/verify", {
+        method: "POST",
+        body: JSON.stringify({ pendingToken, code }),
+    });
+    if (data?.accessToken) {
+        setStoredTokens(data.accessToken, data.refreshToken ?? null);
+    }
+    return data;
 }
 
 /** ADMIN 2FA step 2: verify the TOTP code; on success stores the real tokens. */
