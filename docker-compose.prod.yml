@@ -50,6 +50,13 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
       JWT_SECRET: ${JWT_SECRET}
 
+  content-service:
+    ports: []
+    environment:
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://apiarena.net}
+      JWT_SECRET: ${JWT_SECRET}
+      DEEPL_API_KEY: ${DEEPL_API_KEY:-}
+
   frontend:
     ports: []
 

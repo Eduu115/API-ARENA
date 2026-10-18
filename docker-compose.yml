@@ -400,6 +400,28 @@ services:
       - apiarena-network
     restart: unless-stopped
 
+  content-service:
+    build:
+      context: ./backend/content-service
+      dockerfile: Dockerfile
+    container_name: apiarena-content
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      JWT_SECRET: ${JWT_SECRET}
+      DEEPL_API_KEY: ${DEEPL_API_KEY:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
+    ports:
+      - "${MICROSERVICE_BIND_IP:-127.0.0.1}:${CONTENT_HOST_PORT:-8092}:8092"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: apiarena-prometheus
@@ -468,6 +490,7 @@ services:
       - leaderboard-service
       - notification-service
       - metrics-service
+      - content-service
     ports:
       - "${BIND_IP:-0.0.0.0}:${FRONTEND_HOST_PORT:-3000}:80"
     networks:

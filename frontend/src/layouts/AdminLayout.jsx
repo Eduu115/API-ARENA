@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useAdminCaps } from "../pages/admin/useAdminCaps";
 import { clearAdminEscape, setAdminEscape } from "../lib/adminEscape";
 import "../pages/admin/admin.css";
 
@@ -11,6 +12,8 @@ function isAdmin(role) {
 /** Isolated admin console ("bunker"): ADMIN-only, its own command-deck shell, no normal-site chrome. */
 export default function AdminLayout() {
   const { isAuthenticated, isLoading, user, logout } = useAuth();
+  const { caps, canContent } = useAdminCaps();
+  const showContent = canContent || (caps || []).includes("CONTENT");
   const navigate = useNavigate();
 
   // Entering the bunker re-seals the escape hatch.
@@ -68,6 +71,11 @@ export default function AdminLayout() {
           <NavLink to="/admin/audit" className="admin-nav__link">
             <span className="admin-nav__ico" aria-hidden="true">≡</span> Audit log
           </NavLink>
+          {showContent && (
+            <NavLink to="/admin/content" className="admin-nav__link">
+              <span className="admin-nav__ico" aria-hidden="true">✎</span> Content
+            </NavLink>
+          )}
         </nav>
 
         <div className="admin-sidebar__foot">

@@ -46,6 +46,9 @@ export default function LandingFooter() {
         {legalLinks.map(({ label, to }) => (
           <LocaleLink key={to} to={to}>{label}</LocaleLink>
         ))}
+        <LocaleLink to="/news">News</LocaleLink>
+        <LocaleLink to="/changelog">Changelog</LocaleLink>
+        <LocaleLink to="/roadmap">Roadmap</LocaleLink>
         <button type="button" onClick={openConsentManager}>
           {t('footer.cookiePrefs')}
         </button>

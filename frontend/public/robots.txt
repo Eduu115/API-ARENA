@@ -5,7 +5,7 @@
 # rule set, so they receive the same Allow and the same Disallow.
 # A separate User-agent group would NOT inherit these Disallow lines.
 #
-# Allowed: landing, docs, about, the public teacher guide (/teachers), challenge
+# Allowed: landing, docs, about, news, changelog, roadmap, the public teacher guide (/teachers), challenge
 # previews, leaderboard, and legal pages in /en and /es, plus /llms.txt
 # and /llms-full.txt.
 # Disallowed: account, the private teacher area (/teacher), admin, and

@@ -19,6 +19,9 @@ const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
   { label: "Docs", path: "/docs", icon: "docs" },
+  { label: "News", path: "/news", icon: "news" },
+  { label: "Changelog", path: "/changelog", icon: "changelog" },
+  { label: "Roadmap", path: "/roadmap", icon: "roadmap" },
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
@@ -30,6 +33,9 @@ const NAV_ITEMS_AUTH = [
   { label: "Social", path: "/social", icon: "social", beta: true },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
   { label: "Docs", path: "/docs", icon: "docs" },
+  { label: "News", path: "/news", icon: "news" },
+  { label: "Changelog", path: "/changelog", icon: "changelog" },
+  { label: "Roadmap", path: "/roadmap", icon: "roadmap" },
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 

@@ -19,6 +19,7 @@ import {
   SEO_LASTMOD,
   SITE_URL,
   absoluteUrl,
+  blogPostingGraph,
   buildHeadMeta,
   aboutGraph,
   challengePreviewGraph,
@@ -150,7 +151,7 @@ function robotsTxt() {
     "# rule set, so they receive the same Allow and the same Disallow.",
     "# A separate User-agent group would NOT inherit these Disallow lines.",
     "#",
-    "# Allowed: landing, docs, about, the public teacher guide (/teachers), challenge",
+    "# Allowed: landing, docs, about, news, changelog, roadmap, the public teacher guide (/teachers), challenge",
     "# previews, leaderboard, and legal pages in /en and /es, plus /llms.txt",
     "# and /llms-full.txt.",
     "# Disallowed: account, the private teacher area (/teacher), admin, and",
@@ -355,7 +356,7 @@ function syncFile(rel, next) {
   }
 }
 
-function collectPages(landing, challengesJson, leaderboard, teacher, docs, challenges, about) {
+function collectPages(landing, challengesJson, leaderboard, teacher, content, docs, challenges, about) {
   const pages = [];
   for (const locale of ["en", "es"]) {
     pages.push({
@@ -390,6 +391,16 @@ function collectPages(landing, challengesJson, leaderboard, teacher, docs, chall
       changefreq: "monthly",
       priority: "0.6",
     });
+    for (const section of ["news", "changelog", "roadmap"]) {
+      pages.push({
+        locale,
+        path: `/${section}`,
+        title: content[locale][section].pageTitle,
+        description: content[locale][section].pageDescription,
+        changefreq: section === "news" ? "weekly" : "monthly",
+        priority: "0.6",
+      });
+    }
     docs[locale].forEach((doc, index) => {
       pages.push({
         locale,
@@ -463,6 +474,10 @@ const teacher = {
   en: readJson(join(root, "src/i18n/locales/en/teacher.json")),
   es: readJson(join(root, "src/i18n/locales/es/teacher.json")),
 };
+const content = {
+  en: readJson(join(root, "src/i18n/locales/en/content.json")),
+  es: readJson(join(root, "src/i18n/locales/es/content.json")),
+};
 const docs = {
   en: getDocDocuments("en"),
   es: getDocDocuments("es"),
@@ -472,7 +487,7 @@ const about = {
   es: readJson(join(root, "src/i18n/locales/es/about.json")),
 };
 const challenges = publicChallenges();
-const pages = collectPages(landing, challengesJson, leaderboard, teacher, docs, challenges, about);
+const pages = collectPages(landing, challengesJson, leaderboard, teacher, content, docs, challenges, about);
 const paths = uniquePaths(pages);
 
 const docIdsEn = docs.en.map((doc) => doc.id).join("|");
@@ -492,6 +507,10 @@ for (const snippet of [
   'path="challenges/:id"',
   'path="leaderboard"',
   'path="teachers"',
+  'path="news"',
+  'path="news/:slug"',
+  'path="changelog"',
+  'path="roadmap"',
   'path="docs/:docId"',
   'path="aviso-legal"',
   'path="privacidad"',
@@ -574,6 +593,14 @@ const challengeTypes = jsonLdTypes(challengeLd);
 for (const type of ["BreadcrumbList", "LearningResource"]) {
   if (!challengeTypes.has(type)) fail(`Challenge JSON-LD missing ${type}`);
 }
+const newsLd = blogPostingGraph("en", {
+  title: "Hello",
+  description: "A published note",
+  slug: "hello",
+  publishedAt: "2026-04-01T00:00:00Z",
+});
+if (!jsonLdTypes(newsLd).has("BlogPosting")) fail("News JSON-LD missing BlogPosting");
+
 const challengeJson = JSON.stringify(challengeLd);
 if (/expectStatus|required_endpoints|hints/.test(challengeJson)) {
   fail("Challenge JSON-LD includes technical spec fields");

@@ -44,6 +44,10 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets: ["apiarena-social:8091"]
+  - job_name: content-service
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["apiarena-content:8092"]
   - job_name: metrics-service
     metrics_path: /actuator/prometheus
     static_configs:

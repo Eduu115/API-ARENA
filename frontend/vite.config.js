@@ -19,6 +19,7 @@ export default defineConfig({
       '/api/notifications': api('http://localhost:8090'),
       '/api/social': api('http://localhost:8091'),
       '/api/metrics': api('http://localhost:8089'),
+      '/api/content': api('http://localhost:8092'),
       '/ws/notifications': { target: 'ws://localhost:8090', ws: true },
     },
   },

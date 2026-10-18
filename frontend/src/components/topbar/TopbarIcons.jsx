@@ -190,6 +190,33 @@ export function IconMoon({ className }) {
   );
 }
 
+export function IconNews({ className }) {
+  return (
+    <SvgFrame className={className}>
+      <path d="M5 5h11a2 2 0 012 2v12H7a2 2 0 01-2-2V5z" stroke="currentColor" strokeWidth={stroke.width} />
+      <path d="M8 9h7M8 13h7" stroke="currentColor" strokeWidth={stroke.width} strokeLinecap={stroke.cap} />
+    </SvgFrame>
+  );
+}
+
+export function IconChangelog({ className }) {
+  return (
+    <SvgFrame className={className}>
+      <path d="M8 4h8v16H8a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" strokeWidth={stroke.width} />
+      <path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" strokeWidth={stroke.width} strokeLinecap={stroke.cap} />
+    </SvgFrame>
+  );
+}
+
+export function IconRoadmap({ className }) {
+  return (
+    <SvgFrame className={className}>
+      <path d="M5 19V7l5 3 4-4 5 3v10" stroke="currentColor" strokeWidth={stroke.width} strokeLinejoin={stroke.join} />
+      <circle cx="10" cy="10" r="1.2" fill="currentColor" />
+    </SvgFrame>
+  );
+}
+
 const ICON_MAP = {
   dashboard: IconDashboard,
   challenges: IconChallenges,
@@ -198,6 +225,9 @@ const ICON_MAP = {
   social: IconSocial,
   leaderboard: IconLeaderboard,
   docs: IconDocs,
+  news: IconNews,
+  changelog: IconChangelog,
+  roadmap: IconRoadmap,
   replay: IconReplay,
   profile: IconProfile,
   teacher: IconTeacher,

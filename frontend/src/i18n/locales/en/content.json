@@ -1,0 +1,45 @@
+{
+  "news": {
+    "pageTitle": "News",
+    "pageDescription": "Product news from API Arena: releases, community notes and what shipped in the arena.",
+    "eyebrow": "// News",
+    "titleBefore": "Arena ",
+    "titleEm": "news",
+    "empty": "No stories published yet.",
+    "read": "Read"
+  },
+  "changelog": {
+    "pageTitle": "Changelog",
+    "pageDescription": "Version history for API Arena: what changed, when it shipped, and the notes that came with it.",
+    "eyebrow": "// Changelog",
+    "titleBefore": "What ",
+    "titleEm": "shipped",
+    "empty": "No changelog entries published yet.",
+    "version": "Version"
+  },
+  "roadmap": {
+    "pageTitle": "Roadmap",
+    "pageDescription": "Where API Arena is going: finished milestones, what is in progress now, and what comes next.",
+    "eyebrow": "// Roadmap",
+    "titleBefore": "The ",
+    "titleEm": "roadmap",
+    "now": "Now / Present",
+    "next": "Next",
+    "done": "Completed",
+    "empty": "The roadmap is not published yet.",
+    "status": {
+      "DONE": "Done",
+      "IN_PROGRESS": "In progress",
+      "PLANNED": "Planned"
+    }
+  },
+  "states": {
+    "loading": "Loading…",
+    "error": "Could not load this page.",
+    "notFound": "This story is not published.",
+    "fallback": "Showing the available language."
+  },
+  "article": {
+    "back": "All news"
+  }
+}
