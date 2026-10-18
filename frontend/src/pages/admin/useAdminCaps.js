@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyCapabilities } from "../../lib/adminApi";
 
-const ALL_CAPS = ["MODERATION", "BI"];
+const ALL_CAPS = ["MODERATION", "BI", "CONTENT"];
 
 /**
  * Capabilities of the signed-in admin. Fetched per mount (caps rarely change
@@ -19,6 +19,7 @@ export function useAdminCaps() {
   return {
     loading: caps === null,
     canModerate: list.includes("MODERATION"),
+    canContent: list.includes("CONTENT"),
     supreme: ALL_CAPS.every((c) => list.includes(c)),
   };
 }
