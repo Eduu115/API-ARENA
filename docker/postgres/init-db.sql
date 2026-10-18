@@ -873,5 +873,38 @@ CREATE TABLE IF NOT EXISTS user_weekly_streak_challenges (
 CREATE INDEX IF NOT EXISTS idx_user_weekly_progress_user ON user_weekly_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_weekly_streak_challenges_user ON user_weekly_streak_challenges(user_id);
 
+-- ===========================================
+-- Admin capabilities (one row per admin × capability).
+-- Same contract as docker/postgres/create-admin-permissions.sql.
+-- Seed admins receive MODERATION + BI, then CONTENT when both are held,
+-- so the seed supreme stays supreme.
+-- ===========================================
+CREATE TABLE IF NOT EXISTS admin_permissions (
+    id            BIGSERIAL PRIMARY KEY,
+    admin_user_id BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    capability    VARCHAR(20) NOT NULL,
+    granted_at    TIMESTAMP   NOT NULL DEFAULT NOW(),
+    granted_by    VARCHAR(100),
+    UNIQUE (admin_user_id, capability)
+);
+CREATE INDEX IF NOT EXISTS idx_admin_permissions_user ON admin_permissions(admin_user_id);
+
+INSERT INTO admin_permissions (admin_user_id, capability, granted_by)
+SELECT u.id, c.capability, 'migration'
+FROM users u
+CROSS JOIN (VALUES ('MODERATION'), ('BI')) AS c(capability)
+WHERE u.role = 'ADMIN'
+ON CONFLICT (admin_user_id, capability) DO NOTHING;
+
+-- content-backfill: admins holding both MODERATION and BI
+INSERT INTO admin_permissions (admin_user_id, capability, granted_by)
+SELECT moderation.admin_user_id, 'CONTENT', 'migration'
+FROM admin_permissions moderation
+JOIN admin_permissions bi
+  ON bi.admin_user_id = moderation.admin_user_id
+ AND bi.capability = 'BI'
+WHERE moderation.capability = 'MODERATION'
+ON CONFLICT (admin_user_id, capability) DO NOTHING;
+
 -- Verificacion
 SELECT 'Database initialized successfully!' as status;

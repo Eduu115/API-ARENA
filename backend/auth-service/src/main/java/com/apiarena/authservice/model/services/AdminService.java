@@ -431,6 +431,14 @@ public class AdminService {
         return capabilitiesOf(loadUserByEmail(actingEmail).getId());
     }
 
+    /**
+     * Content-write gate. Persists nothing yet; challenge and docs editors call this
+     * (or {@link #requireCapability} with {@link AdminCapability#CONTENT}) before a write.
+     */
+    public void writeContent(String actingEmail) {
+        requireCapability(actingEmail, AdminCapability.CONTENT);
+    }
+
     /** Throw 403 unless the acting admin holds the capability. Call from gated endpoints. */
     public void requireCapability(String actingEmail, AdminCapability capability) {
         if (!permissionRepository.existsByAdminUserIdAndCapability(

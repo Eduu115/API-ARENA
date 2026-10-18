@@ -17,7 +17,7 @@ public class AdminUserDTO {
     private String username;
     private String email;
     private String role;
-    /** Only populated for ADMIN accounts: which admin capabilities they hold (empty = none, both = supreme). */
+    /** Only populated for ADMIN accounts: which admin capabilities they hold (empty = none, every value = supreme). */
     private List<AdminCapability> capabilities;
     private Boolean isActive;
     private Boolean emailVerified;
