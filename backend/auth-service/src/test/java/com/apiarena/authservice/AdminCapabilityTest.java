@@ -16,12 +16,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.apiarena.authservice.exception.ApiException;
 import com.apiarena.authservice.model.entities.AdminCapability;
 import com.apiarena.authservice.model.entities.AdminPermission;
 import com.apiarena.authservice.model.entities.User;
 import com.apiarena.authservice.model.services.AdminService;
+import com.apiarena.authservice.model.services.EmailDispatchService;
 import com.apiarena.authservice.model.services.IJwtService;
 import com.apiarena.authservice.model.services.IRefreshTokenService;
 import com.apiarena.authservice.model.services.IUserService;
@@ -41,6 +43,8 @@ class AdminCapabilityTest {
     @Mock AdminAuditLogRepository auditRepository;
     @Mock AdminPermissionRepository permissionRepository;
     @Mock ModerationRecordRepository moderationRepository;
+    @Mock PasswordEncoder passwordEncoder;
+    @Mock EmailDispatchService emailDispatchService;
     @InjectMocks AdminService service;
 
     private static User user(Long id, String email, User.Role role) {

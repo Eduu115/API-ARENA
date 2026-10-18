@@ -515,6 +515,60 @@ public class EmailDispatchService {
                 false));
     }
 
+    /**
+     * Tells the account owner an administrator set a new password. Does not include the password.
+     */
+    public void sendAdminPasswordChangedEmail(String toEmail, String username, String locale) {
+        if (resendKeyMissing()) {
+            log.warn("RESEND_API_KEY not set; skip admin password-changed email to {}", toEmail);
+            return;
+        }
+        postResend(toEmail, composeAdminPasswordChangedEmail(username, locale), null);
+    }
+
+    RenderedEmail composeAdminPasswordChangedEmail(String username, String locale) {
+        boolean es = "es".equals(LocaleSupport.normalize(locale));
+        String rawName = displayName(username, es ? "hola" : "there");
+        String safeName = esc(rawName);
+        String privacy = emailProperties.getSupportPrivacyEmail() != null
+                && !emailProperties.getSupportPrivacyEmail().isBlank()
+                ? emailProperties.getSupportPrivacyEmail()
+                : "privacy@apiarena.net";
+        String loginLink = frontendLocalePath(locale, "/login");
+        String privacyHtml = "<a href=\"mailto:" + esc(privacy) + "\" style=\"color:" + CYAN
+                + ";text-decoration:underline;\">" + esc(privacy) + "</a>";
+        if (es) {
+            return layout(new EmailLayout(
+                    "API Arena — un administrador ha cambiado tu contraseña",
+                    locale,
+                    "Un administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones.",
+                    null,
+                    "Tu contraseña ha sido cambiada",
+                    p("Hola " + safeName + ",")
+                            + p("Un administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones.")
+                            + p("Si no lo esperabas, contacta con soporte de inmediato. " + privacyHtml),
+                    "Hola " + rawName + ",\n\nUn administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones.\n\nSi no lo esperabas, contacta con soporte de inmediato. " + privacy,
+                    "Iniciar sesión",
+                    loginLink,
+                    "Recibes este email porque un administrador ha cambiado tu contraseña de API Arena.",
+                    true));
+        }
+        return layout(new EmailLayout(
+                "API Arena — an administrator changed your password",
+                locale,
+                "An administrator changed the password on your API Arena account and signed you out of every session.",
+                null,
+                "Your password was changed",
+                p("Hi " + safeName + ",")
+                        + p("An administrator changed the password on your API Arena account and signed you out of every session.")
+                        + p("If you did not expect this, contact support right away. " + privacyHtml),
+                "Hi " + rawName + ",\n\nAn administrator changed the password on your API Arena account and signed you out of every session.\n\nIf you did not expect this, contact support right away. " + privacy,
+                "Sign in",
+                loginLink,
+                "You received this email because an administrator changed your API Arena password.",
+                true));
+    }
+
     private boolean resendKeyMissing() {
         String apiKey = emailProperties.getResendApiKey();
         return apiKey == null || apiKey.isBlank();

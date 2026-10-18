@@ -1,7 +1,9 @@
 package com.apiarena.authservice.model.services;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +54,10 @@ public class AdminService {
     private final AdminAuditLogRepository auditRepository;
     private final AdminPermissionRepository permissionRepository;
     private final ModerationRecordRepository moderationRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailDispatchService emailDispatchService;
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     public Page<AdminUserDTO> searchUsers(String query, User.Role role, Boolean active, int page, int size) {
         Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100),
@@ -249,6 +256,78 @@ public class AdminService {
         User user = loadUser(id);
         refreshTokenService.revokeAllUserTokens(user);
         audit(actingEmail, "FORCE_LOGOUT", user, null);
+    }
+
+    /**
+     * Email the existing 1h reset link. The admin never sees the token or the password.
+     * Sessions are revoked now; the password itself changes only when the user opens the link.
+     */
+    @Transactional
+    public AdminUserDTO forcePasswordReset(Long id, String actingEmail) {
+        User user = authorizePasswordAction(id, actingEmail);
+        String token = newPasswordResetToken();
+        user.setPasswordResetToken(token);
+        user.setPasswordResetExpiresAt(LocalDateTime.now().plusHours(1));
+        stampPasswordRotation(user);
+        userRepository.save(user);
+        refreshTokenService.revokeAllUserTokens(user);
+        audit(actingEmail, "FORCE_PASSWORD_RESET", user, null);
+        emailDispatchService.sendPasswordResetEmail(
+                user.getEmail(), user.getUsername(), token, user.getPreferredLocale());
+        return AdminUserDTO.fromEntity(user);
+    }
+
+    /**
+     * Set a password directly. The raw password is encoded and then dropped: it is not logged,
+     * not returned, and not written to the audit row.
+     */
+    @Transactional
+    public AdminUserDTO setPassword(Long id, String newPassword, String actingEmail) {
+        User user = authorizePasswordAction(id, actingEmail);
+        validateNewPassword(newPassword);
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpiresAt(null);
+        stampPasswordRotation(user);
+        userRepository.save(user);
+        refreshTokenService.revokeAllUserTokens(user);
+        audit(actingEmail, "SET_PASSWORD", user, null);
+        emailDispatchService.sendAdminPasswordChangedEmail(
+                user.getEmail(), user.getUsername(), user.getPreferredLocale());
+        return AdminUserDTO.fromEntity(user);
+    }
+
+    /** Same rules as registration and reset: required, at least 6 characters. */
+    private static void validateNewPassword(String newPassword) {
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_PASSWORD_REQUIRED", "Password is required");
+        }
+        if (newPassword.length() < 6) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_PASSWORD_TOO_SHORT",
+                    "Password must be at least 6 characters");
+        }
+    }
+
+    private User authorizePasswordAction(Long id, String actingEmail) {
+        User user = loadUser(id);
+        requireCapability(actingEmail, AdminCapability.MODERATION);
+        requireNotSelf(user, actingEmail, "this user's password");
+        if (user.getRole() == User.Role.ADMIN) {
+            requireSupreme(actingEmail);
+        }
+        return user;
+    }
+
+    private static void stampPasswordRotation(User user) {
+        user.setPasswordChangedAt(LocalDateTime.now());
+        user.setLastPasswordReminderSentAt(null);
+    }
+
+    /** 32 bytes hex = 64 chars, matching {@code users.password_reset_token}. */
+    private static String newPasswordResetToken() {
+        byte[] bytes = new byte[32];
+        SECURE_RANDOM.nextBytes(bytes);
+        return HexFormat.of().formatHex(bytes);
     }
 
     /** Send the user an email + in-app notification straight from the console. */
