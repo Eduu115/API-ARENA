@@ -58,6 +58,7 @@ class AdminPasswordActionTest {
     @Mock ModerationRecordRepository moderationRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock EmailDispatchService emailDispatchService;
+    @Mock com.apiarena.authservice.model.services.TwoFactorMethodService twoFactorMethodService;
 
     private RevokingRefreshTokens refreshTokens;
     private AdminService service;
@@ -74,7 +75,8 @@ class AdminPasswordActionTest {
                 permissionRepository,
                 moderationRepository,
                 passwordEncoder,
-                emailDispatchService);
+                emailDispatchService,
+                twoFactorMethodService);
     }
 
     @Test

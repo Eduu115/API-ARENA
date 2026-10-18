@@ -13,6 +13,7 @@ English HTML samples of the shared layout in `EmailDispatchService`. Open a file
 | `new-challenge.html` | New challenge published |
 | `notification-mirror.html` | IMPORTANT notification mirror |
 | `admin-password-changed.html` | Administrator changed the password |
+| `two-factor-code.html` | Email two-factor code |
 
 Samples use `https://apiarena.net` and the token `preview-token`. They are not live credentials.
 

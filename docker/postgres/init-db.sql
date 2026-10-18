@@ -50,6 +50,45 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_reminder_sent_at TIMEST
 UPDATE users SET password_changed_at = created_at WHERE password_changed_at IS NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_locale VARCHAR(5) NOT NULL DEFAULT 'en';
 
+-- TOTP secret stays on users (dual-write). Methods live in user_two_factor_methods.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(64);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT false;
+
+CREATE TABLE IF NOT EXISTS user_two_factor_methods (
+    id         BIGSERIAL PRIMARY KEY,
+    user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    method     VARCHAR(16) NOT NULL,
+    enabled    BOOLEAN     NOT NULL DEFAULT FALSE,
+    is_primary BOOLEAN     NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP   NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_user_two_factor_methods_user_method UNIQUE (user_id, method),
+    CONSTRAINT ck_user_two_factor_methods_method CHECK (method IN ('TOTP', 'EMAIL'))
+);
+
+CREATE TABLE IF NOT EXISTS two_factor_email_codes (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash   VARCHAR(255) NOT NULL,
+    purpose     VARCHAR(16)  NOT NULL,
+    expires_at  TIMESTAMP    NOT NULL,
+    attempts    INTEGER      NOT NULL DEFAULT 0,
+    consumed_at TIMESTAMP,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    CONSTRAINT ck_two_factor_email_codes_purpose CHECK (purpose IN ('LOGIN', 'ENABLE', 'DISABLE'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_two_factor_methods_one_primary
+    ON user_two_factor_methods (user_id) WHERE is_primary;
+
+CREATE INDEX IF NOT EXISTS idx_two_factor_email_codes_user_purpose
+    ON two_factor_email_codes (user_id, purpose, created_at DESC);
+
+INSERT INTO user_two_factor_methods (user_id, method, enabled, is_primary, created_at)
+SELECT u.id, 'TOTP', TRUE, TRUE, NOW()
+FROM users u
+WHERE u.totp_enabled = TRUE
+ON CONFLICT (user_id, method) DO NOTHING;
+
 -- ===========================================
 -- Tabla: refresh_tokens
 -- ===========================================
