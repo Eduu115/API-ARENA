@@ -858,7 +858,8 @@ public class SubmissionService implements ISubmissionService {
                         "eloChange", eloChange,
                         "isFirstCompletion", isFirst,
                         "challengeId", sub.getChallengeId(),
-                        "pipelineTotalScore", pipelineScoreInt
+                        "pipelineTotalScore", pipelineScoreInt,
+                        "submissionId", sub.getId()
                 );
                 restTemplate.postForEntity(
                         authServiceUrl + "/internal/users/" + sub.getUserId() + "/reward",
@@ -2040,5 +2041,35 @@ public class SubmissionService implements ISubmissionService {
             }
         }
         return null;
+    }
+
+    @Override
+    public java.util.Map<String, Object> socialSnapshot(Long submissionId) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found"));
+        List<SocialSnapshotBuilder.NamedTest> tests = jdbcTemplate.query(
+                "SELECT test_name, status FROM test_results WHERE submission_id = ? ORDER BY id",
+                (rs, row) -> new SocialSnapshotBuilder.NamedTest(
+                        rs.getString("test_name"),
+                        "PASSED".equalsIgnoreCase(rs.getString("status"))),
+                submissionId);
+        return SocialSnapshotBuilder.build(submission, fetchChallengeTitle(submission.getChallengeId()), tests);
+    }
+
+    private String fetchChallengeTitle(Long challengeId) {
+        if (challengeId == null) {
+            return null;
+        }
+        try {
+            java.util.Map<?, ?> preview = restTemplate.getForObject(
+                    challengeServiceUrl + "/api/challenges/" + challengeId + "/preview", java.util.Map.class);
+            if (preview == null || preview.get("title") == null) {
+                return null;
+            }
+            return String.valueOf(preview.get("title"));
+        } catch (Exception e) {
+            log.warn("Challenge title lookup failed for {}: {}", challengeId, e.getMessage());
+            return null;
+        }
     }
 }
