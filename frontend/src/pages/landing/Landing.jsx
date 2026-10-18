@@ -90,12 +90,12 @@ export default function Landing() {
       <HeroSection />
       <TickerSection />
       <AboutSection />
-      <CiteSection />
       <SlashDivider />
       <HowItWorksSection />
       <FeaturesSection />
       <SlashDivider />
       <LeaderboardSection />
+      <CiteSection />
       <CtaSection />
       <LandingFooter />
     </div>
