@@ -62,9 +62,9 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/friends` | Friends | ✅ |
 | `/social` | Social | ✅ Beta. Nav label stays English **Social** + BETA badge. Tabs All / Activity / Posts, infinite scroll, i18n EN/ES. Flag off shows a disabled state. |
 | `/notifications` | Notifications | ✅ Campana en topbar + WebSocket + lista |
-| `/{locale}/news` + `/{locale}/news/:slug` | NewsList / NewsArticle | ✅ Public news from content-service; SEO title, description, canonical, hreflang, JSON-LD BlogPosting |
-| `/{locale}/changelog` | Changelog | ✅ Published changelog entries |
-| `/{locale}/roadmap` | Roadmap | ✅ Phases and items from the API (DONE timeline, IN_PROGRESS highlighted as Now / Present, PLANNED as Next). Copy is not hardcoded |
+| `/{locale}/news` + `/{locale}/news/:slug` | NewsList / NewsArticle | ✅ Public news from content-service; SEO title, description, canonical, hreflang, JSON-LD BlogPosting. Topbar/footer group News + Changelog + Roadmap as **News & Upcoming** (English chrome); in-page tabs switch the three routes |
+| `/{locale}/changelog` | Changelog | ✅ Published changelog entries; same News & Upcoming tabs |
+| `/{locale}/roadmap` | Roadmap | ✅ Phases and items from the API (DONE timeline, IN_PROGRESS highlighted as Now / Present, PLANNED as Next). Copy is not hardcoded; same News & Upcoming tabs |
 | `/admin/content` | AdminContent | ✅ Editor for admins holding CONTENT (`useAdminCaps` checks the capabilities array for `CONTENT`). Markdown toolbar, live preview, .md import, draft / publish / archive, re-translate |
 | `/docs` + `/docs/:docId` | DocsHub | ✅ Mini-routing, feedback; orden de guías: **Getting Started** → **First Steps** → **Preconfigure Project** → resto; CTA “Continue learning” al pie; `/docs` redirige al primer documento; tours `DOCS_PATHS` apuntan a Getting Started; **switch EN | ES** en cabecera (contenido + chrome del hub traducido; persistencia en `localStorage` con consentimiento de cookies *preferences*) |
 | `/replay` | Replay | ✅ Timeline real; filtros etapa + HTTP/tests; salto a fallo; flechas; metadata JSON por evento; índice `testIndex` |

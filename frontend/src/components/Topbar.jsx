@@ -11,6 +11,7 @@ import { notificationActionLabel, notificationActionPath } from "../lib/notifica
 import { NavIcon, IconBell, IconSun, IconMoon } from "./topbar/TopbarIcons";
 import { useLocalizedPath } from "../routes/LocaleLayout";
 import { stripLocalePathname } from "../lib/localeRoutes";
+import { isContentPath } from "../lib/contentPaths";
 import "./Topbar.css";
 
 const MIN_RANKED_CHALLENGES = 3;
@@ -19,9 +20,7 @@ const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
   { label: "Docs", path: "/docs", icon: "docs" },
-  { label: "News", path: "/news", icon: "news" },
-  { label: "Changelog", path: "/changelog", icon: "changelog" },
-  { label: "Roadmap", path: "/roadmap", icon: "roadmap" },
+  { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
@@ -33,9 +32,7 @@ const NAV_ITEMS_AUTH = [
   { label: "Social", path: "/social", icon: "social", beta: true },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
   { label: "Docs", path: "/docs", icon: "docs" },
-  { label: "News", path: "/news", icon: "news" },
-  { label: "Changelog", path: "/changelog", icon: "changelog" },
-  { label: "Roadmap", path: "/roadmap", icon: "roadmap" },
+  { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
   { label: "Replay", path: "/replay", icon: "replay" },
 ];
 
@@ -148,9 +145,10 @@ export default function Topbar({
     navigate(lp("/login"), { replace: true });
   }
 
-  function renderNavLink({ label, path, icon, beta }) {
-    const isActive =
-      logicalPath === path || logicalPath.startsWith(`${path}/`);
+  function renderNavLink({ label, path, icon, beta, matchContent }) {
+    const isActive = matchContent
+      ? isContentPath(logicalPath)
+      : logicalPath === path || logicalPath.startsWith(`${path}/`);
     return (
       <Link
         key={path}
