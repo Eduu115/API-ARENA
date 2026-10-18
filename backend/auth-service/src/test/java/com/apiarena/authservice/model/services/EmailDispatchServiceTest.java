@@ -156,6 +156,26 @@ class EmailDispatchServiceTest {
         assertTrue(email.html().contains("Event-Sourced Banking Ledger"));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"en", "es"})
+    void adminPasswordChanged(String locale) {
+        RenderedEmail email = service.composeAdminPasswordChangedEmail("arclight", locale);
+        boolean es = "es".equals(locale);
+        assertEquals(es
+                ? "API Arena — un administrador ha cambiado tu contraseña"
+                : "API Arena — an administrator changed your password", email.subject());
+        String login = BASE + "/" + locale + "/login";
+        assertLayout(email, locale, es ? "Iniciar" : "Sign in", login);
+        assertTrue(email.html().contains("mailto:privacy@apiarena.net"));
+        assertFalse(email.html().contains("password is"));
+        assertTrue(email.text().contains(es
+                ? "ha cerrado todas tus sesiones"
+                : "signed you out of every session"));
+        assertTrue(email.text().contains(es
+                ? "contacta con soporte de inmediato"
+                : "contact support right away"));
+    }
+
     @Test
     void notificationMirrorStaysEnglish() {
         RenderedEmail email = service.composeNotificationAlertEmail(
@@ -222,6 +242,7 @@ class EmailDispatchServiceTest {
                 "arclight", "Event-Sourced Banking Ledger", 42, "en"));
         write(dir, "notification-mirror.html", service.composeNotificationAlertEmail(
                 "arclight", "Score posted", "Your run finished.", "IMPORTANT"));
+        write(dir, "admin-password-changed.html", service.composeAdminPasswordChangedEmail("arclight", "en"));
         assertTrue(Files.readString(dir.resolve("verification.html")).contains("Verify email"));
         assertTrue(Files.readString(dir.resolve("password-reminder.html")).contains("every four months"));
     }
