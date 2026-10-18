@@ -63,6 +63,30 @@ public class FriendService {
     }
 
     @Transactional(readOnly = true)
+    public List<Long> acceptedFriendIds(Long userId) {
+        if (userId == null) {
+            return List.of();
+        }
+        return friendshipRepository.findAcceptedPeerIds(userId, FriendshipStatus.ACCEPTED);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> summaries(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        List<Long> limited = ids.stream().filter(id -> id != null).distinct().limit(100).toList();
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (User user : userRepository.findAllById(limited)) {
+            Map<String, Object> row = new java.util.LinkedHashMap<>();
+            row.put("id", user.getId());
+            row.put("username", user.getUsername());
+            out.add(row);
+        }
+        return out;
+    }
+
+    @Transactional(readOnly = true)
     public Map<String, List<PendingFriendDTO>> listPending(Long currentUserId) {
         List<Friendship> pending = friendshipRepository.findByUserInvolvedAndStatus(
                 currentUserId, FriendshipStatus.PENDING);

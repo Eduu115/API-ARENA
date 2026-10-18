@@ -27,16 +27,19 @@ public class AchievementService {
     private final AchievementDefinitionRepository definitionRepository;
     private final UserAchievementRepository userAchievementRepository;
     private final AchievementNotificationDispatchService achievementNotificationDispatchService;
+    private final com.apiarena.authservice.kafka.UserActivityPublisher userActivityPublisher;
 
     public AchievementService(
             UserRepository userRepository,
             AchievementDefinitionRepository definitionRepository,
             UserAchievementRepository userAchievementRepository,
-            AchievementNotificationDispatchService achievementNotificationDispatchService) {
+            AchievementNotificationDispatchService achievementNotificationDispatchService,
+            com.apiarena.authservice.kafka.UserActivityPublisher userActivityPublisher) {
         this.userRepository = userRepository;
         this.definitionRepository = definitionRepository;
         this.userAchievementRepository = userAchievementRepository;
         this.achievementNotificationDispatchService = achievementNotificationDispatchService;
+        this.userActivityPublisher = userActivityPublisher;
     }
 
     @Transactional
@@ -165,5 +168,6 @@ public class AchievementService {
                 def.getCode(),
                 def.getTitle(),
                 def.getTier());
+        userActivityPublisher.achievement(user.getId(), def.getCode(), def.getTitle());
     }
 }

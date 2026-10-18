@@ -15,4 +15,6 @@ public class RewardRequest {
     private Long challengeId;
     /** Pipeline total score before teacher adjustments (0–1000). */
     private Integer pipelineTotalScore;
+    /** Submission that earned the reward, used as the social activity source id. */
+    private Long submissionId;
 }
