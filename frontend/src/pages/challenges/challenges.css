@@ -624,17 +624,22 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 6px;
+  margin-bottom: 12px;
 }
 
 .ch-featured-section-title,
 .ch-catalog-section-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.32em;
+  row-gap: 0.06em;
   margin: 0;
   font-family: var(--font-display);
   font-weight: 900;
   font-size: clamp(28px, 4vw, 40px);
   line-height: 0.95;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--white);
 }
