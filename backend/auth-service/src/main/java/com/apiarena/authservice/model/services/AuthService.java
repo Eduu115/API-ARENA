@@ -8,6 +8,8 @@ import java.util.HexFormat;
 import java.security.SecureRandom;
 import java.util.concurrent.CompletableFuture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +37,8 @@ import com.apiarena.authservice.util.LocaleSupport;
 
 @Service
 public class AuthService implements IAuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -92,15 +96,10 @@ public class AuthService implements IAuthService {
             throw new ApiException(HttpStatus.CONFLICT, "AUTH_USERNAME_TAKEN", "Username already taken");
         }
 
+        // Public registration never trusts a client-supplied role. Privileged
+        // accounts are created only through the admin console (audited SET_ROLE).
+        warnIfClientSuppliedNonStudentRole(request);
         User.Role role = User.Role.STUDENT;
-        if (request.getRole() != null) {
-            try {
-                role = User.Role.valueOf(request.getRole().toUpperCase());
-            } catch (IllegalArgumentException e) {
-                throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_INVALID_ROLE",
-                        "Invalid role: " + request.getRole());
-            }
-        }
 
         String preferredLocale = request.getPreferredLocale() != null && !request.getPreferredLocale().isBlank()
                 ? LocaleSupport.normalize(request.getPreferredLocale())
@@ -132,6 +131,20 @@ public class AuthService implements IAuthService {
                 preferredLocale);
 
         return new AuthResponse(UserDTO.fromEntity(savedUser), null, null);
+    }
+
+    private void warnIfClientSuppliedNonStudentRole(RegisterRequest request) {
+        String requested = request.getRole();
+        if (requested == null || requested.isBlank()) {
+            return;
+        }
+        if (User.Role.STUDENT.name().equalsIgnoreCase(requested.trim())) {
+            return;
+        }
+        log.warn(
+                "Ignoring client-supplied role '{}' on registration for username '{}'; account created as STUDENT",
+                requested,
+                request.getUsername());
     }
 
     @Override
