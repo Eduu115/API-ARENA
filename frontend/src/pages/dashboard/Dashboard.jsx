@@ -64,6 +64,7 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, []);
 
+  const isStudent = String(user?.role || '').toUpperCase() === 'STUDENT';
   const initials = user?.username?.slice(0, 2).toUpperCase() ?? '??';
   const userName = user?.username ?? 'User';
   const activeLabel = user?.isActive !== false ? t('active') : t('inactive');
@@ -162,6 +163,11 @@ export default function Dashboard() {
               <div className="db-page-sub">
                 {new Date().toLocaleDateString(dateLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
               </div>
+              {isStudent && (
+                <LocaleLink to="/teachers" className="db-btn db-teacher-cta">
+                  {t('teacherCta')}
+                </LocaleLink>
+              )}
             </div>
             <div className="db-header-actions">
               <LocaleLink to="/challenges" className="db-btn db-btn-primary">

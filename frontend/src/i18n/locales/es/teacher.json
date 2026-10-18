@@ -242,6 +242,7 @@
     "titleEm": "profesores",
     "summary": "El profesor usa la misma cuenta que el resto. El rol de profesor se activa cuando una persona revisa la solicitud. Añade grupos, retos propios, correcciones y un co-profesor opcional.",
     "home": "Inicio",
+    "breadcrumb": "Migas de pan",
     "navTitle": "En esta página",
     "backToLogin": "Volver al login",
     "nav": {

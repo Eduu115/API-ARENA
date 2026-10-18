@@ -43,16 +43,16 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/about` | AboutPage | ✅ Pública EN/ES sobre el desarrollador. Historia, motivación, trayectoria, stack, cronología, enlaces y contacto son placeholders `TODO(content)`. La URL de Gubia es https://gubiadigital.es. Enlace en el nav de la landing y en el footer. |
 | (global) | CookieConsent | ✅ Banner de consentimiento (necesarias siempre + **preferences** opt-in + analytics reservado); gating de persistencia de tema/tutoriales según consentimiento; reabrible desde footer y página `/cookies` |
 | (global) | ProfileComplianceGate | ✅ Modal bloqueante tras login si `requiresProfileCompliance` (cuentas legacy sin fecha de nacimiento / consentimiento GDPR) |
-| `/login` | Login | ✅ Enlace “Are you a teacher?” a la guía pública `/teachers`. Tras la contraseña, 2FA pide el método primario (TOTP o email) y permite cambiar |
-| `/teachers` | TeacherOnboarding | ✅ Guía pública “For teachers” (estilo Docs, EN/ES): rol (grupos, retos propios, correcciones, co-profesor), pasos cuenta → verificar email → 2FA → formulario → revisión manual; CTA a `/teacher/apply` (ruta del formulario en otro ticket); SEO title/description/canonical/hreflang + sitemap |
-| `/register` | Register | ✅ |
+| `/login` | Login | ✅ Enlace “Are you a teacher?” a `/teachers`. Sesión ya abierta → redirect a dashboard. Tras la contraseña, 2FA pide el método primario (TOTP o email) y permite cambiar |
+| `/teachers` | TeacherOnboarding | ✅ Guía pública “For teachers” (estilo Docs, EN/ES): el copy sigue el locale de la URL (`t(..., { lng })`), no un `i18n.language` stale. CTA a `/teacher/apply` (formulario en otro ticket) |
+| `/register` | Register | ✅ Sin botón “Sign in (education account)”; queda el enlace a `/teachers` |
 | `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
 | `/forgot-password` | ForgotPassword | ✅ Solicitud de reset (respuesta genérica) |
 | `/reset-password` | ResetPassword | ✅ Nueva contraseña con `?token=` |
 | `/challenges` | Challenges | ✅ Newsletter opt-in al pie del catálogo (STUDENT, email verificado); email + in-app al publicar challenge (`new_challenge_email_alerts` → auth + notification-service); tour catálogo 1ª vez |
 | `/challenges/:id` | ChallengeDetail | ✅ Resumen público (`/preview`); specs técnicas solo en submit; tour ficha 1ª vez |
 | `/challenges/:id/submit` | ChallengeSubmit | ✅ Timer (`deadlineAt`), límites, sesión; tour submit tras cerrar modal 1er envío |
-| `/dashboard` | Dashboard | ✅ Tour 1ª vez; **widget racha semanal** (sidebar + panel) vía `GET /api/auth/me/streak` |
+| `/dashboard` | Dashboard | ✅ Tour 1ª vez; **widget racha semanal** (sidebar + panel) vía `GET /api/auth/me/streak`; CTA “Authenticate as a teacher” para STUDENT |
 | `/submissions` | MySubmissions | ✅ (título del challenge vía `challengeTitle` en `GET /api/submissions/my`) |
 | `/submissions/:id` | SubmissionDetail | ✅ |
 | `/submissions/:id/results` | SubmissionResults | ✅ |
