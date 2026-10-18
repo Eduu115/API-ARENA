@@ -285,6 +285,11 @@
   animation: arena-title-glitch-ink 6.5s infinite linear;
 }
 
+.route-fallback {
+  min-height: 100vh;
+  background: var(--arena-bg-primary, #0a0e27);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ch-page-title,
   .db-page-title,
