@@ -76,6 +76,9 @@ public class UserService implements IUserService {
     private AchievementService achievementService;
 
     @Autowired
+    private TwoFactorMethodService twoFactorMethodService;
+
+    @Autowired
     private NewChallengeNotificationDispatchService newChallengeNotificationDispatchService;
 
     @Override
@@ -116,7 +119,7 @@ public class UserService implements IUserService {
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
-        return UserDTO.fromEntity(user);
+        return toDto(user);
     }
 
     @Override
@@ -134,7 +137,11 @@ public class UserService implements IUserService {
     public UserDTO getUserByEmail(String email) {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
             .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + email));
-        return UserDTO.fromEntity(user);
+        return toDto(user);
+    }
+
+    private UserDTO toDto(User user) {
+        return twoFactorMethodService.enrich(UserDTO.fromEntity(user), user);
     }
 
     @Override
@@ -165,7 +172,7 @@ public class UserService implements IUserService {
 
         User savedUser = userRepository.save(user);
         achievementService.syncForUserId(userId);
-        return UserDTO.fromEntity(savedUser);
+        return toDto(savedUser);
     }
 
     @Override
@@ -187,7 +194,7 @@ public class UserService implements IUserService {
         user.setPrivacyConsentVersion(ComplianceRules.CURRENT_CONSENT_VERSION);
 
         User savedUser = userRepository.save(user);
-        return UserDTO.fromEntity(savedUser);
+        return toDto(savedUser);
     }
 
     @Override

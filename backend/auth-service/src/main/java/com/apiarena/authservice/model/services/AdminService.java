@@ -56,6 +56,7 @@ public class AdminService {
     private final ModerationRecordRepository moderationRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailDispatchService emailDispatchService;
+    private final TwoFactorMethodService twoFactorMethodService;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -341,9 +342,7 @@ public class AdminService {
     @Transactional
     public AdminUserDTO resetTwoFactor(Long id, String actingEmail) {
         User user = loadUser(id);
-        user.setTotpSecret(null);
-        user.setTotpEnabled(false);
-        userRepository.save(user);
+        twoFactorMethodService.clearTotp(user);
         audit(actingEmail, "RESET_2FA", user, null);
         return AdminUserDTO.fromEntity(user);
     }

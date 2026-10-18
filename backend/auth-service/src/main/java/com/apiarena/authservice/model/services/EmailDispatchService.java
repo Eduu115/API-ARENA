@@ -83,6 +83,12 @@ public class EmailDispatchService {
         return HtmlUtils.htmlEscape(value == null ? "" : value);
     }
 
+    private static String codeBlock(String escapedCode) {
+        return "<p class=\"text-cyan\" style=\"margin:0 0 16px;font-family:" + FONT_MONO
+                + ";font-size:32px;letter-spacing:8px;line-height:1.2;color:" + CYAN + ";\">"
+                + escapedCode + "</p>";
+    }
+
     private static String p(String innerHtml) {
         return "<p style=\"margin:0 0 16px;font-family:" + FONT_BODY
                 + ";font-size:16px;line-height:1.6;color:" + TEXT + ";\">" + innerHtml + "</p>";
@@ -570,6 +576,65 @@ public class EmailDispatchService {
                 loginLink,
                 "You received this email because an administrator changed your API Arena password.",
                 true));
+    }
+
+    /**
+     * One-time 2FA code. {@code purpose} is LOGIN, ENABLE, or DISABLE. The code is not put in the subject.
+     */
+    public void sendTwoFactorCodeEmail(String toEmail, String username, String code, String purpose, String locale) {
+        if (resendKeyMissing()) {
+            log.warn("RESEND_API_KEY not set; 2FA email code for {} purpose={} code={}", toEmail, purpose, code);
+            return;
+        }
+        postResend(toEmail, composeTwoFactorCodeEmail(username, code, purpose, locale), null);
+    }
+
+    RenderedEmail composeTwoFactorCodeEmail(String username, String code, String purpose, String locale) {
+        boolean es = spanish(locale);
+        String safeName = esc(displayName(username, es ? "hola" : "there"));
+        String safeCode = esc(code == null ? "" : code);
+        String normalized = purpose == null ? "LOGIN" : purpose.trim().toUpperCase();
+        String subject;
+        String heading;
+        String intro;
+        if ("ENABLE".equals(normalized)) {
+            subject = es ? "Confirma la verificación por email" : "Confirm email verification";
+            heading = es ? "Activa los códigos por email" : "Turn on email codes";
+            intro = es
+                    ? "Usa este código para activar la verificación por email en tu cuenta."
+                    : "Use this code to turn on email verification for your account.";
+        } else if ("DISABLE".equals(normalized)) {
+            subject = es ? "Confirma desactivar la verificación por email" : "Confirm turning off email verification";
+            heading = es ? "Desactiva los códigos por email" : "Turn off email codes";
+            intro = es
+                    ? "Usa este código para desactivar la verificación por email."
+                    : "Use this code to turn off email verification.";
+        } else {
+            subject = es ? "Tu código de acceso de API Arena" : "Your API Arena sign-in code";
+            heading = es ? "Código de acceso" : "Sign-in code";
+            intro = es
+                    ? "Usa este código para terminar de iniciar sesión."
+                    : "Use this code to finish signing in.";
+        }
+        String expiry = es
+                ? "Caduca en 10 minutos y solo sirve una vez."
+                : "It expires in 10 minutes and works once.";
+        String reason = es
+                ? "Si no has sido tú, cambia tu contraseña. Nunca compartas este código."
+                : "If this was not you, change your password. Never share this code.";
+        String rawName = displayName(username, es ? "hola" : "there");
+        return layout(new EmailLayout(
+                subject,
+                locale,
+                intro,
+                "2FA",
+                heading,
+                p((es ? "Hola " : "Hi ") + safeName + ",") + p(intro) + codeBlock(safeCode) + mutedLine(expiry),
+                (es ? "Hola " : "Hi ") + rawName + ",\n\n" + intro + "\n\n" + (code == null ? "" : code) + "\n\n" + expiry,
+                null,
+                null,
+                reason,
+                false));
     }
 
     private boolean resendKeyMissing() {

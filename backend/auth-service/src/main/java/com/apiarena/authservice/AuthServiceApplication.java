@@ -9,11 +9,12 @@ import com.apiarena.authservice.config.EmailProperties;
 import com.apiarena.authservice.config.PasswordReminderProperties;
 import com.apiarena.authservice.config.RateLimitProperties;
 import com.apiarena.authservice.config.TurnstileProperties;
+import com.apiarena.authservice.config.TwoFactorProperties;
 
 @SpringBootApplication
 @EnableScheduling
 @EnableConfigurationProperties({ EmailProperties.class, RateLimitProperties.class, TurnstileProperties.class,
-        PasswordReminderProperties.class })
+        PasswordReminderProperties.class, TwoFactorProperties.class })
 public class AuthServiceApplication {
 
 	public static void main(String[] args) {

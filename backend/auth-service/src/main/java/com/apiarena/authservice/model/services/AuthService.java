@@ -64,6 +64,9 @@ public class AuthService implements IAuthService {
     @Autowired
     private AchievementService achievementService;
 
+    @Autowired
+    private TwoFactorMethodService twoFactorMethodService;
+
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private static String newVerificationToken() {
@@ -171,16 +174,19 @@ public class AuthService implements IAuthService {
                     "Email not verified. Check your inbox or resend the verification link.");
         }
 
-        // Second factor required when the admin bunker mandates it, or any user opted into TOTP.
-        // Password is only factor 1: don't issue tokens yet — hand back a short-lived pending
-        // token; the client must complete TOTP (factor 2) to get real tokens.
+        // Password is only factor 1. Admins always continue, and so does anyone with a method on.
+        // The client finishes with the primary method (or switches) using the pending token.
         boolean requiresTwoFactor = user.getRole() == User.Role.ADMIN
-                || Boolean.TRUE.equals(user.getTotpEnabled());
+                || twoFactorMethodService.hasAnyTwoFactorEnabled(user);
         if (requiresTwoFactor) {
+            TwoFactorMethodService.TwoFactorLoginView view = twoFactorMethodService.loginView(user);
             return AuthResponse.builder()
-                    .user(UserDTO.fromEntity(user))
+                    .user(twoFactorMethodService.enrich(UserDTO.fromEntity(user), user))
                     .twoFactorRequired(true)
-                    .twoFactorEnrolled(Boolean.TRUE.equals(user.getTotpEnabled()))
+                    .twoFactorEnrolled(view.totpEnrolled())
+                    .twoFactorPrimary(view.primaryMethod())
+                    .twoFactorMethods(view.methods())
+                    .emailTwoFactorAllowed(view.emailAllowed())
                     .pendingToken(jwtService.generatePendingTwoFactorToken(user.getEmail(), user.getId()))
                     .build();
         }

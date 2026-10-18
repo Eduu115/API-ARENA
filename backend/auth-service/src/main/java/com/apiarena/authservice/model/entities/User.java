@@ -150,11 +150,14 @@ public class User {
     @Column(name = "preferred_locale", nullable = false, length = 5)
     private String preferredLocale = "en";
 
-    /** ADMIN 2FA: Base32 TOTP shared secret (null until enrolled). Only used for ADMIN accounts. */
+    /** Base32 TOTP shared secret (null until enrolled). Dual-written with user_two_factor_methods. */
     @Column(name = "totp_secret", length = 64)
     private String totpSecret;
 
-    /** ADMIN 2FA: true once the admin has confirmed a TOTP code during enrolment. */
+    /**
+     * True once a TOTP code has been confirmed. Kept in sync with the TOTP row in
+     * user_two_factor_methods until a later contract drops this column.
+     */
     @Column(name = "totp_enabled", nullable = false)
     private Boolean totpEnabled = false;
 

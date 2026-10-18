@@ -24,6 +24,7 @@ public class UserTwoFactorService {
 
     private final UserRepository userRepository;
     private final TotpService totpService;
+    private final TwoFactorMethodService twoFactorMethodService;
 
     /** Get (or lazily create) an unverified secret to scan. Idempotent: same QR until enabled. */
     @Transactional
@@ -47,7 +48,7 @@ public class UserTwoFactorService {
     public UserDTO enable(String email, String code) {
         User user = require(email);
         if (Boolean.TRUE.equals(user.getTotpEnabled())) {
-            return UserDTO.fromEntity(user);
+            return twoFactorMethodService.enrich(UserDTO.fromEntity(user), user);
         }
         if (user.getTotpSecret() == null || user.getTotpSecret().isBlank()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "AUTH_2FA_NOT_ENROLLED", "Start 2FA setup first");
@@ -55,9 +56,8 @@ public class UserTwoFactorService {
         if (!totpService.verify(user.getTotpSecret(), code)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTH_2FA_INVALID_CODE", "Invalid authentication code");
         }
-        user.setTotpEnabled(true);
-        userRepository.save(user);
-        return UserDTO.fromEntity(user);
+        twoFactorMethodService.markTotpEnabled(user);
+        return twoFactorMethodService.enrich(UserDTO.fromEntity(user), user);
     }
 
     /** Turn 2FA off. Requires a valid current code so a hijacked session alone can't disable it. */
@@ -65,15 +65,13 @@ public class UserTwoFactorService {
     public UserDTO disable(String email, String code) {
         User user = require(email);
         if (!Boolean.TRUE.equals(user.getTotpEnabled())) {
-            return UserDTO.fromEntity(user);
+            return twoFactorMethodService.enrich(UserDTO.fromEntity(user), user);
         }
         if (!totpService.verify(user.getTotpSecret(), code)) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "AUTH_2FA_INVALID_CODE", "Invalid authentication code");
         }
-        user.setTotpSecret(null);
-        user.setTotpEnabled(false);
-        userRepository.save(user);
-        return UserDTO.fromEntity(user);
+        twoFactorMethodService.markTotpDisabled(user);
+        return twoFactorMethodService.enrich(UserDTO.fromEntity(user), user);
     }
 
     private User require(String email) {

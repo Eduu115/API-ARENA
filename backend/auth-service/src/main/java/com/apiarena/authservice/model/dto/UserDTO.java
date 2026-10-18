@@ -38,8 +38,14 @@ public class UserDTO {
     private String preferredLocale;
     /** True when date of birth or privacy consent is missing (legacy accounts). */
     private Boolean requiresProfileCompliance;
-    /** True when the account has TOTP two-factor enabled. */
+    /** True when authenticator (TOTP) two-factor is enabled. Dual-written with users.totp_enabled. */
     private Boolean twoFactorEnabled;
+    /** True when email codes are enabled as a second factor. */
+    private Boolean emailTwoFactorEnabled;
+    /** TOTP or EMAIL when a primary method is set. */
+    private String twoFactorPrimary;
+    /** Whether this account may turn email codes on (admins: flag + TOTP). */
+    private Boolean emailTwoFactorAllowed;
 
     public static UserDTO fromEntity(User user) {
         return new UserDTO(
@@ -65,7 +71,10 @@ public class UserDTO {
             Boolean.TRUE.equals(user.getNewChallengeEmailAlerts()),
             user.getPreferredLocale() != null ? user.getPreferredLocale() : "en",
             ComplianceRules.requiresProfileCompliance(user),
-            Boolean.TRUE.equals(user.getTotpEnabled())
+            Boolean.TRUE.equals(user.getTotpEnabled()),
+            false,
+            null,
+            false
         );
     }
 }
