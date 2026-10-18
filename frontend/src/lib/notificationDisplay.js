@@ -11,6 +11,11 @@ function currentLocale() {
 export function notificationActionPath(notification) {
   const loc = currentLocale();
   if (!notification) return localePath(loc, '/notifications');
+  if (notification.type === 'TEACHER_APPLY') {
+    const raw = notification.metadata?.path;
+    const path = typeof raw === 'string' && raw.startsWith('/') ? raw : '/teachers';
+    return localePath(loc, path);
+  }
   if (notification.type === 'ACHIEVEMENT_UNLOCKED') {
     return localePath(loc, '/perfil/achievements');
   }
@@ -34,6 +39,9 @@ export function notificationActionPath(notification) {
 export function notificationActionLabel(notification) {
   const t = i18n.getFixedT(null, 'notifications');
   if (!notification) return t('actions.open');
+  if (notification.type === 'TEACHER_APPLY') {
+    return t('actions.becomeTeacher');
+  }
   if (notification.type === 'ACHIEVEMENT_UNLOCKED') {
     return t('actions.seeMore');
   }

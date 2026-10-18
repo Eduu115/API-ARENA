@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import LocaleLink from "../../components/LocaleLink";
@@ -6,7 +6,7 @@ import Topbar from "../../components/Topbar";
 import BottomNav from "../../components/BottomNav";
 import CustomCursor from "../../components/CustomCursor";
 import { usePageMeta } from "../../lib/usePageMeta";
-import { useLocalizedPath } from "../../routes/LocaleLayout";
+import { useAppLocale, useLocalizedPath } from "../../routes/LocaleLayout";
 import {
   absoluteUrl,
   breadcrumbNode,
@@ -32,14 +32,16 @@ const NAV = [
 export default function TeacherOnboarding() {
   const navigate = useNavigate();
   const lp = useLocalizedPath();
-  const { t, i18n } = useTranslation("teacher");
-  const locale = i18n.language?.startsWith("es") ? "es" : "en";
-  const title = t("onboarding.metaTitle");
-  const description = t("onboarding.metaDescription");
-  const faq = asList(t("onboarding.faq", { returnObjects: true }));
-  const offerItems = asList(t("onboarding.offers.items", { returnObjects: true }));
-  const steps = asList(t("onboarding.steps.items", { returnObjects: true }));
-  const formItems = asList(t("onboarding.form.items", { returnObjects: true }));
+  const { locale } = useAppLocale();
+  const { t } = useTranslation("teacher");
+  // URL locale wins over a stale i18n.language (docs chrome included).
+  const tr = useCallback((key, options) => t(key, { ...options, lng: locale }), [t, locale]);
+  const title = tr("onboarding.metaTitle");
+  const description = tr("onboarding.metaDescription");
+  const faq = asList(tr("onboarding.faq", { returnObjects: true }));
+  const offerItems = asList(tr("onboarding.offers.items", { returnObjects: true }));
+  const steps = asList(tr("onboarding.steps.items", { returnObjects: true }));
+  const formItems = asList(tr("onboarding.form.items", { returnObjects: true }));
 
   const jsonLd = useMemo(() => {
     const url = absoluteUrl(locale, "/teachers");
@@ -47,7 +49,7 @@ export default function TeacherOnboarding() {
       ...siteNodes(locale),
       breadcrumbNode(
         [
-          { name: t("onboarding.home"), url: absoluteUrl(locale, "/") },
+          { name: tr("onboarding.home"), url: absoluteUrl(locale, "/") },
           { name: title, url },
         ],
         url
@@ -64,7 +66,7 @@ export default function TeacherOnboarding() {
         url
       ),
     ]);
-  }, [description, faq, locale, t, title]);
+  }, [description, faq, locale, tr, title]);
 
   usePageMeta({
     title,
@@ -83,30 +85,30 @@ export default function TeacherOnboarding() {
           <div className="docs-hub-wrap">
             <div className="docs-hub-header">
               <div>
-                <div className="ch-page-eyebrow">{t("onboarding.eyebrow")}</div>
+                <div className="ch-page-eyebrow">{tr("onboarding.eyebrow")}</div>
                 <h1 className="ch-page-title">
-                  {t("onboarding.titleBefore")} <em>{t("onboarding.titleEm")}</em>
+                  {tr("onboarding.titleBefore")} <em>{tr("onboarding.titleEm")}</em>
                 </h1>
               </div>
               <div className="docs-hub-header-actions">
                 <button type="button" className="docs-back-btn" onClick={() => navigate(lp("/login"))}>
-                  {t("onboarding.backToLogin")}
+                  {tr("onboarding.backToLogin")}
                 </button>
               </div>
             </div>
 
-            <nav className="docs-breadcrumb" aria-label="Breadcrumb">
-              <LocaleLink to="/">{t("onboarding.home")}</LocaleLink>
+            <nav className="docs-breadcrumb" aria-label={tr("onboarding.breadcrumb")}>
+              <LocaleLink to="/">{tr("onboarding.home")}</LocaleLink>
               <span>/</span>
               <span aria-current="page">{title}</span>
             </nav>
 
             <div className="docs-layout">
               <aside className="docs-scrollspy">
-                <div className="docs-scrollspy-title">{t("onboarding.navTitle")}</div>
+                <div className="docs-scrollspy-title">{tr("onboarding.navTitle")}</div>
                 {NAV.map((item) => (
                   <a key={item.id} href={`#${item.id}`} className="docs-spy-item">
-                    <span className="docs-spy-item-title">{t(`onboarding.nav.${item.key}`)}</span>
+                    <span className="docs-spy-item-title">{tr(`onboarding.nav.${item.key}`)}</span>
                   </a>
                 ))}
               </aside>
@@ -115,12 +117,12 @@ export default function TeacherOnboarding() {
                 <article className="docs-article">
                   <header className="docs-article-head">
                     <h2 className="docs-article-title">{title}</h2>
-                    <p className="docs-article-summary">{t("onboarding.summary")}</p>
+                    <p className="docs-article-summary">{tr("onboarding.summary")}</p>
                   </header>
 
                   <section id="offers" className="docs-section">
-                    <h3 className="docs-section-title">{t("onboarding.offers.heading")}</h3>
-                    <p className="docs-paragraph">{t("onboarding.offers.lead")}</p>
+                    <h3 className="docs-section-title">{tr("onboarding.offers.heading")}</h3>
+                    <p className="docs-paragraph">{tr("onboarding.offers.lead")}</p>
                     <ul className="docs-points">
                       {offerItems.map((item) => (
                         <li key={item}>{item}</li>
@@ -129,9 +131,9 @@ export default function TeacherOnboarding() {
                   </section>
 
                   <section id="steps" className="docs-section">
-                    <h3 className="docs-section-title">{t("onboarding.steps.heading")}</h3>
-                    <p className="docs-paragraph">{t("onboarding.steps.lead")}</p>
-                    <div className="docs-visual docs-visual-flow" role="list" aria-label={t("onboarding.steps.heading")}>
+                    <h3 className="docs-section-title">{tr("onboarding.steps.heading")}</h3>
+                    <p className="docs-paragraph">{tr("onboarding.steps.lead")}</p>
+                    <div className="docs-visual docs-visual-flow" role="list" aria-label={tr("onboarding.steps.heading")}>
                       <div className="docs-flow-list">
                         {steps.map((step, index) => (
                           <div key={step.label} className="docs-flow-step" role="listitem">
@@ -147,29 +149,29 @@ export default function TeacherOnboarding() {
                     <footer className="docs-doc-footer">
                       <div className="docs-next-row">
                         <LocaleLink to="/teacher/apply" className="docs-next-btn">
-                          {t("onboarding.steps.apply")}
+                          {tr("onboarding.steps.apply")}
                           <span className="docs-next-btn-arrow" aria-hidden="true">
                             →
                           </span>
                         </LocaleLink>
-                        <span className="docs-next-meta">{t("onboarding.steps.applyHint")}</span>
+                        <span className="docs-next-meta">{tr("onboarding.steps.applyHint")}</span>
                       </div>
                     </footer>
                   </section>
 
                   <section id="form" className="docs-section">
-                    <h3 className="docs-section-title">{t("onboarding.form.heading")}</h3>
-                    <p className="docs-paragraph">{t("onboarding.form.lead")}</p>
+                    <h3 className="docs-section-title">{tr("onboarding.form.heading")}</h3>
+                    <p className="docs-paragraph">{tr("onboarding.form.lead")}</p>
                     <ul className="docs-points">
                       {formItems.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>
-                    <p className="docs-paragraph">{t("onboarding.form.note")}</p>
+                    <p className="docs-paragraph">{tr("onboarding.form.note")}</p>
                   </section>
 
                   <section id="faq" className="docs-section">
-                    <h3 className="docs-section-title">{t("onboarding.nav.faq")}</h3>
+                    <h3 className="docs-section-title">{tr("onboarding.nav.faq")}</h3>
                     <dl className="docs-faq">
                       {faq.map((item) => (
                         <div key={item.q}>

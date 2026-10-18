@@ -242,6 +242,7 @@
     "titleEm": "teachers",
     "summary": "Teachers use the same account as everyone else. The teacher role is turned on after a person reviews your request. It adds groups, your own challenges, corrections, and an optional co-teacher.",
     "home": "Home",
+    "breadcrumb": "Breadcrumb",
     "navTitle": "On this page",
     "backToLogin": "Back to login",
     "nav": {

@@ -183,7 +183,7 @@ export default function Topbar({
                   height="28"
                 />
               </div>
-              <Link to={lp("/")} className="arena-navbar__title arena-crt-tube">
+              <Link to={lp("/")} className="arena-navbar__title">
                 <span className="arena-navbar__title-api">API</span>
                 <span className="arena-navbar__title-arena">Arena</span>
               </Link>

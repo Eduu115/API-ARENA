@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Navigate, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../context/AuthContext";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -29,7 +29,7 @@ export default function Login() {
   const [turnstileToken, setTurnstileToken] = useState(null);
   const turnstileRef = useRef(null);
   const turnstileOn = isTurnstileEnabled();
-  const { login, error, clearError } = useAuth();
+  const { login, error, clearError, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
   const lp = useLocalizedPath();
   const location = useLocation();
@@ -43,6 +43,13 @@ export default function Login() {
   const handleTurnstileToken = useCallback((token) => {
     setTurnstileToken(token);
   }, []);
+
+  if (isLoading) {
+    return null;
+  }
+  if (isAuthenticated && !twoFactor) {
+    return <Navigate to={lp("/dashboard")} replace />;
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
