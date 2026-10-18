@@ -110,6 +110,17 @@ export function forceLogout(id) {
   return request(`/api/auth/admin/users/${id}/logout`, { method: "POST" });
 }
 
+export function forcePasswordReset(id) {
+  return request(`/api/auth/admin/users/${id}/force-password-reset`, { method: "POST" });
+}
+
+export function setUserPassword(id, newPassword) {
+  return request(`/api/auth/admin/users/${id}/password`, {
+    method: "POST",
+    body: JSON.stringify({ newPassword }),
+  });
+}
+
 export function reset2fa(id) {
   return request(`/api/auth/admin/users/${id}/reset-2fa`, { method: "POST" });
 }

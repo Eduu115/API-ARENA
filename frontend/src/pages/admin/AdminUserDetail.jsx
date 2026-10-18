@@ -8,6 +8,7 @@ import {
   deactivateUser,
   deleteUser,
   forceLogout,
+  forcePasswordReset,
   reactivateUser,
   getModeration,
   getUser,
@@ -15,6 +16,7 @@ import {
   impersonate,
   messageUser,
   reset2fa,
+  setUserPassword,
   unbanUser,
   verifyEmail,
   warnUser,
@@ -46,7 +48,7 @@ export default function AdminUserDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { loadUser, user: me } = useAuth();
-  const { canModerate } = useAdminCaps();
+  const { canModerate, supreme } = useAdminCaps();
   const [user, setUser] = useState(null);
   const [subs, setSubs] = useState(null);
   const [moderation, setModeration] = useState([]);
@@ -59,8 +61,12 @@ export default function AdminUserDetail() {
   const [ratingDelta, setRatingDelta] = useState("");
   const [xpDelta, setXpDelta] = useState("");
   const [warnReason, setWarnReason] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwError, setPwError] = useState(null);
 
   const isSelf = me?.id != null && user?.id != null && me.id === user.id;
+  const adminPasswordLocked = user?.role === "ADMIN" && !supreme;
 
   useEffect(() => {
     let cancelled = false;
@@ -191,6 +197,50 @@ export default function AdminUserDetail() {
     }
   }
 
+  function closePasswordModal() {
+    setNewPassword("");
+    setConfirmPassword("");
+    setPwError(null);
+    setModal(null);
+  }
+
+  async function onForcePasswordReset() {
+    setBusy(true);
+    try {
+      const updated = await forcePasswordReset(id);
+      if (updated?.id) setUser(updated);
+      setModal(null);
+      flash("Password reset email sent ✓");
+    } catch (e) {
+      window.alert(e?.message ?? "Password reset failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onSetPassword() {
+    if (newPassword.length < 6) {
+      setPwError("Password must be at least 6 characters long.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError("Passwords do not match.");
+      return;
+    }
+    setBusy(true);
+    setPwError(null);
+    try {
+      const updated = await setUserPassword(id, newPassword);
+      if (updated?.id) setUser(updated);
+      closePasswordModal();
+      flash("Password updated ✓");
+    } catch (e) {
+      window.alert(e?.message ?? "Could not set password");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onAdjust() {
     setBusy(true);
     try {
@@ -285,6 +335,35 @@ export default function AdminUserDetail() {
           >
             Force logout
           </button>
+          {!isSelf && (
+            <>
+              <span title={adminPasswordLocked ? "Only a supreme admin can change an admin's password" : undefined}>
+                <button
+                  className="admin-btn admin-btn--sm"
+                  disabled={busy || adminPasswordLocked}
+                  style={adminPasswordLocked ? { pointerEvents: "none" } : undefined}
+                  onClick={() => setModal("force-reset")}
+                >
+                  Force password reset
+                </button>
+              </span>
+              <span title={adminPasswordLocked ? "Only a supreme admin can change an admin's password" : undefined}>
+                <button
+                  className="admin-btn admin-btn--sm"
+                  disabled={busy || adminPasswordLocked}
+                  style={adminPasswordLocked ? { pointerEvents: "none" } : undefined}
+                  onClick={() => {
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setPwError(null);
+                    setModal("set-password");
+                  }}
+                >
+                  Set password
+                </button>
+              </span>
+            </>
+          )}
         </div>
 
         <div className="admin-toolbar__sep" />
@@ -615,6 +694,93 @@ export default function AdminUserDetail() {
       {/* Unban form */}
       {modal === "unban" && (
         <UnbanModal username={user.username} busy={busy} onCancel={() => setModal(null)} onConfirm={onUnban} />
+      )}
+
+      {modal === "force-reset" && (
+        <div className="admin-modal__backdrop" onClick={() => !busy && setModal(null)}>
+          <div
+            className="admin-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-force-reset-title"
+          >
+            <div className="admin-modal__title" id="admin-force-reset-title">
+              Force password reset
+            </div>
+            <div className="admin-modal__hint">
+              Email {user.username} a reset link that expires in 1 hour. You will not see their password.
+              Their sessions are signed out now.
+            </div>
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" disabled={busy} onClick={() => setModal(null)}>
+                Cancel
+              </button>
+              <button className="admin-btn admin-btn--primary" disabled={busy} onClick={onForcePasswordReset}>
+                Send reset email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal === "set-password" && (
+        <div className="admin-modal__backdrop" onClick={() => !busy && closePasswordModal()}>
+          <div
+            className="admin-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-set-password-title"
+          >
+            <div className="admin-modal__title" id="admin-set-password-title">
+              Set password for {user.username}
+            </div>
+            <div className="admin-modal__hint">
+              At least 6 characters, same rule as registration. They are emailed and signed out. The password
+              is not written to the audit log.
+            </div>
+            {pwError && <div className="admin-alert">{pwError}</div>}
+            <div className="admin-formfield">
+              <label className="admin-formfield__label" htmlFor="admin-new-password">
+                New password
+              </label>
+              <input
+                id="admin-new-password"
+                className="admin-input"
+                type="password"
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="admin-formfield">
+              <label className="admin-formfield__label" htmlFor="admin-confirm-password">
+                Confirm password
+              </label>
+              <input
+                id="admin-confirm-password"
+                className="admin-input"
+                type="password"
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            <div className="admin-modal__actions">
+              <button className="admin-btn admin-btn--ghost" disabled={busy} onClick={closePasswordModal}>
+                Cancel
+              </button>
+              <button
+                className="admin-btn admin-btn--primary"
+                disabled={busy || !newPassword || !confirmPassword}
+                onClick={onSetPassword}
+              >
+                Set password
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Warn form */}
