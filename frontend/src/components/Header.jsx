@@ -6,7 +6,7 @@ export default function Header() {
     <nav data-tutorial="landing-nav">
       <div className="nav-logo">
         <img className="nav-logo-hex" src="/icons/logo-hex-lg.svg" alt="API Arena logo" width="40" height="40" />
-        <LocaleLink to="/" className="nav-logo-text"><span>API</span>Arena</LocaleLink>
+        <LocaleLink to="/" className="nav-logo-text arena-crt-tube"><span>API</span>Arena</LocaleLink>
       </div>
 
       <ul className="nav-links">
