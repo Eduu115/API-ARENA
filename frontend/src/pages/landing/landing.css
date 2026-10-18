@@ -96,6 +96,7 @@ nav {
   font-size: 22px;
   font-weight: 900;
   letter-spacing: 2px;
+  text-shadow: 1px 1px 0 var(--purple), 0 0 12px rgba(0, 217, 255, 0.35);
 }
 .nav-logo-text span { color: var(--cyan); }
 .nav-links {

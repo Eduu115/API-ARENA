@@ -223,3 +223,128 @@
   min-height: 100vh;
   background: var(--arena-bg-primary, #0a0e27);
 }
+
+/*
+ * Tube / CRT on page titles and the nav wordmark — same language as the landing:
+ * scanlines (.landing-page::before), grain (.landing-page::after), tube glow (.hero-glow).
+ * Glow and scanlines clip to the title box (overflow: hidden). Do not use a negative
+ * inset on ::before: that painted a rectangular cyan slab past the letters.
+ */
+:is(
+  .arena-crt-tube,
+  .ch-page-title,
+  .db-page-title,
+  .ch-featured-section-title,
+  .ch-catalog-section-title,
+  .profile-ach-page-title,
+  .arena-navbar__title,
+  .nav-logo-text
+) {
+  position: relative;
+  isolation: isolate;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 0 2px 2px 0;
+  text-shadow: 1px 1px 0 var(--purple, #B24BF3), 0 0 14px rgba(0, 217, 255, 0.28);
+}
+
+.ch-page-title,
+.db-page-title,
+.profile-ach-page-title,
+.arena-navbar__title,
+.nav-logo-text {
+  width: fit-content;
+}
+
+:is(
+  .arena-crt-tube,
+  .ch-page-title,
+  .db-page-title,
+  .ch-featured-section-title,
+  .ch-catalog-section-title,
+  .profile-ach-page-title,
+  .arena-navbar__title,
+  .nav-logo-text
+)::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(0, 217, 255, 0.16) 0%, transparent 72%);
+}
+
+:is(
+  .arena-crt-tube,
+  .ch-page-title,
+  .db-page-title,
+  .ch-featured-section-title,
+  .ch-catalog-section-title,
+  .profile-ach-page-title,
+  .arena-navbar__title,
+  .nav-logo-text
+)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.08) 2px,
+      rgba(0, 0, 0, 0.08) 4px
+    ),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: auto, 256px 256px;
+  background-attachment: fixed;
+}
+
+[data-theme="light"] :is(
+  .arena-crt-tube,
+  .ch-page-title,
+  .db-page-title,
+  .ch-featured-section-title,
+  .ch-catalog-section-title,
+  .profile-ach-page-title,
+  .arena-navbar__title,
+  .nav-logo-text
+)::before {
+  background: none;
+}
+
+[data-theme="light"] :is(
+  .arena-crt-tube,
+  .ch-page-title,
+  .db-page-title,
+  .ch-featured-section-title,
+  .ch-catalog-section-title,
+  .profile-ach-page-title,
+  .arena-navbar__title,
+  .nav-logo-text
+)::after {
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  background-attachment: fixed;
+}
+
+.auth-title-crt .ch-page-title::after,
+[data-theme="light"] .auth-title-crt .ch-page-title::after {
+  content: none;
+}
+
+.landing-page .nav-logo-text::before,
+.landing-page .nav-logo-text::after,
+[data-theme="light"] .landing-page .nav-logo-text::before,
+[data-theme="light"] .landing-page .nav-logo-text::after {
+  content: none;
+}
