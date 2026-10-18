@@ -247,8 +247,8 @@ const GUBIA_ID = `${SITE_URL}/#gubia`;
 const DEVELOPER_ID = `${SITE_URL}/#developer`;
 
 /**
- * Person + AboutPage for /about. Gubia is a sibling organization node until a
- * brand ticket publishes a real url. Biography fields stay TODO(content).
+ * Person + AboutPage for /about. Biography fields stay TODO(content).
+ * Gubia links to https://gubiadigital.es; the company blurb is still a placeholder.
  */
 export function aboutGraph(locale, { homeName, aboutName, description }) {
   const loc = locale === "es" ? "es" : "en";
@@ -259,7 +259,7 @@ export function aboutGraph(locale, { homeName, aboutName, description }) {
       "@type": "Organization",
       "@id": GUBIA_ID,
       name: "Gubia",
-      url: "TODO(content)",
+      url: "https://gubiadigital.es",
       description: "TODO(content)",
     },
     {
