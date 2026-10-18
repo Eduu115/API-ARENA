@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # End-to-end smoke: register → verify email (DB token) → login → submit ZIP →
-# wait for COMPLETED → replay + leaderboard + notifications.
+# wait for COMPLETED → replay + leaderboard + notifications → delete test account.
 # Requires the Docker stack published on localhost (see .env.example ports).
 set -euo pipefail
 
@@ -37,6 +37,20 @@ curl -fsS "$API_BASE/api/gateway/health" | jq -e '.overall == "up"' >/dev/null \
 timestamp="$(date +%s)"
 email="e2e.${timestamp}@apiarena.dev"
 username="e2e_${timestamp}"
+access_token=""
+
+cleanup_e2e_user() {
+  if [ -z "$access_token" ]; then
+    return 0
+  fi
+  echo "[E2E] cleanup: delete test account $email"
+  if ! curl -fsS -X DELETE "$AUTH_URL/api/auth/me" \
+    -H "Authorization: Bearer $access_token" >/dev/null; then
+    echo "[E2E] WARN: failed to delete test account $email (metrics may be skewed)" >&2
+  fi
+  access_token=""
+}
+trap cleanup_e2e_user EXIT
 
 echo "[E2E] register $email"
 curl -fsS -X POST "$AUTH_URL/api/auth/register" \
@@ -118,3 +132,4 @@ notifications_total="$(curl -fsS -H "Authorization: Bearer $access_token" \
   "$NOTIFICATION_URL/api/notifications/me?page=0&size=20" | jq -r '.totalElements')"
 
 echo "[E2E] OK user=$user_id challenge=$challenge_id submission=$submission_id replayEvents=$replay_events notifications=$notifications_total"
+# trap EXIT runs cleanup_e2e_user (purges submissions + deletes account via GDPR /me).
