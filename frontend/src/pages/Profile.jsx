@@ -664,7 +664,14 @@ export default function Profile() {
               </dl>
             </section>
 
-            <TwoFactorSection enabled={user.twoFactorEnabled === true} onChanged={loadUser} />
+            <TwoFactorSection
+              enabled={user.twoFactorEnabled === true}
+              emailEnabled={user.emailTwoFactorEnabled === true}
+              emailAllowed={user.emailTwoFactorAllowed === true}
+              isAdmin={user.role === "ADMIN"}
+              primaryMethod={user.twoFactorPrimary || null}
+              onChanged={loadUser}
+            />
 
             <section className="profile-block profile-block--meta" aria-labelledby="privacy-heading">
               <div className="profile-block-head">

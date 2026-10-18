@@ -4,16 +4,35 @@ import { useTranslation } from "react-i18next";
 import * as authApi from "../lib/authApi";
 
 /**
- * Account-settings 2FA control: enable (scan QR → confirm code) or disable (confirm code).
- * `enabled` reflects user.twoFactorEnabled; `onChanged` reloads the user after a change.
+ * Account-settings 2FA: authenticator app and optional email codes.
+ * `enabled` is TOTP. Email is confirmed with a code sent to the verified address.
  */
-export default function TwoFactorSection({ enabled, onChanged }) {
+export default function TwoFactorSection({
+  enabled,
+  emailEnabled = false,
+  emailAllowed = false,
+  isAdmin = false,
+  primaryMethod = null,
+  onChanged,
+}) {
   const { t } = useTranslation("profile");
-  const [mode, setMode] = useState("idle"); // idle | enroll | disable
+  const [mode, setMode] = useState("idle"); // idle | enroll | disable | email-enable | email-disable
   const [enroll, setEnroll] = useState(null); // { secret, otpauthUri }
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+
+  function explain(e) {
+    const codeName = e?.code;
+    if (codeName === "AUTH_2FA_EMAIL_RATE_LIMIT") return t("twoFactorEmailRateLimit");
+    if (codeName === "AUTH_2FA_CODE_EXPIRED") return t("twoFactorEmailExpired");
+    if (codeName === "AUTH_2FA_CODE_REUSED") return t("twoFactorEmailReused");
+    if (codeName === "AUTH_2FA_EMAIL_NOT_ALLOWED" || codeName === "AUTH_2FA_TOTP_REQUIRED") {
+      return t("twoFactorEmailAdminBlocked");
+    }
+    if (codeName === "AUTH_2FA_ADMIN_REQUIRED") return t("twoFactorAdminLocked");
+    return e?.message || t("twoFactorError");
+  }
 
   function reset() {
     setMode("idle");
@@ -32,7 +51,7 @@ export default function TwoFactorSection({ enabled, onChanged }) {
       setMode("enroll");
       setBusy(false);
     } catch (e) {
-      setError(e?.message || t("twoFactorError"));
+      setError(explain(e));
       setBusy(false);
     }
   }
@@ -46,7 +65,21 @@ export default function TwoFactorSection({ enabled, onChanged }) {
       await onChanged?.();
       reset();
     } catch (e2) {
-      setError(e2?.message || t("twoFactorError"));
+      setError(explain(e2));
+      setBusy(false);
+    }
+  }
+
+  async function startEmail(purpose) {
+    setError(null);
+    setBusy(true);
+    try {
+      await authApi.sendMyEmail2fa(purpose);
+      setMode(purpose === "ENABLE" ? "email-enable" : "email-disable");
+      setCode("");
+      setBusy(false);
+    } catch (e) {
+      setError(explain(e));
       setBusy(false);
     }
   }
@@ -83,7 +116,11 @@ export default function TwoFactorSection({ enabled, onChanged }) {
       </p>
       <p className="profile-privacy-text">
         {enabled ? t("twoFactorOnDesc") : t("twoFactorOffDesc")}
+        {enabled && primaryMethod === "TOTP" ? ` ${t("twoFactorPrimary")}` : ""}
       </p>
+      {isAdmin && enabled && (
+        <p className="profile-privacy-text">{t("twoFactorAdminLocked")}</p>
+      )}
 
       {error && (
         <div className="auth-alert" role="alert" style={{ marginBottom: 12 }}>
@@ -93,15 +130,15 @@ export default function TwoFactorSection({ enabled, onChanged }) {
 
       {mode === "idle" && (
         <div className="profile-privacy-actions">
-          {enabled ? (
+          {enabled && !isAdmin ? (
             <button type="button" className="profile-btn-logout" onClick={() => setMode("disable")}>
               {t("twoFactorDisable")}
             </button>
-          ) : (
+          ) : !enabled ? (
             <button type="button" className="profile-btn-ghost" onClick={startEnroll} disabled={busy}>
               {t("twoFactorEnable")}
             </button>
-          )}
+          ) : null}
         </div>
       )}
 
@@ -150,6 +187,57 @@ export default function TwoFactorSection({ enabled, onChanged }) {
           <div className="profile-privacy-actions">
             <button type="submit" className="profile-btn-logout" disabled={busy || code.length !== 6}>
               {busy ? "…" : t("twoFactorDisable")}
+            </button>
+            <button type="button" className="profile-btn-ghost" onClick={reset} disabled={busy}>
+              {t("twoFactorCancel")}
+            </button>
+          </div>
+        </form>
+      )}
+
+      <p className="profile-privacy-text" style={{ marginTop: 16, marginBottom: 4 }}>
+        <strong>{t("twoFactorEmailTitle")}</strong>
+        {emailEnabled && primaryMethod === "EMAIL" ? ` ${t("twoFactorPrimary")}` : ""}
+      </p>
+      <p className="profile-privacy-text">
+        {emailEnabled ? t("twoFactorEmailOnDesc") : t("twoFactorEmailOffDesc")}
+      </p>
+      {!emailEnabled && !emailAllowed && isAdmin && (
+        <p className="profile-privacy-text">{t("twoFactorEmailAdminBlocked")}</p>
+      )}
+
+      {mode === "idle" && (
+        <div className="profile-privacy-actions">
+          {emailEnabled ? (
+            <button type="button" className="profile-btn-logout" onClick={() => startEmail("DISABLE")} disabled={busy}>
+              {busy ? "…" : t("twoFactorEmailDisable")}
+            </button>
+          ) : emailAllowed ? (
+            <button type="button" className="profile-btn-ghost" onClick={() => startEmail("ENABLE")} disabled={busy}>
+              {busy ? "…" : t("twoFactorEmailEnable")}
+            </button>
+          ) : null}
+        </div>
+      )}
+
+      {(mode === "email-enable" || mode === "email-disable") && (
+        <form
+          className="auth-fields"
+          onSubmit={(e) =>
+            submit(e, mode === "email-enable" ? authApi.enableMyEmail2fa : authApi.disableMyEmail2fa)
+          }
+        >
+          <p className="profile-privacy-text">
+            {mode === "email-enable" ? t("twoFactorEmailSent") : t("twoFactorEmailDisablePrompt")}
+          </p>
+          {codeInput}
+          <div className="profile-privacy-actions">
+            <button
+              type="submit"
+              className={mode === "email-enable" ? "profile-btn-ghost" : "profile-btn-logout"}
+              disabled={busy || code.length !== 6}
+            >
+              {busy ? "…" : mode === "email-enable" ? t("twoFactorEmailConfirm") : t("twoFactorEmailDisable")}
             </button>
             <button type="button" className="profile-btn-ghost" onClick={reset} disabled={busy}>
               {t("twoFactorCancel")}
