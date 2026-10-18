@@ -27,6 +27,14 @@
     "next": "Next",
     "done": "Completed",
     "empty": "The roadmap is not published yet.",
+    "phase": "Phase",
+    "shipped": "Shipped",
+    "progress": "{{done}}/{{total}} phases shipped",
+    "label": {
+      "now": "Now",
+      "next": "Next",
+      "later": "Later"
+    },
     "status": {
       "DONE": "Done",
       "IN_PROGRESS": "In progress",

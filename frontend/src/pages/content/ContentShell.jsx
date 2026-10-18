@@ -4,7 +4,7 @@ import CustomCursor from "../../components/CustomCursor";
 import "../challenges/challenges.css";
 import "./content.css";
 
-export default function ContentShell({ children }) {
+export default function ContentShell({ children, wide = false }) {
   return (
     <div className="challenges-page content-page">
       <CustomCursor />
@@ -12,7 +12,7 @@ export default function ContentShell({ children }) {
       <div className="ch-layout" style={{ gridTemplateColumns: "1fr" }}>
         <Topbar showSidebarToggle={false} />
         <main className="ch-main">
-          <div className="content-wrap">{children}</div>
+          <div className={`content-wrap${wide ? " content-wrap--wide" : ""}`}>{children}</div>
         </main>
       </div>
       <BottomNav />
