@@ -234,6 +234,96 @@
     "errorPublish": "Error al publicar challenge",
     "pts": "pts"
   },
+  "onboarding": {
+    "metaTitle": "Para profesores",
+    "metaDescription": "Cómo se une un profesor a API Arena: crea una cuenta, verifica el email, activa la 2FA y solicita acceso a grupos, retos y correcciones.",
+    "eyebrow": "// Para profesores",
+    "titleBefore": "Para",
+    "titleEm": "profesores",
+    "summary": "El profesor usa la misma cuenta que el resto. El rol de profesor se activa cuando una persona revisa la solicitud. Añade grupos, retos propios, correcciones y un co-profesor opcional.",
+    "home": "Inicio",
+    "navTitle": "En esta página",
+    "backToLogin": "Volver al login",
+    "nav": {
+      "offers": "El rol",
+      "steps": "Cómo unirse",
+      "form": "El formulario",
+      "faq": "Preguntas"
+    },
+    "offers": {
+      "heading": "Qué añade el rol de profesor",
+      "lead": "Una cuenta de profesor es un usuario normal de API Arena con herramientas extra para llevar una clase. Los alumnos siguen entregando por su cuenta.",
+      "items": [
+        "Grupos. Crea un grupo, añade a tus alumnos y consulta sus entregas en los retos que son tuyos.",
+        "Retos propios. Escribe retos para tu clase. Un reto nuevo queda en borrador hasta que lo publicas.",
+        "Correcciones. Revisa una entrega con una nota personal, comentarios por zona, feedback estructurado, penalizaciones, puntuación manual y bonus de puntuación positivos.",
+        "Co-profesor. Quien crea el grupo puede añadir un co-profesor. Los dos podéis trabajar con los alumnos de ese grupo."
+      ]
+    },
+    "steps": {
+      "heading": "Cómo solicitar el acceso",
+      "lead": "Hazlo en este orden. El registro no incluye un rol de profesor.",
+      "items": [
+        {
+          "label": "Crea una cuenta de usuario",
+          "hint": "Regístrate como cualquier alumno. En ese formulario no se elige el rol de profesor."
+        },
+        {
+          "label": "Verifica el email",
+          "hint": "Abre el mensaje que enviamos y confirma la dirección antes de seguir."
+        },
+        {
+          "label": "Activa la 2FA",
+          "hint": "Activa la verificación en dos pasos con una app de autenticación o por email."
+        },
+        {
+          "label": "Rellena el formulario de solicitud",
+          "hint": "Úsalo cuando la cuenta esté verificada y la 2FA activa."
+        },
+        {
+          "label": "Espera la revisión manual",
+          "hint": "Una persona comprueba la solicitud. La aprobación no es automática."
+        }
+      ],
+      "apply": "Abrir el formulario de solicitud",
+      "applyHint": "Entra con la cuenta que has verificado."
+    },
+    "form": {
+      "heading": "Qué pide el formulario, y por qué",
+      "lead": "La solicitud es distinta de la cuenta que acabas de crear. Pide dos direcciones.",
+      "items": [
+        "Email institucional. La dirección del centro, la universidad o la organización donde das clase. La usamos para confirmar que la solicitud es para una clase real.",
+        "Email personal. Un buzón que controlas fuera de esa organización. Lo usamos si la dirección institucional bloquea nuestro correo, o si aún tenemos que localizarte cuando ya no estés allí."
+      ],
+      "note": "Ninguna de las dos sustituye al email de tu cuenta de API Arena. Mantén esa cuenta verificada. El formulario le dice a la revisión quién eres y dónde das clase."
+    },
+    "faq": [
+      {
+        "q": "¿Puedo registrarme directamente como profesor?",
+        "a": "No. Crea una cuenta normal, verifica el email, activa la 2FA y envía la solicitud. El rol de profesor solo se aplica después de la revisión."
+      },
+      {
+        "q": "Ya tengo una cuenta de alumno. ¿Necesito otra?",
+        "a": "Usa la cuenta que ya tienes. No crees un segundo usuario. Verifica el email, activa la 2FA y envía el formulario."
+      },
+      {
+        "q": "¿Por qué pedís un email institucional y otro personal?",
+        "a": "La dirección institucional indica dónde das clase. La personal es cómo te localizamos si ese buzón no acepta nuestro correo."
+      },
+      {
+        "q": "¿Quién más puede gestionar mi grupo?",
+        "a": "Puedes añadir un co-profesor. Puede trabajar con los alumnos de ese grupo. Tú sigues siendo el titular y puedes quitarlo."
+      },
+      {
+        "q": "¿Qué pasa después de la aprobación?",
+        "a": "Puedes abrir el área de profesor: grupos, los retos que creas y la cola de correcciones. Hasta entonces esas páginas siguen cerradas."
+      },
+      {
+        "q": "¿Cuánto tarda la revisión?",
+        "a": "Una persona lee cada solicitud. No hay aprobación automática."
+      }
+    ]
+  },
   "zipDownload": {
     "downloading": "Descargando...",
     "downloadZip": "Descargar ZIP",

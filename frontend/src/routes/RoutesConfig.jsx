@@ -34,6 +34,7 @@ const Corrections = lazy(() => import("../pages/teacher/Corrections"));
 const TeacherChallenges = lazy(() => import("../pages/teacher/TeacherChallenges"));
 const CreateChallenge = lazy(() => import("../pages/teacher/CreateChallenge"));
 const TeacherGroups = lazy(() => import("../pages/teacher/TeacherGroups"));
+const TeacherOnboarding = lazy(() => import("../pages/teacher/TeacherOnboarding"));
 const ChallengeSubmit = lazy(() => import("../pages/challenges/ChallengeSubmit"));
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
@@ -75,6 +76,7 @@ function AppRoutes() {
         <Route path="multiplayer" element={<MultiplayerHub />} />
         <Route path="docs" element={<DocsHub />} />
         <Route path="docs/:docId" element={<DocsHub />} />
+        <Route path="teachers" element={<TeacherOnboarding />} />
 
         <Route path="aviso-legal" element={<LegalPage />} />
         <Route path="privacidad" element={<LegalPage />} />

@@ -148,9 +148,12 @@ function robotsTxt() {
     "# rule set, so they receive the same Allow and the same Disallow.",
     "# A separate User-agent group would NOT inherit these Disallow lines.",
     "#",
-    "# Allowed: landing, docs, challenge previews, leaderboard, and legal pages",
-    "# in /en and /es, plus /llms.txt and /llms-full.txt.",
-    "# Disallowed: account, teacher, admin, and other private areas.",
+    "# Allowed: landing, docs, the public teacher guide (/teachers), challenge",
+    "# previews, leaderboard, and legal pages in /en and /es, plus /llms.txt",
+    "# and /llms-full.txt.",
+    "# Disallowed: account, the private teacher area (/teacher), admin, and",
+    "# other private areas. /teachers is allowed again below: Disallow /teacher",
+    "# is only a prefix, and the longer Allow wins.",
     "# Public challenge pages are previews. Technical specs are not in the crawl surface.",
     "#",
     `# AI crawlers: ${AI_CRAWLERS.join(", ")}`,
@@ -166,7 +169,16 @@ function robotsTxt() {
       lines.push(`Disallow: ${prefix}/${name}`);
     }
   }
-  lines.push("", `Sitemap: ${SITE_URL}/sitemap.xml`, "");
+  lines.push(
+    "",
+    "# Public guide. Longer than Disallow: /teacher, so crawlers may fetch it.",
+    "Allow: /teachers",
+    "Allow: /en/teachers",
+    "Allow: /es/teachers",
+    "",
+    `Sitemap: ${SITE_URL}/sitemap.xml`,
+    ""
+  );
   return `${lines.join("\n")}`;
 }
 
@@ -336,7 +348,7 @@ function syncFile(rel, next) {
   }
 }
 
-function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
+function collectPages(landing, challengesJson, leaderboard, teacher, docs, challenges) {
   const pages = [];
   for (const locale of ["en", "es"]) {
     pages.push({
@@ -362,6 +374,14 @@ function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
       description: leaderboard[locale].pageDescription,
       changefreq: "daily",
       priority: "0.7",
+    });
+    pages.push({
+      locale,
+      path: "/teachers",
+      title: teacher[locale].onboarding.metaTitle,
+      description: teacher[locale].onboarding.metaDescription,
+      changefreq: "monthly",
+      priority: "0.6",
     });
     docs[locale].forEach((doc, index) => {
       pages.push({
@@ -424,12 +444,16 @@ const leaderboard = {
   en: readJson(join(root, "src/i18n/locales/en/leaderboard.json")),
   es: readJson(join(root, "src/i18n/locales/es/leaderboard.json")),
 };
+const teacher = {
+  en: readJson(join(root, "src/i18n/locales/en/teacher.json")),
+  es: readJson(join(root, "src/i18n/locales/es/teacher.json")),
+};
 const docs = {
   en: getDocDocuments("en"),
   es: getDocDocuments("es"),
 };
 const challenges = publicChallenges();
-const pages = collectPages(landing, challengesJson, leaderboard, docs, challenges);
+const pages = collectPages(landing, challengesJson, leaderboard, teacher, docs, challenges);
 const paths = uniquePaths(pages);
 
 const docIdsEn = docs.en.map((doc) => doc.id).join("|");
@@ -448,6 +472,7 @@ for (const snippet of [
   'path="challenges"',
   'path="challenges/:id"',
   'path="leaderboard"',
+  'path="teachers"',
   'path="docs/:docId"',
   'path="aviso-legal"',
   'path="privacidad"',

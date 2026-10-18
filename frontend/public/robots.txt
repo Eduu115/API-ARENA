@@ -5,9 +5,12 @@
 # rule set, so they receive the same Allow and the same Disallow.
 # A separate User-agent group would NOT inherit these Disallow lines.
 #
-# Allowed: landing, docs, challenge previews, leaderboard, and legal pages
-# in /en and /es, plus /llms.txt and /llms-full.txt.
-# Disallowed: account, teacher, admin, and other private areas.
+# Allowed: landing, docs, the public teacher guide (/teachers), challenge
+# previews, leaderboard, and legal pages in /en and /es, plus /llms.txt
+# and /llms-full.txt.
+# Disallowed: account, the private teacher area (/teacher), admin, and
+# other private areas. /teachers is allowed again below: Disallow /teacher
+# is only a prefix, and the longer Allow wins.
 # Public challenge pages are previews. Technical specs are not in the crawl surface.
 #
 # AI crawlers: GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, Applebot-Extended
@@ -71,5 +74,10 @@ Disallow: /es/reset-password
 Disallow: /multiplayer
 Disallow: /en/multiplayer
 Disallow: /es/multiplayer
+
+# Public guide. Longer than Disallow: /teacher, so crawlers may fetch it.
+Allow: /teachers
+Allow: /en/teachers
+Allow: /es/teachers
 
 Sitemap: https://apiarena.net/sitemap.xml

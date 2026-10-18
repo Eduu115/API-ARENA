@@ -55,6 +55,24 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/leaderboard"/>
   </url>
   <url>
+    <loc>https://apiarena.net/en/teachers</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/teachers"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/teachers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/teachers"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/teachers</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/teachers"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/teachers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/teachers"/>
+  </url>
+  <url>
     <loc>https://apiarena.net/en/docs/guia-para-empezar</loc>
     <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>

@@ -201,8 +201,9 @@ export default function Login() {
                 </button>
 
                 <div className="auth-footer-row">
-                  <p>{t("teacherPrompt")}</p>
-                  <LocaleLink to="/login?mode=edu">{t("teacherSignIn")}</LocaleLink>
+                  <p>
+                    <LocaleLink to="/teachers">{t("teacherPrompt")}</LocaleLink>
+                  </p>
                 </div>
               </form>
               )}

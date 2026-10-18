@@ -297,7 +297,9 @@ export default function Register() {
                 </button>
 
                 <div className="auth-footer-row">
-                  <p>{t("teacherPrompt")}</p>
+                  <p>
+                    <LocaleLink to="/teachers">{t("teacherPrompt")}</LocaleLink>
+                  </p>
                   <LocaleLink to="/login">{t("teacherSignIn")}</LocaleLink>
                 </div>
               </form>
