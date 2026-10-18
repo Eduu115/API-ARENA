@@ -11,30 +11,50 @@ concurrency:
   group: production-deploy
   cancel-in-progress: false
 
+defaults:
+  run:
+    shell: bash
+    working-directory: /home/dudu/apps/API-ARENA
+
 jobs:
   deploy:
     runs-on: [self-hosted, linux, x64, apiarena]
     timeout-minutes: 40
     steps:
-      - name: Backup databases and deploy
+      - name: Backup databases
         run: |
           set -euo pipefail
-          cd "$HOME/apps/API-ARENA"
           ./deploy/backup-db.sh
+
+      - name: Pull, build and start
+        run: |
+          set -euo pipefail
           ./deploy/deploy.sh
-          echo ">> waiting for gateway health"
-          ok=0
+
+      - name: Wait for gateway health
+        run: |
+          set -euo pipefail
           for i in $(seq 1 36); do
             if curl -fsS http://127.0.0.1:3000/api/gateway/health | grep -q '"overall"'; then
-              ok=1
-              break
+              curl -fsS http://127.0.0.1:3000/api/gateway/health
+              echo
+              exit 0
             fi
             sleep 5
           done
-          if [ "$ok" != "1" ]; then
-            echo "Gateway health did not respond" >&2
-            docker compose ps
-            exit 1
+          echo "Gateway health did not respond" >&2
+          docker compose ps
+          exit 1
+
+      # A failed `docker compose up` can leave freshly recreated containers in
+      # "created" (frontend included), which takes the site down. Start whatever
+      # is stopped so the previous build keeps serving while the failure is fixed.
+      - name: Recover stopped containers
+        if: failure()
+        run: |
+          stopped="$(docker compose ps -a -q --status created --status exited)"
+          if [ -n "$stopped" ]; then
+            echo "$stopped" | xargs docker start || true
           fi
-          curl -fsS http://127.0.0.1:3000/api/gateway/health
-          echo
+          docker compose ps
+          curl -fsS -o /dev/null -w "frontend: %{http_code}\n" http://127.0.0.1:3000/ || true
