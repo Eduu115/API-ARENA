@@ -284,6 +284,9 @@ class EmailDispatchServiceTest {
         assertTrue(email.html().contains("Share Tech Mono"));
         assertTrue(email.html().contains(">API</span>"));
         assertTrue(email.html().contains(">Arena</span>"));
+        assertTrue(email.html().contains(BASE + "/icons/logo-hex-lg.svg"));
+        assertTrue(email.html().contains("text-shadow"));
+        assertTrue(email.html().contains("60px 60px"));
         assertTrue(email.html().contains("#0A0E27"));
         assertTrue(email.html().contains("#00D9FF"));
         assertTrue(email.html().contains("#B24BF3"));
@@ -292,7 +295,7 @@ class EmailDispatchServiceTest {
         assertTrue(email.html().contains(BASE + "/" + locale + "/cookies"));
         assertTrue(email.html().contains(BASE + "/" + locale + "/terminos"));
         assertTrue(email.text().contains(BASE + "/" + locale + "/privacidad"));
-        assertTrue(email.html().contains("Developed by <a href=\"#\""));
+        assertTrue(email.html().contains("Developed by <a href=\"https://gubiadigital.es\""));
         assertTrue(email.html().contains(">Gubia</a>"));
         assertTrue(email.text().contains("Developed by Gubia"));
         assertFalse(email.html().contains("%s"), "unreplaced %s in html");

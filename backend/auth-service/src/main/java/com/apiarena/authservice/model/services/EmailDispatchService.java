@@ -691,19 +691,16 @@ public class EmailDispatchService {
         html.append("&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;");
         html.append("</div>");
         html.append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"email-bg\" bgcolor=\"")
-                .append(BG).append("\" style=\"background-color:").append(BG).append(";\"><tr><td align=\"center\" style=\"padding:24px 12px;\">");
+                .append(BG).append("\" style=\"").append(webSurfaceStyle()).append("\"><tr><td align=\"center\" style=\"padding:24px 12px;")
+                .append(webSurfaceStyle()).append("\">");
         html.append("<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\" style=\"width:600px;max-width:600px;border:1px solid ")
-                .append(LINE).append(";background-color:").append(BG).append(";\" bgcolor=\"").append(BG).append("\">");
+                .append(LINE).append(";").append(webSurfaceStyle()).append("\" bgcolor=\"").append(BG).append("\">");
         html.append("<tr><td style=\"padding:0;font-size:0;line-height:0;\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>");
         html.append("<td class=\"stripe-cyan\" width=\"50%\" bgcolor=\"").append(CYAN).append("\" height=\"4\" style=\"width:50%;height:4px;font-size:0;line-height:0;background-color:")
                 .append(CYAN).append(";\">&nbsp;</td>");
         html.append("<td class=\"stripe-purple\" width=\"50%\" bgcolor=\"").append(PURPLE).append("\" height=\"4\" style=\"width:50%;height:4px;font-size:0;line-height:0;background-color:")
                 .append(PURPLE).append(";\">&nbsp;</td></tr></table></td></tr>");
-        html.append("<tr><td class=\"px\" style=\"padding:28px 32px 8px;\"><p style=\"margin:0;font-family:")
-                .append(FONT_DISPLAY).append(";font-size:28px;font-weight:900;letter-spacing:2px;line-height:1;\">");
-        html.append("<span class=\"text-cyan\" style=\"color:").append(CYAN).append(";\">API</span>");
-        html.append("<span class=\"text-primary\" style=\"color:").append(TEXT).append(";\">Arena</span>");
-        html.append("</p></td></tr>");
+        html.append("<tr><td class=\"px\" style=\"padding:28px 32px 8px;\">").append(brandHeaderHtml()).append("</td></tr>");
         html.append("<tr><td class=\"px text-primary\" style=\"padding:8px 32px 28px;color:").append(TEXT).append(";\">");
         if (m.kicker() != null && !m.kicker().isBlank()) {
             html.append("<p class=\"text-purple\" style=\"margin:0 0 8px;font-family:").append(FONT_MONO)
@@ -755,6 +752,31 @@ public class EmailDispatchService {
         }
         text.append("\n");
         return new RenderedEmail(m.subject(), html.toString(), text.toString());
+    }
+
+    /** Grid + scanlines from the web (hero-grid / landing-page::before). */
+    private static String webSurfaceStyle() {
+        return "background-color:" + BG + ";"
+                + "background-image:"
+                + "linear-gradient(rgba(0,217,255,0.05) 1px, transparent 1px),"
+                + "linear-gradient(90deg, rgba(0,217,255,0.05) 1px, transparent 1px),"
+                + "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.10) 2px, rgba(0,0,0,0.10) 4px);"
+                + "background-size:60px 60px,60px 60px,auto;";
+    }
+
+    /** Hex logo + Barlow wordmark with the landing glitch offset (purple hard shadow + cyan tube glow). */
+    private String brandHeaderHtml() {
+        String logo = frontendBaseUrl() + "/icons/logo-hex-lg.svg";
+        String apiShadow = "2px 2px 0 " + PURPLE + ", 0 0 18px rgba(0,217,255,0.55)";
+        return "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>"
+                + "<td valign=\"middle\" style=\"padding:0 12px 0 0;\">"
+                + "<img src=\"" + esc(logo) + "\" width=\"40\" height=\"40\" alt=\"API Arena\""
+                + " style=\"display:block;border:0;width:40px;height:40px;\"></td>"
+                + "<td valign=\"middle\"><p style=\"margin:0;font-family:" + FONT_DISPLAY
+                + ";font-size:28px;font-weight:900;letter-spacing:2px;line-height:1;text-transform:uppercase;\">"
+                + "<span class=\"text-cyan\" style=\"color:" + CYAN + ";text-shadow:" + apiShadow + ";\">API</span>"
+                + "<span class=\"text-primary\" style=\"color:" + TEXT + ";text-shadow:2px 2px 0 " + PURPLE + ";\">Arena</span>"
+                + "</p></td></tr></table>";
     }
 
     private String developedByGubiaHtml() {
