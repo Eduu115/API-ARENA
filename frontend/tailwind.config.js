@@ -52,9 +52,9 @@ export default {
       },
       
       fontFamily: {
-        display: ['Barlow Condensed', 'sans-serif'],
-        body: ['Syne', 'sans-serif'],
-        mono: ['Share Tech Mono', 'monospace'],
+        display: ['Barlow Condensed', 'Barlow Condensed Fallback', 'sans-serif'],
+        body: ['Syne', 'Syne Fallback', 'sans-serif'],
+        mono: ['Share Tech Mono', 'Share Tech Mono Fallback', 'monospace'],
       },
       
       fontSize: {
