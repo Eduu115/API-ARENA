@@ -1,3 +1,10 @@
+# Postgres allows 100 connections. Hikari defaults to 10 per service, and ten
+# services use the database, so the defaults alone hit the cap and pg_dump
+# (and any new service) cannot connect. Override with DB_POOL_MAX.
+x-db-pool: &db-pool
+  SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${DB_POOL_MAX:-5}
+  SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: ${DB_POOL_MIN_IDLE:-1}
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -111,6 +118,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
@@ -155,6 +163,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -185,6 +194,7 @@ services:
       ai-review-service: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
@@ -228,6 +238,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -279,6 +290,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -303,6 +315,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -328,6 +341,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -353,6 +367,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -381,6 +396,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -409,6 +425,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      <<: *db-pool
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: none

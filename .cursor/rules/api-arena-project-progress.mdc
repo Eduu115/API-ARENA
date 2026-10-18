@@ -23,7 +23,7 @@ alwaysApply: true
 
 ## Infraestructura Docker
 
-- **PostgreSQL**: ✅ `init-db.sql` (seed, friendships, etc.)
+- **PostgreSQL**: ✅ `init-db.sql` (seed, friendships, etc.). `max_connections` es 100 y diez servicios usan la BD, así que cada pool Hikari está limitado a 5 (`DB_POOL_MAX`, mínimo ocioso `DB_POOL_MIN_IDLE`=1) vía el ancla `x-db-pool` de `docker-compose.yml`; con el valor por defecto de 10 se llegaba al tope y `pg_dump` no podía conectar
 - **Redis**: ✅ (auth rate-limit + submission cache)
 - **MongoDB**: ✅ **integrado** en submission-service (archivo de replay `replay_archives`; lectura si Postgres vacío tras retención)
 - **InfluxDB**: ✅ **integrado** en submission-service (serie `submission_pipeline`: duración, score, estado)
