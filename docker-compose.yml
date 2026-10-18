@@ -108,6 +108,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
@@ -128,8 +129,12 @@ services:
       APP_PASSWORD_REMINDER_CRON: ${APP_PASSWORD_REMINDER_CRON:-0 0 9 * * *}
       SERVICES_NOTIFICATION_URL: http://apiarena-notification:8090
       SERVICES_SUBMISSION_URL: http://apiarena-submission:8083
+      SERVICES_SOCIAL_URL: http://apiarena-social:8091
       SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       APP_TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      APP_SOCIAL_ENABLED: ${APP_SOCIAL_ENABLED:-false}
+      APP_SOCIAL_ELO_DELTA_THRESHOLD: ${APP_SOCIAL_ELO_DELTA_THRESHOLD:-25}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       # Loopback-only by default: prod traffic goes through the frontend /api proxy.
@@ -300,6 +305,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      APP_SOCIAL_ENABLED: ${APP_SOCIAL_ENABLED:-false}
+      APP_SOCIAL_RANK_CLIMB_THRESHOLD: ${APP_SOCIAL_RANK_CLIMB_THRESHOLD:-5}
       JWT_SECRET: ${JWT_SECRET}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
@@ -330,6 +337,34 @@ services:
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
     ports:
       - "${MICROSERVICE_BIND_IP:-127.0.0.1}:${NOTIFICATION_HOST_PORT:-8090}:8090"
+    networks:
+      - apiarena-network
+    restart: unless-stopped
+
+  social-service:
+    build:
+      context: ./backend/social-service
+      dockerfile: Dockerfile
+    container_name: apiarena-social
+    depends_on:
+      postgres: { condition: service_healthy }
+      kafka: { condition: service_started }
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SERVICES_AUTH_URL: http://apiarena-auth:8081
+      SERVICES_SUBMISSION_URL: http://apiarena-submission:8083
+      SERVICES_NOTIFICATION_URL: http://apiarena-notification:8090
+      SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+      JWT_SECRET: ${JWT_SECRET}
+      APP_SOCIAL_ENABLED: ${APP_SOCIAL_ENABLED:-false}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
+    ports:
+      - "${MICROSERVICE_BIND_IP:-127.0.0.1}:${SOCIAL_HOST_PORT:-8091}:8091"
     networks:
       - apiarena-network
     restart: unless-stopped

@@ -11,7 +11,7 @@ TMP="$OUT.tmp.$$"
 
 # name:host:port — order is cosmetic only.
 P0="auth:apiarena-auth:8081 challenge:apiarena-challenge:8082 submission:apiarena-submission:8083 leaderboard:apiarena-leaderboard:8087 notification:apiarena-notification:8090"
-EXTRA="metrics:apiarena-metrics:8089 sandbox:apiarena-sandbox:8084 testing:apiarena-testing:8085 ai-review:apiarena-ai-review:8086"
+EXTRA="metrics:apiarena-metrics:8089 sandbox:apiarena-sandbox:8084 testing:apiarena-testing:8085 ai-review:apiarena-ai-review:8086 social:apiarena-social:8091"
 
 http_code() {
   # $1 = host:port -> HTTP status as a base-10 int (0 on connect/timeout failure).
