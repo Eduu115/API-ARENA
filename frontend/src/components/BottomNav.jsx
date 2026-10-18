@@ -12,6 +12,7 @@ const ITEMS_AUTH = [
   { path: '/dashboard', icon: '◇', label: 'Home' },
   { path: '/challenges', icon: '⊞', label: 'Challenges' },
   { path: '/friends', icon: '✧', label: 'Friends' },
+  { path: '/social', icon: '◈', label: 'Social', beta: true },
   { path: '/notifications', icon: '⌁', label: 'Alerts' },
   { path: '/leaderboard', icon: '≋', label: 'Rankings' },
   { path: '/perfil', icon: '◉', label: 'Profile' },
@@ -26,7 +27,7 @@ export default function BottomNav() {
 
   return (
     <nav className="ch-bottom-nav">
-      {items.map(({ path, icon, label }) => {
+        {items.map(({ path, icon, label, beta }) => {
         const isActive = logicalPath === path || logicalPath.startsWith(`${path}/`);
         return (
           <Link
@@ -35,7 +36,10 @@ export default function BottomNav() {
             className={`ch-bni${isActive ? ' active' : ''}`}
           >
             <span className="ch-bni-icon">{icon}</span>
-            <span className="ch-bni-label">{label}</span>
+            <span className="ch-bni-label">
+              {label}
+              {beta ? <span className="ch-bni-beta">BETA</span> : null}
+            </span>
           </Link>
         );
       })}

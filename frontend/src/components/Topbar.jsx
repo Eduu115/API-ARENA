@@ -27,6 +27,7 @@ const NAV_ITEMS_AUTH = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Submissions", path: "/submissions", icon: "submissions" },
   { label: "Friends", path: "/friends", icon: "friends" },
+  { label: "Social", path: "/social", icon: "social", beta: true },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
   { label: "Docs", path: "/docs", icon: "docs" },
   { label: "Replay", path: "/replay", icon: "replay" },
@@ -141,7 +142,7 @@ export default function Topbar({
     navigate(lp("/login"), { replace: true });
   }
 
-  function renderNavLink({ label, path, icon }) {
+  function renderNavLink({ label, path, icon, beta }) {
     const isActive =
       logicalPath === path || logicalPath.startsWith(`${path}/`);
     return (
@@ -154,7 +155,10 @@ export default function Topbar({
         <span className="arena-nav-link__ico" aria-hidden>
           <NavIcon name={icon} />
         </span>
-        <span className="arena-nav-link__label">{label}</span>
+        <span className="arena-nav-link__label">
+          {label}
+          {beta ? <span className="arena-nav-link__beta">BETA</span> : null}
+        </span>
       </Link>
     );
   }

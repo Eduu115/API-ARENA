@@ -20,6 +20,7 @@ import com.apiarena.authservice.model.dto.InternalNotificationEmailRequest;
 import com.apiarena.authservice.model.dto.NewChallengePublishedRequest;
 import com.apiarena.authservice.model.dto.RewardRequest;
 import com.apiarena.authservice.model.services.IUserService;
+import com.apiarena.authservice.model.services.FriendService;
 import com.apiarena.authservice.model.services.TeacherGroupService;
 
 import jakarta.validation.Valid;
@@ -33,6 +34,9 @@ public class InternalController {
 
     @Autowired
     private TeacherGroupService teacherGroupService;
+
+    @Autowired
+    private FriendService friendService;
 
     @Value("${services.internal-token:}")
     private String internalServiceToken;
@@ -83,6 +87,33 @@ public class InternalController {
         requireInternalToken(token);
         boolean inGroup = teacherGroupService.isStudentInAnyTeacherGroup(teacherId, studentUserId);
         return ResponseEntity.ok(Map.of("inGroup", inGroup));
+    }
+
+    /** Accepted friend ids for social-service. Friendships stay in auth. */
+    @GetMapping("/users/{id}/friend-ids")
+    public ResponseEntity<Map<String, Object>> friendIds(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @PathVariable Long id) {
+        requireInternalToken(token);
+        return ResponseEntity.ok(Map.of("userIds", friendService.acceptedFriendIds(id)));
+    }
+
+    @GetMapping("/users/summaries")
+    public ResponseEntity<java.util.List<Map<String, Object>>> summaries(
+            @RequestHeader(value = "X-Internal-Token", required = false) String token,
+            @org.springframework.web.bind.annotation.RequestParam(name = "ids", required = false) String ids) {
+        requireInternalToken(token);
+        java.util.List<Long> parsed = new java.util.ArrayList<>();
+        if (ids != null && !ids.isBlank()) {
+            for (String part : ids.split(",")) {
+                try {
+                    parsed.add(Long.parseLong(part.trim()));
+                } catch (NumberFormatException ignored) {
+                    // skip junk
+                }
+            }
+        }
+        return ResponseEntity.ok(friendService.summaries(parsed));
     }
 
     private static final String DEFAULT_INTERNAL_TOKEN = "apiarena-internal-token";

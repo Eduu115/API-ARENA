@@ -63,7 +63,12 @@
     "aiTitle": "AI REVIEW",
     "aiUnavailable": "AI feedback is not available for this submission yet.",
     "backToChallenges": "BACK TO CHALLENGES",
-    "viewDetails": "VIEW DETAILS"
+    "viewDetails": "VIEW DETAILS",
+    "publishToFeed": "Publish to feed",
+    "publishCaption": "Optional caption",
+    "publishAction": "Publish",
+    "publishDone": "Published to your friends' feed",
+    "publishError": "Could not publish"
   },
   "submit": {
     "backToChallenge": "← BACK TO CHALLENGE",

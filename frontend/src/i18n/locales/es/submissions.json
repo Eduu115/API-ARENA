@@ -63,7 +63,12 @@
     "aiTitle": "REVISIÓN IA",
     "aiUnavailable": "El feedback de IA aún no está disponible para esta entrega.",
     "backToChallenges": "VOLVER A CHALLENGES",
-    "viewDetails": "VER DETALLES"
+    "viewDetails": "VER DETALLES",
+    "publishToFeed": "Publicar en el feed",
+    "publishCaption": "Texto opcional",
+    "publishAction": "Publicar",
+    "publishDone": "Publicado en el feed de tus amigos",
+    "publishError": "No se pudo publicar"
   },
   "submit": {
     "backToChallenge": "← VOLVER AL CHALLENGE",

@@ -81,6 +81,12 @@ public class UserService implements IUserService {
     @Autowired
     private NewChallengeNotificationDispatchService newChallengeNotificationDispatchService;
 
+    @Autowired
+    private com.apiarena.authservice.kafka.UserActivityPublisher userActivityPublisher;
+
+    @Autowired
+    private SocialDataDispatchService socialDataDispatchService;
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmailIgnoreCase(email.trim())
@@ -222,6 +228,9 @@ public class UserService implements IUserService {
 
         int xp = request.getXpEarned() != null ? request.getXpEarned() : 0;
         int elo = request.getEloChange() != null ? request.getEloChange() : 0;
+        int eloBefore = user.getRating() != null ? user.getRating() : 1000;
+        int levelBefore = user.getLevel() != null ? user.getLevel() : 1;
+        String tierBefore = com.apiarena.authservice.util.EloTier.of(eloBefore);
 
         user.setExperiencePoints(user.getExperiencePoints() + xp);
         user.setRating(user.getRating() + elo);
@@ -234,8 +243,20 @@ public class UserService implements IUserService {
 
         userRepository.save(user);
 
+        int eloAfter = user.getRating() != null ? user.getRating() : eloBefore;
+        int levelAfter = user.getLevel() != null ? user.getLevel() : levelBefore;
+        String tierAfter = com.apiarena.authservice.util.EloTier.of(eloAfter);
+        Long submissionId = request.getSubmissionId();
+        userActivityPublisher.elo(userId, submissionId, request.getChallengeId(), eloBefore, eloAfter);
+        userActivityPublisher.level(userId, submissionId, levelBefore, levelAfter);
+        userActivityPublisher.tier(userId, submissionId, tierBefore, tierAfter);
+
         int pipelineScore = request.getPipelineTotalScore() != null ? request.getPipelineTotalScore() : 0;
-        weeklyStreakService.recordActivity(userId, xp, request.getChallengeId(), pipelineScore);
+        WeeklyStreakService.StreakMilestone streak = weeklyStreakService.recordActivity(
+                userId, xp, request.getChallengeId(), pipelineScore);
+        if (streak != null) {
+            userActivityPublisher.streak(userId, streak.weeks(), streak.isoYear(), streak.isoWeek());
+        }
         achievementService.syncForUserId(userId);
     }
 
@@ -363,6 +384,7 @@ public class UserService implements IUserService {
         root.put("profile", profile);
         root.put("activity", activity);
         root.put("consent", consent);
+        root.put("social", socialDataDispatchService.exportUserData(u.getId()));
         root.put("note", "Submissions and uploaded files are available from the Submissions area of the app.");
         return root;
     }
@@ -403,6 +425,7 @@ public class UserService implements IUserService {
      * CASCADE removes refresh tokens, friendships, notifications, achievements, leaderboard and group links.
      */
     private void hardErase(User user) {
+        socialDataDispatchService.purgeUserData(user.getId());
         submissionPurgeDispatchService.purgeUserData(user.getId());
         refreshTokenService.revokeAllUserTokens(user);
         userRepository.delete(user);

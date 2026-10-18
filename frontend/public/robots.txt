@@ -5,9 +5,9 @@
 # rule set, so they receive the same Allow and the same Disallow.
 # A separate User-agent group would NOT inherit these Disallow lines.
 #
-# Allowed: landing, docs, about, the public teacher guide (/teachers),
-# challenge previews, leaderboard, and legal pages in /en and /es, plus
-# /llms.txt and /llms-full.txt.
+# Allowed: landing, docs, about, the public teacher guide (/teachers), challenge
+# previews, leaderboard, and legal pages in /en and /es, plus /llms.txt
+# and /llms-full.txt.
 # Disallowed: account, the private teacher area (/teacher), admin, and
 # other private areas. /teachers is allowed again below: Disallow /teacher
 # is only a prefix, and the longer Allow wins.
@@ -47,6 +47,9 @@ Disallow: /es/profile
 Disallow: /friends
 Disallow: /en/friends
 Disallow: /es/friends
+Disallow: /social
+Disallow: /en/social
+Disallow: /es/social
 Disallow: /notifications
 Disallow: /en/notifications
 Disallow: /es/notifications

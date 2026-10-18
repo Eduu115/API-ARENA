@@ -154,6 +154,17 @@
   white-space: nowrap;
 }
 
+.arena-nav-link__beta {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+}
+
 .arena-navbar__actions {
   display: flex;
   flex-direction: row;

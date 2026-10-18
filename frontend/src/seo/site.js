@@ -28,6 +28,7 @@ export const PRIVATE_PATHS = [
   "perfil",
   "profile",
   "friends",
+  "social",
   "notifications",
   "replay",
   "teacher",

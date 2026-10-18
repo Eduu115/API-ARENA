@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.apiarena.leaderboardservice.kafka.UserActivityPublisher;
 import com.apiarena.leaderboardservice.model.dto.GlobalLeaderboardDTO;
 import com.apiarena.leaderboardservice.model.dto.GlobalUserRankDTO;
 import com.apiarena.leaderboardservice.model.dto.LeaderboardEntryDTO;
@@ -20,6 +21,9 @@ public class LeaderboardService {
 
     @Autowired
     private LeaderboardEntryRepository entryRepository;
+
+    @Autowired
+    private UserActivityPublisher userActivityPublisher;
 
     public List<LeaderboardEntryDTO> getChallengeLeaderboard(Long challengeId) {
         List<LeaderboardEntry> entries = entryRepository
@@ -76,6 +80,11 @@ public class LeaderboardService {
                 .findByChallengeIdAndUserId(request.getChallengeId(), request.getUserId())
                 .orElse(null);
 
+        boolean improves = entry == null || request.getScore() > entry.getScore();
+        Integer rankBefore = improves
+                ? getGlobalUserRank(request.getUserId()).map(r -> r.getRank()).orElse(null)
+                : null;
+
         if (entry != null) {
             if (request.getScore() > entry.getScore()) {
                 entry.setScore(request.getScore());
@@ -97,6 +106,10 @@ public class LeaderboardService {
 
         LeaderboardEntry saved = entryRepository.save(entry);
         recalculateRanks(request.getChallengeId());
+        if (improves) {
+            Integer rankAfter = getGlobalUserRank(request.getUserId()).map(r -> r.getRank()).orElse(null);
+            userActivityPublisher.rankClimb(request.getUserId(), request.getSubmissionId(), rankBefore, rankAfter);
+        }
         return LeaderboardEntryDTO.fromEntity(saved);
     }
 

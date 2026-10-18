@@ -61,6 +61,8 @@ public interface ISubmissionService {
 
     int purgeUserData(Long userId);
 
+    java.util.Map<String, Object> socialSnapshot(Long submissionId);
+
     SubmissionDTO applyTeacherPenalty(Long submissionId, Long teacherId, TeacherPenaltyApplyRequest request);
 
     SubmissionDTO confirmTeacherPenalties(Long submissionId, Long teacherId, TeacherPenaltiesBatchConfirmRequest request);

@@ -15,6 +15,7 @@ import AchievementList from '../components/AchievementList';
 import BadgeCollection from '../components/BadgeCollection';
 import ProfileBadges from '../components/ProfileBadges';
 import TwoFactorSection from '../components/TwoFactorSection';
+import SocialPrivacyControls from '../components/SocialPrivacyControls';
 import { recentUnlockedAchievements } from '../lib/achievementDisplay';
 import { usePageMeta } from '../lib/usePageMeta';
 import './challenges/challenges.css';
@@ -686,6 +687,7 @@ export default function Profile() {
                   components={{ 1: <LocaleLink to="/privacidad" /> }}
                 />
               </p>
+              <SocialPrivacyControls />
               {privacyError && (
                 <div className="auth-alert" role="alert" style={{ marginBottom: 12 }}>
                   {privacyError}

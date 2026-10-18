@@ -44,6 +44,7 @@ const AdminUserDetail = lazy(() => import("../pages/admin/AdminUserDetail"));
 const AdminAudit = lazy(() => import("../pages/admin/AdminAudit"));
 const Friends = lazy(() => import("../pages/friends/Friends"));
 const Notifications = lazy(() => import("../pages/Notifications"));
+const Social = lazy(() => import("../pages/social/Social"));
 
 function RouteFallback() {
   return <div className="route-fallback" aria-hidden="true" />;
@@ -96,6 +97,7 @@ function AppRoutes() {
           <Route path="challenges/:id/submit" element={<ChallengeSubmit />} />
           <Route path="replay" element={<Replay />} />
           <Route path="friends" element={<Friends />} />
+          <Route path="social" element={<Social />} />
           <Route path="notifications" element={<Notifications />} />
         </Route>
 

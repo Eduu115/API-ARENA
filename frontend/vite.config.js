@@ -17,6 +17,7 @@ export default defineConfig({
       '/api/submissions': api('http://localhost:8083'),
       '/api/leaderboard': api('http://localhost:8087'),
       '/api/notifications': api('http://localhost:8090'),
+      '/api/social': api('http://localhost:8091'),
       '/api/metrics': api('http://localhost:8089'),
       '/ws/notifications': { target: 'ws://localhost:8090', ws: true },
     },

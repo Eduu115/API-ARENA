@@ -38,12 +38,16 @@ public class WeeklyStreakService {
     private final AchievementService achievementService;
 
     @Transactional
-    public void recordActivity(Long userId, int xpEarned, Long challengeId, Integer pipelineTotalScore) {
+    public StreakMilestone recordActivity(Long userId, int xpEarned, Long challengeId, Integer pipelineTotalScore) {
         if (userId == null) {
-            return;
+            return null;
         }
         IsoWeek current = IsoWeek.nowUtc();
         UserStreakState state = loadOrCreateState(userId);
+        Integer qualifiedYear = state.getLastQualifiedIsoYear();
+        Integer qualifiedWeek = state.getLastQualifiedIsoWeek();
+        boolean wasThisWeek = qualifiedYear != null && qualifiedWeek != null
+                && qualifiedYear == current.year() && qualifiedWeek == current.week();
         processPastWeeks(state, current);
 
         UserWeeklyProgress progress = progressRepository
@@ -72,6 +76,18 @@ public class WeeklyStreakService {
         if (progress.isQualified()) {
             achievementService.tryGrantWeeklyStreakAchievements(userId, state.getCurrentStreakWeeks());
         }
+        boolean nowThisWeek = state.getLastQualifiedIsoYear() != null
+                && state.getLastQualifiedIsoWeek() != null
+                && state.getLastQualifiedIsoYear() == current.year()
+                && state.getLastQualifiedIsoWeek() == current.week();
+        if (!wasThisWeek && nowThisWeek) {
+            return new StreakMilestone(state.getCurrentStreakWeeks(), current.year(), current.week());
+        }
+        return null;
+    }
+
+    /** Newly qualified ISO week, published once to the social activity topic. */
+    public record StreakMilestone(int weeks, int isoYear, int isoWeek) {
     }
 
     @Transactional
