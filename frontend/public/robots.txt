@@ -1,28 +1,75 @@
-User-agent: *
-Allow: /
-Allow: /challenges
-Allow: /leaderboard
-Allow: /docs
-Allow: /aviso-legal
-Allow: /privacidad
-Allow: /cookies
-Allow: /terminos
+# API Arena crawler policy
+#
+# Decision: ALLOW indexing of public pages.
+# Classic search crawlers and the AI crawlers named in this group share one
+# rule set, so they receive the same Allow and the same Disallow.
+# A separate User-agent group would NOT inherit these Disallow lines.
+#
+# Allowed: landing, docs, challenge previews, leaderboard, and legal pages
+# in /en and /es, plus /llms.txt and /llms-full.txt.
+# Disallowed: account, teacher, admin, and other private areas.
+# Public challenge pages are previews. Technical specs are not in the crawl surface.
+#
+# AI crawlers: GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, Applebot-Extended
 
-# Private / authenticated areas — no SEO value
+User-agent: *
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ClaudeBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: CCBot
+User-agent: Applebot-Extended
+
+Allow: /
+
+Disallow: /404
+Disallow: /en/404
+Disallow: /es/404
+Disallow: /admin
+Disallow: /en/admin
+Disallow: /es/admin
 Disallow: /dashboard
+Disallow: /en/dashboard
+Disallow: /es/dashboard
 Disallow: /submissions
+Disallow: /en/submissions
+Disallow: /es/submissions
 Disallow: /perfil
+Disallow: /en/perfil
+Disallow: /es/perfil
 Disallow: /profile
+Disallow: /en/profile
+Disallow: /es/profile
 Disallow: /friends
+Disallow: /en/friends
+Disallow: /es/friends
 Disallow: /notifications
+Disallow: /en/notifications
+Disallow: /es/notifications
 Disallow: /replay
+Disallow: /en/replay
+Disallow: /es/replay
 Disallow: /teacher
+Disallow: /en/teacher
+Disallow: /es/teacher
 Disallow: /verify-email
+Disallow: /en/verify-email
+Disallow: /es/verify-email
 Disallow: /login
+Disallow: /en/login
+Disallow: /es/login
 Disallow: /register
+Disallow: /en/register
+Disallow: /es/register
+Disallow: /forgot-password
+Disallow: /en/forgot-password
+Disallow: /es/forgot-password
+Disallow: /reset-password
+Disallow: /en/reset-password
+Disallow: /es/reset-password
 Disallow: /multiplayer
+Disallow: /en/multiplayer
+Disallow: /es/multiplayer
 
 Sitemap: https://apiarena.net/sitemap.xml
-
-# LLM crawlers (llms.txt standard)
-# https://apiarena.net/llms.txt

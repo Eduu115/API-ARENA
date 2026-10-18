@@ -1885,6 +1885,29 @@ footer {
   background: var(--bg0);
 }
 
+.cite-inner { max-width: 820px; }
+.cite-title {
+  font-size: clamp(40px, 5vw, 64px);
+  margin-bottom: 8px;
+}
+.cite-faq { margin-top: 8px; }
+.cite-faq dt {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-top: 28px;
+  color: var(--text);
+}
+.cite-faq dd {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
 .bracket-hover { position: relative; }
 .bracket-hover::before,
 .bracket-hover::after {

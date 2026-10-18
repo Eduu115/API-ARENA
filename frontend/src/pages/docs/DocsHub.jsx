@@ -13,6 +13,7 @@ import { getDocByIdMap, getDocDocuments } from "./docsContent";
 import { getDocsUi, getNextDocCtaLabel } from "./docsUi";
 import { usePageMeta } from "../../lib/usePageMeta";
 import { useLocalizedPath } from "../../routes/LocaleLayout";
+import { docGraph } from "../../seo/site";
 
 function SectionVisual({ visual }) {
   if (!visual?.type) return null;
@@ -107,10 +108,20 @@ export default function DocsHub() {
     () => docById[docId] || docDocuments[0],
     [docId, docById, docDocuments]
   );
+  const showFaq = activeDoc.id === docDocuments[0]?.id;
   usePageMeta({
     title: `${activeDoc.title} — Docs`,
     description: activeDoc.summary,
     path: `/docs/${activeDoc.id}`,
+    jsonLd: docGraph(locale, {
+      homeName: ui.home,
+      docsName: ui.docs,
+      docTitle: activeDoc.title,
+      docDescription: activeDoc.summary,
+      docPath: `/docs/${activeDoc.id}`,
+      docsPath: `/docs/${docDocuments[0].id}`,
+      faqs: showFaq ? ui.faq : null,
+    }),
   });
   const docIndex = useMemo(
     () => docDocuments.findIndex((d) => d.id === activeDoc.id),
@@ -227,6 +238,17 @@ export default function DocsHub() {
                     <h2 className="docs-article-title">{activeDoc.title}</h2>
                     <p className="docs-article-summary">{activeDoc.summary}</p>
                   </header>
+
+                  {showFaq && ui.faq?.length ? (
+                    <dl className="docs-faq">
+                      {ui.faq.map((item) => (
+                        <div key={item.q}>
+                          <dt>{item.q}</dt>
+                          <dd>{item.a}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
 
                   {activeDoc.sections.map((section) => {
                     const sectionKey = `${activeDoc.id}:${section.id}`;

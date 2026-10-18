@@ -1,75 +1,92 @@
 # API Arena
 
-> API Arena is a competitive web platform where developers ship real Spring Boot REST APIs as ZIP submissions, run them through an isolated sandbox build, score them with real HTTP black-box tests, and climb global XP and ELO leaderboards.
+> API Arena is a free competitive platform for students, self-taught backend developers, and teachers. You choose a challenge, build a real Spring Boot REST API, and upload the project as a ZIP. An isolated sandbox builds and runs that API, then real HTTP tests score it. It is measured practice, not a slide-only course.
 
-Tagline: Compete. Build. Conquer.
+Each submission is scored out of 1000. Up to 800 points come from technical HTTP tests against the running API: functional correctness (300), performance (300), and REST design (200). Up to 200 points come from an AI review. The default review rubric is heuristic, and a language-model provider can be enabled per environment. XP tracks cumulative progress. ELO is a separate competitive rating that moves against the score expected for your rating and the challenge difficulty. Submitting again below your best score on that challenge is penalized.
+
+Create a free account and open the challenge catalog. Read the public preview, then sign in and start a timed session to see the full requirements. Zip a Maven project with pom.xml at the archive root and upload it. The pipeline builds the project in a sandbox, calls the API over HTTP, saves the score, and updates the leaderboard. The docs hub explains the first submission step by step.
+
+A public challenge page is a preview only: title, description, difficulty, category, time limit, and XP reward. Endpoint lists, hidden tests, and hints are not on that page. They appear after you sign in and start a timed session.
+
+API Arena is for students learning backend APIs, developers who want measured practice, and teachers who group students and review their submissions.
 
 Website: https://apiarena.net
+English: https://apiarena.net/en
+Spanish: https://apiarena.net/es
+x-default: https://apiarena.net/en
 Alternate names: APIArena, API-Arena
+Extended reference: https://apiarena.net/llms-full.txt
 
-## What it is
+## Who it is for
 
-API Arena is a hands-on backend practice and competition platform. Users pick a challenge, implement a Spring Boot API locally, upload a ZIP, and the platform:
+Students learning backend APIs, self-taught developers who want a measured score, and teachers who group students and review submissions.
 
-1. Builds the project in an isolated sandbox (Docker)
-2. Runs real HTTP functional, performance, and design tests against the running API
-3. Applies optional AI-assisted code review
-4. Awards XP and ELO, updates leaderboards, and stores replay timelines for debugging
+## How it works
 
-The product is aimed at students, self-taught developers, and teachers who want measurable API-building practice beyond toy exercises.
+1. Pick a challenge and read the public preview.
+2. Sign in and start a timed session to open the full requirements.
+3. Upload a ZIP of a Maven Spring Boot project with pom.xml at the archive root.
+4. An isolated sandbox builds and runs the API.
+5. Real HTTP tests score functional behavior, performance, and REST design.
+6. An AI review adds the remaining points. XP and ELO update. A replay is stored for debugging.
 
-## Core features
+## Scoring
 
-- Challenge catalog with difficulty tiers (Easy → Expert) and categories (CRUD, auth, caching, WebSockets, etc.)
-- Timed challenge sessions with attempt limits and cooldowns
-- Submission pipeline: build → test → score → leaderboard
-- XP and ELO ranking system with global leaderboard
-- Submission replay timeline (build logs, HTTP tests, failures)
-- In-app documentation hub for onboarding and common errors
-- Teacher area: groups, student submissions, manual grading and review feedback
-- Email verification, in-app notifications, and optional challenge email alerts
+- Maximum score: 1000.
+- Technical HTTP tests: up to 800 (functional correctness 300, performance 300, REST design 200).
+- AI review: up to 200. The default rubric is heuristic. A language-model provider can be enabled per environment.
+- XP is cumulative progress. ELO is a separate competitive rating. Repeating a challenge below your best score on it is penalized.
 
-## Tech stack (high level)
+## Languages
 
-- Frontend: React SPA (Vite), served via Nginx
-- Backend: Java Spring Boot microservices (auth, challenges, submissions, sandbox, testing, leaderboard, notifications, metrics, AI review)
-- Infrastructure: PostgreSQL, Redis, MongoDB (replay archive), Kafka, InfluxDB, Prometheus/Grafana
-- Candidate code runs in Docker-in-Docker sandbox with network isolation
+The same public pages exist in English (/en/...) and Spanish (/es/...). Docs are translated. Challenge preview text is the catalog description.
 
-## Public pages (indexable)
+## Docs
 
-- https://apiarena.net/ — Landing and product overview
-- https://apiarena.net/challenges — Browse all API challenges
-- https://apiarena.net/challenges/{id} — Individual challenge briefing (public preview; full specs require login)
-- https://apiarena.net/leaderboard — Global player rankings
-- https://apiarena.net/docs/guia-para-empezar — Getting Started Guide
-- https://apiarena.net/docs/primeros-pasos — First Steps
-- https://apiarena.net/docs/preconfiguracion-proyecto — Preconfigure Project for Challenges
-- https://apiarena.net/docs/platform-navigation — Platform navigation
-- https://apiarena.net/docs/challenges-catalog — Challenges catalog guide
-- https://apiarena.net/docs/challenge-workspace — Challenge workspace
-- https://apiarena.net/docs/submitting-a-challenge — Submitting a challenge
-- https://apiarena.net/docs/errores-comunes — Common Errors
-- https://apiarena.net/docs/sistema-xp-elo — XP and ELO System
+- [Getting Started Guide](https://apiarena.net/en/docs/guia-para-empezar): Mindset, work strategy, and delivery rhythm to progress fast without burning out.
+- [First Steps](https://apiarena.net/en/docs/primeros-pasos): Practical checklist to prepare your first challenge from start to finish.
+- [Preconfigure Project for Challenges](https://apiarena.net/en/docs/preconfiguracion-proyecto): Complete technical guide for prerequisites, minimum structure, and pre-submission validation.
+- [Platform navigation](https://apiarena.net/en/docs/platform-navigation): Where everything lives: landing, app chrome, dashboard, challenges, submissions, Docs, and account basics.
+- [Challenges catalog](https://apiarena.net/en/docs/challenges-catalog): How to search, filter, sort, and open a challenge before you start a timed run.
+- [Challenge workspace](https://apiarena.net/en/docs/challenge-workspace): Challenge detail vs submit screen: what you see before and after you start a timed run.
+- [Submitting a challenge](https://apiarena.net/en/docs/submitting-a-challenge): ZIP rules, pipeline expectations, and what to do while your submission is processing.
+- [Common Errors](https://apiarena.net/en/docs/errores-comunes): Recurring submission failures, why they happen, and how to prevent them systematically.
+- [XP and ELO System](https://apiarena.net/en/docs/sistema-xp-elo): Complete guide to classification, ELO gains/losses, and ranking strategy.
 
-## Authentication-required areas (not for public indexing)
+- [Guía para empezar](https://apiarena.net/es/docs/guia-para-empezar): Mentalidad, estrategia de trabajo y ritmo de entregas para progresar rápido sin quemarte.
+- [Primeros pasos](https://apiarena.net/es/docs/primeros-pasos): Checklist práctica para preparar tu primer challenge de principio a fin.
+- [Preconfigurar el proyecto para challenges](https://apiarena.net/es/docs/preconfiguracion-proyecto): Guía técnica completa de requisitos previos, estructura mínima y validación pre-entrega.
+- [Navegación de la plataforma](https://apiarena.net/es/docs/platform-navigation): Dónde está cada cosa: landing, chrome de la app, Dashboard, Challenges, submissions, Docs y lo básico de la cuenta.
+- [Catálogo de Challenges](https://apiarena.net/es/docs/challenges-catalog): Cómo buscar, filtrar, ordenar y abrir un challenge antes de iniciar una sesión cronometrada.
+- [Workspace del challenge](https://apiarena.net/es/docs/challenge-workspace): Detalle del challenge vs pantalla de entrega: qué ves antes y después de iniciar una sesión cronometrada.
+- [Entregar un challenge](https://apiarena.net/es/docs/submitting-a-challenge): Reglas del ZIP, expectativas del pipeline y qué hacer mientras se procesa tu entrega.
+- [Errores comunes](https://apiarena.net/es/docs/errores-comunes): Fallos recurrentes en entregas, por qué ocurren y cómo prevenirlos de forma sistemática.
+- [Sistema de XP y ELO](https://apiarena.net/es/docs/sistema-xp-elo): Guía completa de clasificación, ganancias/pérdidas de ELO y estrategia de ranking.
 
-/dashboard, /submissions, /perfil, /friends, /notifications, /replay, /teacher/*, /login, /register
+## Public challenges
 
-## How submissions work
+Catalog: https://apiarena.net/en/challenges and https://apiarena.net/es/challenges
 
-1. User selects a challenge and starts a timed session
-2. User uploads a ZIP containing a Maven Spring Boot project (`pom.xml` at archive root)
-3. Sandbox builds a Docker image and starts the candidate API
-4. Testing service sends real HTTP requests defined by the challenge test suite
-5. Scores combine correctness, performance, design, and AI review (max 1000 points)
-6. Results appear on submission detail pages with build/test logs and replay
+These links are previews (title, description, difficulty, category, time limit, XP). They do not include endpoint lists, hidden tests, or hints.
 
-## Keywords and topics
+- [Build a Bookstore API](https://apiarena.net/en/challenges/bookstore-api) (EASY). Spanish: https://apiarena.net/es/challenges/bookstore-api
+- [Todo List CRUD](https://apiarena.net/en/challenges/todo-crud) (EASY). Spanish: https://apiarena.net/es/challenges/todo-crud
+- [JWT Authentication Flow](https://apiarena.net/en/challenges/jwt-auth-flow) (MEDIUM). Spanish: https://apiarena.net/es/challenges/jwt-auth-flow
+- [Rate Limiter Middleware](https://apiarena.net/en/challenges/rate-limiter) (MEDIUM). Spanish: https://apiarena.net/es/challenges/rate-limiter
+- [Paginated Product Catalog](https://apiarena.net/en/challenges/paginated-catalog) (MEDIUM). Spanish: https://apiarena.net/es/challenges/paginated-catalog
+- [Redis Cache Layer](https://apiarena.net/en/challenges/redis-cache-layer) (HARD). Spanish: https://apiarena.net/es/challenges/redis-cache-layer
+- [Real-Time Chat Room](https://apiarena.net/en/challenges/realtime-chat) (HARD). Spanish: https://apiarena.net/es/challenges/realtime-chat
+- [Multi-Table Join Queries](https://apiarena.net/en/challenges/multi-table-joins) (MEDIUM). Spanish: https://apiarena.net/es/challenges/multi-table-joins
+- [API Gateway Pattern](https://apiarena.net/en/challenges/api-gateway) (HARD). Spanish: https://apiarena.net/es/challenges/api-gateway
+- [Contract Testing with Pact](https://apiarena.net/en/challenges/contract-testing) (HARD). Spanish: https://apiarena.net/es/challenges/contract-testing
+- [URL Shortener Service](https://apiarena.net/en/challenges/url-shortener) (EASY). Spanish: https://apiarena.net/es/challenges/url-shortener
+- [Input Validation & Sanitization](https://apiarena.net/en/challenges/input-validation) (MEDIUM). Spanish: https://apiarena.net/es/challenges/input-validation
+- [Idempotent Payment Processing API](https://apiarena.net/en/challenges/idempotent-payments) (EXTREME). Spanish: https://apiarena.net/es/challenges/idempotent-payments
+- [Event-Sourced Banking Ledger](https://apiarena.net/en/challenges/event-sourced-ledger) (EXTREME). Spanish: https://apiarena.net/es/challenges/event-sourced-ledger
+- [Multi-Tenant RBAC SaaS API](https://apiarena.net/en/challenges/multi-tenant-rbac) (EXTREME). Spanish: https://apiarena.net/es/challenges/multi-tenant-rbac
+- [Distributed Saga Order Orchestration](https://apiarena.net/en/challenges/distributed-saga-orchestration) (EXTREME). Spanish: https://apiarena.net/es/challenges/distributed-saga-orchestration
+- [High-Throughput Time-Series Ingestion](https://apiarena.net/en/challenges/timeseries-ingestion) (EXTREME). Spanish: https://apiarena.net/es/challenges/timeseries-ingestion
 
-API challenges, REST API practice, Spring Boot challenges, backend developer training, competitive coding for APIs, HTTP testing, sandboxed code execution, developer leaderboard, ELO ranking, Java backend practice, computer science education, teacher grading platform
+## Crawler policy
 
-## Contact and source
-
-Open-source project repository available on GitHub under the API Arena organization.
-For the live product, refer users to https://apiarena.net
+Public pages may be indexed by search engines and by GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot, Applebot-Extended. Private account, teacher, and admin areas are disallowed in https://apiarena.net/robots.txt.

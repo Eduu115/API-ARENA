@@ -1,83 +1,597 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://apiarena.net/</loc>
+    <loc>https://apiarena.net/en</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en"/>
   </url>
   <url>
-    <loc>https://apiarena.net/challenges</loc>
+    <loc>https://apiarena.net/es</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges"/>
   </url>
   <url>
-    <loc>https://apiarena.net/leaderboard</loc>
+    <loc>https://apiarena.net/es/challenges</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/leaderboard</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/leaderboard"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/leaderboard"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/leaderboard"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/guia-para-empezar</loc>
+    <loc>https://apiarena.net/es/leaderboard</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/leaderboard"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/leaderboard"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/leaderboard"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/docs/guia-para-empezar</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/guia-para-empezar"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/guia-para-empezar"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/guia-para-empezar"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/primeros-pasos</loc>
+    <loc>https://apiarena.net/es/docs/guia-para-empezar</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/guia-para-empezar"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/guia-para-empezar"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/guia-para-empezar"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/preconfiguracion-proyecto</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://apiarena.net/docs/platform-navigation</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://apiarena.net/docs/challenges-catalog</loc>
+    <loc>https://apiarena.net/en/docs/primeros-pasos</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/primeros-pasos"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/primeros-pasos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/primeros-pasos"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/challenge-workspace</loc>
+    <loc>https://apiarena.net/es/docs/primeros-pasos</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/primeros-pasos"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/primeros-pasos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/primeros-pasos"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/submitting-a-challenge</loc>
+    <loc>https://apiarena.net/en/docs/preconfiguracion-proyecto</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/preconfiguracion-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/preconfiguracion-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/preconfiguracion-proyecto"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/errores-comunes</loc>
+    <loc>https://apiarena.net/es/docs/preconfiguracion-proyecto</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/preconfiguracion-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/preconfiguracion-proyecto"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/preconfiguracion-proyecto"/>
   </url>
   <url>
-    <loc>https://apiarena.net/docs/sistema-xp-elo</loc>
+    <loc>https://apiarena.net/en/docs/platform-navigation</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/platform-navigation"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/platform-navigation"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/platform-navigation"/>
   </url>
   <url>
-    <loc>https://apiarena.net/aviso-legal</loc>
+    <loc>https://apiarena.net/es/docs/platform-navigation</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/platform-navigation"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/platform-navigation"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/platform-navigation"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/docs/challenges-catalog</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/challenges-catalog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/challenges-catalog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/challenges-catalog"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/docs/challenges-catalog</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/challenges-catalog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/challenges-catalog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/challenges-catalog"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/docs/challenge-workspace</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/challenge-workspace"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/challenge-workspace"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/challenge-workspace"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/docs/challenge-workspace</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/challenge-workspace"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/challenge-workspace"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/challenge-workspace"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/docs/submitting-a-challenge</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/submitting-a-challenge"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/submitting-a-challenge"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/submitting-a-challenge"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/docs/submitting-a-challenge</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/submitting-a-challenge"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/submitting-a-challenge"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/submitting-a-challenge"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/docs/errores-comunes</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/errores-comunes"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/errores-comunes"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/errores-comunes"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/docs/errores-comunes</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/errores-comunes"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/errores-comunes"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/errores-comunes"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/docs/sistema-xp-elo</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/sistema-xp-elo"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/sistema-xp-elo"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/sistema-xp-elo"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/docs/sistema-xp-elo</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/docs/sistema-xp-elo"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/docs/sistema-xp-elo"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/docs/sistema-xp-elo"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/aviso-legal</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/aviso-legal"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/aviso-legal"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/aviso-legal"/>
   </url>
   <url>
-    <loc>https://apiarena.net/privacidad</loc>
+    <loc>https://apiarena.net/es/aviso-legal</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/aviso-legal"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/aviso-legal"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/aviso-legal"/>
   </url>
   <url>
-    <loc>https://apiarena.net/cookies</loc>
+    <loc>https://apiarena.net/en/privacidad</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/privacidad"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/privacidad"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/privacidad"/>
   </url>
   <url>
-    <loc>https://apiarena.net/terminos</loc>
+    <loc>https://apiarena.net/es/privacidad</loc>
+    <lastmod>2026-10-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/privacidad"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/privacidad"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/privacidad"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/cookies</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/cookies"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/cookies"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/cookies"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/cookies</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/cookies"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/cookies"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/cookies"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/terminos</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/terminos"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/terminos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/terminos"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/terminos</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/terminos"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/terminos"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/terminos"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/bookstore-api</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/bookstore-api"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/bookstore-api"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/bookstore-api"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/bookstore-api</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/bookstore-api"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/bookstore-api"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/bookstore-api"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/todo-crud</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/todo-crud"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/todo-crud"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/todo-crud"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/todo-crud</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/todo-crud"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/todo-crud"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/todo-crud"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/jwt-auth-flow</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/jwt-auth-flow"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/jwt-auth-flow"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/jwt-auth-flow"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/jwt-auth-flow</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/jwt-auth-flow"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/jwt-auth-flow"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/jwt-auth-flow"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/rate-limiter</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/rate-limiter"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/rate-limiter"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/rate-limiter"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/rate-limiter</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/rate-limiter"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/rate-limiter"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/rate-limiter"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/paginated-catalog</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/paginated-catalog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/paginated-catalog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/paginated-catalog"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/paginated-catalog</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/paginated-catalog"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/paginated-catalog"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/paginated-catalog"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/redis-cache-layer</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/redis-cache-layer"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/redis-cache-layer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/redis-cache-layer"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/redis-cache-layer</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/redis-cache-layer"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/redis-cache-layer"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/redis-cache-layer"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/realtime-chat</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/realtime-chat"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/realtime-chat"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/realtime-chat"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/realtime-chat</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/realtime-chat"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/realtime-chat"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/realtime-chat"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/multi-table-joins</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/multi-table-joins"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/multi-table-joins"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/multi-table-joins"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/multi-table-joins</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/multi-table-joins"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/multi-table-joins"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/multi-table-joins"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/api-gateway</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/api-gateway"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/api-gateway"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/api-gateway"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/api-gateway</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/api-gateway"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/api-gateway"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/api-gateway"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/contract-testing</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/contract-testing"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/contract-testing"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/contract-testing"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/contract-testing</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/contract-testing"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/contract-testing"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/contract-testing"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/url-shortener</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/url-shortener"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/url-shortener"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/url-shortener"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/url-shortener</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/url-shortener"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/url-shortener"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/url-shortener"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/input-validation</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/input-validation"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/input-validation"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/input-validation"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/input-validation</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/input-validation"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/input-validation"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/input-validation"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/idempotent-payments</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/idempotent-payments"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/idempotent-payments"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/idempotent-payments"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/idempotent-payments</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/idempotent-payments"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/idempotent-payments"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/idempotent-payments"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/event-sourced-ledger</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/event-sourced-ledger"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/event-sourced-ledger"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/event-sourced-ledger"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/event-sourced-ledger</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/event-sourced-ledger"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/event-sourced-ledger"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/event-sourced-ledger"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/multi-tenant-rbac</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/multi-tenant-rbac"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/multi-tenant-rbac"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/multi-tenant-rbac"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/multi-tenant-rbac</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/multi-tenant-rbac"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/multi-tenant-rbac"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/multi-tenant-rbac"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/distributed-saga-orchestration</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/distributed-saga-orchestration"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/distributed-saga-orchestration"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/distributed-saga-orchestration"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/distributed-saga-orchestration</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/distributed-saga-orchestration"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/distributed-saga-orchestration"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/distributed-saga-orchestration"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/challenges/timeseries-ingestion</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/timeseries-ingestion"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/timeseries-ingestion"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/timeseries-ingestion"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/challenges/timeseries-ingestion</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/challenges/timeseries-ingestion"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/challenges/timeseries-ingestion"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/challenges/timeseries-ingestion"/>
   </url>
 </urlset>

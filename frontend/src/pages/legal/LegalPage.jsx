@@ -3,6 +3,8 @@ import { LEGAL_DOCS, LEGAL_NAV, CONTROLLER } from "./legalContent";
 import { usePageMeta } from "../../lib/usePageMeta";
 import { openConsentManager } from "../../lib/cookieConsent";
 import { stripLocalePathname } from "../../lib/localeRoutes";
+import { legalHead } from "../../seo/legalMeta";
+import { useAppLocale } from "../../routes/LocaleLayout";
 import LocaleLink from "../../components/LocaleLink";
 import "../challenges/challenges.css";
 import "./legal.css";
@@ -32,9 +34,12 @@ export default function LegalPage() {
   const slug = stripLocalePathname(location.pathname).replace(/^\/+/, "").split("/")[0];
   const doc = LEGAL_DOCS[slug];
 
+  const { locale } = useAppLocale();
+  const head = legalHead(slug, locale, doc);
+
   usePageMeta({
-    title: doc ? doc.title : "Legal",
-    description: doc?.intro,
+    title: head.title,
+    description: head.description,
     path: `/${slug}`,
   });
 

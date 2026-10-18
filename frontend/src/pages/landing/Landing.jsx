@@ -5,12 +5,14 @@ import SlashDivider from '../../components/landing/SlashDivider';
 import HeroSection from './sections/HeroSection';
 import TickerSection from './sections/TickerSection';
 import AboutSection from './sections/AboutSection';
+import CiteSection from './sections/CiteSection';
 import HowItWorksSection from './sections/HowItWorksSection';
 import FeaturesSection from './sections/FeaturesSection';
 import LeaderboardSection from './sections/LeaderboardSection';
 import CtaSection from './sections/CtaSection';
 import LandingFooter from './sections/LandingFooter';
 import { usePageMeta } from '../../lib/usePageMeta';
+import { homeGraph } from '../../seo/site';
 import './landing.css';
 
 function useLandingCursor() {
@@ -69,10 +71,14 @@ function useLandingCursor() {
 
 export default function Landing() {
   useLandingCursor();
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
+  const locale = i18n.language?.startsWith('es') ? 'es' : 'en';
+  const faqs = t('cite.faq', { returnObjects: true });
   usePageMeta({
+    title: t('meta.title'),
     description: t('meta.description'),
     path: '/',
+    jsonLd: homeGraph(locale, faqs),
   });
 
   return (
@@ -84,6 +90,7 @@ export default function Landing() {
       <HeroSection />
       <TickerSection />
       <AboutSection />
+      <CiteSection />
       <SlashDivider />
       <HowItWorksSection />
       <FeaturesSection />

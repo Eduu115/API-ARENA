@@ -1,6 +1,33 @@
 {
   "meta": {
-    "description": "API Arena es una plataforma competitiva donde desarrollas APIs Spring Boot reales, las puntúan builds y tests HTTP reales, y subes en rankings de XP y ELO."
+    "title": "Compite. Construye. Conquista.",
+    "description": "API Arena es una plataforma competitiva y gratuita donde estudiantes y desarrolladores envían APIs Spring Boot reales en un ZIP, un sandbox aislado las ejecuta y compiten por XP y ELO. La nota máxima es 1000: hasta 800 de tests HTTP y hasta 200 de revisión con IA."
+  },
+  "cite": {
+    "label": "Referencia",
+    "title": "Respuestas claras",
+    "faq": [
+      {
+        "q": "¿Qué es API Arena?",
+        "a": "API Arena es una plataforma competitiva y gratuita para estudiantes, desarrolladores autodidactas de backend y profesores. Eliges un challenge, construyes una API REST real con Spring Boot y subes el proyecto en un ZIP. Un sandbox aislado compila y ejecuta esa API, y tests HTTP reales la puntúan. Es práctica medida, no un curso de diapositivas."
+      },
+      {
+        "q": "¿Cómo funciona la puntuación?",
+        "a": "Cada entrega se puntúa sobre 1000. Hasta 800 puntos salen de tests HTTP técnicos contra la API en ejecución: corrección funcional (300), rendimiento (300) y diseño REST (200). Hasta 200 puntos salen de una revisión con IA. La rúbrica por defecto es heurística, y un proveedor de modelo de lenguaje se puede activar por entorno. La XP mide el progreso acumulado. El ELO es un rating competitivo aparte, que sube o baja frente a la nota esperada para tu rating y la dificultad del challenge. Volver a enviar por debajo de tu mejor nota en ese challenge penaliza."
+      },
+      {
+        "q": "¿Cómo empiezo?",
+        "a": "Crea una cuenta gratuita y abre el catálogo de challenges. Lee la vista previa pública, inicia sesión y arranca una sesión cronometrada para ver los requisitos completos. Empaqueta un proyecto Maven con pom.xml en la raíz del ZIP y súbelo. El pipeline compila el proyecto en un sandbox, llama a la API por HTTP, guarda la nota y actualiza el ranking. El centro de docs explica la primera entrega paso a paso."
+      },
+      {
+        "q": "¿Qué muestra la página pública de un challenge?",
+        "a": "La página pública de un challenge es solo una vista previa: título, descripción, dificultad, categoría, tiempo límite y recompensa de XP. Las listas de endpoints, los tests ocultos y las pistas no están en esa página. Aparecen después de iniciar sesión y empezar una sesión cronometrada."
+      },
+      {
+        "q": "¿Para quién es API Arena?",
+        "a": "API Arena es para estudiantes que aprenden APIs backend, desarrolladores que quieren práctica medida y profesores que agrupan alumnos y revisan sus entregas."
+      }
+    ]
   },
   "alphaAria": "API Arena está en alpha — acceso anticipado",
   "alphaTitle": "Alpha",
@@ -41,7 +68,7 @@
     "title1": "No es un",
     "title2": "curso.",
     "titleEm": "Es una batalla.",
-    "desc": "Construye una API que resuelva el challenge. Envía tu código.<br/>Nuestro sistema la ejecuta en un sandbox aislado y la <1>somete a tests automáticos</1>, análisis de rendimiento, validación REST y una pasada de revisión heurística (revisión LLM próximamente).<br/><br/>Tu nota entra en el ranking. <2>En tiempo real.</2><br/>Mejora, vuelve a enviar y sube posiciones.",
+    "desc": "Construye una API que resuelva el challenge. Envía tu código.<br/>Nuestro sistema la ejecuta en un sandbox aislado y la <1>somete a tests automáticos</1>, análisis de rendimiento, validación REST y una revisión con IA puntuada sobre 200.<br/><br/>Tu nota entra en el ranking. <2>En tiempo real.</2><br/>Mejora, vuelve a enviar y sube posiciones.",
     "metricsHeading": "Rúbrica de puntuación (máx. 1.000 por entrega)",
     "metricsExampleNote": "Las barras muestran los techos de puntos — no una nota de ejemplo. Los tests HTTP y la revisión de código se puntúan en bloques separados.",
     "scoreHttpGroup": "HTTP · tests en sandbox",
@@ -49,8 +76,8 @@
     "scoreHttpItems": ["Tests funcionales", "Rendimiento", "Diseño REST"],
     "scoreReviewGroup": "Revisión de código",
     "scoreReviewCap": "máx. 200",
-    "scoreReviewItem": "Rúbrica heurística",
-    "scoreReviewMode": "Heurística automática hoy · revisión LLM próximamente",
+    "scoreReviewItem": "Revisión con IA",
+    "scoreReviewMode": "Heurística por defecto · LLM si se configura",
     "scoreEquation": "800 + 200 =",
     "tags": [
       { "label": "APIs REST", "active": false },
@@ -69,7 +96,7 @@
         "num": "01",
         "title1": "Elige",
         "title2": "el challenge",
-        "desc": "Explora challenges por dificultad. CRUD, Auth, Rendimiento, Diseño. Cada uno incluye especificación de API y tests ocultos."
+        "desc": "Explora challenges de Easy a Extreme. La página pública es una vista previa. La especificación de la API y los tests ocultos se abren al iniciar una sesión cronometrada."
       },
       {
         "num": "02",
@@ -81,7 +108,7 @@
         "num": "03",
         "title1": "Sandbox",
         "title2": "y tests",
-        "desc": "Tu API corre en un contenedor aislado. Tests automáticos, análisis de rendimiento a 1000 RPS, validación REST y revisión heurística (revisión LLM próximamente)."
+        "desc": "Tu API corre en un contenedor aislado. Los tests HTTP puntúan comportamiento funcional, rendimiento y diseño REST, hasta 800 puntos. Una revisión con IA suma hasta 200. La XP y el ELO se actualizan con ese resultado."
       },
       {
         "num": "04",
@@ -97,8 +124,8 @@
     "title2": "importan.",
     "aside": "Evaluación multidimensional. No solo importa que tu API funcione — importa qué tan bien lo hace.",
     "comingSoon": "Próximamente",
-    "heuristicLive": "Heurística activa",
-    "llmReviewSoon": "Revisión LLM pronto",
+    "heuristicLive": "Heurística por defecto",
+    "llmReviewSoon": "LLM si se configura",
     "items": [
       {
         "num": "01",
@@ -114,7 +141,7 @@
       {
         "num": "02",
         "title": "Revisión IA",
-        "desc": "Una rúbrica heurística puntúa estructura, señales de seguridad e higiene de API en cada entrega (0–200 hoy). La revisión con proveedor LLM llegará pronto.",
+        "desc": "Una revisión con IA puntúa la entrega sobre 200, además de los 800 puntos de tests HTTP. La rúbrica por defecto es heurística; un proveedor de modelo de lenguaje se puede activar por entorno.",
         "badges": [
           { "labelKey": "heuristicLive", "color": "warn" },
           { "labelKey": "llmReviewSoon", "color": "purple" }
@@ -200,7 +227,7 @@
       { "type": "output", "text": "→ Análisis de diseño REST..." },
       { "type": "info", "text": "[i] 2 sugerencias - Nota: 94/100" },
       { "type": "output", "text": "→ Revisión heurística de código..." },
-      { "type": "success", "text": "[OK] Rúbrica OK · 190/200 (LLM pronto)" },
+      { "type": "success", "text": "[OK] Revisión IA · 190/200" },
       { "type": "sep" }
     ],
     "scoreHttpGroup": "// tests HTTP",
