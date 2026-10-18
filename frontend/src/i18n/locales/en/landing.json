@@ -1,6 +1,33 @@
 {
   "meta": {
-    "description": "API Arena is a competitive platform where developers ship real Spring Boot APIs, get scored by real builds and HTTP tests, and climb XP and ELO rankings."
+    "title": "Compete. Build. Conquer.",
+    "description": "API Arena is a free competitive platform where students and developers ship real Spring Boot APIs as a ZIP, get them built in an isolated sandbox, and climb XP and ELO rankings. Submissions are scored out of 1000: up to 800 from HTTP tests and up to 200 from an AI review."
+  },
+  "cite": {
+    "label": "Reference",
+    "title": "Plain answers",
+    "faq": [
+      {
+        "q": "What is API Arena?",
+        "a": "API Arena is a free competitive platform for students, self-taught backend developers, and teachers. You choose a challenge, build a real Spring Boot REST API, and upload the project as a ZIP. An isolated sandbox builds and runs that API, then real HTTP tests score it. It is measured practice, not a slide-only course."
+      },
+      {
+        "q": "How does scoring work?",
+        "a": "Each submission is scored out of 1000. Up to 800 points come from technical HTTP tests against the running API: functional correctness (300), performance (300), and REST design (200). Up to 200 points come from an AI review. The default review rubric is heuristic, and a language-model provider can be enabled per environment. XP tracks cumulative progress. ELO is a separate competitive rating that moves against the score expected for your rating and the challenge difficulty. Submitting again below your best score on that challenge is penalized."
+      },
+      {
+        "q": "How do I start?",
+        "a": "Create a free account and open the challenge catalog. Read the public preview, then sign in and start a timed session to see the full requirements. Zip a Maven project with pom.xml at the archive root and upload it. The pipeline builds the project in a sandbox, calls the API over HTTP, saves the score, and updates the leaderboard. The docs hub explains the first submission step by step."
+      },
+      {
+        "q": "What does a public challenge page show?",
+        "a": "A public challenge page is a preview only: title, description, difficulty, category, time limit, and XP reward. Endpoint lists, hidden tests, and hints are not on that page. They appear after you sign in and start a timed session."
+      },
+      {
+        "q": "Who is API Arena for?",
+        "a": "API Arena is for students learning backend APIs, developers who want measured practice, and teachers who group students and review their submissions."
+      }
+    ]
   },
   "alphaAria": "API Arena is in alpha — early access",
   "alphaTitle": "Alpha",
@@ -41,7 +68,7 @@
     "title1": "Not a",
     "title2": "course.",
     "titleEm": "It is a battle.",
-    "desc": "Build an API that solves the challenge. Submit your code.<br/>Our system runs it in an isolated sandbox and <1>stress-tests it with automated checks</1>, performance analysis, REST validation, and a heuristic code-review pass (LLM review coming soon).<br/><br/>Your score enters the leaderboard. <2>In real time.</2><br/>Improve, resubmit, and climb positions.",
+    "desc": "Build an API that solves the challenge. Submit your code.<br/>Our system runs it in an isolated sandbox and <1>stress-tests it with automated checks</1>, performance analysis, REST validation, and an AI review scored out of 200.<br/><br/>Your score enters the leaderboard. <2>In real time.</2><br/>Improve, resubmit, and climb positions.",
     "metricsHeading": "Score rubric (max 1,000 per submission)",
     "metricsExampleNote": "Bars show point caps — not a sample grade. HTTP tests and code review are scored in separate blocks.",
     "scoreHttpGroup": "HTTP · sandbox tests",
@@ -49,8 +76,8 @@
     "scoreHttpItems": ["Functional tests", "Performance", "REST design"],
     "scoreReviewGroup": "Code review",
     "scoreReviewCap": "max 200",
-    "scoreReviewItem": "Heuristic rubric",
-    "scoreReviewMode": "Automated heuristics today · LLM review coming soon",
+    "scoreReviewItem": "AI review",
+    "scoreReviewMode": "Heuristic by default · LLM when configured",
     "scoreEquation": "800 + 200 =",
     "tags": [
       { "label": "REST APIs", "active": false },
@@ -69,7 +96,7 @@
         "num": "01",
         "title1": "Pick",
         "title2": "the challenge",
-        "desc": "Explore challenges across difficulty levels. CRUD, Auth, Performance, Design. Each includes API specification and hidden tests."
+        "desc": "Browse challenges from Easy through Extreme. The public page is a preview. The API specification and hidden tests open when you start a timed session."
       },
       {
         "num": "02",
@@ -81,7 +108,7 @@
         "num": "03",
         "title1": "Sandbox",
         "title2": "& Tests",
-        "desc": "Your API runs in an isolated container. Automated tests, performance analysis with 1000 RPS, REST validation, and heuristic code review (LLM review coming soon)."
+        "desc": "Your API runs in an isolated container. HTTP tests score functional behavior, performance, and REST design, up to 800 points. An AI review adds up to 200. XP and ELO update from that result."
       },
       {
         "num": "04",
@@ -97,8 +124,8 @@
     "title2": "matter.",
     "aside": "Multidimensional evaluation. It is not only whether your API works - it is how well it works.",
     "comingSoon": "Coming soon",
-    "heuristicLive": "Heuristic live",
-    "llmReviewSoon": "LLM review soon",
+    "heuristicLive": "Heuristic default",
+    "llmReviewSoon": "LLM when configured",
     "items": [
       {
         "num": "01",
@@ -114,7 +141,7 @@
       {
         "num": "02",
         "title": "AI Review",
-        "desc": "A heuristic rubric scores structure, safety signals, and API hygiene on every submission (0–200 today). Provider-based LLM review is coming soon.",
+        "desc": "An AI review scores the submission out of 200, on top of the 800-point HTTP tests. The default rubric is heuristic; a language-model provider can be enabled per environment.",
         "badges": [
           { "labelKey": "heuristicLive", "color": "warn" },
           { "labelKey": "llmReviewSoon", "color": "purple" }
@@ -200,7 +227,7 @@
       { "type": "output", "text": "→ REST design analysis..." },
       { "type": "info", "text": "[i] 2 suggestions - Score: 94/100" },
       { "type": "output", "text": "→ Heuristic code review..." },
-      { "type": "success", "text": "[OK] Rubric pass · 190/200 (LLM review soon)" },
+      { "type": "success", "text": "[OK] AI review · 190/200" },
       { "type": "sep" }
     ],
     "scoreHttpGroup": "// HTTP tests",

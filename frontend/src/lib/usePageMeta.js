@@ -1,9 +1,7 @@
 import { useEffect } from "react";
 import i18n from "../i18n/index.js";
-import { localePath } from "./localeRoutes.js";
-
-const SITE_NAME = "API Arena";
-const SITE_URL = "https://apiarena.net";
+import { useAppLocale } from "../routes/LocaleLayout.jsx";
+import { buildHeadMeta, graph, siteNodes } from "../seo/site.js";
 
 function upsertMeta(attr, key, content) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -40,31 +38,43 @@ function clearHreflangAlternates() {
   document.head.querySelectorAll('link[rel="alternate"][hreflang]').forEach((el) => el.remove());
 }
 
-/**
- * Per-route SEO meta for public pages (SPA — crawlers that execute JS pick these up).
- * `path` should start with "/" without locale prefix (e.g. "/challenges").
- */
-export function usePageMeta({ title, description, path = "/", locale = "en" } = {}) {
-  useEffect(() => {
-    const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Compete. Build. Conquer.`;
-    document.title = fullTitle;
-    if (description) {
-      upsertMeta("name", "description", description);
-      upsertMeta("property", "og:description", description);
-    }
-    upsertMeta("property", "og:title", fullTitle);
+function upsertJsonLd(data) {
+  let el = document.getElementById("seo-jsonld");
+  if (!el) {
+    el = document.createElement("script");
+    el.id = "seo-jsonld";
+    el.type = "application/ld+json";
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(data);
+}
 
-    const loc = (locale || i18n.language)?.startsWith("es") ? "es" : "en";
-    const logicalPath = path === "/" ? "/" : path.startsWith("/") ? path : `/${path}`;
-    const url = `${SITE_URL}${localePath(loc, logicalPath)}`;
-    upsertMeta("property", "og:url", url);
-    upsertMeta("property", "og:locale", loc === "es" ? "es_ES" : "en_US");
-    upsertMeta("property", "og:locale:alternate", loc === "es" ? "en_US" : "es_ES");
-    upsertCanonical(url);
+/**
+ * Per-route SEO meta. `path` is the logical path without a locale prefix.
+ * Canonical and hreflang follow the URL locale (`/en` and `/es`), not a hardcoded default.
+ */
+export function usePageMeta({ title, description, path = "/", locale, jsonLd = null } = {}) {
+  const { locale: routeLocale } = useAppLocale();
+  const lang = (locale || routeLocale || i18n.language || "en").startsWith("es") ? "es" : "en";
+  const jsonLdJson = jsonLd ? JSON.stringify(jsonLd) : "";
+
+  useEffect(() => {
+    const meta = buildHeadMeta({ title, description, path, locale: lang });
+    document.title = meta.title;
+    document.documentElement.lang = meta.htmlLang;
+    if (meta.description) upsertMeta("name", "description", meta.description);
+    upsertMeta("name", "robots", meta.robots);
+    upsertCanonical(meta.canonical);
 
     clearHreflangAlternates();
-    upsertHreflang("en", `${SITE_URL}${localePath("en", logicalPath)}`);
-    upsertHreflang("es", `${SITE_URL}${localePath("es", logicalPath)}`);
-    upsertHreflang("x-default", `${SITE_URL}${localePath("en", logicalPath)}`);
-  }, [title, description, path, locale]);
+    Object.entries(meta.hreflang).forEach(([hreflang, href]) => upsertHreflang(hreflang, href));
+    Object.entries(meta.openGraph).forEach(([key, value]) => {
+      if (value) upsertMeta("property", key, value);
+    });
+    Object.entries(meta.twitter).forEach(([key, value]) => {
+      if (value) upsertMeta("name", key, value);
+    });
+
+    upsertJsonLd(jsonLdJson ? JSON.parse(jsonLdJson) : graph(siteNodes(lang)));
+  }, [title, description, path, lang, jsonLdJson]);
 }

@@ -23,6 +23,20 @@ export const DOCS_UI = {
     helpfulVotes: 'Helpful votes:',
     usefulnessRate: 'Usefulness rate:',
     noFeedback: 'No feedback data yet.',
+    faq: [
+      {
+        q: 'What should I read first?',
+        a: 'Start with Getting Started, then First Steps, then Preconfigure Project, before you open a hard challenge.',
+      },
+      {
+        q: 'When do I see the full challenge specification?',
+        a: 'The public challenge page is a preview. Endpoints and hidden tests are shown on the submit screen after you sign in and start a timed run.',
+      },
+      {
+        q: 'What does a submission have to contain?',
+        a: 'A ZIP of a Maven Spring Boot project with pom.xml at the archive root. The sandbox builds that project and the testing service calls the running API over HTTP.',
+      },
+    ],
     nextCta: {
       gettingStartedToFirstSteps: 'Go to First Steps',
       firstStepsToPreconfig: 'Continue to Preconfigure Project',
@@ -51,6 +65,20 @@ export const DOCS_UI = {
     helpfulVotes: 'Votos útiles:',
     usefulnessRate: 'Tasa de utilidad:',
     noFeedback: 'Aún no hay datos de feedback.',
+    faq: [
+      {
+        q: '¿Qué leo primero?',
+        a: 'Empieza por Guía para empezar, sigue con Primeros pasos y luego Preconfigurar el proyecto, antes de abrir un challenge difícil.',
+      },
+      {
+        q: '¿Cuándo veo la especificación completa del challenge?',
+        a: 'La página pública del challenge es una vista previa. Los endpoints y los tests ocultos se muestran en la pantalla de entrega después de iniciar sesión y empezar una sesión cronometrada.',
+      },
+      {
+        q: '¿Qué tiene que contener una entrega?',
+        a: 'Un ZIP de un proyecto Maven Spring Boot con pom.xml en la raíz del archivo. El sandbox compila ese proyecto y el servicio de tests llama a la API en ejecución por HTTP.',
+      },
+    ],
     nextCta: {
       gettingStartedToFirstSteps: 'Ir a Primeros pasos',
       firstStepsToPreconfig: 'Continuar a Preconfigurar proyecto',

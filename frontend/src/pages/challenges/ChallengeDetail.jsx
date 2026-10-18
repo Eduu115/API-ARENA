@@ -17,6 +17,8 @@ import TutorialTour from '../../components/tutorial/TutorialTour';
 import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
 import { useTourSteps } from '../../lib/tourSteps';
 import { usePageMeta } from '../../lib/usePageMeta';
+import SeoBreadcrumb from '../../components/SeoBreadcrumb';
+import { challengePreviewGraph, metaDescription } from '../../seo/site';
 
 export default function ChallengeDetail() {
   const { t, i18n } = useTranslation('challenges');
@@ -47,15 +49,27 @@ export default function ChallengeDetail() {
   }, [attemptPolicy]);
 
   const bannerMsLeft = useMsUntilIso(policyBlocks ? blockTargetIso : null);
+  const locale = i18n.language?.startsWith('es') ? 'es' : 'en';
+  const previewPath = `/challenges/${challenge?.slug || id}`;
+  const previewTitle = challenge?.title
+    ? `${challenge.title} ${t('detail.pageTitleSuffix')}`
+    : t('detail.pageTitleChallenge');
+  const previewDescription = metaDescription(
+    challenge?.description || t('detail.pageDescription'),
+  );
 
   usePageMeta({
-    title: challenge?.title
-      ? `${challenge.title} ${t('detail.pageTitleSuffix')}`
-      : t('detail.pageTitleChallenge'),
-    description: challenge?.description
-      ? String(challenge.description).slice(0, 158)
-      : t('detail.pageDescription'),
-    path: `/challenges/${id}`,
+    title: previewTitle,
+    description: previewDescription,
+    path: previewPath,
+    jsonLd: challengePreviewGraph(locale, {
+      homeName: t('breadcrumb.home'),
+      challengesName: t('breadcrumb.challenges'),
+      title: challenge?.title || t('detail.pageTitleChallenge'),
+      description: challenge?.description || previewDescription,
+      slug: challenge?.slug || id,
+      difficulty: challenge?.difficulty,
+    }),
   });
 
   const handleStartChallenge = () => {
@@ -78,7 +92,9 @@ export default function ChallengeDetail() {
       setLoading(true);
       setError(null);
       try {
-        const data = await challengesApi.getChallengePreview(id);
+        const data = /^\d+$/.test(String(id))
+          ? await challengesApi.getChallengePreview(id)
+          : await challengesApi.getChallengePreviewBySlug(id);
         if (!cancelled) setChallenge(data);
       } catch (e) {
         if (!cancelled) setError(e?.message || t('detail.loadError'));
@@ -190,6 +206,14 @@ export default function ChallengeDetail() {
       <Topbar onMenuToggle={() => {}} sidebarOpen={false} showSidebarToggle={false} />
       <main className="chd-main">
         <div className="chd-container">
+          <SeoBreadcrumb
+            label={t('breadcrumb.aria')}
+            items={[
+              { name: t('breadcrumb.home'), to: '/' },
+              { name: t('breadcrumb.challenges'), to: '/challenges' },
+              { name: challenge.title },
+            ]}
+          />
           {isAuthenticated && !staffBypass && policyBlocks && bannerMsLeft != null && (
             <div className="chd-policy-banner" role="status">
               <div className="chd-policy-banner-title">
