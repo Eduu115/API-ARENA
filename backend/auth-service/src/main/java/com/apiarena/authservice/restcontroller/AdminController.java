@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.apiarena.authservice.model.dto.AdjustUserRequest;
 import com.apiarena.authservice.model.dto.AdminAuditRowDTO;
 import com.apiarena.authservice.model.dto.AdminMessageRequest;
+import com.apiarena.authservice.model.dto.AdminSetPasswordRequest;
 import com.apiarena.authservice.model.dto.AdminStatsDTO;
 import com.apiarena.authservice.model.dto.AdminUserDTO;
 import com.apiarena.authservice.model.dto.AuthResponse;
@@ -141,6 +142,24 @@ public class AdminController {
     public ResponseEntity<Void> forceLogout(@PathVariable Long id, Authentication auth) {
         adminService.forceLogout(id, auth.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize(MODERATION)
+    @PostMapping("/users/{id}/force-password-reset")
+    @Operation(summary = "Force password reset",
+            description = "Issues the existing 1h reset link by email. The admin never sees the password or the token.")
+    public ResponseEntity<AdminUserDTO> forcePasswordReset(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(adminService.forcePasswordReset(id, auth.getName()));
+    }
+
+    @PreAuthorize(MODERATION)
+    @PostMapping("/users/{id}/password")
+    @Operation(summary = "Set password",
+            description = "Sets a new password (same rules as registration). The password is not logged, audited, or returned.")
+    public ResponseEntity<AdminUserDTO> setPassword(
+            @PathVariable Long id, @RequestBody AdminSetPasswordRequest request, Authentication auth) {
+        return ResponseEntity.ok(adminService.setPassword(id, request != null ? request.getNewPassword() : null,
+                auth.getName()));
     }
 
     @PreAuthorize(MODERATION)

@@ -395,6 +395,60 @@ public class EmailDispatchService {
         postResend(toEmail, subject, html);
     }
 
+    /**
+     * Tells the account owner an administrator set a new password. Does not include the password.
+     * AA-171: restyle this template if the shared email layout lands later.
+     */
+    public void sendAdminPasswordChangedEmail(String toEmail, String username, String locale) {
+        String apiKey = emailProperties.getResendApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("RESEND_API_KEY not set; skip admin password-changed email to {}", toEmail);
+            return;
+        }
+
+        boolean es = "es".equals(LocaleSupport.normalize(locale));
+        String safeName = username != null && !username.isBlank()
+                ? HtmlUtils.htmlEscape(username.trim())
+                : (es ? "hola" : "there");
+        String privacy = HtmlUtils.htmlEscape(
+                emailProperties.getSupportPrivacyEmail() != null
+                        ? emailProperties.getSupportPrivacyEmail()
+                        : "privacy@apiarena.net");
+        String loginLink = frontendLocalePath(locale, "/login");
+        String subject = es
+                ? "API Arena — un administrador ha cambiado tu contraseña"
+                : "API Arena — an administrator changed your password";
+        String heading = es ? "Tu contraseña ha sido cambiada" : "Your password was changed";
+        String intro = es
+                ? "Un administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones."
+                : "An administrator changed the password on your API Arena account and signed you out of every session.";
+        String unexpected = es
+                ? "Si no lo esperabas, contacta con soporte de inmediato."
+                : "If you did not expect this, contact support right away.";
+        String button = es ? "Iniciar sesión" : "Sign in";
+
+        String html = """
+                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
+                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">%s</h1>
+                  <p style="line-height:1.5;margin:0 0 16px;">%s %s,</p>
+                  <p style="line-height:1.5;margin:0 0 16px;">%s</p>
+                  <p style="line-height:1.5;margin:0 0 24px;">%s <a href="mailto:%s" style="color:#22d3ee;">%s</a></p>
+                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">%s</a>
+                </div>
+                """.formatted(
+                heading,
+                es ? "Hola" : "Hi",
+                safeName,
+                intro,
+                unexpected,
+                privacy,
+                privacy,
+                loginLink,
+                button);
+
+        postResend(toEmail, subject, html);
+    }
+
     private void postResend(String toEmail, String subject, String html) {
         postResend(toEmail, subject, html, null);
     }
