@@ -19,9 +19,9 @@ const MIN_RANKED_CHALLENGES = 3;
 const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
-  { label: "Docs", path: "/docs", icon: "docs" },
+  { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
-  { label: "Replay", path: "/replay", icon: "replay" },
+  { label: "Replay", path: "/replay", icon: "replay", iconOnly: true },
 ];
 
 const NAV_ITEMS_AUTH = [
@@ -29,11 +29,11 @@ const NAV_ITEMS_AUTH = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Submissions", path: "/submissions", icon: "submissions" },
   { label: "Friends", path: "/friends", icon: "friends" },
-  { label: "Social", path: "/social", icon: "social", beta: true },
+  { label: "Social", path: "/social", icon: "social", beta: true, iconOnly: true },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
-  { label: "Docs", path: "/docs", icon: "docs" },
+  { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
-  { label: "Replay", path: "/replay", icon: "replay" },
+  { label: "Replay", path: "/replay", icon: "replay", iconOnly: true },
 ];
 
 /** showSidebarToggle: pages with a side panel (filters, etc.). No panel → no hamburger. */
@@ -145,7 +145,7 @@ export default function Topbar({
     navigate(lp("/login"), { replace: true });
   }
 
-  function renderNavLink({ label, path, icon, beta, matchContent }) {
+  function renderNavLink({ label, path, icon, beta, matchContent, iconOnly }) {
     const isActive = matchContent
       ? isContentPath(logicalPath)
       : logicalPath === path || logicalPath.startsWith(`${path}/`);
@@ -153,16 +153,21 @@ export default function Topbar({
       <Link
         key={path}
         to={lp(path)}
-        className={`arena-nav-link${isActive ? " arena-nav-link--active" : ""}`}
+        className={`arena-nav-link${isActive ? " arena-nav-link--active" : ""}${iconOnly ? " arena-nav-link--icon" : ""}`}
         title={label}
+        aria-label={label}
       >
         <span className="arena-nav-link__ico" aria-hidden>
           <NavIcon name={icon} />
         </span>
-        <span className="arena-nav-link__label">
-          {label}
-          {beta ? <span className="arena-nav-link__beta">BETA</span> : null}
-        </span>
+        {iconOnly ? (
+          beta ? <span className="arena-nav-link__beta">BETA</span> : null
+        ) : (
+          <span className="arena-nav-link__label">
+            {label}
+            {beta ? <span className="arena-nav-link__beta">BETA</span> : null}
+          </span>
+        )}
       </Link>
     );
   }
@@ -181,7 +186,7 @@ export default function Topbar({
                   height="28"
                 />
               </div>
-              <Link to={lp("/")} className="arena-navbar__title">
+              <Link to={lp("/")} className="arena-navbar__title arena-crt-tube">
                 <span className="arena-navbar__title-api">API</span>
                 <span className="arena-navbar__title-arena">Arena</span>
               </Link>
@@ -220,10 +225,10 @@ export default function Topbar({
           {isAuthenticated ? (
           <div className="arena-navbar__actions">
             {!hideElo && (
-            <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? undefined : t("topbar.ratingTitle", { rating })}>
-              <span className="arena-navbar__elo-lbl">ELO</span>
+            <div className={`arena-navbar__elo${isUnranked ? " arena-navbar__elo--unranked" : ""}`} title={isUnranked ? t("topbar.unranked") : t("topbar.ratingTitle", { rating })}>
+              {!isUnranked && <span className="arena-navbar__elo-lbl">ELO</span>}
               <span className={`arena-navbar__elo-val${isUnranked ? " arena-navbar__elo-val--unranked" : ""}`}>
-                {isUnranked ? t("topbar.unranked") : rating}
+                {isUnranked ? "UNR" : rating}
               </span>
               {isUnranked && (
                 <span className="arena-navbar__elo-help-wrap">

@@ -165,6 +165,15 @@
   line-height: 1.4;
 }
 
+.arena-nav-link--icon {
+  padding: 8px 8px;
+  gap: 4px;
+}
+
+.arena-nav-link--icon .arena-nav-link__beta {
+  margin-left: 0;
+}
+
 .arena-navbar__actions {
   display: flex;
   flex-direction: row;
@@ -258,18 +267,18 @@
 .arena-navbar__elo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 12px 0 10px;
-  border-radius: 10px;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 0;
   border: 1px solid rgba(255, 184, 0, 0.38);
-  background: rgba(255, 184, 0, 0.1);
+  background: rgba(255, 184, 0, 0.08);
   box-sizing: border-box;
   flex-shrink: 0;
 }
 .arena-navbar__elo-lbl {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--warn);
@@ -277,7 +286,7 @@
 .arena-navbar__elo-val {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 16px;
+  font-size: 13px;
   letter-spacing: 0.04em;
   color: var(--warn);
   line-height: 1;
@@ -286,12 +295,12 @@
 
 .arena-navbar__elo--unranked {
   border-color: rgba(178, 75, 243, 0.4);
-  background: rgba(178, 75, 243, 0.12);
+  background: rgba(178, 75, 243, 0.1);
 }
 
 .arena-navbar__elo-val--unranked {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 9px;
   letter-spacing: 0.1em;
   color: var(--purple);
 }
