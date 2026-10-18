@@ -87,6 +87,7 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 ## Hecho recientemente (resumen)
 
+- **Lighthouse rutas públicas**: code-split por ruta, solo fuentes latinas de marca (Barlow Condensed, Syne, Share Tech Mono), gzip nginx nivel 6 y `Cache-Control` immutable en `/assets/`. Medido sin contenedor nginx (daemon Docker parado) con un estático que replica esas cabeceras: móvil Performance 92–95 y Accessibility / Best Practices / SEO a 100 en `/en/`, `/es/`, `/en/challenges`, `/en/docs`, `/en/login`. Informes en `docs/perf/`. `scripts/lighthouse-check.sh` falla por debajo de 90; no está en CI (hace falta Chrome y unas diez pasadas).
 - Kafka: producer en submission-service, consumer en leaderboard-service, `docker-compose` con `depends_on` kafka.  
 - Anti-farm: cooldown + 3 intentos/día UTC; endpoint `attempt-status`; staff sin límite.  
 - Challenge submit: sesión localStorage con deadline en tiempo real; banner global; UI de límites destacada; fix doble file picker.  
