@@ -1,0 +1,52 @@
+{
+  "pageTitle": "Social",
+  "eyebrow": "// BETA",
+  "title": "Social",
+  "beta": "BETA",
+  "lead": "Un feed solo para amigos: clears, cambios de ranking y resultados que tú publicas.",
+  "tabs": {
+    "all": "Todo",
+    "activity": "Actividad",
+    "posts": "Publicaciones"
+  },
+  "refresh": "Actualizar",
+  "loading": "Cargando el feed…",
+  "loadError": "No se pudo cargar el feed.",
+  "disabled": "La beta social está apagada en este servidor.",
+  "emptyTitle": "Todavía no hay nada",
+  "emptyBody": "Añade amigos para ver su actividad, o publica un resultado de un challenge completado.",
+  "findFriends": "Buscar amigos",
+  "you": "Tú",
+  "delete": "Eliminar",
+  "deleted": "Publicación eliminada",
+  "report": "Reportar",
+  "reported": "Reportado",
+  "hide": "Ocultar",
+  "hidden": "Oculto",
+  "caption": "Texto",
+  "testsPassed": "{{passed}} ok · {{failed}} fallos",
+  "technical": "Técnico {{score}}",
+  "ai": "IA {{score}}",
+  "latency": "{{ms}} ms de media",
+  "rps": "{{rps}} rps",
+  "reactions": {
+    "GG": "GG",
+    "FIRE": "Fuego",
+    "CLAP": "Aplauso",
+    "ROCKET": "Cohete",
+    "EYES": "Ojos"
+  },
+  "activity": {
+    "CHALLENGE_COMPLETED": "completó {{challenge}}",
+    "FIRST_CLEAR": "primer clear en {{challenge}}",
+    "PERSONAL_BEST": "nuevo récord en {{challenge}}",
+    "RANK_CLIMB": "subió del #{{from}} al #{{to}}",
+    "ELO_CHANGE": "ELO {{delta}} ({{from}} → {{to}})",
+    "LEVEL_UP": "llegó al nivel {{to}}",
+    "TIER_UP": "pasó de {{from}} a {{to}}",
+    "ACHIEVEMENT": "desbloqueó {{title}}",
+    "WEEKLY_STREAK": "racha de {{weeks}} semanas",
+    "POST": "publicó un resultado"
+  },
+  "challengeFallback": "un challenge"
+}

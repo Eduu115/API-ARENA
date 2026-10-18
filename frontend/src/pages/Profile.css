@@ -1001,3 +1001,17 @@
     gap: 4px;
   }
 }
+
+.profile-social-privacy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.profile-social-privacy label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}

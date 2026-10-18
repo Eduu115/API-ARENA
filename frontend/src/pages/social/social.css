@@ -1,0 +1,181 @@
+.social-lead {
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 15px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 8px 0 0;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+.social-beta {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  vertical-align: middle;
+}
+
+.arena-nav-link__beta,
+.ch-bni-beta {
+  margin-left: 6px;
+  padding: 0 4px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+}
+
+.social-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0;
+  flex-wrap: wrap;
+}
+
+.social-tab,
+.social-refresh {
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.social-tab.is-active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.social-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 80px;
+}
+
+.social-row {
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  padding: 14px 16px;
+}
+
+.social-row-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.social-row-user {
+  color: var(--text, inherit);
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+}
+
+.social-row-body {
+  margin: 8px 0 0;
+  font-size: 15px;
+}
+
+.social-caption {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.social-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 12px;
+  color: var(--cyan);
+}
+
+.social-tests {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 12px;
+}
+
+.social-tests li.fail {
+  color: var(--extreme, #ff2d78);
+}
+
+.social-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.social-react,
+.social-text-btn {
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.social-react.is-on {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.social-empty {
+  border: 1px solid var(--dim);
+  padding: 28px 20px;
+}
+
+.social-empty a {
+  color: var(--cyan);
+}
+
+.sr-publish {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sr-publish input {
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: inherit;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  padding: 8px 10px;
+}
+
+.profile-social-privacy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.profile-social-privacy label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}

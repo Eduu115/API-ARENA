@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useNavigateLocalized } from '../../routes/LocaleLayout';
 import { useTranslation } from 'react-i18next';
 import { getMySubmissions, getSubmissionById } from '../../lib/submissionsApi';
+import { publishPost } from '../../lib/socialApi';
 import { useAuth } from '../../context/AuthContext';
 import { getUserPublicProfile } from '../../lib/authApi';
 import Topbar from '../../components/Topbar';
@@ -71,6 +72,8 @@ export default function SubmissionResults() {
   const [revealed, setRevealed] = useState(false);
   const [showEloZeroHelp, setShowEloZeroHelp] = useState(false);
   const [celebrateRank, setCelebrateRank] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [publishState, setPublishState] = useState('idle');
 
   usePageMeta({
     title: sub ? submissionLabel || t('results.challengeFallback', { id: sub.challengeId }) : t('results.loading'),
@@ -178,6 +181,17 @@ export default function SubmissionResults() {
   const totalChallenges = profile?.totalChallengesCompleted ?? 0;
   const isUnranked = totalChallenges < MIN_RANKED_CHALLENGES;
   const challengesUntilRanked = Math.max(0, MIN_RANKED_CHALLENGES - totalChallenges);
+  const canPublish = Number(user?.id) === Number(sub.userId) && String(sub.status || '').toUpperCase() === 'COMPLETED';
+
+  async function handlePublish() {
+    setPublishState('saving');
+    try {
+      await publishPost(sub.id, caption);
+      setPublishState('done');
+    } catch {
+      setPublishState('error');
+    }
+  }
 
   return (
     <div className="challenges-page">
@@ -325,6 +339,28 @@ export default function SubmissionResults() {
                 {t('results.viewDetails')}
               </button>
             </div>
+            {canPublish && (
+              <div className="sr-publish">
+                <label htmlFor="social-caption">{t('results.publishToFeed')}</label>
+                <input
+                  id="social-caption"
+                  maxLength={500}
+                  value={caption}
+                  placeholder={t('results.publishCaption')}
+                  onChange={(e) => setCaption(e.target.value)}
+                  disabled={publishState === 'done' || publishState === 'saving'}
+                />
+                <button
+                  type="button"
+                  className="sr-btn-secondary"
+                  onClick={handlePublish}
+                  disabled={publishState === 'done' || publishState === 'saving'}
+                >
+                  {publishState === 'done' ? t('results.publishDone') : t('results.publishAction')}
+                </button>
+                {publishState === 'error' && <p role="alert">{t('results.publishError')}</p>}
+              </div>
+            )}
           </div>
         </main>
       </div>
