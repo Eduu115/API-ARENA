@@ -27,6 +27,14 @@
     "next": "Siguiente",
     "done": "Completado",
     "empty": "La hoja de ruta todavía no está publicada.",
+    "phase": "Fase",
+    "shipped": "Completado",
+    "progress": "{{done}}/{{total}} fases completadas",
+    "label": {
+      "now": "Ahora",
+      "next": "Siguiente",
+      "later": "Más adelante"
+    },
     "status": {
       "DONE": "Hecho",
       "IN_PROGRESS": "En curso",
