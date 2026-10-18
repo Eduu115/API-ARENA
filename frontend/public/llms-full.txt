@@ -1,0 +1,297 @@
+# API Arena — extended reference
+
+This file adds the Spanish answers, doc summaries, and the public preview text of each seeded challenge. It does not include endpoint contracts, hidden tests, or hints.
+
+## English
+
+### What is API Arena?
+
+API Arena is a free competitive platform for students, self-taught backend developers, and teachers. You choose a challenge, build a real Spring Boot REST API, and upload the project as a ZIP. An isolated sandbox builds and runs that API, then real HTTP tests score it. It is measured practice, not a slide-only course.
+
+### How does scoring work?
+
+Each submission is scored out of 1000. Up to 800 points come from technical HTTP tests against the running API: functional correctness (300), performance (300), and REST design (200). Up to 200 points come from an AI review. The default review rubric is heuristic, and a language-model provider can be enabled per environment. XP tracks cumulative progress. ELO is a separate competitive rating that moves against the score expected for your rating and the challenge difficulty. Submitting again below your best score on that challenge is penalized.
+
+### How do I start?
+
+Create a free account and open the challenge catalog. Read the public preview, then sign in and start a timed session to see the full requirements. Zip a Maven project with pom.xml at the archive root and upload it. The pipeline builds the project in a sandbox, calls the API over HTTP, saves the score, and updates the leaderboard. The docs hub explains the first submission step by step.
+
+### What does a public challenge page show?
+
+A public challenge page is a preview only: title, description, difficulty, category, time limit, and XP reward. Endpoint lists, hidden tests, and hints are not on that page. They appear after you sign in and start a timed session.
+
+### Who is API Arena for?
+
+API Arena is for students learning backend APIs, developers who want measured practice, and teachers who group students and review their submissions.
+
+## Español
+
+### ¿Qué es API Arena?
+
+API Arena es una plataforma competitiva y gratuita para estudiantes, desarrolladores autodidactas de backend y profesores. Eliges un challenge, construyes una API REST real con Spring Boot y subes el proyecto en un ZIP. Un sandbox aislado compila y ejecuta esa API, y tests HTTP reales la puntúan. Es práctica medida, no un curso de diapositivas.
+
+### ¿Cómo funciona la puntuación?
+
+Cada entrega se puntúa sobre 1000. Hasta 800 puntos salen de tests HTTP técnicos contra la API en ejecución: corrección funcional (300), rendimiento (300) y diseño REST (200). Hasta 200 puntos salen de una revisión con IA. La rúbrica por defecto es heurística, y un proveedor de modelo de lenguaje se puede activar por entorno. La XP mide el progreso acumulado. El ELO es un rating competitivo aparte, que sube o baja frente a la nota esperada para tu rating y la dificultad del challenge. Volver a enviar por debajo de tu mejor nota en ese challenge penaliza.
+
+### ¿Cómo empiezo?
+
+Crea una cuenta gratuita y abre el catálogo de challenges. Lee la vista previa pública, inicia sesión y arranca una sesión cronometrada para ver los requisitos completos. Empaqueta un proyecto Maven con pom.xml en la raíz del ZIP y súbelo. El pipeline compila el proyecto en un sandbox, llama a la API por HTTP, guarda la nota y actualiza el ranking. El centro de docs explica la primera entrega paso a paso.
+
+### ¿Qué muestra la página pública de un challenge?
+
+La página pública de un challenge es solo una vista previa: título, descripción, dificultad, categoría, tiempo límite y recompensa de XP. Las listas de endpoints, los tests ocultos y las pistas no están en esa página. Aparecen después de iniciar sesión y empezar una sesión cronometrada.
+
+### ¿Para quién es API Arena?
+
+API Arena es para estudiantes que aprenden APIs backend, desarrolladores que quieren práctica medida y profesores que agrupan alumnos y revisan sus entregas.
+
+## Docs (English)
+
+### Getting Started Guide
+
+https://apiarena.net/en/docs/guia-para-empezar
+
+Mindset, work strategy, and delivery rhythm to progress fast without burning out.
+
+### First Steps
+
+https://apiarena.net/en/docs/primeros-pasos
+
+Practical checklist to prepare your first challenge from start to finish.
+
+### Preconfigure Project for Challenges
+
+https://apiarena.net/en/docs/preconfiguracion-proyecto
+
+Complete technical guide for prerequisites, minimum structure, and pre-submission validation.
+
+### Platform navigation
+
+https://apiarena.net/en/docs/platform-navigation
+
+Where everything lives: landing, app chrome, dashboard, challenges, submissions, Docs, and account basics.
+
+### Challenges catalog
+
+https://apiarena.net/en/docs/challenges-catalog
+
+How to search, filter, sort, and open a challenge before you start a timed run.
+
+### Challenge workspace
+
+https://apiarena.net/en/docs/challenge-workspace
+
+Challenge detail vs submit screen: what you see before and after you start a timed run.
+
+### Submitting a challenge
+
+https://apiarena.net/en/docs/submitting-a-challenge
+
+ZIP rules, pipeline expectations, and what to do while your submission is processing.
+
+### Common Errors
+
+https://apiarena.net/en/docs/errores-comunes
+
+Recurring submission failures, why they happen, and how to prevent them systematically.
+
+### XP and ELO System
+
+https://apiarena.net/en/docs/sistema-xp-elo
+
+Complete guide to classification, ELO gains/losses, and ranking strategy.
+
+## Docs (español)
+
+### Guía para empezar
+
+https://apiarena.net/es/docs/guia-para-empezar
+
+Mentalidad, estrategia de trabajo y ritmo de entregas para progresar rápido sin quemarte.
+
+### Primeros pasos
+
+https://apiarena.net/es/docs/primeros-pasos
+
+Checklist práctica para preparar tu primer challenge de principio a fin.
+
+### Preconfigurar el proyecto para challenges
+
+https://apiarena.net/es/docs/preconfiguracion-proyecto
+
+Guía técnica completa de requisitos previos, estructura mínima y validación pre-entrega.
+
+### Navegación de la plataforma
+
+https://apiarena.net/es/docs/platform-navigation
+
+Dónde está cada cosa: landing, chrome de la app, Dashboard, Challenges, submissions, Docs y lo básico de la cuenta.
+
+### Catálogo de Challenges
+
+https://apiarena.net/es/docs/challenges-catalog
+
+Cómo buscar, filtrar, ordenar y abrir un challenge antes de iniciar una sesión cronometrada.
+
+### Workspace del challenge
+
+https://apiarena.net/es/docs/challenge-workspace
+
+Detalle del challenge vs pantalla de entrega: qué ves antes y después de iniciar una sesión cronometrada.
+
+### Entregar un challenge
+
+https://apiarena.net/es/docs/submitting-a-challenge
+
+Reglas del ZIP, expectativas del pipeline y qué hacer mientras se procesa tu entrega.
+
+### Errores comunes
+
+https://apiarena.net/es/docs/errores-comunes
+
+Fallos recurrentes en entregas, por qué ocurren y cómo prevenirlos de forma sistemática.
+
+### Sistema de XP y ELO
+
+https://apiarena.net/es/docs/sistema-xp-elo
+
+Guía completa de clasificación, ganancias/pérdidas de ELO y estrategia de ranking.
+
+## Challenge previews
+
+### Build a Bookstore API
+
+- Difficulty: EASY
+- English preview: https://apiarena.net/en/challenges/bookstore-api
+- Spanish preview: https://apiarena.net/es/challenges/bookstore-api
+
+Design a RESTful API for a bookstore. Implement endpoints to list, create, update, and delete books. Each book has a title, author, ISBN, price, and stock count. Responses must use proper HTTP status codes and JSON payloads.
+
+### Todo List CRUD
+
+- Difficulty: EASY
+- English preview: https://apiarena.net/en/challenges/todo-crud
+- Spanish preview: https://apiarena.net/es/challenges/todo-crud
+
+Implement a complete CRUD API for a todo list application. Support creating, reading, updating, and deleting tasks. Each task has a title, description, completed flag, and priority level (LOW, MEDIUM, HIGH).
+
+### JWT Authentication Flow
+
+- Difficulty: MEDIUM
+- English preview: https://apiarena.net/en/challenges/jwt-auth-flow
+- Spanish preview: https://apiarena.net/es/challenges/jwt-auth-flow
+
+Build an authentication API that supports user registration, login with JWT tokens, token refresh, and a protected /me endpoint. Passwords must be hashed. Access tokens expire in 15 minutes; refresh tokens in 7 days.
+
+### Rate Limiter Middleware
+
+- Difficulty: MEDIUM
+- English preview: https://apiarena.net/en/challenges/rate-limiter
+- Spanish preview: https://apiarena.net/es/challenges/rate-limiter
+
+Create an API with a configurable rate limiter. The API exposes a simple /ping endpoint. Rate limit: 100 requests per minute per IP. Return 429 Too Many Requests with a Retry-After header when exceeded.
+
+### Paginated Product Catalog
+
+- Difficulty: MEDIUM
+- English preview: https://apiarena.net/en/challenges/paginated-catalog
+- Spanish preview: https://apiarena.net/es/challenges/paginated-catalog
+
+Build a product catalog API that supports cursor-based pagination, filtering by category and price range, and sorting by price or name. Return pagination metadata (next cursor, total count, has_more).
+
+### Redis Cache Layer
+
+- Difficulty: HARD
+- English preview: https://apiarena.net/en/challenges/redis-cache-layer
+- Spanish preview: https://apiarena.net/es/challenges/redis-cache-layer
+
+Add a Redis caching layer to an existing articles API. Cache GET responses with a 60-second TTL. Implement cache invalidation on POST/PUT/DELETE. Expose a /cache/stats endpoint showing hit/miss ratio.
+
+### Real-Time Chat Room
+
+- Difficulty: HARD
+- English preview: https://apiarena.net/en/challenges/realtime-chat
+- Spanish preview: https://apiarena.net/es/challenges/realtime-chat
+
+Build a WebSocket-based chat room API. Support joining/leaving rooms, broadcasting messages, and listing active users. Provide a REST endpoint to fetch message history (last 50 messages per room).
+
+### Multi-Table Join Queries
+
+- Difficulty: MEDIUM
+- English preview: https://apiarena.net/en/challenges/multi-table-joins
+- Spanish preview: https://apiarena.net/es/challenges/multi-table-joins
+
+Design a school database API with students, courses, and enrollments. Implement endpoints that return joined data: a student with their courses, a course with enrolled students, and enrollment statistics.
+
+### API Gateway Pattern
+
+- Difficulty: HARD
+- English preview: https://apiarena.net/en/challenges/api-gateway
+- Spanish preview: https://apiarena.net/es/challenges/api-gateway
+
+Implement a simple API gateway that routes requests to two downstream services (users-service and orders-service). Add request logging, timeout handling (3 s), and a /health endpoint that checks both services.
+
+### Contract Testing with Pact
+
+- Difficulty: HARD
+- English preview: https://apiarena.net/en/challenges/contract-testing
+- Spanish preview: https://apiarena.net/es/challenges/contract-testing
+
+Write consumer-driven contract tests for a payments API. The API has endpoints to create a payment, get payment status, and list payments. Validate request/response schemas and status codes.
+
+### URL Shortener Service
+
+- Difficulty: EASY
+- English preview: https://apiarena.net/en/challenges/url-shortener
+- Spanish preview: https://apiarena.net/es/challenges/url-shortener
+
+Build a URL shortener API. POST a long URL to receive a short code. GET the short code to be redirected (301). Track click count and provide an analytics endpoint that returns total clicks and referrer breakdown.
+
+### Input Validation & Sanitization
+
+- Difficulty: MEDIUM
+- English preview: https://apiarena.net/en/challenges/input-validation
+- Spanish preview: https://apiarena.net/es/challenges/input-validation
+
+Create a user registration API with strict input validation: email format, password strength (min 8 chars, uppercase, number, special char), username (alphanumeric, 3-20 chars). Sanitize all text inputs against XSS.
+
+### Idempotent Payment Processing API
+
+- Difficulty: EXTREME
+- English preview: https://apiarena.net/en/challenges/idempotent-payments
+- Spanish preview: https://apiarena.net/es/challenges/idempotent-payments
+
+Build a payment API that is safe to retry. Every POST /api/payments accepts an Idempotency-Key: replaying the same key must return the original payment, never a duplicate charge. Payments can be captured exactly once and expose an append-only event trail. Concurrency and double-submit must never create two charges for one key.
+
+### Event-Sourced Banking Ledger
+
+- Difficulty: EXTREME
+- English preview: https://apiarena.net/en/challenges/event-sourced-ledger
+- Spanish preview: https://apiarena.net/es/challenges/event-sourced-ledger
+
+Implement an account ledger where the balance is never stored directly: it is a projection of an append-only transaction log. POST transactions (DEPOSIT/WITHDRAW) append events; GET /api/accounts/{id} returns the balance folded from those events. Overdrafts must be rejected and the log must stay immutable and ordered.
+
+### Multi-Tenant RBAC SaaS API
+
+- Difficulty: EXTREME
+- English preview: https://apiarena.net/en/challenges/multi-tenant-rbac
+- Spanish preview: https://apiarena.net/es/challenges/multi-tenant-rbac
+
+Design a multi-tenant API where every resource belongs to a tenant and is invisible across tenant boundaries. Members have roles (OWNER, ADMIN, MEMBER) that gate what they can do. Listing a tenant's members must only ever return that tenant's members, and cross-tenant access must be impossible even with a valid id.
+
+### Distributed Saga Order Orchestration
+
+- Difficulty: EXTREME
+- English preview: https://apiarena.net/en/challenges/distributed-saga-orchestration
+- Spanish preview: https://apiarena.net/es/challenges/distributed-saga-orchestration
+
+Orchestrate an order across payment, inventory and shipping steps as a saga. Creating an order runs the steps in sequence; if a later step fails, earlier steps must be compensated (rolled back) so the system ends consistent. Cancelling an in-flight order triggers compensation. A /health endpoint reports orchestrator readiness.
+
+### High-Throughput Time-Series Ingestion
+
+- Difficulty: EXTREME
+- English preview: https://apiarena.net/en/challenges/timeseries-ingestion
+- Spanish preview: https://apiarena.net/es/challenges/timeseries-ingestion
+
+Build an ingestion API for time-series points optimized for throughput. Clients batch-write points to a series; reads return recent points and a downsampled aggregate (min/max/avg per bucket). The hot read path must stay fast and allocate little under sustained load.

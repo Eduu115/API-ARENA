@@ -1,5 +1,5 @@
 export default function SlashDivider() {
   return (
-    <div className="slash-divider">// // // // // // // // // //</div>
+    <div className="slash-divider" aria-hidden="true" />
   );
 }

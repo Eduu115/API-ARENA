@@ -84,6 +84,16 @@ public class PublicRateLimitFilter extends OncePerRequestFilter {
         if (HttpMethod.POST.matches(method) && "/api/auth/reset-password".equals(path)) {
             return new RateLimitRule("reset-password", properties.getResetPasswordPerIpPerMinute(), Duration.ofMinutes(1));
         }
+        // Admin password actions reuse the public forgot/reset ceilings (per IP). No new limits.
+        if (HttpMethod.POST.matches(method)
+                && pathMatcher.match("/api/auth/admin/users/*/force-password-reset", path)) {
+            return new RateLimitRule("admin-force-password-reset", properties.getForgotPasswordPerIpPerMinute(),
+                    Duration.ofMinutes(1));
+        }
+        if (HttpMethod.POST.matches(method) && pathMatcher.match("/api/auth/admin/users/*/password", path)) {
+            return new RateLimitRule("admin-set-password", properties.getResetPasswordPerIpPerMinute(),
+                    Duration.ofMinutes(1));
+        }
         if (HttpMethod.GET.matches(method) && "/api/auth/verify-email".equals(path)) {
             return new RateLimitRule("verify-email", properties.getVerifyEmailPerIpPerMinute(), Duration.ofMinutes(1));
         }

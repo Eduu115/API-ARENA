@@ -45,7 +45,7 @@ export default function Leaderboard() {
   usePageMeta({
     title: t('pageTitle'),
     description: t('pageDescription'),
-    path: challengeFromUrl ? `/leaderboard?challenge=${challengeFromUrl}` : '/leaderboard',
+    path: '/leaderboard',
   });
 
   const [mode, setMode] = useState(() => (challengeFromUrl ? 'challenge' : 'elo'));

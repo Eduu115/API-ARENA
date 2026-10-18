@@ -1,6 +1,11 @@
 {
   "pageTitle": "Catálogo de Challenges API",
   "pageDescription": "Explora challenges backend reales: APIs CRUD, JWT auth, rate limiters, caching, WebSockets y más. Envía tu proyecto Spring Boot y puntúa con tests HTTP reales.",
+  "breadcrumb": {
+    "home": "Inicio",
+    "challenges": "Challenges",
+    "aria": "Miga de pan"
+  },
   "untitled": "Sin título",
   "community": "Community",
   "legacy": "Legacy",

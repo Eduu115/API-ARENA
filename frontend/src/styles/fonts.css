@@ -1,35 +1,75 @@
 /*
- * Self-hosted fonts (via @fontsource) to avoid sending visitor IPs to Google.
- * Only the weights actually used by the design tokens are imported.
+ * Self-hosted brand fonts (via @fontsource) so visitor IPs never go to Google.
+ * Latin covers English and Spanish. Other subsets are not loaded.
+ * font-display: swap is set by the @fontsource files.
  */
 
 /* Barlow Condensed — --font-display (300, 700, 900 + 900 italic) */
-@import "@fontsource/barlow-condensed/300.css";
-@import "@fontsource/barlow-condensed/700.css";
-@import "@fontsource/barlow-condensed/900.css";
-@import "@fontsource/barlow-condensed/900-italic.css";
+@import "@fontsource/barlow-condensed/latin-300.css";
+@import "@fontsource/barlow-condensed/latin-700.css";
+@import "@fontsource/barlow-condensed/latin-900.css";
+@import "@fontsource/barlow-condensed/latin-900-italic.css";
 
 /* Syne — --font-body (400, 700, 800) */
-@import "@fontsource/syne/400.css";
-@import "@fontsource/syne/700.css";
-@import "@fontsource/syne/800.css";
+@import "@fontsource/syne/latin-400.css";
+@import "@fontsource/syne/latin-700.css";
+@import "@fontsource/syne/latin-800.css";
 
 /* Share Tech Mono — --font-mono (400) */
-@import "@fontsource/share-tech-mono/400.css";
+@import "@fontsource/share-tech-mono/latin-400.css";
 
-/* Space Grotesk (400, 500, 600, 700) */
-@import "@fontsource/space-grotesk/400.css";
-@import "@fontsource/space-grotesk/500.css";
-@import "@fontsource/space-grotesk/600.css";
-@import "@fontsource/space-grotesk/700.css";
-
-/* Inter (400, 500, 600, 700) */
-@import "@fontsource/inter/400.css";
-@import "@fontsource/inter/500.css";
-@import "@fontsource/inter/600.css";
-@import "@fontsource/inter/700.css";
-
-/* JetBrains Mono (400, 500, 600) */
-@import "@fontsource/jetbrains-mono/400.css";
-@import "@fontsource/jetbrains-mono/500.css";
-@import "@fontsource/jetbrains-mono/600.css";
+/*
+ * Metric-matched local fallbacks so font-display:swap does not move layout.
+ * Overrides from fontpie against Arial. local() is instant; the real face
+ * replaces it without a size jump when the woff2 arrives.
+ */
+@font-face {
+  font-family: "Barlow Condensed Fallback";
+  src: local("Arial");
+  font-weight: 700;
+  font-style: normal;
+  ascent-override: 120.83%;
+  descent-override: 24.17%;
+  line-gap-override: 0%;
+  size-adjust: 82.76%;
+}
+@font-face {
+  font-family: "Barlow Condensed Fallback";
+  src: local("Arial");
+  font-weight: 900;
+  font-style: normal;
+  ascent-override: 115.6%;
+  descent-override: 23.12%;
+  line-gap-override: 0%;
+  size-adjust: 86.5%;
+}
+@font-face {
+  font-family: "Barlow Condensed Fallback";
+  src: local("Arial");
+  font-weight: 900;
+  font-style: italic;
+  ascent-override: 119.34%;
+  descent-override: 23.87%;
+  line-gap-override: 0%;
+  size-adjust: 83.79%;
+}
+@font-face {
+  font-family: "Syne Fallback";
+  src: local("Arial");
+  font-weight: 400;
+  font-style: normal;
+  ascent-override: 92.84%;
+  descent-override: 27.6%;
+  line-gap-override: 0%;
+  size-adjust: 99.63%;
+}
+@font-face {
+  font-family: "Share Tech Mono Fallback";
+  src: local("Arial");
+  font-weight: 400;
+  font-style: normal;
+  ascent-override: 74.78%;
+  descent-override: 20.45%;
+  line-gap-override: 0%;
+  size-adjust: 118.34%;
+}

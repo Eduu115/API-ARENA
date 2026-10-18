@@ -12,7 +12,7 @@ public class PasswordReminderProperties {
     private boolean enabled = true;
 
     /** Days between password change (or last reminder) and the next reminder email. */
-    private int intervalDays = 60;
+    private int intervalDays = 120;
 
     /** Cron expression (UTC) for the reminder job. Default: daily at 09:00 UTC. */
     private String cron = "0 0 9 * * *";

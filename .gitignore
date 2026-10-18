@@ -60,7 +60,8 @@ Thumbs.db
 **/ssl/*.pem
 !**/ssl/.gitkeep
 
-# Backups
+# Backups (dumps from scripts/db-backup.sh — never commit)
+backups/
 **/backups/
 
 #

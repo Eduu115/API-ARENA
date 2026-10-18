@@ -11,6 +11,8 @@ import { DOCS_PATHS } from '../../tutorial/tourDefinitions';
 import { useTourSteps } from '../../lib/tourSteps';
 import { usePageMeta } from '../../lib/usePageMeta';
 import ChallengeNewsletterBanner from '../../components/challenges/ChallengeNewsletterBanner';
+import SeoBreadcrumb from '../../components/SeoBreadcrumb';
+import { challengeCatalogGraph } from '../../seo/site';
 
 function mapApiToCard(api) {
   const diff = (api.difficulty || 'EASY').toLowerCase();
@@ -61,7 +63,7 @@ function ChallengeCard({ challenge, spotlight = false }) {
     <div
       className={`ch-card ${glow} ${status === 'completed' ? 'ch-completed' : ''}${spotlight ? ' ch-card--spotlight' : ''}`}
       style={{ '--accent-color': accentColor }}
-      onClick={() => navigate(`/challenges/${id}`)}
+      onClick={() => navigate(`/challenges/${challenge.slug || id}`)}
     >
       <div className="ch-card-accent" style={{ background: accentColor }} />
       <div className="ch-card-inner">
@@ -151,11 +153,16 @@ function ChallengeCard({ challenge, spotlight = false }) {
 }
 
 export default function Challenges() {
-  const { t } = useTranslation('challenges');
+  const { t, i18n } = useTranslation('challenges');
+  const locale = i18n.language?.startsWith('es') ? 'es' : 'en';
   usePageMeta({
     title: t('pageTitle'),
     description: t('pageDescription'),
     path: '/challenges',
+    jsonLd: challengeCatalogGraph(locale, {
+      homeName: t('breadcrumb.home'),
+      challengesName: t('breadcrumb.challenges'),
+    }),
   });
   const tourSteps = useTourSteps('challenges');
   const [search, setSearch]           = useState('');
@@ -424,6 +431,13 @@ export default function Challenges() {
         </aside>
 
         <main className="ch-main" data-tutorial="challenges-main">
+          <SeoBreadcrumb
+            label={t('breadcrumb.aria')}
+            items={[
+              { name: t('breadcrumb.home'), to: '/' },
+              { name: t('breadcrumb.challenges') },
+            ]}
+          />
 
           <div className="ch-page-header">
             <div>
@@ -439,6 +453,7 @@ export default function Challenges() {
               <select
                 className="ch-sort-select"
                 value={sortBy}
+                aria-label={t(sortOptions.find((o) => o.val === sortBy)?.labelKey ?? 'sort.featured')}
                 onChange={e => setSortBy(e.target.value)}
               >
                 {sortOptions.map(({ val, labelKey }) => (

@@ -93,6 +93,23 @@
   color: var(--white);
 }
 
+.docs-faq {
+  margin: 4px 0 28px;
+}
+.docs-faq dt {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 16px;
+  color: var(--text);
+}
+.docs-faq dd {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
 .docs-layout {
   display: grid;
   grid-template-columns: 300px 1fr;
@@ -155,7 +172,7 @@
   margin-top: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--dim);
+  color: var(--muted);
   letter-spacing: 0.07em;
 }
 

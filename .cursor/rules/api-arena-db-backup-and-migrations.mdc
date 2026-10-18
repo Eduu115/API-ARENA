@@ -1,0 +1,39 @@
+---
+description: Backup obligatorio y migraciones seguras sobre la base de datos de producción
+alwaysApply: true
+---
+# 🛡️ Backup SIEMPRE antes de tocar datos — es PRODUCCIÓN
+
+Complementa `api-arena-no-volume-recreation`. Aplica a Postgres, MongoDB, InfluxDB y Redis.
+
+## Regla
+
+**Ninguna migración, backfill, `UPDATE`/`DELETE` masivo, cambio de esquema ni operación de
+mantenimiento se ejecuta sin un backup previo, reciente y verificado.** Sin backup verificado,
+no se ejecuta. Sin excepciones.
+
+## Procedimiento obligatorio
+
+1. **Backup** con `scripts/db-backup.sh` (o el equivalente manual):
+   - Postgres: `docker exec apiarena-postgres pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Fc > backups/postgres/apiarena-<UTC>.dump`
+   - MongoDB (si se toca): `docker exec apiarena-mongo mongodump --archive --gzip > backups/mongo/<UTC>.archive.gz`
+   - InfluxDB (si se toca): `influx backup` dentro de `apiarena-influxdb`, copiado fuera del contenedor.
+   - Se guarda **fuera** de los volúmenes Docker y **nunca** se commitea (`backups/` en `.gitignore`).
+2. **Verificar**: tamaño > 0, `pg_restore --list` sin errores y conteo de filas de las tablas afectadas anotado.
+3. **Ensayar** sobre una copia restaurada (`scripts/db-restore-test.sh` → `apiarena_migration_test`), nunca primero sobre la base real.
+4. **Aplicar**: `docker exec -i apiarena-postgres psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" < docker/postgres/<fichero>.sql`
+5. **Verificar** conteos y smoke test. Si algo no cuadra: `rollback-*.sql` o `pg_restore` desde el backup del paso 1.
+
+## Reglas de las migraciones
+
+- Solo scripts SQL en `docker/postgres/` (`alter-*.sql`, `seed-*.sql`, `rollback-*.sql`), idempotentes
+  (`IF NOT EXISTS`, `ON CONFLICT DO NOTHING`) y en transacción (`BEGIN/COMMIT`), salvo
+  `CREATE INDEX CONCURRENTLY`, que va en un script aparte.
+- Patrón **expand → migrate → contract**: nunca se borra una columna o tabla con datos en la misma
+  entrega que crea su sustituta. El `DROP` va en una entrega posterior, con un backup nuevo y la verificación hecha.
+- Prohibido `TRUNCATE`, `DROP TABLE`/`DROP COLUMN` con datos, y `UPDATE`/`DELETE` sin `WHERE`, salvo
+  petición explícita del mantenedor y con backup verificado.
+- Código primero, datos después.
+- Mismo cambio reflejado en `init-db.sql`.
+- Los agentes de IA **no ejecutan** migraciones contra producción: las preparan, las ensayan sobre la
+  copia y documentan los comandos. La ejecución real la lanza el mantenedor.

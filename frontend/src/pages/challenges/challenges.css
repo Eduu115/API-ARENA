@@ -19,9 +19,9 @@
   --muted:  var(--arena-text-muted);
   --dim:    var(--arena-primary-10);
   /* Keep original product typography */
-  --font-display: 'Barlow Condensed', sans-serif;
-  --font-body:    'Syne', sans-serif;
-  --font-mono:    'Share Tech Mono', monospace;
+  --font-display: 'Barlow Condensed', 'Barlow Condensed Fallback', sans-serif;
+  --font-body:    'Syne', 'Syne Fallback', sans-serif;
+  --font-mono:    'Share Tech Mono', 'Share Tech Mono Fallback', monospace;
 }
 
 .challenges-page {
@@ -502,6 +502,22 @@
   text-transform: uppercase;
   margin-bottom: 6px;
 }
+.seo-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--muted);
+}
+.seo-breadcrumb a {
+  color: var(--muted);
+  text-decoration: none;
+}
+.seo-breadcrumb a:hover { color: var(--white); }
+.seo-breadcrumb [aria-current="page"] { color: var(--text); }
 .ch-page-title {
   font-family: var(--font-display);
   font-weight: 900;

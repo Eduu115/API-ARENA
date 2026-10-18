@@ -1,7 +1,7 @@
 package com.apiarena.authservice.model.services;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +27,17 @@ public class EmailDispatchService {
     private static final Logger log = LoggerFactory.getLogger(EmailDispatchService.class);
     private static final String RESEND_API = "https://api.resend.com/emails";
 
+    /** Product tokens. Purple text is AA only on the page background, so the body sits on that surface. */
+    private static final String BG = "#0A0E27";
+    private static final String CYAN = "#00D9FF";
+    private static final String PURPLE = "#B24BF3";
+    private static final String TEXT = "#E8EDF4";
+    private static final String MUTED = "#8B95AD";
+    private static final String LINE = "#1E2439";
+    private static final String FONT_DISPLAY = "'Barlow Condensed','Arial Narrow',Impact,sans-serif";
+    private static final String FONT_BODY = "Syne,'Segoe UI',Arial,sans-serif";
+    private static final String FONT_MONO = "'Share Tech Mono','Courier New',Courier,monospace";
+
     private final EmailProperties emailProperties;
     private final RestTemplate restTemplate;
 
@@ -34,6 +45,9 @@ public class EmailDispatchService {
         this.emailProperties = emailProperties;
         this.restTemplate = restTemplate;
     }
+
+    /** HTML document plus the plain-text alternative sent to Resend. */
+    public record RenderedEmail(String subject, String html, String text) {}
 
     private String frontendBaseUrl() {
         String base = emailProperties.getFrontendBaseUrl() != null
@@ -51,122 +65,96 @@ public class EmailDispatchService {
         return frontendBaseUrl() + "/" + normalized + suffix;
     }
 
-    public void sendVerificationEmail(String toEmail, String username, String token, String locale) {
-        String link = UriComponentsBuilder.fromUriString(frontendLocalePath(locale, "/verify-email"))
+    private static boolean spanish(String locale) {
+        return "es".equals(LocaleSupport.normalize(locale));
+    }
+
+    private static String displayName(String username, String fallback) {
+        if (username == null || username.isBlank()) {
+            return fallback;
+        }
+        return username.trim();
+    }
+
+    private static String esc(String value) {
+        return HtmlUtils.htmlEscape(value == null ? "" : value);
+    }
+
+    private static String p(String innerHtml) {
+        return "<p style=\"margin:0 0 16px;font-family:" + FONT_BODY
+                + ";font-size:16px;line-height:1.6;color:" + TEXT + ";\">" + innerHtml + "</p>";
+    }
+
+    private static String mutedLine(String innerHtml) {
+        return "<p style=\"margin:0;font-family:" + FONT_BODY
+                + ";font-size:13px;line-height:1.5;color:" + MUTED + ";\">" + innerHtml + "</p>";
+    }
+
+    private static String a(String href, String label) {
+        return "<a href=\"" + esc(href) + "\" target=\"_blank\" style=\"color:" + CYAN
+                + ";text-decoration:underline;\">" + esc(label) + "</a>";
+    }
+
+    private static String steps(String... items) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:0 0 8px;\">");
+        for (int i = 0; i < items.length; i++) {
+            sb.append("<tr><td valign=\"top\" width=\"28\" style=\"width:28px;padding:0 8px 12px 0;font-family:")
+                    .append(FONT_MONO)
+                    .append(";font-size:14px;line-height:1.6;color:").append(CYAN).append(";\">")
+                    .append(i + 1).append(".</td><td valign=\"top\" style=\"padding:0 0 12px;font-family:")
+                    .append(FONT_BODY)
+                    .append(";font-size:16px;line-height:1.6;color:").append(TEXT).append(";\">")
+                    .append(items[i]).append("</td></tr>");
+        }
+        sb.append("</table>");
+        return sb.toString();
+    }
+
+    private String verificationLink(String token, String locale) {
+        return UriComponentsBuilder.fromUriString(frontendLocalePath(locale, "/verify-email"))
                 .queryParam("token", token)
                 .encode(StandardCharsets.UTF_8)
                 .build()
                 .toUri()
                 .toString();
+    }
 
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
-            log.warn("RESEND_API_KEY not set; verification link for {}: {}", toEmail, link);
+    private String resetLink(String token, String locale) {
+        return UriComponentsBuilder.fromUriString(frontendLocalePath(locale, "/reset-password"))
+                .queryParam("token", token)
+                .encode(StandardCharsets.UTF_8)
+                .build()
+                .toUri()
+                .toString();
+    }
+
+    public void sendVerificationEmail(String toEmail, String username, String token, String locale) {
+        if (resendKeyMissing()) {
+            log.warn("RESEND_API_KEY not set; verification link for {}: {}", toEmail, verificationLink(token, locale));
             return;
         }
-
-        String safeName = username != null && !username.isBlank() ? username : "there";
-        boolean es = "es".equals(LocaleSupport.normalize(locale));
-        String html;
-        String subject;
-        if (es) {
-            subject = "Verifica tu email de API Arena";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Verifica tu email</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
-                      <p style="line-height:1.5;margin:0 0 24px;">Confirma tu cuenta de API Arena haciendo clic en el botón.</p>
-                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Verificar email</a>
-                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">Si no creaste una cuenta, puedes ignorar este mensaje.</p>
-                    </div>
-                    """.formatted(safeName, link);
-        } else {
-            subject = "Verify your API Arena email";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Verify your email</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                      <p style="line-height:1.5;margin:0 0 24px;">Confirm your API Arena account by clicking the button below.</p>
-                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Verify email</a>
-                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you did not create an account, you can ignore this message.</p>
-                    </div>
-                    """.formatted(safeName, link);
-        }
-
-        postResend(toEmail, subject, html);
+        postResend(toEmail, composeVerificationEmail(username, token, locale), null);
     }
 
     public void sendPasswordResetEmail(String toEmail, String username, String token, String locale) {
-        String link = UriComponentsBuilder.fromUriString(frontendLocalePath(locale, "/reset-password"))
-                .queryParam("token", token)
-                .encode(StandardCharsets.UTF_8)
-                .build()
-                .toUri()
-                .toString();
-
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
-            log.warn("RESEND_API_KEY not set; password reset link for {}: {}", toEmail, link);
+        if (resendKeyMissing()) {
+            log.warn("RESEND_API_KEY not set; password reset link for {}: {}", toEmail, resetLink(token, locale));
             return;
         }
-
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-        boolean es = "es".equals(LocaleSupport.normalize(locale));
-        String html;
-        String subject;
-        if (es) {
-            subject = "Restablece tu contraseña de API Arena";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Restablece tu contraseña</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
-                      <p style="line-height:1.5;margin:0 0 24px;">Recibimos una solicitud para restablecer tu contraseña. El enlace caduca en 1 hora.</p>
-                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Restablecer contraseña</a>
-                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">Si no lo solicitaste, ignora este email; tu contraseña no cambiará.</p>
-                    </div>
-                    """.formatted(safeName, link);
-        } else {
-            subject = "Reset your API Arena password";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Reset your password</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                      <p style="line-height:1.5;margin:0 0 24px;">We received a request to reset your API Arena password. Click the button below to choose a new one. This link expires in 1 hour.</p>
-                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Reset password</a>
-                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you did not request this, you can safely ignore this email; your password will not change.</p>
-                    </div>
-                    """.formatted(safeName, link);
-        }
-
-        postResend(toEmail, subject, html);
+        postResend(toEmail, composePasswordResetEmail(username, token, locale), null);
     }
 
     /**
-     * Scheduled security reminder: rotate password periodically (every ~2 months).
+     * Scheduled security reminder: rotate password periodically (every ~4 months).
+     * English only — this method has no locale argument on main.
      */
     public void sendPasswordRotationReminderEmail(String toEmail, String username) {
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        if (resendKeyMissing()) {
             log.warn("RESEND_API_KEY not set; skip password rotation reminder to {}", toEmail);
             return;
         }
-
-        String base = frontendBaseUrl();
-        String forgotLink = base + "/forgot-password";
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Time to update your password</h1>
-                  <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 16px;">For your security, we recommend changing your API Arena password every two months. If you have not updated it recently, now is a good time.</p>
-                  <p style="line-height:1.5;margin:0 0 24px;">Use the link below to request a secure reset link by email. You will stay signed in on devices where you are already logged in until you complete the reset.</p>
-                  <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Change my password</a>
-                  <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">If you recently changed your password, you can ignore this message. We send this reminder about every two months to help keep accounts secure.</p>
-                </div>
-                """.formatted(safeName, forgotLink);
-
-        postResend(toEmail, "API Arena — password security reminder", html);
+        postResend(toEmail, composePasswordRotationReminderEmail(username), null);
     }
 
     /**
@@ -174,194 +162,54 @@ public class EmailDispatchService {
      * it's irreversible, and full/immediate erasure of the archived copy is via the privacy contact.
      */
     public void sendAccountDeletionEmail(String toEmail, String username,
-            java.time.LocalDateTime reservedUntil, String locale) {
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+            LocalDateTime reservedUntil, String locale) {
+        if (resendKeyMissing()) {
             log.warn("RESEND_API_KEY not set; skip account deletion email to {}", toEmail);
             return;
         }
-        boolean es = "es".equalsIgnoreCase(locale);
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim())
-                : (es ? "hola" : "there");
-        String until = reservedUntil.toLocalDate().toString();
-        String privacy = emailProperties.getSupportPrivacyEmail();
-
-        String subject = es ? "API Arena — tu cuenta ha sido eliminada" : "API Arena — your account has been deleted";
-        String heading = es ? "Tu cuenta ha sido eliminada" : "Your account has been deleted";
-        String body = es
-                ? ("<p style=\"line-height:1.5;margin:0 0 16px;\">Hola %s,</p>"
-                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Hemos eliminado tu cuenta de API Arena. Esta acción es <strong>irreversible</strong>.</p>"
-                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Tu dirección de correo queda <strong>reservada hasta el %s</strong> (unas 2 semanas), el tiempo que tardamos en trasladar tu información a un almacén aparte y liberar la cuenta por completo. Durante ese periodo no podrás crear una cuenta nueva con este correo.</p>"
-                        + "<p style=\"line-height:1.5;margin:0 0 8px;\">Si quieres que borremos <strong>todos tus datos de forma completa</strong>, incluida la copia archivada, escríbenos a <a href=\"mailto:%s\" style=\"color:#22d3ee;\">%s</a>.</p>")
-                        .formatted(safeName, until, privacy, privacy)
-                : ("<p style=\"line-height:1.5;margin:0 0 16px;\">Hi %s,</p>"
-                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Your API Arena account has been deleted. This action is <strong>irreversible</strong>.</p>"
-                        + "<p style=\"line-height:1.5;margin:0 0 16px;\">Your email address is <strong>reserved until %s</strong> (about 2 weeks) while we move your information to a separate store and fully release the account. You can't create a new account with this email during that period.</p>"
-                        + "<p style=\"line-height:1.5;margin:0 0 8px;\">If you want us to erase <strong>all of your data completely</strong>, including the archived copy, email us at <a href=\"mailto:%s\" style=\"color:#22d3ee;\">%s</a>.</p>")
-                        .formatted(safeName, until, privacy, privacy);
-
-        String html = ("<div style=\"font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;\">"
-                + "<h1 style=\"font-size:20px;margin:0 0 16px;color:#22d3ee;\">%s</h1>%s</div>")
-                .formatted(heading, body);
-
-        postResend(toEmail, subject, html);
+        postResend(toEmail, composeAccountDeletionEmail(username, reservedUntil, locale), null);
     }
 
     /**
      * Welcome + beta messaging; separate from in-app IMPORTANT notification (no duplicate copy).
      */
     public void sendWelcomeBetaLegacyEmail(String toEmail, String username, String locale) {
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        if (resendKeyMissing()) {
             log.warn("RESEND_API_KEY not set; skip welcome email to {}", toEmail);
             return;
         }
-
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-        boolean es = "es".equals(LocaleSupport.normalize(locale));
-        String html;
-        String subject;
-        if (es) {
-            subject = "Bienvenido a API Arena (beta)";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Bienvenido a API Arena</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
-                      <p style="line-height:1.5;margin:0 0 16px;">Gracias por confiar en nosotros y crear una cuenta.</p>
-                      <p style="line-height:1.5;margin:0 0 16px;">Estamos en <strong style="color:#a78bfa;">beta</strong>. Tu cuenta queda marcada como <strong style="color:#22d3ee;">legacy</strong> por apoyar esta fase temprana.</p>
-                      <p style="line-height:1.5;margin:0 0 24px;">Tu email está verificado — ya puedes usar la app completa. Nos vemos en la Arena.</p>
-                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— El equipo de API Arena</p>
-                    </div>
-                    """.formatted(safeName);
-        } else {
-            subject = "Welcome to API Arena (beta)";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Welcome to API Arena</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                      <p style="line-height:1.5;margin:0 0 16px;">Thank you for trusting us and creating an account.</p>
-                      <p style="line-height:1.5;margin:0 0 16px;">We are currently in <strong style="color:#a78bfa;">beta</strong>. Your account is automatically marked as a <strong style="color:#22d3ee;">legacy</strong> account as an early supporter of this phase.</p>
-                      <p style="line-height:1.5;margin:0 0 24px;">Your email is verified — you're ready to use the full app. See you in the Arena.</p>
-                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
-                    </div>
-                    """.formatted(safeName);
-        }
-
-        postResend(toEmail, subject, html);
+        postResend(toEmail, composeWelcomeBetaLegacyEmail(username, locale), null);
     }
 
     /**
      * Post-registration onboarding: quick tutorial and what is available during beta.
      */
     public void sendFirstStepsBetaEmail(String toEmail, String username, String locale) {
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        if (resendKeyMissing()) {
             log.warn("RESEND_API_KEY not set; skip first-steps email to {}", toEmail);
             return;
         }
-
-        String loc = LocaleSupport.normalize(locale);
-        String login = frontendLocalePath(loc, "/login");
-        String challenges = frontendLocalePath(loc, "/challenges");
-        String dashboard = frontendLocalePath(loc, "/dashboard");
-        String submissions = frontendLocalePath(loc, "/submissions");
-        String leaderboard = frontendLocalePath(loc, "/leaderboard");
-        String notifications = frontendLocalePath(loc, "/notifications");
-        String friends = frontendLocalePath(loc, "/friends");
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-        boolean es = "es".equals(loc);
-        String html;
-        String subject;
-        if (es) {
-            subject = "Tus primeros pasos en API Arena (beta)";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Tus primeros pasos</h1>
-                      <p style="line-height:1.5;margin:0 0 20px;">Hola %s,</p>
-                      <p style="line-height:1.5;margin:0 0 16px;">Una ruta corta para sacar partido a <strong style="color:#a78bfa;">API Arena</strong> mientras estamos en <strong>beta</strong>:</p>
-                      <ol style="line-height:1.6;margin:0 0 20px;padding-left:20px;color:#e8e8f0;">
-                        <li style="margin-bottom:10px;"><strong>Ya estás listo</strong> — tu email está verificado. <a href="%s" style="color:#22d3ee;">Inicia sesión</a> y explora <a href="%s" style="color:#22d3ee;">Challenges</a> o tu <a href="%s" style="color:#22d3ee;">Dashboard</a>.</li>
-                        <li style="margin-bottom:10px;"><strong>Envía tu API</strong> — sube un ZIP, ejecuta el pipeline sandbox y obtén nota.</li>
-                        <li style="margin-bottom:10px;"><strong>Sigue tu progreso</strong> — <a href="%s" style="color:#22d3ee;">Dashboard</a>, <a href="%s" style="color:#22d3ee;">Mis entregas</a> y <a href="%s" style="color:#22d3ee;">Leaderboard</a>.</li>
-                        <li style="margin-bottom:0;"><strong>Mantente al día</strong> — <a href="%s" style="color:#22d3ee;">Notificaciones</a> y <a href="%s" style="color:#22d3ee;">Amigos</a>.</li>
-                      </ol>
-                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— El equipo de API Arena</p>
-                    </div>
-                    """.formatted(safeName, login, challenges, dashboard, dashboard, submissions, leaderboard, notifications, friends);
-        } else {
-            subject = "Your first steps in API Arena (beta)";
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Your first steps</h1>
-                      <p style="line-height:1.5;margin:0 0 20px;">Hi %s,</p>
-                      <p style="line-height:1.5;margin:0 0 16px;">Here is a short path to get value from <strong style="color:#a78bfa;">API Arena</strong> while we are in <strong>beta</strong>:</p>
-                      <ol style="line-height:1.6;margin:0 0 20px;padding-left:20px;color:#e8e8f0;">
-                        <li style="margin-bottom:10px;"><strong>You're all set</strong> — your email is verified. <a href="%s" style="color:#22d3ee;">Sign in</a>, then explore <a href="%s" style="color:#22d3ee;">Challenges</a> or your <a href="%s" style="color:#22d3ee;">Dashboard</a>.</li>
-                        <li style="margin-bottom:10px;"><strong>Submit your API</strong> — upload a ZIP, run the sandbox pipeline, and get scored. From a challenge page, use Submit.</li>
-                        <li style="margin-bottom:10px;"><strong>Track progress</strong> — <a href="%s" style="color:#22d3ee;">Dashboard</a>, <a href="%s" style="color:#22d3ee;">My submissions</a>, and <a href="%s" style="color:#22d3ee;">Leaderboard</a>.</li>
-                        <li style="margin-bottom:0;"><strong>Stay in the loop</strong> — <a href="%s" style="color:#22d3ee;">Notifications</a> (bell in the top bar) and <a href="%s" style="color:#22d3ee;">Friends</a>.</li>
-                      </ol>
-                      <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">— The API Arena team</p>
-                    </div>
-                    """.formatted(safeName, login, challenges, dashboard, dashboard, submissions, leaderboard, notifications, friends);
-        }
-
-        postResend(toEmail, subject, html);
+        postResend(toEmail, composeFirstStepsBetaEmail(username, locale), null);
     }
 
     /**
      * Opt-in alert when a challenge is published (Challenges page checkbox).
      */
     public void sendNewChallengePublishedEmail(String toEmail, String username, String challengeTitle, long challengeId, String locale) {
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        if (resendKeyMissing()) {
             log.warn("RESEND_API_KEY not set; skip new-challenge alert to {}", toEmail);
             return;
         }
-
-        String loc = LocaleSupport.normalize(locale);
-        String link = frontendLocalePath(loc, "/challenges/" + challengeId);
-        String settingsLink = frontendLocalePath(loc, "/challenges");
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-        String safeTitle = HtmlUtils.htmlEscape(challengeTitle != null ? challengeTitle : "New challenge");
-        boolean es = "es".equals(loc);
-
-        String html;
-        String subject;
-        if (es) {
-            subject = "[API Arena] Nuevo challenge: " + (challengeTitle != null ? challengeTitle : "publicado");
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">Nuevo challenge en API Arena</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hola %s,</p>
-                      <p style="line-height:1.5;margin:0 0 20px;">Hay un nuevo challenge disponible: <strong style="color:#a78bfa;">%s</strong></p>
-                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Abrir challenge</a>
-                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">Recibiste esto porque activaste alertas de nuevos challenges. <a href="%s" style="color:#22d3ee;">Gestionar alertas</a> en la página de Challenges.</p>
-                    </div>
-                    """.formatted(safeName, safeTitle, link, settingsLink);
-        } else {
-            subject = "[API Arena] New challenge: " + (challengeTitle != null ? challengeTitle : "published");
-            html = """
-                    <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                      <h1 style="font-size:20px;margin:0 0 16px;color:#22d3ee;">New challenge in API Arena</h1>
-                      <p style="line-height:1.5;margin:0 0 16px;">Hi %s,</p>
-                      <p style="line-height:1.5;margin:0 0 20px;">A new challenge is available: <strong style="color:#a78bfa;">%s</strong></p>
-                      <a href="%s" style="display:inline-block;background:#22d3ee;color:#0a0a12;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">Open challenge</a>
-                      <p style="line-height:1.5;margin:24px 0 0;font-size:13px;color:#94a3b8;">You received this because you enabled new-challenge email alerts. <a href="%s" style="color:#22d3ee;">Unsubscribe / manage alerts</a> anytime from the Challenges page.</p>
-                    </div>
-                    """.formatted(safeName, safeTitle, link, settingsLink);
-        }
-
-        // RFC 2369 / 8058: let mail clients offer a native unsubscribe action.
+        String settingsLink = frontendLocalePath(LocaleSupport.normalize(locale), "/challenges");
         Map<String, String> headers = new HashMap<>();
         headers.put("List-Unsubscribe", "<mailto:privacy@apiarena.net?subject=unsubscribe>, <" + settingsLink + ">");
         headers.put("List-Unsubscribe-Post", "List-Unsubscribe=One-Click");
-
-        postResend(toEmail, subject, html, headers);
+        postResend(toEmail, composeNewChallengePublishedEmail(username, challengeTitle, challengeId, locale), headers);
     }
 
     /**
      * Mirrors in-app notifications to email (same title and body as the bell).
+     * English only — this method has no locale argument on main.
      */
     public void sendNotificationAlertEmail(
             String toEmail,
@@ -370,36 +218,523 @@ public class EmailDispatchService {
             String body,
             String importanceName
     ) {
-        String apiKey = emailProperties.getResendApiKey();
-        if (apiKey == null || apiKey.isBlank()) {
+        if (resendKeyMissing()) {
             log.warn("RESEND_API_KEY not set; skip notification email to {}", toEmail);
             return;
         }
+        postResend(toEmail, composeNotificationAlertEmail(username, title, body, importanceName), null);
+    }
 
+    RenderedEmail composeVerificationEmail(String username, String token, String locale) {
+        String link = verificationLink(token, locale);
+        String safeName = esc(displayName(username, "there"));
+        boolean es = spanish(locale);
+        if (es) {
+            return layout(new EmailLayout(
+                    "Verifica tu email de API Arena",
+                    locale,
+                    "Confirma tu cuenta de API Arena haciendo clic en el botón.",
+                    null,
+                    "Verifica tu email",
+                    p("Hola " + safeName + ",")
+                            + p("Confirma tu cuenta de API Arena haciendo clic en el botón."),
+                    "Hola " + displayName(username, "there") + ",\n\nConfirma tu cuenta de API Arena haciendo clic en el botón.",
+                    "Verificar email",
+                    link,
+                    "Si no creaste una cuenta, puedes ignorar este mensaje.",
+                    false));
+        }
+        return layout(new EmailLayout(
+                "Verify your API Arena email",
+                locale,
+                "Confirm your API Arena account by clicking the button below.",
+                null,
+                "Verify your email",
+                p("Hi " + safeName + ",")
+                        + p("Confirm your API Arena account by clicking the button below."),
+                "Hi " + displayName(username, "there") + ",\n\nConfirm your API Arena account by clicking the button below.",
+                "Verify email",
+                link,
+                "If you did not create an account, you can ignore this message.",
+                false));
+    }
+
+    RenderedEmail composePasswordResetEmail(String username, String token, String locale) {
+        String link = resetLink(token, locale);
+        String safeName = esc(displayName(username, "there"));
+        String rawName = displayName(username, "there");
+        boolean es = spanish(locale);
+        if (es) {
+            return layout(new EmailLayout(
+                    "Restablece tu contraseña de API Arena",
+                    locale,
+                    "Recibimos una solicitud para restablecer tu contraseña. El enlace caduca en 1 hora.",
+                    null,
+                    "Restablece tu contraseña",
+                    p("Hola " + safeName + ",")
+                            + p("Recibimos una solicitud para restablecer tu contraseña. El enlace caduca en 1 hora."),
+                    "Hola " + rawName + ",\n\nRecibimos una solicitud para restablecer tu contraseña. El enlace caduca en 1 hora.",
+                    "Restablecer contraseña",
+                    link,
+                    "Si no lo solicitaste, ignora este email; tu contraseña no cambiará.",
+                    false));
+        }
+        return layout(new EmailLayout(
+                "Reset your API Arena password",
+                locale,
+                "We received a request to reset your API Arena password. This link expires in 1 hour.",
+                null,
+                "Reset your password",
+                p("Hi " + safeName + ",")
+                        + p("We received a request to reset your API Arena password. Click the button below to choose a new one. This link expires in 1 hour."),
+                "Hi " + rawName + ",\n\nWe received a request to reset your API Arena password. Click the button below to choose a new one. This link expires in 1 hour.",
+                "Reset password",
+                link,
+                "If you did not request this, you can safely ignore this email; your password will not change.",
+                false));
+    }
+
+    RenderedEmail composePasswordRotationReminderEmail(String username) {
+        String forgotLink = frontendBaseUrl() + "/forgot-password";
+        String safeName = esc(displayName(username, "there"));
+        String rawName = displayName(username, "there");
+        return layout(new EmailLayout(
+                "API Arena — password security reminder",
+                "en",
+                "For your security, we recommend changing your API Arena password every four months.",
+                null,
+                "Time to update your password",
+                p("Hi " + safeName + ",")
+                        + p("For your security, we recommend changing your API Arena password every four months. If you have not updated it recently, now is a good time.")
+                        + p("Use the link below to request a secure reset link by email. You will stay signed in on devices where you are already logged in until you complete the reset."),
+                "Hi " + rawName + ",\n\nFor your security, we recommend changing your API Arena password every four months. If you have not updated it recently, now is a good time.\n\nUse the link below to request a secure reset link by email. You will stay signed in on devices where you are already logged in until you complete the reset.",
+                "Change my password",
+                forgotLink,
+                "If you recently changed your password, you can ignore this message. We send this reminder about every four months to help keep accounts secure.",
+                false));
+    }
+
+    RenderedEmail composeAccountDeletionEmail(String username, LocalDateTime reservedUntil, String locale) {
+        // Preserve the historical locale check: only an exact "es" (any case), not LocaleSupport.normalize.
+        boolean es = "es".equalsIgnoreCase(locale);
+        String rawName = displayName(username, es ? "hola" : "there");
+        String safeName = esc(rawName);
+        String until = reservedUntil.toLocalDate().toString();
+        String privacy = emailProperties.getSupportPrivacyEmail();
+        String privacyHtml = "<a href=\"mailto:" + esc(privacy) + "\" style=\"color:" + CYAN
+                + ";text-decoration:underline;\">" + esc(privacy) + "</a>";
+        if (es) {
+            return layout(new EmailLayout(
+                    "API Arena — tu cuenta ha sido eliminada",
+                    es ? "es" : "en",
+                    "Hemos eliminado tu cuenta de API Arena. Esta acción es irreversible.",
+                    null,
+                    "Tu cuenta ha sido eliminada",
+                    p("Hola " + safeName + ",")
+                            + p("Hemos eliminado tu cuenta de API Arena. Esta acción es <strong>irreversible</strong>.")
+                            + p("Tu dirección de correo queda <strong>reservada hasta el " + esc(until) + "</strong> (unas 2 semanas), el tiempo que tardamos en trasladar tu información a un almacén aparte y liberar la cuenta por completo. Durante ese periodo no podrás crear una cuenta nueva con este correo.")
+                            + p("Si quieres que borremos <strong>todos tus datos de forma completa</strong>, incluida la copia archivada, escríbenos a " + privacyHtml + "."),
+                    "Hola " + rawName + ",\n\nHemos eliminado tu cuenta de API Arena. Esta acción es irreversible.\n\nTu dirección de correo queda reservada hasta el " + until + " (unas 2 semanas), el tiempo que tardamos en trasladar tu información a un almacén aparte y liberar la cuenta por completo. Durante ese periodo no podrás crear una cuenta nueva con este correo.\n\nSi quieres que borremos todos tus datos de forma completa, incluida la copia archivada, escríbenos a " + privacy + ".",
+                    null,
+                    null,
+                    "Recibes este email porque tu cuenta de API Arena ha sido eliminada.",
+                    true));
+        }
+        return layout(new EmailLayout(
+                "API Arena — your account has been deleted",
+                "en",
+                "Your API Arena account has been deleted. This action is irreversible.",
+                null,
+                "Your account has been deleted",
+                p("Hi " + safeName + ",")
+                        + p("Your API Arena account has been deleted. This action is <strong>irreversible</strong>.")
+                        + p("Your email address is <strong>reserved until " + esc(until) + "</strong> (about 2 weeks) while we move your information to a separate store and fully release the account. You can't create a new account with this email during that period.")
+                        + p("If you want us to erase <strong>all of your data completely</strong>, including the archived copy, email us at " + privacyHtml + "."),
+                "Hi " + rawName + ",\n\nYour API Arena account has been deleted. This action is irreversible.\n\nYour email address is reserved until " + until + " (about 2 weeks) while we move your information to a separate store and fully release the account. You can't create a new account with this email during that period.\n\nIf you want us to erase all of your data completely, including the archived copy, email us at " + privacy + ".",
+                null,
+                null,
+                "You received this email because your API Arena account was deleted.",
+                true));
+    }
+
+    RenderedEmail composeWelcomeBetaLegacyEmail(String username, String locale) {
+        String safeName = esc(displayName(username, "there"));
+        String rawName = displayName(username, "there");
+        boolean es = spanish(locale);
+        if (es) {
+            return layout(new EmailLayout(
+                    "Bienvenido a API Arena (beta)",
+                    locale,
+                    "Gracias por confiar en nosotros y crear una cuenta.",
+                    null,
+                    "Bienvenido a API Arena",
+                    p("Hola " + safeName + ",")
+                            + p("Gracias por confiar en nosotros y crear una cuenta.")
+                            + p("Estamos en <strong style=\"color:" + PURPLE + ";\">beta</strong>. Tu cuenta queda marcada como <strong style=\"color:" + CYAN + ";\">legacy</strong> por apoyar esta fase temprana.")
+                            + p("Tu email está verificado — ya puedes usar la app completa. Nos vemos en la Arena.")
+                            + mutedLine("— El equipo de API Arena"),
+                    "Hola " + rawName + ",\n\nGracias por confiar en nosotros y crear una cuenta.\n\nEstamos en beta. Tu cuenta queda marcada como legacy por apoyar esta fase temprana.\n\nTu email está verificado — ya puedes usar la app completa. Nos vemos en la Arena.\n\n— El equipo de API Arena",
+                    null,
+                    null,
+                    "Recibes este email porque verificaste tu cuenta de API Arena.",
+                    false));
+        }
+        return layout(new EmailLayout(
+                "Welcome to API Arena (beta)",
+                locale,
+                "Thank you for trusting us and creating an account.",
+                null,
+                "Welcome to API Arena",
+                p("Hi " + safeName + ",")
+                        + p("Thank you for trusting us and creating an account.")
+                        + p("We are currently in <strong style=\"color:" + PURPLE + ";\">beta</strong>. Your account is automatically marked as a <strong style=\"color:" + CYAN + ";\">legacy</strong> account as an early supporter of this phase.")
+                        + p("Your email is verified — you're ready to use the full app. See you in the Arena.")
+                        + mutedLine("— The API Arena team"),
+                "Hi " + rawName + ",\n\nThank you for trusting us and creating an account.\n\nWe are currently in beta. Your account is automatically marked as a legacy account as an early supporter of this phase.\n\nYour email is verified — you're ready to use the full app. See you in the Arena.\n\n— The API Arena team",
+                null,
+                null,
+                "You received this email because you verified your API Arena account.",
+                false));
+    }
+
+    RenderedEmail composeFirstStepsBetaEmail(String username, String locale) {
+        String loc = LocaleSupport.normalize(locale);
+        String login = frontendLocalePath(loc, "/login");
+        String challenges = frontendLocalePath(loc, "/challenges");
+        String dashboard = frontendLocalePath(loc, "/dashboard");
+        String submissions = frontendLocalePath(loc, "/submissions");
+        String leaderboard = frontendLocalePath(loc, "/leaderboard");
+        String notifications = frontendLocalePath(loc, "/notifications");
+        String friends = frontendLocalePath(loc, "/friends");
+        String safeName = esc(displayName(username, "there"));
+        String rawName = displayName(username, "there");
+        boolean es = spanish(locale);
+        if (es) {
+            return layout(new EmailLayout(
+                    "Tus primeros pasos en API Arena (beta)",
+                    locale,
+                    "Una ruta corta para sacar partido a API Arena mientras estamos en beta.",
+                    null,
+                    "Tus primeros pasos",
+                    p("Hola " + safeName + ",")
+                            + p("Una ruta corta para sacar partido a <strong style=\"color:" + PURPLE + ";\">API Arena</strong> mientras estamos en <strong>beta</strong>:")
+                            + steps(
+                                    "<strong>Ya estás listo</strong> — tu email está verificado. " + a(login, "Inicia sesión") + " y explora " + a(challenges, "Challenges") + " o tu " + a(dashboard, "Dashboard") + ".",
+                                    "<strong>Envía tu API</strong> — sube un ZIP, ejecuta el pipeline sandbox y obtén nota.",
+                                    "<strong>Sigue tu progreso</strong> — " + a(dashboard, "Dashboard") + ", " + a(submissions, "Mis entregas") + " y " + a(leaderboard, "Leaderboard") + ".",
+                                    "<strong>Mantente al día</strong> — " + a(notifications, "Notificaciones") + " y " + a(friends, "Amigos") + ".")
+                            + mutedLine("— El equipo de API Arena"),
+                    "Hola " + rawName + ",\n\nUna ruta corta para sacar partido a API Arena mientras estamos en beta:\n\n1. Ya estás listo — tu email está verificado. Inicia sesión (" + login + ") y explora Challenges (" + challenges + ") o tu Dashboard (" + dashboard + ").\n2. Envía tu API — sube un ZIP, ejecuta el pipeline sandbox y obtén nota.\n3. Sigue tu progreso — Dashboard (" + dashboard + "), Mis entregas (" + submissions + ") y Leaderboard (" + leaderboard + ").\n4. Mantente al día — Notificaciones (" + notifications + ") y Amigos (" + friends + ").\n\n— El equipo de API Arena",
+                    "Inicia sesión",
+                    login,
+                    "Recibes este email porque verificaste tu cuenta de API Arena.",
+                    false));
+        }
+        return layout(new EmailLayout(
+                "Your first steps in API Arena (beta)",
+                locale,
+                "Here is a short path to get value from API Arena while we are in beta.",
+                null,
+                "Your first steps",
+                p("Hi " + safeName + ",")
+                        + p("Here is a short path to get value from <strong style=\"color:" + PURPLE + ";\">API Arena</strong> while we are in <strong>beta</strong>:")
+                        + steps(
+                                "<strong>You're all set</strong> — your email is verified. " + a(login, "Sign in") + ", then explore " + a(challenges, "Challenges") + " or your " + a(dashboard, "Dashboard") + ".",
+                                "<strong>Submit your API</strong> — upload a ZIP, run the sandbox pipeline, and get scored. From a challenge page, use Submit.",
+                                "<strong>Track progress</strong> — " + a(dashboard, "Dashboard") + ", " + a(submissions, "My submissions") + ", and " + a(leaderboard, "Leaderboard") + ".",
+                                "<strong>Stay in the loop</strong> — " + a(notifications, "Notifications") + " (bell in the top bar) and " + a(friends, "Friends") + ".")
+                        + mutedLine("— The API Arena team"),
+                "Hi " + rawName + ",\n\nHere is a short path to get value from API Arena while we are in beta:\n\n1. You're all set — your email is verified. Sign in (" + login + "), then explore Challenges (" + challenges + ") or your Dashboard (" + dashboard + ").\n2. Submit your API — upload a ZIP, run the sandbox pipeline, and get scored. From a challenge page, use Submit.\n3. Track progress — Dashboard (" + dashboard + "), My submissions (" + submissions + "), and Leaderboard (" + leaderboard + ").\n4. Stay in the loop — Notifications (" + notifications + ") (bell in the top bar) and Friends (" + friends + ").\n\n— The API Arena team",
+                "Sign in",
+                login,
+                "You received this email because you verified your API Arena account.",
+                false));
+    }
+
+    RenderedEmail composeNewChallengePublishedEmail(String username, String challengeTitle, long challengeId, String locale) {
+        String loc = LocaleSupport.normalize(locale);
+        String link = frontendLocalePath(loc, "/challenges/" + challengeId);
+        String settingsLink = frontendLocalePath(loc, "/challenges");
+        String safeName = esc(displayName(username, "there"));
+        String rawName = displayName(username, "there");
+        String safeTitle = esc(challengeTitle != null ? challengeTitle : "New challenge");
+        String rawTitle = challengeTitle != null ? challengeTitle : "New challenge";
+        boolean es = spanish(locale);
+        String subjectTitle = challengeTitle != null ? challengeTitle : (es ? "publicado" : "published");
+        if (es) {
+            return layout(new EmailLayout(
+                    "[API Arena] Nuevo challenge: " + subjectTitle,
+                    locale,
+                    "Hay un nuevo challenge disponible: " + rawTitle,
+                    null,
+                    "Nuevo challenge en API Arena",
+                    p("Hola " + safeName + ",")
+                            + p("Hay un nuevo challenge disponible: <strong style=\"color:" + PURPLE + ";\">" + safeTitle + "</strong>"),
+                    "Hola " + rawName + ",\n\nHay un nuevo challenge disponible: " + rawTitle,
+                    "Abrir challenge",
+                    link,
+                    "Recibiste esto porque activaste alertas de nuevos challenges. " + a(settingsLink, "Gestionar alertas") + " en la página de Challenges.",
+                    "Recibiste esto porque activaste alertas de nuevos challenges. Gestionar alertas (" + settingsLink + ") en la página de Challenges.",
+                    false));
+        }
+        return layout(new EmailLayout(
+                "[API Arena] New challenge: " + subjectTitle,
+                locale,
+                "A new challenge is available: " + rawTitle,
+                null,
+                "New challenge in API Arena",
+                p("Hi " + safeName + ",")
+                        + p("A new challenge is available: <strong style=\"color:" + PURPLE + ";\">" + safeTitle + "</strong>"),
+                "Hi " + rawName + ",\n\nA new challenge is available: " + rawTitle,
+                "Open challenge",
+                link,
+                "You received this because you enabled new-challenge email alerts. " + a(settingsLink, "Unsubscribe / manage alerts") + " anytime from the Challenges page.",
+                "You received this because you enabled new-challenge email alerts. Unsubscribe / manage alerts (" + settingsLink + ") anytime from the Challenges page.",
+                false));
+    }
+
+    RenderedEmail composeNotificationAlertEmail(String username, String title, String body, String importanceName) {
         String imp = importanceName != null ? importanceName.trim().toUpperCase() : "ALERT";
-        String safeTitle = HtmlUtils.htmlEscape(title != null ? title : "");
-        String safeBody = HtmlUtils.htmlEscape(body != null ? body : "");
-        String safeName = username != null && !username.isBlank() ? HtmlUtils.htmlEscape(username.trim()) : "there";
-
-        String html = """
-                <div style="font-family:system-ui,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#e8e8f0;background:#0a0a12;padding:24px;border-radius:12px;border:1px solid #1e293b;">
-                  <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#a78bfa;margin:0 0 8px;">%s</p>
-                  <h1 style="font-size:18px;margin:0 0 16px;color:#22d3ee;">%s</h1>
-                  <p style="line-height:1.5;margin:0 0 12px;">Hi %s,</p>
-                  <p style="line-height:1.5;margin:0 0 24px;white-space:pre-wrap;">%s</p>
-                  <p style="line-height:1.5;margin:0;font-size:13px;color:#94a3b8;">This email mirrors your in-app notification (bell in the top bar).</p>
-                </div>
-                """.formatted(imp, safeTitle, safeName, safeBody);
-
-        String subject = String.format("[API Arena] [%s] %s", imp, title != null ? title : "Notification");
-        postResend(toEmail, subject, html);
+        String rawTitle = title != null ? title : "";
+        String rawBody = body != null ? body : "";
+        String rawName = displayName(username, "there");
+        String subject = "[API Arena] [" + imp + "] " + (title != null ? title : "Notification");
+        String bodyHtml = esc(rawBody).replace("\r\n", "\n").replace("\n", "<br>");
+        return layout(new EmailLayout(
+                subject,
+                "en",
+                rawBody.isBlank() ? rawTitle : rawBody,
+                imp,
+                rawTitle,
+                p("Hi " + esc(rawName) + ",")
+                        + p(bodyHtml),
+                "Hi " + rawName + ",\n\n" + rawBody,
+                null,
+                null,
+                "This email mirrors your in-app notification (bell in the top bar).",
+                false));
     }
 
-    private void postResend(String toEmail, String subject, String html) {
-        postResend(toEmail, subject, html, null);
+    /**
+     * Tells the account owner an administrator set a new password. Does not include the password.
+     */
+    public void sendAdminPasswordChangedEmail(String toEmail, String username, String locale) {
+        if (resendKeyMissing()) {
+            log.warn("RESEND_API_KEY not set; skip admin password-changed email to {}", toEmail);
+            return;
+        }
+        postResend(toEmail, composeAdminPasswordChangedEmail(username, locale), null);
     }
 
-    private void postResend(String toEmail, String subject, String html, Map<String, String> extraHeaders) {
+    RenderedEmail composeAdminPasswordChangedEmail(String username, String locale) {
+        boolean es = "es".equals(LocaleSupport.normalize(locale));
+        String rawName = displayName(username, es ? "hola" : "there");
+        String safeName = esc(rawName);
+        String privacy = emailProperties.getSupportPrivacyEmail() != null
+                && !emailProperties.getSupportPrivacyEmail().isBlank()
+                ? emailProperties.getSupportPrivacyEmail()
+                : "privacy@apiarena.net";
+        String loginLink = frontendLocalePath(locale, "/login");
+        String privacyHtml = "<a href=\"mailto:" + esc(privacy) + "\" style=\"color:" + CYAN
+                + ";text-decoration:underline;\">" + esc(privacy) + "</a>";
+        if (es) {
+            return layout(new EmailLayout(
+                    "API Arena — un administrador ha cambiado tu contraseña",
+                    locale,
+                    "Un administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones.",
+                    null,
+                    "Tu contraseña ha sido cambiada",
+                    p("Hola " + safeName + ",")
+                            + p("Un administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones.")
+                            + p("Si no lo esperabas, contacta con soporte de inmediato. " + privacyHtml),
+                    "Hola " + rawName + ",\n\nUn administrador ha cambiado la contraseña de tu cuenta de API Arena y ha cerrado todas tus sesiones.\n\nSi no lo esperabas, contacta con soporte de inmediato. " + privacy,
+                    "Iniciar sesión",
+                    loginLink,
+                    "Recibes este email porque un administrador ha cambiado tu contraseña de API Arena.",
+                    true));
+        }
+        return layout(new EmailLayout(
+                "API Arena — an administrator changed your password",
+                locale,
+                "An administrator changed the password on your API Arena account and signed you out of every session.",
+                null,
+                "Your password was changed",
+                p("Hi " + safeName + ",")
+                        + p("An administrator changed the password on your API Arena account and signed you out of every session.")
+                        + p("If you did not expect this, contact support right away. " + privacyHtml),
+                "Hi " + rawName + ",\n\nAn administrator changed the password on your API Arena account and signed you out of every session.\n\nIf you did not expect this, contact support right away. " + privacy,
+                "Sign in",
+                loginLink,
+                "You received this email because an administrator changed your API Arena password.",
+                true));
+    }
+
+    private boolean resendKeyMissing() {
+        String apiKey = emailProperties.getResendApiKey();
+        return apiKey == null || apiKey.isBlank();
+    }
+
+    /**
+     * One shared shell for every transactional email: brand header, body, optional bulletproof CTA,
+     * and a footer with why the message was sent, legal links, and the privacy contact when that email already uses it.
+     * Callers pass localized copy. This method does not translate.
+     * Body and reason HTML are inserted as markup; heading, preheader, and CTA label are escaped here.
+     */
+    private RenderedEmail layout(EmailLayout m) {
+        String lang = LocaleSupport.normalize(m.locale());
+        String reasonHtml = m.reasonHtml() != null ? m.reasonHtml() : esc(m.reasonText());
+        StringBuilder html = new StringBuilder(6144);
+        html.append("<!DOCTYPE html><html lang=\"").append(lang)
+                .append("\" xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\">");
+        html.append("<head><meta charset=\"utf-8\">");
+        html.append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">");
+        html.append("<meta name=\"color-scheme\" content=\"dark\"><meta name=\"supported-color-schemes\" content=\"dark\">");
+        html.append("<meta name=\"x-apple-disable-message-reformatting\">");
+        html.append("<title>").append(esc(m.subject())).append("</title>");
+        html.append("<!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->");
+        html.append("<style>");
+        html.append(":root{color-scheme:dark;supported-color-schemes:dark;}");
+        html.append("body,table,td{font-family:").append(FONT_BODY).append(";}");
+        html.append("a{color:").append(CYAN).append(";}");
+        html.append("@media (prefers-color-scheme:dark){");
+        html.append(".email-bg,.container{background-color:").append(BG).append(" !important;}");
+        html.append(".text-primary{color:").append(TEXT).append(" !important;}");
+        html.append(".text-cyan{color:").append(CYAN).append(" !important;}");
+        html.append(".text-purple{color:").append(PURPLE).append(" !important;}");
+        html.append(".text-muted{color:").append(MUTED).append(" !important;}");
+        html.append(".stripe-cyan{background-color:").append(CYAN).append(" !important;}");
+        html.append(".stripe-purple{background-color:").append(PURPLE).append(" !important;}");
+        html.append(".btn-td,.btn-a{background-color:").append(CYAN).append(" !important;}");
+        html.append(".btn-a{color:").append(BG).append(" !important;}");
+        html.append("}");
+        html.append("[data-ogsc] .text-primary{color:").append(TEXT).append(" !important;}");
+        html.append("[data-ogsc] .text-muted{color:").append(MUTED).append(" !important;}");
+        html.append("[data-ogsc] .btn-a{color:").append(BG).append(" !important;}");
+        html.append("[data-ogsb] .email-bg,[data-ogsb] .container{background-color:").append(BG).append(" !important;}");
+        html.append("[data-ogsb] .stripe-cyan,[data-ogsb] .btn-td{background-color:").append(CYAN).append(" !important;}");
+        html.append("[data-ogsb] .stripe-purple{background-color:").append(PURPLE).append(" !important;}");
+        html.append("@media only screen and (max-width:620px){.container{width:100% !important;}.px{padding-left:20px !important;padding-right:20px !important;}}");
+        html.append("</style></head>");
+        html.append("<body class=\"email-bg\" bgcolor=\"").append(BG).append("\" style=\"margin:0;padding:0;background-color:")
+                .append(BG).append(";color:").append(TEXT).append(";-webkit-text-size-adjust:100%;\">");
+        html.append("<div style=\"display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;color:")
+                .append(BG).append(";\">").append(esc(m.preheader()));
+        html.append("&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;");
+        html.append("</div>");
+        html.append("<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"email-bg\" bgcolor=\"")
+                .append(BG).append("\" style=\"background-color:").append(BG).append(";\"><tr><td align=\"center\" style=\"padding:24px 12px;\">");
+        html.append("<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" class=\"container\" style=\"width:600px;max-width:600px;border:1px solid ")
+                .append(LINE).append(";background-color:").append(BG).append(";\" bgcolor=\"").append(BG).append("\">");
+        html.append("<tr><td style=\"padding:0;font-size:0;line-height:0;\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>");
+        html.append("<td class=\"stripe-cyan\" width=\"50%\" bgcolor=\"").append(CYAN).append("\" height=\"4\" style=\"width:50%;height:4px;font-size:0;line-height:0;background-color:")
+                .append(CYAN).append(";\">&nbsp;</td>");
+        html.append("<td class=\"stripe-purple\" width=\"50%\" bgcolor=\"").append(PURPLE).append("\" height=\"4\" style=\"width:50%;height:4px;font-size:0;line-height:0;background-color:")
+                .append(PURPLE).append(";\">&nbsp;</td></tr></table></td></tr>");
+        html.append("<tr><td class=\"px\" style=\"padding:28px 32px 8px;\"><p style=\"margin:0;font-family:")
+                .append(FONT_DISPLAY).append(";font-size:28px;font-weight:900;letter-spacing:2px;line-height:1;\">");
+        html.append("<span class=\"text-cyan\" style=\"color:").append(CYAN).append(";\">API</span>");
+        html.append("<span class=\"text-primary\" style=\"color:").append(TEXT).append(";\">Arena</span>");
+        html.append("</p></td></tr>");
+        html.append("<tr><td class=\"px text-primary\" style=\"padding:8px 32px 28px;color:").append(TEXT).append(";\">");
+        if (m.kicker() != null && !m.kicker().isBlank()) {
+            html.append("<p class=\"text-purple\" style=\"margin:0 0 8px;font-family:").append(FONT_MONO)
+                    .append(";font-size:12px;letter-spacing:2px;text-transform:uppercase;color:").append(PURPLE).append(";\">")
+                    .append(esc(m.kicker())).append("</p>");
+        }
+        html.append("<h1 class=\"text-cyan\" style=\"margin:0 0 16px;font-family:").append(FONT_DISPLAY)
+                .append(";font-size:28px;font-weight:700;line-height:1.15;letter-spacing:0.4px;color:").append(CYAN).append(";\">")
+                .append(esc(m.heading())).append("</h1>");
+        html.append(m.bodyHtml());
+        if (m.ctaLabel() != null && m.ctaUrl() != null) {
+            html.append("<div style=\"margin:8px 0 4px;\">").append(bulletproofButton(m.ctaUrl(), m.ctaLabel())).append("</div>");
+        }
+        html.append("</td></tr>");
+        html.append("<tr><td class=\"px\" style=\"padding:0 32px;\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td height=\"1\" bgcolor=\"")
+                .append(LINE).append("\" style=\"height:1px;font-size:0;line-height:0;background-color:").append(LINE).append(";\">&nbsp;</td></tr></table></td></tr>");
+        html.append("<tr><td class=\"px text-muted\" style=\"padding:16px 32px 28px;color:").append(MUTED).append(";\">");
+        html.append("<p class=\"text-muted\" style=\"margin:0 0 12px;font-family:").append(FONT_BODY)
+                .append(";font-size:13px;line-height:1.5;color:").append(MUTED).append(";\">").append(reasonHtml).append("</p>");
+        if (m.privacyContact()) {
+            String privacy = emailProperties.getSupportPrivacyEmail();
+            html.append("<p class=\"text-muted\" style=\"margin:0 0 12px;font-family:").append(FONT_BODY)
+                    .append(";font-size:13px;line-height:1.5;color:").append(MUTED).append(";\">")
+                    .append("<a href=\"mailto:").append(esc(privacy)).append("\" style=\"color:").append(CYAN)
+                    .append(";text-decoration:underline;\">").append(esc(privacy)).append("</a></p>");
+        }
+        html.append(legalLinksHtml(lang));
+        html.append("</td></tr></table></td></tr></table></body></html>");
+
+        StringBuilder text = new StringBuilder();
+        text.append("API ARENA\n\n");
+        if (m.kicker() != null && !m.kicker().isBlank()) {
+            text.append(m.kicker()).append("\n\n");
+        }
+        text.append(m.heading()).append("\n\n");
+        text.append(m.bodyText()).append("\n\n");
+        if (m.ctaLabel() != null && m.ctaUrl() != null) {
+            text.append(m.ctaLabel()).append(": ").append(m.ctaUrl()).append("\n\n");
+        }
+        text.append(m.reasonText()).append("\n\n");
+        if (m.privacyContact()) {
+            text.append(emailProperties.getSupportPrivacyEmail()).append("\n\n");
+        }
+        text.append(legalLinksText(lang));
+        return new RenderedEmail(m.subject(), html.toString(), text.toString());
+    }
+
+    private String legalLinksHtml(String locale) {
+        String[][] links = legalLinks(locale);
+        StringBuilder sb = new StringBuilder();
+        sb.append("<p style=\"margin:0;font-family:").append(FONT_MONO)
+                .append(";font-size:12px;line-height:1.6;color:").append(MUTED).append(";\">");
+        for (int i = 0; i < links.length; i++) {
+            if (i > 0) {
+                sb.append(" <span style=\"color:").append(MUTED).append(";\">&middot;</span> ");
+            }
+            sb.append(a(links[i][1], links[i][0]));
+        }
+        sb.append("</p>");
+        return sb.toString();
+    }
+
+    private String legalLinksText(String locale) {
+        StringBuilder sb = new StringBuilder();
+        for (String[] link : legalLinks(locale)) {
+            sb.append(link[0]).append(": ").append(link[1]).append("\n");
+        }
+        return sb.toString();
+    }
+
+    /** Same labels as the site footer, with the locale prefix the SPA already uses. */
+    private String[][] legalLinks(String locale) {
+        return new String[][] {
+                {"Aviso Legal", frontendLocalePath(locale, "/aviso-legal")},
+                {"Privacidad", frontendLocalePath(locale, "/privacidad")},
+                {"Cookies", frontendLocalePath(locale, "/cookies")},
+                {"Términos", frontendLocalePath(locale, "/terminos")}
+        };
+    }
+
+    private String bulletproofButton(String href, String label) {
+        String safeHref = esc(href);
+        String safeLabel = esc(label);
+        return "<table role=\"presentation\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"margin:0;\">"
+                + "<tr><td align=\"center\" bgcolor=\"" + CYAN + "\" class=\"btn-td\" style=\"border-radius:8px;background-color:" + CYAN + ";\">"
+                + "<!--[if mso]>"
+                + "<v:roundrect xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:w=\"urn:schemas-microsoft-com:office:word\" href=\"" + safeHref
+                + "\" style=\"height:48px;v-text-anchor:middle;width:280px;\" arcsize=\"12%\" strokecolor=\"" + CYAN + "\" fillcolor=\"" + CYAN + "\">"
+                + "<w:anchorlock/>"
+                + "<center style=\"color:" + BG + ";font-family:Arial,sans-serif;font-size:16px;font-weight:bold;\">" + safeLabel + "</center>"
+                + "</v:roundrect>"
+                + "<![endif]-->"
+                + "<a href=\"" + safeHref + "\" target=\"_blank\" class=\"btn-a\" style=\"background-color:" + CYAN
+                + ";border:1px solid " + CYAN + ";border-radius:8px;color:" + BG
+                + ";display:inline-block;font-family:" + FONT_DISPLAY
+                + ";font-size:18px;font-weight:700;letter-spacing:0.4px;line-height:48px;text-align:center;text-decoration:none;width:280px;-webkit-text-size-adjust:none;mso-hide:all;\">"
+                + safeLabel + "</a></td></tr></table>";
+    }
+
+    private void postResend(String toEmail, RenderedEmail email, Map<String, String> extraHeaders) {
         String apiKey = emailProperties.getResendApiKey();
         if (apiKey == null || apiKey.isBlank()) {
             return;
@@ -412,26 +747,62 @@ public class EmailDispatchService {
         Map<String, Object> body = new HashMap<>();
         body.put("from", emailProperties.getFrom());
         body.put("to", List.of(toEmail));
-        body.put("subject", subject);
-        body.put("html", html);
+        body.put("subject", email.subject());
+        body.put("html", email.html());
+        body.put("text", email.text());
         if (extraHeaders != null && !extraHeaders.isEmpty()) {
             body.put("headers", extraHeaders);
         }
 
         try {
             restTemplate.postForEntity(RESEND_API, new HttpEntity<>(body, headers), Map.class);
-            log.info("Email sent via Resend to {} subject={}", toEmail, subject);
+            log.info("Email sent via Resend to {} subject={}", toEmail, email.subject());
         } catch (HttpStatusCodeException e) {
             log.error(
                     "Resend rejected email to {} subject={} status={} body={}",
                     toEmail,
-                    subject,
+                    email.subject(),
                     e.getStatusCode().value(),
                     e.getResponseBodyAsString());
         } catch (RestClientException e) {
-            log.error("Resend request failed for {} subject={}: {}", toEmail, subject, e.getMessage());
+            log.error("Resend request failed for {} subject={}: {}", toEmail, email.subject(), e.getMessage());
         } catch (Exception e) {
-            log.error("Failed to send email to {} subject={}: {}", toEmail, subject, e.getMessage());
+            log.error("Failed to send email to {} subject={}: {}", toEmail, email.subject(), e.getMessage());
+        }
+    }
+
+    /**
+     * @param reasonHtml footer markup when the reason contains a link; null uses escaped {@code reasonText}
+     * @param reasonText plain-text footer. When {@code reasonHtml} is null this is also the HTML reason.
+     */
+    private record EmailLayout(
+            String subject,
+            String locale,
+            String preheader,
+            String kicker,
+            String heading,
+            String bodyHtml,
+            String bodyText,
+            String ctaLabel,
+            String ctaUrl,
+            String reasonHtml,
+            String reasonText,
+            boolean privacyContact
+    ) {
+        private EmailLayout(
+                String subject,
+                String locale,
+                String preheader,
+                String kicker,
+                String heading,
+                String bodyHtml,
+                String bodyText,
+                String ctaLabel,
+                String ctaUrl,
+                String reasonText,
+                boolean privacyContact
+        ) {
+            this(subject, locale, preheader, kicker, heading, bodyHtml, bodyText, ctaLabel, ctaUrl, null, reasonText, privacyContact);
         }
     }
 }

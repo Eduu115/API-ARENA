@@ -10,6 +10,7 @@ import LocaleLink from "../../components/LocaleLink";
 import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
 import { useLocalizedPath } from "../../routes/LocaleLayout";
+import { usePageMeta } from "../../lib/usePageMeta";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
@@ -27,6 +28,11 @@ const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 export default function Register() {
   const { t, i18n } = useTranslation("auth");
+  usePageMeta({
+    title: t("register.formTitle"),
+    description: t("register.lead"),
+    path: "/register",
+  });
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

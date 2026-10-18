@@ -12,11 +12,17 @@ import { translateAuthError } from "../../lib/authErrorI18n";
 import { isTurnstileEnabled } from "../../lib/turnstile";
 import { updateProfile } from "../../lib/authApi";
 import { useLocalizedPath } from "../../routes/LocaleLayout";
+import { usePageMeta } from "../../lib/usePageMeta";
 import "../challenges/challenges.css";
 import "./auth-pages.css";
 
 export default function Login() {
   const { t, i18n } = useTranslation("auth");
+  usePageMeta({
+    title: t("login.formTitle"),
+    description: t("login.lead"),
+    path: "/login",
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);

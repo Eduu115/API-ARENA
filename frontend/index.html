@@ -4,64 +4,179 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icons/logo-hex-sm.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      document.documentElement.lang =
+        location.pathname === "/es" || location.pathname.startsWith("/es/") ? "es" : "en";
+    </script>
 
-    <title>API Arena — Compete. Build. Conquer. | Real API Challenges for Developers</title>
-    <meta name="description" content="API Arena (APIArena) is a competitive platform where developers ship real Spring Boot APIs as ZIPs, get them built and tested in a sandbox, and climb XP and ELO rankings. Practice REST API design with real HTTP tests, replays and leaderboards." />
+    <title>Compete. Build. Conquer. | API Arena</title>
+    <meta name="description" content="API Arena is a free competitive platform where students and developers ship real Spring Boot APIs as a ZIP, get them built in an isolated sandbox, and climb XP and ELO rankings. Submissions are scored out of 1000: up to 800 from HTTP tests and up to 200 from an AI review." />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://apiarena.net/" />
-    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs" />
+    <link rel="canonical" href="https://apiarena.net/en" />
+    <link rel="alternate" hreflang="en" href="https://apiarena.net/en" />
+    <link rel="alternate" hreflang="es" href="https://apiarena.net/es" />
+    <link rel="alternate" hreflang="x-default" href="https://apiarena.net/en" />
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />
+    <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLM-readable extended site summary" />
     <meta name="theme-color" content="#0a0e1f" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="API Arena" />
-    <meta property="og:title" content="API Arena — Compete. Build. Conquer." />
-    <meta property="og:description" content="Ship real APIs, get scored by real builds and HTTP tests, and climb the ELO leaderboard. A competitive arena for backend developers and students." />
-    <meta property="og:url" content="https://apiarena.net/" />
+    <meta property="og:title" content="Compete. Build. Conquer. | API Arena" />
+    <meta property="og:description" content="API Arena is a free competitive platform where students and developers ship real Spring Boot APIs as a ZIP, get them built in an isolated sandbox, and climb XP and ELO rankings. Submissions are scored out of 1000: up to 800 from HTTP tests and up to 200 from an AI review." />
+    <meta property="og:url" content="https://apiarena.net/en" />
     <meta property="og:image" content="https://apiarena.net/og-image.png" />
+    <meta property="og:image:alt" content="API Arena — Compete. Build. Conquer." />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
 
     <!-- Microsoft bing search console -->
     <meta name="msvalidate.01" content="4945534331C423125312F56E8C0C6A12" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="API Arena — Compete. Build. Conquer." />
-    <meta name="twitter:description" content="Ship real APIs, get scored by real builds and HTTP tests, and climb the ELO leaderboard." />
+    <meta name="twitter:title" content="Compete. Build. Conquer. | API Arena" />
+    <meta name="twitter:description" content="API Arena is a free competitive platform where students and developers ship real Spring Boot APIs as a ZIP, get them built in an isolated sandbox, and climb XP and ELO rankings. Submissions are scored out of 1000: up to 800 from HTTP tests and up to 200 from an AI review." />
     <meta name="twitter:image" content="https://apiarena.net/og-image.png" />
+    <meta name="twitter:image:alt" content="API Arena — Compete. Build. Conquer." />
 
-    <!-- Structured data -->
-    <script type="application/ld+json">
+    <!-- seo-jsonld:start -->
+    <script type="application/ld+json" id="seo-jsonld">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@context": "https://schema.org",
-      "@graph": [
+      "@type": [
+        "Organization",
+        "EducationalOrganization"
+      ],
+      "@id": "https://apiarena.net/#organization",
+      "name": "API Arena",
+      "alternateName": [
+        "APIArena",
+        "API-Arena"
+      ],
+      "url": "https://apiarena.net",
+      "logo": "https://apiarena.net/icons/logo-hex-lg.svg",
+      "description": "API Arena is a free competitive platform where students and developers submit real Spring Boot APIs as a ZIP. An isolated sandbox runs them and HTTP tests score them out of 1000: up to 800 technical points and up to 200 from an AI review."
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://apiarena.net/#website",
+      "url": "https://apiarena.net/en",
+      "name": "API Arena",
+      "alternateName": [
+        "APIArena",
+        "API-Arena"
+      ],
+      "description": "API Arena is a free competitive platform where students and developers submit real Spring Boot APIs as a ZIP. An isolated sandbox runs them and HTTP tests score them out of 1000: up to 800 technical points and up to 200 from an AI review.",
+      "inLanguage": [
+        "en",
+        "es"
+      ],
+      "publisher": {
+        "@id": "https://apiarena.net/#organization"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://apiarena.net/#app",
+      "name": "API Arena",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "url": "https://apiarena.net/en",
+      "description": "API Arena is a free competitive platform where students and developers submit real Spring Boot APIs as a ZIP. An isolated sandbox runs them and HTTP tests score them out of 1000: up to 800 technical points and up to 200 from an AI review.",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "provider": {
+        "@id": "https://apiarena.net/#organization"
+      }
+    },
+    {
+      "@type": "Course",
+      "@id": "https://apiarena.net/#course",
+      "name": "API Arena — API practice",
+      "description": "Hands-on track for building Spring Boot APIs, submitting them as a ZIP, and improving them with real HTTP tests, XP, and ELO.",
+      "provider": {
+        "@id": "https://apiarena.net/#organization"
+      },
+      "url": "https://apiarena.net/en/docs/guia-para-empezar",
+      "inLanguage": "en",
+      "isAccessibleForFree": true
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://apiarena.net/en#faq",
+      "url": "https://apiarena.net/en",
+      "mainEntity": [
         {
-          "@type": "WebSite",
-          "@id": "https://apiarena.net/#website",
-          "url": "https://apiarena.net/",
-          "name": "API Arena",
-          "alternateName": ["APIArena", "API-Arena"],
-          "description": "Competitive platform where developers ship real APIs, get scored by real builds and HTTP tests, and climb XP and ELO rankings."
+          "@type": "Question",
+          "name": "What is API Arena?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "API Arena is a free competitive platform for students, self-taught backend developers, and teachers. You choose a challenge, build a real Spring Boot REST API, and upload the project as a ZIP. An isolated sandbox builds and runs that API, then real HTTP tests score it. It is measured practice, not a slide-only course."
+          }
         },
         {
-          "@type": "SoftwareApplication",
-          "@id": "https://apiarena.net/#app",
-          "name": "API Arena",
-          "applicationCategory": "DeveloperApplication",
-          "operatingSystem": "Web",
-          "url": "https://apiarena.net/",
-          "description": "Submit Spring Boot APIs as ZIPs, run them through a sandboxed build and real HTTP test pipeline, and compete on XP and ELO leaderboards.",
-          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+          "@type": "Question",
+          "name": "How does scoring work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Each submission is scored out of 1000. Up to 800 points come from technical HTTP tests against the running API: functional correctness (300), performance (300), and REST design (200). Up to 200 points come from an AI review. The default review rubric is heuristic, and a language-model provider can be enabled per environment. XP tracks cumulative progress. ELO is a separate competitive rating that moves against the score expected for your rating and the challenge difficulty. Submitting again below your best score on that challenge is penalized."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I start?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Create a free account and open the challenge catalog. Read the public preview, then sign in and start a timed session to see the full requirements. Zip a Maven project with pom.xml at the archive root and upload it. The pipeline builds the project in a sandbox, calls the API over HTTP, saves the score, and updates the leaderboard. The docs hub explains the first submission step by step."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does a public challenge page show?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A public challenge page is a preview only: title, description, difficulty, category, time limit, and XP reward. Endpoint lists, hidden tests, and hints are not on that page. They appear after you sign in and start a timed session."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who is API Arena for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "API Arena is for students learning backend APIs, developers who want measured practice, and teachers who group students and review their submissions."
+          }
         }
       ]
     }
+  ]
+}
     </script>
+    <!-- seo-jsonld:end -->
 
   </head>
   <body>
     <div id="root"></div>
+    <!-- seo-noscript:start -->
+    <noscript>
+      <article>
+        <h1>API Arena</h1>
+        <p>API Arena is a free competitive platform for students, self-taught backend developers, and teachers. You choose a challenge, build a real Spring Boot REST API, and upload the project as a ZIP. An isolated sandbox builds and runs that API, then real HTTP tests score it. It is measured practice, not a slide-only course.</p>
+        <p>Each submission is scored out of 1000. Up to 800 points come from technical HTTP tests against the running API: functional correctness (300), performance (300), and REST design (200). Up to 200 points come from an AI review. The default review rubric is heuristic, and a language-model provider can be enabled per environment. XP tracks cumulative progress. ELO is a separate competitive rating that moves against the score expected for your rating and the challenge difficulty. Submitting again below your best score on that challenge is penalized.</p>
+        <p>Create a free account and open the challenge catalog. Read the public preview, then sign in and start a timed session to see the full requirements. Zip a Maven project with pom.xml at the archive root and upload it. The pipeline builds the project in a sandbox, calls the API over HTTP, saves the score, and updates the leaderboard. The docs hub explains the first submission step by step.</p>
+        <p>A public challenge page is a preview only: title, description, difficulty, category, time limit, and XP reward. Endpoint lists, hidden tests, and hints are not on that page. They appear after you sign in and start a timed session. <a href="https://apiarena.net/en/docs/guia-para-empezar">Getting Started</a>. <a href="https://apiarena.net/es">Español</a>. <a href="https://apiarena.net/llms.txt">llms.txt</a>.</p>
+      </article>
+    </noscript>
+    <!-- seo-noscript:end -->
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
