@@ -1,4 +1,5 @@
 import LocaleLink from '../../../components/LocaleLink';
+import GubiaCredit from '../../../components/GubiaCredit';
 import { useTranslation } from 'react-i18next';
 import { FOOTER_LINKS } from '../landing.data';
 import { openConsentManager } from '../../../lib/cookieConsent';
@@ -32,6 +33,7 @@ export default function LandingFooter() {
         <br />
         {t('footer.tagline')}<br />
         {t('footer.project')}
+        <GubiaCredit />
       </div>
 
       <div className="footer-right">
@@ -40,6 +42,7 @@ export default function LandingFooter() {
             {linkLabels?.[footerLinkKeys[i]] ?? footerLinkKeys[i]}
           </a>
         ))}
+        <LocaleLink to="/about">About</LocaleLink>
         {legalLinks.map(({ label, to }) => (
           <LocaleLink key={to} to={to}>{label}</LocaleLink>
         ))}

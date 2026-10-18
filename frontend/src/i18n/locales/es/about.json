@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "title": "Sobre el desarrollador",
+    "description": "Sobre el desarrollador de API Arena. La biografía, la trayectoria, la cronología, los enlaces y el contacto de esta página aún no están publicados."
+  },
+  "breadcrumb": {
+    "aria": "Miga de pan",
+    "home": "Inicio",
+    "about": "About"
+  },
+  "eyebrow": "Desarrollador",
+  "titleBefore": "Sobre",
+  "titleEm": "el desarrollador",
+  "lede": "Esta página trata de la persona que desarrolla API Arena. La biografía todavía no está publicada.",
+  "notice": "Los datos que faltan están marcados como TODO(content).",
+  "portrait": "TODO(content)",
+  "nameLabel": "Nombre",
+  "name": "TODO(content)",
+  "roleLabel": "Rol",
+  "role": "TODO(content)",
+  "story": {
+    "heading": "Historia",
+    "body": "TODO(content)"
+  },
+  "motivation": {
+    "heading": "Motivación",
+    "body": "TODO(content)"
+  },
+  "background": {
+    "heading": "Trayectoria",
+    "body": "TODO(content)"
+  },
+  "stack": {
+    "heading": "Stack",
+    "items": ["TODO(content)", "TODO(content)", "TODO(content)"]
+  },
+  "timeline": {
+    "heading": "Cronología del proyecto",
+    "items": [
+      { "when": "TODO(content)", "what": "TODO(content)" },
+      { "when": "TODO(content)", "what": "TODO(content)" },
+      { "when": "TODO(content)", "what": "TODO(content)" }
+    ]
+  },
+  "links": {
+    "heading": "Enlaces",
+    "items": [
+      { "label": "TODO(content)", "href": "TODO(content)" },
+      { "label": "TODO(content)", "href": "TODO(content)" }
+    ]
+  },
+  "contact": {
+    "heading": "Contacto",
+    "body": "TODO(content)"
+  },
+  "company": {
+    "heading": "Gubia",
+    "name": "Gubia",
+    "body": "TODO(content)",
+    "urlLabel": "URL",
+    "url": "https://gubiadigital.es"
+  }
+}

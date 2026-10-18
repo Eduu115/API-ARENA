@@ -30,6 +30,7 @@ import com.apiarena.authservice.model.dto.RefreshTokenRequest;
 import com.apiarena.authservice.model.dto.RegisterRequest;
 import com.apiarena.authservice.model.dto.ResendVerificationRequest;
 import com.apiarena.authservice.model.dto.TwoFactorCodeRequest;
+import com.apiarena.authservice.model.dto.TwoFactorEmailPurposeRequest;
 import com.apiarena.authservice.model.dto.TwoFactorEnrollResponse;
 import com.apiarena.authservice.model.dto.UpdateProfileRequest;
 import com.apiarena.authservice.model.dto.UsageDeltaRequest;
@@ -40,6 +41,7 @@ import com.apiarena.authservice.model.services.AchievementService;
 import com.apiarena.authservice.model.services.IAuthService;
 import com.apiarena.authservice.model.services.IUserService;
 import com.apiarena.authservice.model.services.TurnstileVerificationService;
+import com.apiarena.authservice.model.services.EmailTwoFactorService;
 import com.apiarena.authservice.model.services.UserTwoFactorService;
 import com.apiarena.authservice.model.services.WeeklyStreakService;
 
@@ -66,6 +68,8 @@ public class AuthController {
     private TurnstileVerificationService turnstileVerificationService;
     @Autowired
     private UserTwoFactorService userTwoFactorService;
+    @Autowired
+    private EmailTwoFactorService emailTwoFactorService;
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user", description = "Create a new user account. No tokens are returned; use /login to get access and refresh tokens.")
@@ -219,10 +223,33 @@ public class AuthController {
     }
 
     @PostMapping("/me/2fa/disable")
-    @Operation(summary = "Disable 2FA", description = "Turn off 2FA; requires a valid current TOTP code")
+    @Operation(summary = "Disable 2FA", description = "Turn off authenticator 2FA; requires a valid current TOTP code. Admins cannot disable it.")
     public ResponseEntity<UserDTO> disableTwoFactor(@Valid @RequestBody TwoFactorCodeRequest request) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(userTwoFactorService.disable(email, request.getCode().trim()));
+    }
+
+    @PostMapping("/me/2fa/email/send")
+    @Operation(summary = "Email a 2FA setup code", description = "Sends a code to the verified address to enable or disable email 2FA")
+    public ResponseEntity<Map<String, Object>> sendEmailTwoFactorCode(
+            @Valid @RequestBody TwoFactorEmailPurposeRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        emailTwoFactorService.sendAccountCode(email, request.getPurpose());
+        return ResponseEntity.ok(Map.of("expiresInSeconds", 600));
+    }
+
+    @PostMapping("/me/2fa/email/enable")
+    @Operation(summary = "Enable email 2FA", description = "Confirm the emailed code to turn on email codes")
+    public ResponseEntity<UserDTO> enableEmailTwoFactor(@Valid @RequestBody TwoFactorCodeRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(emailTwoFactorService.confirmEnable(email, request.getCode().trim()));
+    }
+
+    @PostMapping("/me/2fa/email/disable")
+    @Operation(summary = "Disable email 2FA", description = "Confirm the emailed code to turn off email codes")
+    public ResponseEntity<UserDTO> disableEmailTwoFactor(@Valid @RequestBody TwoFactorCodeRequest request) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(emailTwoFactorService.confirmDisable(email, request.getCode().trim()));
     }
 
     @GetMapping("/me/export")

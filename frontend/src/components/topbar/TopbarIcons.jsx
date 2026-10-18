@@ -67,6 +67,17 @@ export function IconSubmissions({ className }) {
   );
 }
 
+export function IconSocial({ className }) {
+  return (
+    <SvgFrame className={className}>
+      <circle cx="7" cy="12" r="2" stroke="currentColor" strokeWidth={stroke.width} />
+      <circle cx="12" cy="8" r="2" stroke="currentColor" strokeWidth={stroke.width} />
+      <circle cx="17" cy="12" r="2" stroke="currentColor" strokeWidth={stroke.width} />
+      <path d="M9 11.2h2.2M13.2 9.2 15.2 11" stroke="currentColor" strokeWidth={stroke.width} strokeLinecap={stroke.cap} />
+    </SvgFrame>
+  );
+}
+
 export function IconFriends({ className }) {
   return (
     <SvgFrame className={className}>
@@ -184,6 +195,7 @@ const ICON_MAP = {
   challenges: IconChallenges,
   submissions: IconSubmissions,
   friends: IconFriends,
+  social: IconSocial,
   leaderboard: IconLeaderboard,
   docs: IconDocs,
   replay: IconReplay,

@@ -1,5 +1,6 @@
 package com.apiarena.notificationservice.model.services;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +34,10 @@ public class NotificationService {
     public static final String TYPE_ACHIEVEMENT_UNLOCKED = "ACHIEVEMENT_UNLOCKED";
 
     public static final String TYPE_NEW_CHALLENGE_PUBLISHED = "NEW_CHALLENGE_PUBLISHED";
+
+    public static final String TYPE_FRIEND_POST = "FRIEND_POST_PUBLISHED";
+
+    private static final Duration FRIEND_POST_COOLDOWN = Duration.ofMinutes(30);
 
     private final NotificationRepository notificationRepository;
     private final ObjectMapper objectMapper;
@@ -319,6 +324,48 @@ public class NotificationService {
     @Transactional
     public int markAllRead(Long userId) {
         return notificationRepository.markAllReadForUser(userId, Instant.now());
+    }
+
+    /**
+     * In-app INFO only when a friend publishes. Rate-limited per recipient and author. No email.
+     */
+    @Transactional
+    public void createFriendPostNotification(Long recipientUserId, Long authorUserId, String authorUsername,
+            Long postId, String challengeTitle) {
+        if (recipientUserId == null || authorUserId == null || postId == null) {
+            return;
+        }
+        String fragment = "\"authorUserId\":\"" + authorUserId + "\"";
+        if (notificationRepository.existsByUserIdAndTypeAndMetadataJsonContainingAndCreatedAtAfter(
+                recipientUserId, TYPE_FRIEND_POST, fragment, Instant.now().minus(FRIEND_POST_COOLDOWN))) {
+            return;
+        }
+        String name = authorUsername != null && !authorUsername.isBlank() ? authorUsername.trim() : "A friend";
+        String challenge = challengeTitle != null && !challengeTitle.isBlank() ? challengeTitle.trim() : "a challenge";
+        Map<String, Object> meta = new HashMap<>();
+        meta.put("authorUserId", String.valueOf(authorUserId));
+        meta.put("postId", postId);
+        meta.put("authorUsername", name);
+        if (challengeTitle != null && !challengeTitle.isBlank()) {
+            meta.put("challengeTitle", challenge);
+        }
+        String metadataJson;
+        try {
+            metadataJson = objectMapper.writeValueAsString(meta);
+        } catch (Exception e) {
+            metadataJson = "{}";
+        }
+        Notification n = new Notification();
+        n.setUserId(recipientUserId);
+        n.setType(TYPE_FRIEND_POST);
+        n.setImportance(NotificationImportance.INFO);
+        n.setTitle(name + " published a result");
+        n.setBody(name + " shared a result for " + challenge + ".");
+        n.setMetadataJson(metadataJson);
+        notificationRepository.save(n);
+        NotificationDTO dto = toDto(n);
+        long unread = notificationRepository.countByUserIdAndReadAtIsNull(recipientUserId);
+        notificationPushService.pushNewNotification(recipientUserId, dto, unread);
     }
 
     private NotificationDTO toDto(Notification n) {

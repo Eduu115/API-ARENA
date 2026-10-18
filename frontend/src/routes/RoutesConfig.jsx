@@ -29,11 +29,13 @@ const SubmissionResults = lazy(() => import("../pages/submissions/SubmissionResu
 const Replay = lazy(() => import("../pages/Replay"));
 const DocsHub = lazy(() => import("../pages/docs/DocsHub"));
 const LegalPage = lazy(() => import("../pages/legal/LegalPage"));
+const AboutPage = lazy(() => import("../pages/about/AboutPage"));
 const TeacherDashboard = lazy(() => import("../pages/teacher/TeacherDashboard"));
 const Corrections = lazy(() => import("../pages/teacher/Corrections"));
 const TeacherChallenges = lazy(() => import("../pages/teacher/TeacherChallenges"));
 const CreateChallenge = lazy(() => import("../pages/teacher/CreateChallenge"));
 const TeacherGroups = lazy(() => import("../pages/teacher/TeacherGroups"));
+const TeacherOnboarding = lazy(() => import("../pages/teacher/TeacherOnboarding"));
 const ChallengeSubmit = lazy(() => import("../pages/challenges/ChallengeSubmit"));
 const AdminLayout = lazy(() => import("../layouts/AdminLayout"));
 const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
@@ -42,6 +44,7 @@ const AdminUserDetail = lazy(() => import("../pages/admin/AdminUserDetail"));
 const AdminAudit = lazy(() => import("../pages/admin/AdminAudit"));
 const Friends = lazy(() => import("../pages/friends/Friends"));
 const Notifications = lazy(() => import("../pages/Notifications"));
+const Social = lazy(() => import("../pages/social/Social"));
 
 function RouteFallback() {
   return <div className="route-fallback" aria-hidden="true" />;
@@ -75,7 +78,9 @@ function AppRoutes() {
         <Route path="multiplayer" element={<MultiplayerHub />} />
         <Route path="docs" element={<DocsHub />} />
         <Route path="docs/:docId" element={<DocsHub />} />
+        <Route path="teachers" element={<TeacherOnboarding />} />
 
+        <Route path="about" element={<AboutPage />} />
         <Route path="aviso-legal" element={<LegalPage />} />
         <Route path="privacidad" element={<LegalPage />} />
         <Route path="cookies" element={<LegalPage />} />
@@ -92,6 +97,7 @@ function AppRoutes() {
           <Route path="challenges/:id/submit" element={<ChallengeSubmit />} />
           <Route path="replay" element={<Replay />} />
           <Route path="friends" element={<Friends />} />
+          <Route path="social" element={<Social />} />
           <Route path="notifications" element={<Notifications />} />
         </Route>
 

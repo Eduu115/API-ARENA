@@ -1,0 +1,52 @@
+{
+  "pageTitle": "Social",
+  "eyebrow": "// BETA",
+  "title": "Social",
+  "beta": "BETA",
+  "lead": "A friends-only feed of clears, rank moves, and results you choose to publish.",
+  "tabs": {
+    "all": "All",
+    "activity": "Activity",
+    "posts": "Posts"
+  },
+  "refresh": "Refresh",
+  "loading": "Loading the feed…",
+  "loadError": "Could not load the feed.",
+  "disabled": "Social beta is turned off on this server.",
+  "emptyTitle": "Nothing here yet",
+  "emptyBody": "Add friends to see their activity, or publish a result from a completed challenge.",
+  "findFriends": "Find friends",
+  "you": "You",
+  "delete": "Delete",
+  "deleted": "Post removed",
+  "report": "Report",
+  "reported": "Reported",
+  "hide": "Hide",
+  "hidden": "Hidden",
+  "caption": "Caption",
+  "testsPassed": "{{passed}} passed · {{failed}} failed",
+  "technical": "Technical {{score}}",
+  "ai": "AI {{score}}",
+  "latency": "{{ms}} ms avg",
+  "rps": "{{rps}} rps",
+  "reactions": {
+    "GG": "GG",
+    "FIRE": "Fire",
+    "CLAP": "Clap",
+    "ROCKET": "Rocket",
+    "EYES": "Eyes"
+  },
+  "activity": {
+    "CHALLENGE_COMPLETED": "completed {{challenge}}",
+    "FIRST_CLEAR": "first clear on {{challenge}}",
+    "PERSONAL_BEST": "new personal best on {{challenge}}",
+    "RANK_CLIMB": "climbed from #{{from}} to #{{to}}",
+    "ELO_CHANGE": "ELO {{delta}} ({{from}} → {{to}})",
+    "LEVEL_UP": "reached level {{to}}",
+    "TIER_UP": "moved from {{from}} to {{to}}",
+    "ACHIEVEMENT": "unlocked {{title}}",
+    "WEEKLY_STREAK": "{{weeks}}-week streak",
+    "POST": "published a result"
+  },
+  "challengeFallback": "a challenge"
+}

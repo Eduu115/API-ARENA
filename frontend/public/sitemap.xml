@@ -55,6 +55,24 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/leaderboard"/>
   </url>
   <url>
+    <loc>https://apiarena.net/en/teachers</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/teachers"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/teachers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/teachers"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/teachers</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/teachers"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/teachers"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/teachers"/>
+  </url>
+  <url>
     <loc>https://apiarena.net/en/docs/guia-para-empezar</loc>
     <lastmod>2026-10-18</lastmod>
     <changefreq>monthly</changefreq>
@@ -287,6 +305,24 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/terminos"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/terminos"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/terminos"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/en/about</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/about"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/about"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/about"/>
+  </url>
+  <url>
+    <loc>https://apiarena.net/es/about</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://apiarena.net/en/about"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://apiarena.net/es/about"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://apiarena.net/en/about"/>
   </url>
   <url>
     <loc>https://apiarena.net/en/challenges/bookstore-api</loc>

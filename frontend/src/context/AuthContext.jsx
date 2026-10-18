@@ -52,6 +52,10 @@ export function AuthProvider({ children }) {
             twoFactorRequired: true,
             pendingToken: data.pendingToken,
             enrolled: !!data.twoFactorEnrolled,
+            primaryMethod: data.twoFactorPrimary ?? null,
+            methods: Array.isArray(data.twoFactorMethods) ? data.twoFactorMethods : [],
+            emailAllowed: !!data.emailTwoFactorAllowed,
+            role: data.user?.role ?? null,
           };
         }
         setUser(data?.user ?? null);
@@ -108,6 +112,12 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
+  const verifyLoginEmail2fa = useCallback(async (pendingToken, code) => {
+    const data = await authApi.verifyLoginEmail2fa(pendingToken, code);
+    setUser(data?.user ?? null);
+    return data;
+  }, []);
+
   const completeProfileCompliance = useCallback(async (payload) => {
     const updated = await authApi.completeProfileCompliance(payload);
     setUser(updated ?? null);
@@ -126,6 +136,7 @@ export function AuthProvider({ children }) {
     completeProfileCompliance,
     enrollAdmin2fa,
     verifyAdmin2fa,
+    verifyLoginEmail2fa,
     isAuthenticated: !!user,
   };
 

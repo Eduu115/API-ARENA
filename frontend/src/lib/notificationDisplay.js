@@ -21,6 +21,9 @@ export function notificationActionPath(notification) {
     }
     return localePath(loc, '/challenges');
   }
+  if (notification.type === 'FRIEND_POST_PUBLISHED') {
+    return localePath(loc, '/social');
+  }
   const sid = notification.metadata?.submissionId;
   if (sid != null) {
     return localePath(loc, `/submissions/${sid}`);
@@ -36,6 +39,9 @@ export function notificationActionLabel(notification) {
   }
   if (notification.type === 'NEW_CHALLENGE_PUBLISHED') {
     return t('actions.viewChallenge');
+  }
+  if (notification.type === 'FRIEND_POST_PUBLISHED') {
+    return t('actions.viewFeed');
   }
   const sid = notification.metadata?.submissionId;
   if (sid != null) {

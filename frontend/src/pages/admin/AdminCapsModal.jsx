@@ -4,6 +4,7 @@ import { useState } from "react";
 const CAPABILITIES = [
   ["MODERATION", "Moderation", "Bans, warnings, messaging, ELO/XP, impersonation, deletion."],
   ["BI", "Business Intelligence", "Analytics dashboards and business reports."],
+  ["CONTENT", "Content", "Challenge and docs content."],
 ];
 
 /**

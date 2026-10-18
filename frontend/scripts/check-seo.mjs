@@ -12,6 +12,7 @@ import { getDocDocuments } from "../src/pages/docs/docsContent.js";
 import { LEGAL_DOCS } from "../src/pages/legal/legalContent.js";
 import { getDocsUi } from "../src/pages/docs/docsUi.js";
 import { legalHead } from "../src/seo/legalMeta.js";
+import { GUBIA_URL } from "../src/brand/gubia.js";
 import {
   AI_CRAWLERS,
   PRIVATE_PATHS,
@@ -19,6 +20,7 @@ import {
   SITE_URL,
   absoluteUrl,
   buildHeadMeta,
+  aboutGraph,
   challengePreviewGraph,
   docGraph,
   homeGraph,
@@ -148,9 +150,12 @@ function robotsTxt() {
     "# rule set, so they receive the same Allow and the same Disallow.",
     "# A separate User-agent group would NOT inherit these Disallow lines.",
     "#",
-    "# Allowed: landing, docs, challenge previews, leaderboard, and legal pages",
-    "# in /en and /es, plus /llms.txt and /llms-full.txt.",
-    "# Disallowed: account, teacher, admin, and other private areas.",
+    "# Allowed: landing, docs, about, the public teacher guide (/teachers), challenge",
+    "# previews, leaderboard, and legal pages in /en and /es, plus /llms.txt",
+    "# and /llms-full.txt.",
+    "# Disallowed: account, the private teacher area (/teacher), admin, and",
+    "# other private areas. /teachers is allowed again below: Disallow /teacher",
+    "# is only a prefix, and the longer Allow wins.",
     "# Public challenge pages are previews. Technical specs are not in the crawl surface.",
     "#",
     `# AI crawlers: ${AI_CRAWLERS.join(", ")}`,
@@ -166,7 +171,16 @@ function robotsTxt() {
       lines.push(`Disallow: ${prefix}/${name}`);
     }
   }
-  lines.push("", `Sitemap: ${SITE_URL}/sitemap.xml`, "");
+  lines.push(
+    "",
+    "# Public guide. Longer than Disallow: /teacher, so crawlers may fetch it.",
+    "Allow: /teachers",
+    "Allow: /en/teachers",
+    "Allow: /es/teachers",
+    "",
+    `Sitemap: ${SITE_URL}/sitemap.xml`,
+    ""
+  );
   return `${lines.join("\n")}`;
 }
 
@@ -196,6 +210,7 @@ English: ${absoluteUrl("en", "/")}
 Spanish: ${absoluteUrl("es", "/")}
 x-default: ${absoluteUrl("en", "/")}
 Alternate names: APIArena, API-Arena
+Developed by Gubia.${(GUBIA_URL || "").trim().startsWith("http") ? ` ${(GUBIA_URL || "").trim()}` : ""}
 Extended reference: ${SITE_URL}/llms-full.txt
 
 ## Who it is for
@@ -235,6 +250,10 @@ Catalog: ${absoluteUrl("en", "/challenges")} and ${absoluteUrl("es", "/challenge
 These links are previews (title, description, difficulty, category, time limit, XP). They do not include endpoint lists, hidden tests, or hints.
 
 ${challengeLinks}
+
+## Developer
+
+A public about page exists at ${absoluteUrl("en", "/about")} and ${absoluteUrl("es", "/about")}. Biography, background, timeline, links, contact, and company details are forthcoming.
 
 ## Crawler policy
 
@@ -336,7 +355,7 @@ function syncFile(rel, next) {
   }
 }
 
-function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
+function collectPages(landing, challengesJson, leaderboard, teacher, docs, challenges, about) {
   const pages = [];
   for (const locale of ["en", "es"]) {
     pages.push({
@@ -363,6 +382,14 @@ function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
       changefreq: "daily",
       priority: "0.7",
     });
+    pages.push({
+      locale,
+      path: "/teachers",
+      title: teacher[locale].onboarding.metaTitle,
+      description: teacher[locale].onboarding.metaDescription,
+      changefreq: "monthly",
+      priority: "0.6",
+    });
     docs[locale].forEach((doc, index) => {
       pages.push({
         locale,
@@ -384,6 +411,14 @@ function collectPages(landing, challengesJson, leaderboard, docs, challenges) {
         priority: "0.3",
       });
     }
+    pages.push({
+      locale,
+      path: "/about",
+      title: about[locale].meta.title,
+      description: about[locale].meta.description,
+      changefreq: "monthly",
+      priority: "0.5",
+    });
     for (const challenge of challenges) {
       pages.push({
         locale,
@@ -424,12 +459,20 @@ const leaderboard = {
   en: readJson(join(root, "src/i18n/locales/en/leaderboard.json")),
   es: readJson(join(root, "src/i18n/locales/es/leaderboard.json")),
 };
+const teacher = {
+  en: readJson(join(root, "src/i18n/locales/en/teacher.json")),
+  es: readJson(join(root, "src/i18n/locales/es/teacher.json")),
+};
 const docs = {
   en: getDocDocuments("en"),
   es: getDocDocuments("es"),
 };
+const about = {
+  en: readJson(join(root, "src/i18n/locales/en/about.json")),
+  es: readJson(join(root, "src/i18n/locales/es/about.json")),
+};
 const challenges = publicChallenges();
-const pages = collectPages(landing, challengesJson, leaderboard, docs, challenges);
+const pages = collectPages(landing, challengesJson, leaderboard, teacher, docs, challenges, about);
 const paths = uniquePaths(pages);
 
 const docIdsEn = docs.en.map((doc) => doc.id).join("|");
@@ -448,11 +491,13 @@ for (const snippet of [
   'path="challenges"',
   'path="challenges/:id"',
   'path="leaderboard"',
+  'path="teachers"',
   'path="docs/:docId"',
   'path="aviso-legal"',
   'path="privacidad"',
   'path="cookies"',
   'path="terminos"',
+  'path="about"',
 ]) {
   if (!routes.includes(snippet)) fail(`RoutesConfig is missing ${snippet}`);
 }
@@ -533,6 +578,19 @@ const challengeJson = JSON.stringify(challengeLd);
 if (/expectStatus|required_endpoints|hints/.test(challengeJson)) {
   fail("Challenge JSON-LD includes technical spec fields");
 }
+
+const aboutLd = aboutGraph("en", {
+  homeName: about.en.breadcrumb.home,
+  aboutName: about.en.meta.title,
+  description: about.en.meta.description,
+});
+const aboutTypes = jsonLdTypes(aboutLd);
+for (const type of ["Person", "AboutPage", "BreadcrumbList"]) {
+  if (!aboutTypes.has(type)) fail(`About JSON-LD missing ${type}`);
+}
+const aboutLdJson = JSON.stringify(aboutLd);
+if (!aboutLdJson.includes(`${SITE_URL}/#gubia`)) fail("About JSON-LD missing Gubia organization");
+if (!aboutLdJson.includes("TODO(content)")) fail("About JSON-LD dropped the content placeholder");
 
 const generated = {
   "public/robots.txt": robotsTxt(),
@@ -636,6 +694,12 @@ if (llmsFull.includes("expectStatus") || llms.includes("expectStatus")) {
 }
 for (const fact of ["800", "200", "ZIP", "sandbox", "ELO"]) {
   if (!llms.includes(fact)) fail(`llms.txt missing ${fact}`);
+}
+if (!llms.includes(absoluteUrl("en", "/about")) || !llms.includes(absoluteUrl("es", "/about"))) {
+  fail("llms.txt missing the about page");
+}
+if (!llms.includes("company details are forthcoming")) {
+  fail("llms.txt about summary invents or drops the forthcoming notice");
 }
 
 if (errors.length) {

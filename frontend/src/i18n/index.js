@@ -15,6 +15,8 @@ import enTours from './locales/en/tours.json';
 import enReplay from './locales/en/replay.json';
 import enTeacher from './locales/en/teacher.json';
 import enLanding from './locales/en/landing.json';
+import enAbout from './locales/en/about.json';
+import enSocial from './locales/en/social.json';
 import esCommon from './locales/es/common.json';
 import esAuth from './locales/es/auth.json';
 import esChallenges from './locales/es/challenges.json';
@@ -27,19 +29,21 @@ import esNotifications from './locales/es/notifications.json';
 import esTours from './locales/es/tours.json';
 import esReplay from './locales/es/replay.json';
 import esLanding from './locales/es/landing.json';
+import esAbout from './locales/es/about.json';
 import esTeacher from './locales/es/teacher.json';
+import esSocial from './locales/es/social.json';
 
 const initialLocale = resolveInitialLocale();
 
 i18n.use(initReactI18next).init({
   resources: {
-    en: { common: enCommon, auth: enAuth, challenges: enChallenges, submissions: enSubmissions, dashboard: enDashboard, leaderboard: enLeaderboard, profile: enProfile, friends: enFriends, notifications: enNotifications, tours: enTours, replay: enReplay, landing: enLanding, teacher: enTeacher },
-    es: { common: esCommon, auth: esAuth, challenges: esChallenges, submissions: esSubmissions, dashboard: esDashboard, leaderboard: esLeaderboard, profile: esProfile, friends: esFriends, notifications: esNotifications, tours: esTours, replay: esReplay, landing: esLanding, teacher: esTeacher },
+    en: { common: enCommon, auth: enAuth, challenges: enChallenges, submissions: enSubmissions, dashboard: enDashboard, leaderboard: enLeaderboard, profile: enProfile, friends: enFriends, notifications: enNotifications, tours: enTours, replay: enReplay, landing: enLanding, teacher: enTeacher, about: enAbout, social: enSocial },
+    es: { common: esCommon, auth: esAuth, challenges: esChallenges, submissions: esSubmissions, dashboard: esDashboard, leaderboard: esLeaderboard, profile: esProfile, friends: esFriends, notifications: esNotifications, tours: esTours, replay: esReplay, landing: esLanding, teacher: esTeacher, about: esAbout, social: esSocial },
   },
   lng: initialLocale,
   fallbackLng: 'en',
   defaultNS: 'common',
-  ns: ['common', 'auth', 'challenges', 'submissions', 'dashboard', 'leaderboard', 'profile', 'friends', 'notifications', 'tours', 'replay', 'landing', 'teacher'],
+  ns: ['common', 'auth', 'challenges', 'submissions', 'dashboard', 'leaderboard', 'profile', 'friends', 'notifications', 'tours', 'replay', 'landing', 'teacher', 'about', 'social'],
   interpolation: { escapeValue: false },
 });
 

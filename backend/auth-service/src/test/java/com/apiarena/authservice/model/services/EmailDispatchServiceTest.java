@@ -158,6 +158,19 @@ class EmailDispatchServiceTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"en", "es"})
+    void twoFactorCode(String locale) {
+        RenderedEmail email = service.composeTwoFactorCodeEmail("arclight", "654321", "LOGIN", locale);
+        boolean es = "es".equals(locale);
+        assertEquals(es ? "Tu código de acceso de API Arena" : "Your API Arena sign-in code", email.subject());
+        assertFalse(email.subject().contains("654321"));
+        assertTrue(email.html().contains("654321"));
+        assertTrue(email.text().contains("654321"));
+        assertTrue(email.html().contains("API Arena"));
+        assertTrue(email.text().contains(es ? "10 minutos" : "10 minutes"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"en", "es"})
     void adminPasswordChanged(String locale) {
         RenderedEmail email = service.composeAdminPasswordChangedEmail("arclight", locale);
         boolean es = "es".equals(locale);
@@ -243,6 +256,7 @@ class EmailDispatchServiceTest {
         write(dir, "notification-mirror.html", service.composeNotificationAlertEmail(
                 "arclight", "Score posted", "Your run finished.", "IMPORTANT"));
         write(dir, "admin-password-changed.html", service.composeAdminPasswordChangedEmail("arclight", "en"));
+        write(dir, "two-factor-code.html", service.composeTwoFactorCodeEmail("arclight", "654321", "LOGIN", "en"));
         assertTrue(Files.readString(dir.resolve("verification.html")).contains("Verify email"));
         assertTrue(Files.readString(dir.resolve("password-reminder.html")).contains("every four months"));
     }
@@ -278,6 +292,9 @@ class EmailDispatchServiceTest {
         assertTrue(email.html().contains(BASE + "/" + locale + "/cookies"));
         assertTrue(email.html().contains(BASE + "/" + locale + "/terminos"));
         assertTrue(email.text().contains(BASE + "/" + locale + "/privacidad"));
+        assertTrue(email.html().contains("Developed by <a href=\"#\""));
+        assertTrue(email.html().contains(">Gubia</a>"));
+        assertTrue(email.text().contains("Developed by Gubia"));
         assertFalse(email.html().contains("%s"), "unreplaced %s in html");
         assertFalse(email.text().contains("%s"), "unreplaced %s in text");
         assertFalse(email.html().contains("{{"), email.html());

@@ -1,3 +1,4 @@
+import { GUBIA_NAME, GUBIA_WORDMARK, gubiaUrlOrNull } from "../brand/gubia.js";
 import { localePath } from "../lib/localeRoutes.js";
 
 export const SITE_URL = "https://apiarena.net";
@@ -27,6 +28,7 @@ export const PRIVATE_PATHS = [
   "perfil",
   "profile",
   "friends",
+  "social",
   "notifications",
   "replay",
   "teacher",
@@ -107,6 +109,22 @@ function orgId() {
   return `${SITE_URL}/#organization`;
 }
 
+function gubiaOrgId() {
+  return `${SITE_URL}/#gubia`;
+}
+
+function gubiaOrganization() {
+  const node = {
+    "@type": "Organization",
+    "@id": gubiaOrgId(),
+    name: GUBIA_NAME,
+    logo: `${SITE_URL}${GUBIA_WORDMARK}`,
+  };
+  const url = gubiaUrlOrNull();
+  if (url) node.url = url;
+  return node;
+}
+
 export function siteNodes(locale = "en") {
   const loc = locale === "es" ? "es" : "en";
   const home = absoluteUrl(loc, "/");
@@ -123,6 +141,7 @@ export function siteNodes(locale = "en") {
       logo: `${SITE_URL}/icons/logo-hex-lg.svg`,
       description,
     },
+    gubiaOrganization(),
     {
       "@type": "WebSite",
       "@id": `${SITE_URL}/#website`,
@@ -131,7 +150,8 @@ export function siteNodes(locale = "en") {
       alternateName: ["APIArena", "API-Arena"],
       description,
       inLanguage: ["en", "es"],
-      publisher: { "@id": orgId() },
+      creator: { "@id": gubiaOrgId() },
+      publisher: { "@id": gubiaOrgId() },
     },
     {
       "@type": "SoftwareApplication",
@@ -143,6 +163,8 @@ export function siteNodes(locale = "en") {
       description,
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+      creator: { "@id": gubiaOrgId() },
+      publisher: { "@id": gubiaOrgId() },
       provider: { "@id": orgId() },
     },
     {
@@ -240,6 +262,51 @@ export function docGraph(locale, { homeName, docsName, docTitle, docDescription,
       learningResourceType: "Guide",
     }),
     faqs?.length ? faqNode(faqs, url) : null,
+  ]);
+}
+
+const GUBIA_ID = `${SITE_URL}/#gubia`;
+const DEVELOPER_ID = `${SITE_URL}/#developer`;
+
+/**
+ * Person + AboutPage for /about. Biography fields stay TODO(content).
+ * Gubia links to https://gubiadigital.es; the company blurb is still a placeholder.
+ */
+export function aboutGraph(locale, { homeName, aboutName, description }) {
+  const loc = locale === "es" ? "es" : "en";
+  const url = absoluteUrl(loc, "/about");
+  return graph([
+    ...siteNodes(loc),
+    {
+      "@type": "Organization",
+      "@id": GUBIA_ID,
+      name: "Gubia",
+      url: "https://gubiadigital.es",
+      description: "TODO(content)",
+    },
+    {
+      "@type": "Person",
+      "@id": DEVELOPER_ID,
+      name: "TODO(content)",
+      description: "TODO(content)",
+      url,
+      affiliation: { "@id": GUBIA_ID },
+    },
+    {
+      "@type": "AboutPage",
+      "@id": `${url}#about`,
+      url,
+      name: aboutName,
+      description,
+      inLanguage: loc,
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      mainEntity: { "@id": DEVELOPER_ID },
+      about: [{ "@id": DEVELOPER_ID }, { "@id": GUBIA_ID }],
+    },
+    breadcrumbNode([
+      { name: homeName, url: absoluteUrl(loc, "/") },
+      { name: aboutName, url },
+    ], url),
   ]);
 }
 

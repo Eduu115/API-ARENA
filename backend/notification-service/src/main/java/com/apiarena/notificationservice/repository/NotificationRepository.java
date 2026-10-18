@@ -21,6 +21,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     boolean existsByUserIdAndTypeAndMetadataJsonContaining(Long userId, String type, String metadataFragment);
 
+    boolean existsByUserIdAndTypeAndMetadataJsonContainingAndCreatedAtAfter(
+            Long userId, String type, String metadataFragment, Instant createdAt);
+
     long countByUserIdAndReadAtIsNull(Long userId);
 
     Page<Notification> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);

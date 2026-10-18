@@ -569,3 +569,18 @@
 @media (prefers-reduced-motion: reduce) {
   .sr-rankup-glow, .sr-rankup-spark, .sr-confetti { animation: none; }
 }
+
+.sr-publish {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sr-publish input {
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: inherit;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  padding: 8px 10px;
+}

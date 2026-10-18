@@ -20,10 +20,21 @@ export function isOnline(lastSeenAt) {
   return !Number.isNaN(t) && Date.now() - t < 5 * 60 * 1000;
 }
 
-/** Human label for an admin's capability set: Supreme / Operational / BI / combinations. */
+const CAP_LABELS = [
+  ["MODERATION", "Operational"],
+  ["BI", "BI"],
+  ["CONTENT", "Content"],
+];
+
+/** Human label for an admin's capability set: Supreme, or combinations such as Operational + Content. */
 export function adminTypeLabel(caps) {
   if (!caps) return null;
   if (caps.length === 0) return "no capabilities";
-  if (["MODERATION", "BI"].every((c) => caps.includes(c))) return "Supreme";
-  return caps.map((c) => (c === "MODERATION" ? "Operational" : "BI")).join(" · ");
+  if (CAP_LABELS.every(([code]) => caps.includes(code))) return "Supreme";
+  const known = new Set(CAP_LABELS.map(([code]) => code));
+  const parts = CAP_LABELS.filter(([code]) => caps.includes(code)).map(([, label]) => label);
+  for (const code of caps) {
+    if (!known.has(code)) parts.push(code);
+  }
+  return parts.join(" + ");
 }

@@ -50,6 +50,45 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS last_password_reminder_sent_at TIMEST
 UPDATE users SET password_changed_at = created_at WHERE password_changed_at IS NULL;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_locale VARCHAR(5) NOT NULL DEFAULT 'en';
 
+-- TOTP secret stays on users (dual-write). Methods live in user_two_factor_methods.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(64);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT false;
+
+CREATE TABLE IF NOT EXISTS user_two_factor_methods (
+    id         BIGSERIAL PRIMARY KEY,
+    user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    method     VARCHAR(16) NOT NULL,
+    enabled    BOOLEAN     NOT NULL DEFAULT FALSE,
+    is_primary BOOLEAN     NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP   NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_user_two_factor_methods_user_method UNIQUE (user_id, method),
+    CONSTRAINT ck_user_two_factor_methods_method CHECK (method IN ('TOTP', 'EMAIL'))
+);
+
+CREATE TABLE IF NOT EXISTS two_factor_email_codes (
+    id          BIGSERIAL PRIMARY KEY,
+    user_id     BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash   VARCHAR(255) NOT NULL,
+    purpose     VARCHAR(16)  NOT NULL,
+    expires_at  TIMESTAMP    NOT NULL,
+    attempts    INTEGER      NOT NULL DEFAULT 0,
+    consumed_at TIMESTAMP,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    CONSTRAINT ck_two_factor_email_codes_purpose CHECK (purpose IN ('LOGIN', 'ENABLE', 'DISABLE'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_user_two_factor_methods_one_primary
+    ON user_two_factor_methods (user_id) WHERE is_primary;
+
+CREATE INDEX IF NOT EXISTS idx_two_factor_email_codes_user_purpose
+    ON two_factor_email_codes (user_id, purpose, created_at DESC);
+
+INSERT INTO user_two_factor_methods (user_id, method, enabled, is_primary, created_at)
+SELECT u.id, 'TOTP', TRUE, TRUE, NOW()
+FROM users u
+WHERE u.totp_enabled = TRUE
+ON CONFLICT (user_id, method) DO NOTHING;
+
 -- ===========================================
 -- Tabla: refresh_tokens
 -- ===========================================
@@ -872,6 +911,142 @@ CREATE TABLE IF NOT EXISTS user_weekly_streak_challenges (
 
 CREATE INDEX IF NOT EXISTS idx_user_weekly_progress_user ON user_weekly_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_weekly_streak_challenges_user ON user_weekly_streak_challenges(user_id);
+
+-- ===========================================
+-- Admin capabilities (one row per admin × capability).
+-- Same contract as docker/postgres/create-admin-permissions.sql.
+-- Seed admins receive MODERATION + BI, then CONTENT when both are held,
+-- so the seed supreme stays supreme.
+-- ===========================================
+CREATE TABLE IF NOT EXISTS admin_permissions (
+    id            BIGSERIAL PRIMARY KEY,
+    admin_user_id BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    capability    VARCHAR(20) NOT NULL,
+    granted_at    TIMESTAMP   NOT NULL DEFAULT NOW(),
+    granted_by    VARCHAR(100),
+    UNIQUE (admin_user_id, capability)
+);
+CREATE INDEX IF NOT EXISTS idx_admin_permissions_user ON admin_permissions(admin_user_id);
+
+INSERT INTO admin_permissions (admin_user_id, capability, granted_by)
+SELECT u.id, c.capability, 'migration'
+FROM users u
+CROSS JOIN (VALUES ('MODERATION'), ('BI')) AS c(capability)
+WHERE u.role = 'ADMIN'
+ON CONFLICT (admin_user_id, capability) DO NOTHING;
+
+-- content-backfill: admins holding both MODERATION and BI
+INSERT INTO admin_permissions (admin_user_id, capability, granted_by)
+SELECT moderation.admin_user_id, 'CONTENT', 'migration'
+FROM admin_permissions moderation
+JOIN admin_permissions bi
+  ON bi.admin_user_id = moderation.admin_user_id
+ AND bi.capability = 'BI'
+WHERE moderation.capability = 'MODERATION'
+ON CONFLICT (admin_user_id, capability) DO NOTHING;
+
+-- ===========================================
+-- Social beta (social-service). Mirrored from create-social-beta.sql.
+-- Relational columns only. Reports are a table. Reaction targets are polymorphic
+-- (activity or post), so they are not a single FK; the service deletes them.
+-- ===========================================
+CREATE TABLE IF NOT EXISTS social_activity_entries (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    activity_type VARCHAR(40) NOT NULL,
+    source_event_id VARCHAR(180) NOT NULL,
+    challenge_id BIGINT,
+    challenge_title VARCHAR(200),
+    score INTEGER,
+    previous_value INTEGER,
+    new_value INTEGER,
+    delta INTEGER,
+    label_before VARCHAR(40),
+    label_after VARCHAR(40),
+    achievement_code VARCHAR(80),
+    achievement_title VARCHAR(200),
+    streak_weeks INTEGER,
+    hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_social_activity_source UNIQUE (source_event_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_activity_user_created
+    ON social_activity_entries (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS social_posts (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    submission_id BIGINT NOT NULL,
+    challenge_id BIGINT,
+    challenge_title VARCHAR(200),
+    caption VARCHAR(500),
+    total_score INTEGER NOT NULL,
+    technical_score INTEGER NOT NULL DEFAULT 0,
+    ai_score INTEGER NOT NULL DEFAULT 0,
+    tests_passed INTEGER NOT NULL DEFAULT 0,
+    tests_failed INTEGER NOT NULL DEFAULT 0,
+    avg_response_ms INTEGER,
+    p95_response_ms INTEGER,
+    p99_response_ms INTEGER,
+    rps INTEGER,
+    hidden BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_social_posts_submission UNIQUE (submission_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_posts_user_created
+    ON social_posts (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS social_post_test_results (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE,
+    test_name VARCHAR(200) NOT NULL,
+    passed BOOLEAN NOT NULL,
+    CONSTRAINT uq_social_post_test UNIQUE (post_id, test_name)
+);
+
+CREATE TABLE IF NOT EXISTS social_post_scores (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES social_posts(id) ON DELETE CASCADE,
+    score_key VARCHAR(40) NOT NULL,
+    score_value INTEGER NOT NULL,
+    max_value INTEGER,
+    CONSTRAINT uq_social_post_score UNIQUE (post_id, score_key)
+);
+
+CREATE TABLE IF NOT EXISTS social_reactions (
+    id BIGSERIAL PRIMARY KEY,
+    target_type VARCHAR(20) NOT NULL,
+    target_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reaction VARCHAR(20) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_social_reaction_user UNIQUE (target_type, target_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_reactions_target
+    ON social_reactions (target_type, target_id);
+
+CREATE TABLE IF NOT EXISTS social_privacy_settings (
+    user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    activity_visibility VARCHAR(20) NOT NULL DEFAULT 'FRIENDS',
+    friend_post_notifications BOOLEAN NOT NULL DEFAULT TRUE,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS social_reports (
+    id BIGSERIAL PRIMARY KEY,
+    target_type VARCHAR(20) NOT NULL,
+    target_id BIGINT NOT NULL,
+    reporter_user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reason VARCHAR(500),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_social_report_once UNIQUE (target_type, target_id, reporter_user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_social_reports_created
+    ON social_reports (created_at DESC);
 
 -- Verificacion
 SELECT 'Database initialized successfully!' as status;

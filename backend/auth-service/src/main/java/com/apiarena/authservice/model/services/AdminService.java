@@ -56,6 +56,7 @@ public class AdminService {
     private final ModerationRecordRepository moderationRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailDispatchService emailDispatchService;
+    private final TwoFactorMethodService twoFactorMethodService;
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
@@ -341,9 +342,7 @@ public class AdminService {
     @Transactional
     public AdminUserDTO resetTwoFactor(Long id, String actingEmail) {
         User user = loadUser(id);
-        user.setTotpSecret(null);
-        user.setTotpEnabled(false);
-        userRepository.save(user);
+        twoFactorMethodService.clearTotp(user);
         audit(actingEmail, "RESET_2FA", user, null);
         return AdminUserDTO.fromEntity(user);
     }
@@ -429,6 +428,14 @@ public class AdminService {
     /** Capabilities of the acting admin (by email from the JWT). */
     public List<AdminCapability> myCapabilities(String actingEmail) {
         return capabilitiesOf(loadUserByEmail(actingEmail).getId());
+    }
+
+    /**
+     * Content-write gate. Persists nothing yet; challenge and docs editors call this
+     * (or {@link #requireCapability} with {@link AdminCapability#CONTENT}) before a write.
+     */
+    public void writeContent(String actingEmail) {
+        requireCapability(actingEmail, AdminCapability.CONTENT);
     }
 
     /** Throw 403 unless the acting admin holds the capability. Call from gated endpoints. */

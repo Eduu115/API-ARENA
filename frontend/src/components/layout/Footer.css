@@ -1,0 +1,14 @@
+.app-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 14px 28px 18px;
+  border-top: 1px solid var(--arena-primary-10);
+}
+
+@media (max-width: 768px) {
+  .app-footer {
+    justify-content: center;
+    padding-bottom: 84px;
+  }
+}

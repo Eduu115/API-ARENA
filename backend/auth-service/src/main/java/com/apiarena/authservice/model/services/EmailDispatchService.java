@@ -38,6 +38,9 @@ public class EmailDispatchService {
     private static final String FONT_BODY = "Syne,'Segoe UI',Arial,sans-serif";
     private static final String FONT_MONO = "'Share Tech Mono','Courier New',Courier,monospace";
 
+    /** TODO(content): official Gubia logo kit. Site: https://gubiadigital.es */
+    private static final String GUBIA_URL = "https://gubiadigital.es";
+
     private final EmailProperties emailProperties;
     private final RestTemplate restTemplate;
 
@@ -78,6 +81,12 @@ public class EmailDispatchService {
 
     private static String esc(String value) {
         return HtmlUtils.htmlEscape(value == null ? "" : value);
+    }
+
+    private static String codeBlock(String escapedCode) {
+        return "<p class=\"text-cyan\" style=\"margin:0 0 16px;font-family:" + FONT_MONO
+                + ";font-size:32px;letter-spacing:8px;line-height:1.2;color:" + CYAN + ";\">"
+                + escapedCode + "</p>";
     }
 
     private static String p(String innerHtml) {
@@ -569,6 +578,65 @@ public class EmailDispatchService {
                 true));
     }
 
+    /**
+     * One-time 2FA code. {@code purpose} is LOGIN, ENABLE, or DISABLE. The code is not put in the subject.
+     */
+    public void sendTwoFactorCodeEmail(String toEmail, String username, String code, String purpose, String locale) {
+        if (resendKeyMissing()) {
+            log.warn("RESEND_API_KEY not set; 2FA email code for {} purpose={} code={}", toEmail, purpose, code);
+            return;
+        }
+        postResend(toEmail, composeTwoFactorCodeEmail(username, code, purpose, locale), null);
+    }
+
+    RenderedEmail composeTwoFactorCodeEmail(String username, String code, String purpose, String locale) {
+        boolean es = spanish(locale);
+        String safeName = esc(displayName(username, es ? "hola" : "there"));
+        String safeCode = esc(code == null ? "" : code);
+        String normalized = purpose == null ? "LOGIN" : purpose.trim().toUpperCase();
+        String subject;
+        String heading;
+        String intro;
+        if ("ENABLE".equals(normalized)) {
+            subject = es ? "Confirma la verificación por email" : "Confirm email verification";
+            heading = es ? "Activa los códigos por email" : "Turn on email codes";
+            intro = es
+                    ? "Usa este código para activar la verificación por email en tu cuenta."
+                    : "Use this code to turn on email verification for your account.";
+        } else if ("DISABLE".equals(normalized)) {
+            subject = es ? "Confirma desactivar la verificación por email" : "Confirm turning off email verification";
+            heading = es ? "Desactiva los códigos por email" : "Turn off email codes";
+            intro = es
+                    ? "Usa este código para desactivar la verificación por email."
+                    : "Use this code to turn off email verification.";
+        } else {
+            subject = es ? "Tu código de acceso de API Arena" : "Your API Arena sign-in code";
+            heading = es ? "Código de acceso" : "Sign-in code";
+            intro = es
+                    ? "Usa este código para terminar de iniciar sesión."
+                    : "Use this code to finish signing in.";
+        }
+        String expiry = es
+                ? "Caduca en 10 minutos y solo sirve una vez."
+                : "It expires in 10 minutes and works once.";
+        String reason = es
+                ? "Si no has sido tú, cambia tu contraseña. Nunca compartas este código."
+                : "If this was not you, change your password. Never share this code.";
+        String rawName = displayName(username, es ? "hola" : "there");
+        return layout(new EmailLayout(
+                subject,
+                locale,
+                intro,
+                "2FA",
+                heading,
+                p((es ? "Hola " : "Hi ") + safeName + ",") + p(intro) + codeBlock(safeCode) + mutedLine(expiry),
+                (es ? "Hola " : "Hi ") + rawName + ",\n\n" + intro + "\n\n" + (code == null ? "" : code) + "\n\n" + expiry,
+                null,
+                null,
+                reason,
+                false));
+    }
+
     private boolean resendKeyMissing() {
         String apiKey = emailProperties.getResendApiKey();
         return apiKey == null || apiKey.isBlank();
@@ -576,7 +644,8 @@ public class EmailDispatchService {
 
     /**
      * One shared shell for every transactional email: brand header, body, optional bulletproof CTA,
-     * and a footer with why the message was sent, legal links, and the privacy contact when that email already uses it.
+     * and a footer with why the message was sent, legal links, the privacy contact when that email already uses it,
+     * and one developed-by line.
      * Callers pass localized copy. This method does not translate.
      * Body and reason HTML are inserted as markup; heading, preheader, and CTA label are escaped here.
      */
@@ -662,6 +731,7 @@ public class EmailDispatchService {
                     .append(";text-decoration:underline;\">").append(esc(privacy)).append("</a></p>");
         }
         html.append(legalLinksHtml(lang));
+        html.append(developedByGubiaHtml());
         html.append("</td></tr></table></td></tr></table></body></html>");
 
         StringBuilder text = new StringBuilder();
@@ -679,7 +749,20 @@ public class EmailDispatchService {
             text.append(emailProperties.getSupportPrivacyEmail()).append("\n\n");
         }
         text.append(legalLinksText(lang));
+        text.append("Developed by Gubia");
+        if (!GUBIA_URL.isBlank()) {
+            text.append(" (").append(GUBIA_URL.trim()).append(")");
+        }
+        text.append("\n");
         return new RenderedEmail(m.subject(), html.toString(), text.toString());
+    }
+
+    private String developedByGubiaHtml() {
+        String href = GUBIA_URL.isBlank() ? "#" : GUBIA_URL.trim();
+        return "<p class=\"text-muted\" style=\"margin:12px 0 0;font-family:" + FONT_BODY
+                + ";font-size:12px;line-height:1.5;color:" + MUTED + ";\">Developed by "
+                + "<a href=\"" + esc(href) + "\" style=\"color:" + MUTED
+                + ";text-decoration:underline;\">Gubia</a></p>";
     }
 
     private String legalLinksHtml(String locale) {

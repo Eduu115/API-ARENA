@@ -13,7 +13,7 @@ export default function Header() {
         <li><LocaleLink to="/challenges">Challenges</LocaleLink></li>
         <li><LocaleLink to="/leaderboard">Leaderboard</LocaleLink></li>
         <li><LocaleLink to="/docs">Docs</LocaleLink></li>
-        <li><a href="#">About</a></li>
+        <li><LocaleLink to="/about">About</LocaleLink></li>
       </ul>
 
       <LocaleLink to="/register" className="nav-cta">Enter Arena</LocaleLink>

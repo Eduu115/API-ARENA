@@ -43,6 +43,9 @@ public class AdminController {
     /** Operational (moderation) actions: any ADMIN holding the MODERATION capability. Reads stay ADMIN-wide. */
     private static final String MODERATION = "hasRole('ADMIN') and hasAuthority('CAP_MODERATION')";
 
+    /** Content writes: any ADMIN holding the CONTENT capability. */
+    private static final String CONTENT = "hasRole('ADMIN') and hasAuthority('CAP_CONTENT')";
+
     private final AdminService adminService;
 
     @GetMapping("/stats")
@@ -221,8 +224,16 @@ public class AdminController {
         return ResponseEntity.ok(adminService.capabilitiesOf(id));
     }
 
+    @PreAuthorize(CONTENT)
+    @PostMapping("/content")
+    @Operation(summary = "Content write", description = "Stub write gated by CAP_CONTENT. Nothing is stored.")
+    public ResponseEntity<Void> writeContent(Authentication auth) {
+        adminService.writeContent(auth.getName());
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/users/{id}/capabilities/{capability}")
-    @Operation(summary = "Grant capability", description = "Give an ADMIN account a capability (MODERATION / BI)")
+    @Operation(summary = "Grant capability", description = "Give an ADMIN account a capability (MODERATION / BI / CONTENT)")
     public ResponseEntity<java.util.List<com.apiarena.authservice.model.entities.AdminCapability>> grantCapability(
             @PathVariable Long id,
             @PathVariable com.apiarena.authservice.model.entities.AdminCapability capability,
