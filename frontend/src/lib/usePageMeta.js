@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import i18n from "../i18n/index.js";
 import { useAppLocale } from "../routes/LocaleLayout.jsx";
+import { GUBIA_NAME } from "../brand/gubia.js";
 import { buildHeadMeta, graph, siteNodes } from "../seo/site.js";
 
 function upsertMeta(attr, key, content) {
@@ -63,6 +64,7 @@ export function usePageMeta({ title, description, path = "/", locale, jsonLd = n
     document.title = meta.title;
     document.documentElement.lang = meta.htmlLang;
     if (meta.description) upsertMeta("name", "description", meta.description);
+    upsertMeta("name", "author", GUBIA_NAME);
     upsertMeta("name", "robots", meta.robots);
     upsertCanonical(meta.canonical);
 

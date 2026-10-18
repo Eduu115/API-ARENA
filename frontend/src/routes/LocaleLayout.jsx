@@ -4,6 +4,7 @@ import i18n from '../i18n/index.js';
 import { isValidLocale, localePath, parsePathname, resolveEntryLocale } from '../lib/localeRoutes.js';
 import { setAppLocale } from '../lib/locale.js';
 import LocalePreferenceSync from '../components/LocalePreferenceSync.jsx';
+import Footer from '../components/layout/Footer.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { isAdminEscaping } from '../lib/adminEscape.js';
 
@@ -81,7 +82,12 @@ export default function LocaleLayout() {
   return (
     <LocaleContext.Provider value={value}>
       <LocalePreferenceSync />
-      {bounceToAdmin ? <Navigate to="/admin" replace /> : <Outlet />}
+      {bounceToAdmin ? <Navigate to="/admin" replace /> : (
+        <>
+          <Outlet />
+          {path !== '/' && <Footer />}
+        </>
+      )}
     </LocaleContext.Provider>
   );
 }

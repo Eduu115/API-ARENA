@@ -15,6 +15,7 @@ English: https://apiarena.net/en
 Spanish: https://apiarena.net/es
 x-default: https://apiarena.net/en
 Alternate names: APIArena, API-Arena
+Developed by Gubia.
 Extended reference: https://apiarena.net/llms-full.txt
 
 ## Who it is for

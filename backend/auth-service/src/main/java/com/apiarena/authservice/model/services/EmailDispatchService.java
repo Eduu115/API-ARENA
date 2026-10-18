@@ -38,6 +38,9 @@ public class EmailDispatchService {
     private static final String FONT_BODY = "Syne,'Segoe UI',Arial,sans-serif";
     private static final String FONT_MONO = "'Share Tech Mono','Courier New',Courier,monospace";
 
+    /** TODO(content): official Gubia logo kit. Site: https://gubiadigital.es */
+    private static final String GUBIA_URL = "https://gubiadigital.es";
+
     private final EmailProperties emailProperties;
     private final RestTemplate restTemplate;
 
@@ -576,7 +579,8 @@ public class EmailDispatchService {
 
     /**
      * One shared shell for every transactional email: brand header, body, optional bulletproof CTA,
-     * and a footer with why the message was sent, legal links, and the privacy contact when that email already uses it.
+     * and a footer with why the message was sent, legal links, the privacy contact when that email already uses it,
+     * and one developed-by line.
      * Callers pass localized copy. This method does not translate.
      * Body and reason HTML are inserted as markup; heading, preheader, and CTA label are escaped here.
      */
@@ -662,6 +666,7 @@ public class EmailDispatchService {
                     .append(";text-decoration:underline;\">").append(esc(privacy)).append("</a></p>");
         }
         html.append(legalLinksHtml(lang));
+        html.append(developedByGubiaHtml());
         html.append("</td></tr></table></td></tr></table></body></html>");
 
         StringBuilder text = new StringBuilder();
@@ -679,7 +684,20 @@ public class EmailDispatchService {
             text.append(emailProperties.getSupportPrivacyEmail()).append("\n\n");
         }
         text.append(legalLinksText(lang));
+        text.append("Developed by Gubia");
+        if (!GUBIA_URL.isBlank()) {
+            text.append(" (").append(GUBIA_URL.trim()).append(")");
+        }
+        text.append("\n");
         return new RenderedEmail(m.subject(), html.toString(), text.toString());
+    }
+
+    private String developedByGubiaHtml() {
+        String href = GUBIA_URL.isBlank() ? "#" : GUBIA_URL.trim();
+        return "<p class=\"text-muted\" style=\"margin:12px 0 0;font-family:" + FONT_BODY
+                + ";font-size:12px;line-height:1.5;color:" + MUTED + ";\">Developed by "
+                + "<a href=\"" + esc(href) + "\" style=\"color:" + MUTED
+                + ";text-decoration:underline;\">Gubia</a></p>";
     }
 
     private String legalLinksHtml(String locale) {

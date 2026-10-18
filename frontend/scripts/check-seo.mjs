@@ -12,6 +12,7 @@ import { getDocDocuments } from "../src/pages/docs/docsContent.js";
 import { LEGAL_DOCS } from "../src/pages/legal/legalContent.js";
 import { getDocsUi } from "../src/pages/docs/docsUi.js";
 import { legalHead } from "../src/seo/legalMeta.js";
+import { GUBIA_URL } from "../src/brand/gubia.js";
 import {
   AI_CRAWLERS,
   PRIVATE_PATHS,
@@ -196,6 +197,7 @@ English: ${absoluteUrl("en", "/")}
 Spanish: ${absoluteUrl("es", "/")}
 x-default: ${absoluteUrl("en", "/")}
 Alternate names: APIArena, API-Arena
+Developed by Gubia.${(GUBIA_URL || "").trim().startsWith("http") ? ` ${(GUBIA_URL || "").trim()}` : ""}
 Extended reference: ${SITE_URL}/llms-full.txt
 
 ## Who it is for
