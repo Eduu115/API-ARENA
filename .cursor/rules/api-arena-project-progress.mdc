@@ -41,7 +41,8 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 | `/about` | AboutPage | ✅ Pública EN/ES sobre el desarrollador. Historia, motivación, trayectoria, stack, cronología, enlaces y contacto son placeholders `TODO(content)`. La URL de Gubia es https://gubiadigital.es. Enlace en el nav de la landing y en el footer. |
 | (global) | CookieConsent | ✅ Banner de consentimiento (necesarias siempre + **preferences** opt-in + analytics reservado); gating de persistencia de tema/tutoriales según consentimiento; reabrible desde footer y página `/cookies` |
 | (global) | ProfileComplianceGate | ✅ Modal bloqueante tras login si `requiresProfileCompliance` (cuentas legacy sin fecha de nacimiento / consentimiento GDPR) |
-| `/login` | Login | ✅ |
+| `/login` | Login | ✅ Enlace “Are you a teacher?” a la guía pública `/teachers` |
+| `/teachers` | TeacherOnboarding | ✅ Guía pública “For teachers” (estilo Docs, EN/ES): rol (grupos, retos propios, correcciones, co-profesor), pasos cuenta → verificar email → 2FA → formulario → revisión manual; CTA a `/teacher/apply` (ruta del formulario en otro ticket); SEO title/description/canonical/hreflang + sitemap |
 | `/register` | Register | ✅ |
 | `/verify-email` | VerifyEmail | ✅ Enlace con `?token=`, reenvío |
 | `/forgot-password` | ForgotPassword | ✅ Solicitud de reset (respuesta genérica) |

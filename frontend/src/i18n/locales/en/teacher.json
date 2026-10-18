@@ -234,6 +234,96 @@
     "errorPublish": "Error publishing challenge",
     "pts": "pts"
   },
+  "onboarding": {
+    "metaTitle": "For teachers",
+    "metaDescription": "How teachers join API Arena: create an account, verify email, turn on 2FA, then request access for groups, challenges, and corrections.",
+    "eyebrow": "// For teachers",
+    "titleBefore": "For",
+    "titleEm": "teachers",
+    "summary": "Teachers use the same account as everyone else. The teacher role is turned on after a person reviews your request. It adds groups, your own challenges, corrections, and an optional co-teacher.",
+    "home": "Home",
+    "navTitle": "On this page",
+    "backToLogin": "Back to login",
+    "nav": {
+      "offers": "The role",
+      "steps": "How to join",
+      "form": "The form",
+      "faq": "FAQ"
+    },
+    "offers": {
+      "heading": "What the teacher role adds",
+      "lead": "A teacher account is a normal API Arena user with extra tools for running a class. Students still submit on their own.",
+      "items": [
+        "Groups. Create a group and add your students, then see their submissions on the challenges you own.",
+        "Your own challenges. Write challenges for your class. A new challenge stays a draft until you publish it.",
+        "Corrections. Review a submission with a personal note, comments by area, structured feedback, penalties, manual scores, and positive score bonuses.",
+        "Co-teacher. The group owner can add one co-teacher. Both of you can work with the students in that group."
+      ]
+    },
+    "steps": {
+      "heading": "How to request access",
+      "lead": "Do these in order. Registration does not include a teacher role.",
+      "items": [
+        {
+          "label": "Create a user account",
+          "hint": "Register like any student. You do not choose a teacher role on that form."
+        },
+        {
+          "label": "Verify your email",
+          "hint": "Open the message we send and confirm the address before you continue."
+        },
+        {
+          "label": "Enable 2FA",
+          "hint": "Turn on two-factor authentication with an authenticator app or by email."
+        },
+        {
+          "label": "Fill in the request form",
+          "hint": "Use the form once the account is verified and 2FA is on."
+        },
+        {
+          "label": "Wait for manual review",
+          "hint": "A person checks the request. Approval is not automatic."
+        }
+      ],
+      "apply": "Open the request form",
+      "applyHint": "Sign in with the account you verified."
+    },
+    "form": {
+      "heading": "What the form asks, and why",
+      "lead": "The request is separate from the account you just created. It asks for two addresses.",
+      "items": [
+        "Institutional email. The address at the school, university, or organization where you teach. We use it to confirm the request is for a real class.",
+        "Personal email. A mailbox you control outside that organization. We use it if the institutional address blocks our mail, or if we still need to reach you after you leave."
+      ],
+      "note": "Neither address replaces the email on your API Arena account. Keep that account verified. The form tells the review who you are and where you teach."
+    },
+    "faq": [
+      {
+        "q": "Can I register directly as a teacher?",
+        "a": "No. Create a normal account, verify the email, enable 2FA, then send the request. The teacher role is applied only after review."
+      },
+      {
+        "q": "I already have a student account. Do I need another one?",
+        "a": "Use the account you have. Do not create a second user. Verify the email, enable 2FA, and submit the form."
+      },
+      {
+        "q": "Why do you ask for both an institutional email and a personal email?",
+        "a": "The institutional address shows where you teach. The personal address is how we reach you if that mailbox does not accept our mail."
+      },
+      {
+        "q": "Who else can manage my group?",
+        "a": "You can add one co-teacher. They can work with the students in that group. You stay the owner and you can remove them."
+      },
+      {
+        "q": "What happens after approval?",
+        "a": "You can open the teacher area: groups, the challenges you create, and the corrections queue. Until then those pages stay closed."
+      },
+      {
+        "q": "How long does review take?",
+        "a": "A person reads each request. There is no automatic approval."
+      }
+    ]
+  },
   "zipDownload": {
     "downloading": "Downloading...",
     "downloadZip": "Download ZIP",
