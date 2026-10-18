@@ -52,9 +52,9 @@ export default {
       },
       
       fontFamily: {
-        display: ['Space Grotesk', 'Inter', 'sans-serif'],
-        body: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+        display: ['Barlow Condensed', 'Barlow Condensed Fallback', 'sans-serif'],
+        body: ['Syne', 'Syne Fallback', 'sans-serif'],
+        mono: ['Share Tech Mono', 'Share Tech Mono Fallback', 'monospace'],
       },
       
       fontSize: {

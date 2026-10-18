@@ -141,7 +141,6 @@
   height: 18px;
   flex-shrink: 0;
   color: inherit;
-  opacity: 0.92;
 }
 .arena-nav-link__ico svg {
   width: 100%;
@@ -210,7 +209,6 @@
   height: 18px;
   flex-shrink: 0;
   color: inherit;
-  opacity: 0.92;
 }
 .arena-nav-icon-btn__ico svg {
   width: 100%;

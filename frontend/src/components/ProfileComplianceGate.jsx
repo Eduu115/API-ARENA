@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import ProfileComplianceModal from "./ProfileComplianceModal";
+
+const ProfileComplianceModal = lazy(() => import("./ProfileComplianceModal"));
 
 export default function ProfileComplianceGate() {
   const { user, isLoading, completeProfileCompliance, logout } = useAuth();
@@ -18,12 +19,16 @@ export default function ProfileComplianceGate() {
     }
   }
 
+  if (!needsCompliance) return null;
+
   return (
-    <ProfileComplianceModal
-      open={needsCompliance}
-      onSubmit={handleSubmit}
-      onLogout={logout}
-      submitting={submitting}
-    />
+    <Suspense fallback={null}>
+      <ProfileComplianceModal
+        open
+        onSubmit={handleSubmit}
+        onLogout={logout}
+        submitting={submitting}
+      />
+    </Suspense>
   );
 }

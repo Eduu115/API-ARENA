@@ -37,7 +37,7 @@
 }
 
 .acs-banner-sub {
-  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: 11px;
   color: var(--arena-text-primary);
   white-space: nowrap;
@@ -46,7 +46,7 @@
 }
 
 .acs-banner-time {
-  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: 11px;
   color: var(--arena-text-muted);
   letter-spacing: 0.04em;
@@ -59,7 +59,7 @@
 }
 
 .acs-btn {
-  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
+  font-family: 'Share Tech Mono', monospace;
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;

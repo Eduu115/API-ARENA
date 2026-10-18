@@ -19,9 +19,9 @@
   --muted:  var(--arena-text-muted);
   --dim:    var(--arena-primary-10);
   /* Keep original product typography */
-  --font-display: 'Barlow Condensed', sans-serif;
-  --font-body:    'Syne', sans-serif;
-  --font-mono:    'Share Tech Mono', monospace;
+  --font-display: 'Barlow Condensed', 'Barlow Condensed Fallback', sans-serif;
+  --font-body:    'Syne', 'Syne Fallback', sans-serif;
+  --font-mono:    'Share Tech Mono', 'Share Tech Mono Fallback', monospace;
 }
 
 .challenges-page {

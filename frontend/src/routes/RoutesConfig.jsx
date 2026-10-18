@@ -1,45 +1,51 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
-import Landing from "../pages/landing/Landing";
-import ChallengeDetail from "../pages/challenges/ChallengeDetail";
-import Challenges from "../pages/challenges/Challenges";
-import Dashboard from "../pages/dashboard/Dashboard";
-import Leaderboard from "../pages/Leaderboard";
-import Login from "../pages/auth/Login";
-import MultiplayerHub from "../pages/MultiplayerHub";
-import MySubmissions from "../pages/submissions/MySubmissions";
-import NotFound from "../pages/NotFound";
-import Profile from "../pages/Profile";
-import ProfileAchievements from "../pages/ProfileAchievements";
-import Register from "../pages/auth/Register";
-import VerifyEmail from "../pages/auth/VerifyEmail";
-import ForgotPassword from "../pages/auth/ForgotPassword";
-import ResetPassword from "../pages/auth/ResetPassword";
-import SubmissionDetail from "../pages/submissions/SubmissionDetail";
-import SubmissionResults from "../pages/submissions/SubmissionResults";
-import Replay from "../pages/Replay";
-import DocsHub from "../pages/docs/DocsHub";
-import LegalPage from "../pages/legal/LegalPage";
-import TeacherDashboard from "../pages/teacher/TeacherDashboard";
-import Corrections from "../pages/teacher/Corrections";
-import TeacherChallenges from "../pages/teacher/TeacherChallenges";
-import CreateChallenge from "../pages/teacher/CreateChallenge";
-import TeacherGroups from "../pages/teacher/TeacherGroups";
-import ChallengeSubmit from "../pages/challenges/ChallengeSubmit";
-import ProtectedLayout from "../layouts/ProtectedLayout";
-import TeacherLayout from "../layouts/TeacherLayout";
-import AdminLayout from "../layouts/AdminLayout";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import AdminUsers from "../pages/admin/AdminUsers";
-import AdminUserDetail from "../pages/admin/AdminUserDetail";
-import AdminAudit from "../pages/admin/AdminAudit";
-import Friends from "../pages/friends/Friends";
-import Notifications from "../pages/Notifications";
 import ActiveChallengeSessionBanner from "../components/ActiveChallengeSessionBanner";
 import BrowsingTimeTracker from "../components/BrowsingTimeTracker";
 import CookieConsent from "../components/CookieConsent";
 import ProfileComplianceGate from "../components/ProfileComplianceGate";
+import ProtectedLayout from "../layouts/ProtectedLayout";
+import TeacherLayout from "../layouts/TeacherLayout";
 import LocaleLayout, { RootLocaleRedirect } from "./LocaleLayout";
+
+const Landing = lazy(() => import("../pages/landing/Landing"));
+const ChallengeDetail = lazy(() => import("../pages/challenges/ChallengeDetail"));
+const Challenges = lazy(() => import("../pages/challenges/Challenges"));
+const Dashboard = lazy(() => import("../pages/dashboard/Dashboard"));
+const Leaderboard = lazy(() => import("../pages/Leaderboard"));
+const Login = lazy(() => import("../pages/auth/Login"));
+const MultiplayerHub = lazy(() => import("../pages/MultiplayerHub"));
+const MySubmissions = lazy(() => import("../pages/submissions/MySubmissions"));
+const NotFound = lazy(() => import("../pages/NotFound"));
+const Profile = lazy(() => import("../pages/Profile"));
+const ProfileAchievements = lazy(() => import("../pages/ProfileAchievements"));
+const Register = lazy(() => import("../pages/auth/Register"));
+const VerifyEmail = lazy(() => import("../pages/auth/VerifyEmail"));
+const ForgotPassword = lazy(() => import("../pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("../pages/auth/ResetPassword"));
+const SubmissionDetail = lazy(() => import("../pages/submissions/SubmissionDetail"));
+const SubmissionResults = lazy(() => import("../pages/submissions/SubmissionResults"));
+const Replay = lazy(() => import("../pages/Replay"));
+const DocsHub = lazy(() => import("../pages/docs/DocsHub"));
+const LegalPage = lazy(() => import("../pages/legal/LegalPage"));
+const TeacherDashboard = lazy(() => import("../pages/teacher/TeacherDashboard"));
+const Corrections = lazy(() => import("../pages/teacher/Corrections"));
+const TeacherChallenges = lazy(() => import("../pages/teacher/TeacherChallenges"));
+const CreateChallenge = lazy(() => import("../pages/teacher/CreateChallenge"));
+const TeacherGroups = lazy(() => import("../pages/teacher/TeacherGroups"));
+const ChallengeSubmit = lazy(() => import("../pages/challenges/ChallengeSubmit"));
+const AdminLayout = lazy(() => import("../layouts/AdminLayout"));
+const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("../pages/admin/AdminUsers"));
+const AdminUserDetail = lazy(() => import("../pages/admin/AdminUserDetail"));
+const AdminAudit = lazy(() => import("../pages/admin/AdminAudit"));
+const Friends = lazy(() => import("../pages/friends/Friends"));
+const Notifications = lazy(() => import("../pages/Notifications"));
+
+function RouteFallback() {
+  return <div className="route-fallback" aria-hidden="true" />;
+}
 
 function AppRoutes() {
   return (
@@ -121,7 +127,9 @@ export default function RoutesConfig() {
   return (
     <BrowserRouter>
       <SiteChrome />
-      <Routes>{AppRoutes()}</Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>{AppRoutes()}</Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

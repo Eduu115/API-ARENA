@@ -172,7 +172,7 @@
   margin-top: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--dim);
+  color: var(--muted);
   letter-spacing: 0.07em;
 }
 

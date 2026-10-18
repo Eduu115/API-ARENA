@@ -453,6 +453,7 @@ export default function Challenges() {
               <select
                 className="ch-sort-select"
                 value={sortBy}
+                aria-label={t(sortOptions.find((o) => o.val === sortBy)?.labelKey ?? 'sort.featured')}
                 onChange={e => setSortBy(e.target.value)}
               >
                 {sortOptions.map(({ val, labelKey }) => (
