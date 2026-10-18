@@ -18,6 +18,7 @@ export function useAdminCaps() {
   const list = caps ?? [];
   return {
     loading: caps === null,
+    caps: list,
     canModerate: list.includes("MODERATION"),
     canContent: list.includes("CONTENT"),
     supreme: ALL_CAPS.every((c) => list.includes(c)),
