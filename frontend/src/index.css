@@ -218,3 +218,91 @@
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-primary-50;
 }
+
+/*
+ * Chromatic glitch shared with the landing mark (cyan + purple offset).
+ * Resting split stays on; a short slice fires a few times a minute.
+ */
+@keyframes arena-title-glitch {
+  0%, 78%, 100% {
+    text-shadow:
+      -1px 0 rgba(0, 217, 255, 0.55),
+      1px 0 rgba(178, 75, 243, 0.5);
+    transform: none;
+  }
+  80% {
+    text-shadow: -3px 0 #00d9ff, 3px 0 #b24bf3;
+    transform: translateX(-1px);
+  }
+  82% {
+    text-shadow: 2px 0 #00d9ff, -3px 0 #b24bf3;
+    transform: translateX(1px);
+  }
+  84% {
+    text-shadow:
+      -1px 0 rgba(0, 217, 255, 0.55),
+      1px 0 rgba(178, 75, 243, 0.5);
+    transform: none;
+  }
+}
+
+@keyframes arena-title-glitch-ink {
+  0%, 78%, 100% {
+    text-shadow:
+      -1px 0 rgba(0, 217, 255, 0.55),
+      1px 0 rgba(178, 75, 243, 0.5);
+  }
+  80% {
+    text-shadow: -3px 0 #00d9ff, 3px 0 #b24bf3;
+  }
+  82% {
+    text-shadow: 2px 0 #00d9ff, -3px 0 #b24bf3;
+  }
+  84% {
+    text-shadow:
+      -1px 0 rgba(0, 217, 255, 0.55),
+      1px 0 rgba(178, 75, 243, 0.5);
+  }
+}
+
+.ch-page-title,
+.db-page-title,
+.ch-featured-section-title,
+.ch-catalog-section-title,
+.profile-ach-page-title,
+.arena-navbar__title,
+.nav-logo-text {
+  animation: arena-title-glitch 6.5s infinite linear;
+}
+
+.ch-page-title em,
+.db-page-title em,
+.ch-featured-section-title em,
+.ch-catalog-section-title em,
+.arena-navbar__title-api,
+.arena-navbar__title-arena,
+.nav-logo-text span {
+  animation: arena-title-glitch-ink 6.5s infinite linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch-page-title,
+  .db-page-title,
+  .ch-featured-section-title,
+  .ch-catalog-section-title,
+  .profile-ach-page-title,
+  .arena-navbar__title,
+  .nav-logo-text,
+  .ch-page-title em,
+  .db-page-title em,
+  .ch-featured-section-title em,
+  .ch-catalog-section-title em,
+  .arena-navbar__title-api,
+  .arena-navbar__title-arena,
+  .nav-logo-text span {
+    animation: none;
+    text-shadow:
+      -1px 0 rgba(0, 217, 255, 0.45),
+      1px 0 rgba(178, 75, 243, 0.4);
+  }
+}

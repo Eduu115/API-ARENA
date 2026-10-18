@@ -1,0 +1,40 @@
+name: Deploy production
+
+# Runs on the self-hosted runner installed on the API Arena server (Tailscale-only,
+# so GitHub-hosted runners cannot SSH in). Push to main only — not pull requests.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, apiarena]
+    timeout-minutes: 40
+    steps:
+      - name: Backup databases and deploy
+        run: |
+          set -euo pipefail
+          cd "$HOME/apps/API-ARENA"
+          ./deploy/backup-db.sh
+          ./deploy/deploy.sh
+          echo ">> waiting for gateway health"
+          ok=0
+          for i in $(seq 1 36); do
+            if curl -fsS http://127.0.0.1:3000/api/gateway/health | grep -q '"overall"'; then
+              ok=1
+              break
+            fi
+            sleep 5
+          done
+          if [ "$ok" != "1" ]; then
+            echo "Gateway health did not respond" >&2
+            docker compose ps
+            exit 1
+          fi
+          curl -fsS http://127.0.0.1:3000/api/gateway/health
+          echo
