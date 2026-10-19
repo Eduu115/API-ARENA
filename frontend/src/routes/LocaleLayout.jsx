@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
+import { createContext, startTransition, useCallback, useContext, useEffect, useMemo } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import i18n from '../i18n/index.js';
 import { isValidLocale, localePath, parsePathname, resolveEntryLocale } from '../lib/localeRoutes.js';
@@ -8,13 +8,19 @@ import Footer from '../components/layout/Footer.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { isAdminEscaping } from '../lib/adminEscape.js';
 
-const LocaleContext = createContext({
-  locale: 'en',
-  path: '/',
-});
+const LocaleContext = createContext(null);
 
 export function useAppLocale() {
-  return useContext(LocaleContext);
+  const ctx = useContext(LocaleContext);
+  const { pathname } = useLocation();
+  return useMemo(() => {
+    if (ctx) return ctx;
+    const parsed = parsePathname(pathname);
+    return {
+      locale: parsed.locale || resolveEntryLocale(),
+      path: parsed.path,
+    };
+  }, [ctx, pathname]);
 }
 
 export function useLocalizedPath() {
@@ -29,11 +35,14 @@ export function useNavigateLocalized() {
   return useCallback(
     (to, options) => {
       if (typeof to === 'number') return navigate(to);
-      if (typeof to === 'string') return navigate(lp(to), options);
-      if (to && typeof to === 'object' && to.pathname) {
-        return navigate({ ...to, pathname: lp(to.pathname) }, options);
-      }
-      return navigate(to, options);
+      const go = () => {
+        if (typeof to === 'string') return navigate(lp(to), options);
+        if (to && typeof to === 'object' && to.pathname) {
+          return navigate({ ...to, pathname: lp(to.pathname) }, options);
+        }
+        return navigate(to, options);
+      };
+      startTransition(go);
     },
     [navigate, lp],
   );
@@ -50,18 +59,11 @@ export default function LocaleLayout() {
   const { locale: localeParam } = useParams();
   const location = useLocation();
   const { isAuthenticated, isLoading, user } = useAuth();
-
-  if (!isValidLocale(localeParam)) {
-    const logical = location.pathname.startsWith('/') ? location.pathname : `/${location.pathname}`;
-    const target = localePath(resolveEntryLocale(), logical);
-    const suffix = `${location.search || ''}${location.hash || ''}`;
-    return <Navigate to={`${target}${suffix}`} replace />;
-  }
-
-  const locale = localeParam;
+  const locale = isValidLocale(localeParam) ? localeParam : null;
   const { path } = parsePathname(location.pathname);
 
   useEffect(() => {
+    if (!locale) return;
     const next = locale === 'es' ? 'es' : 'en';
     setAppLocale(next);
     if (i18n.language !== next) {
@@ -69,7 +71,10 @@ export default function LocaleLayout() {
     }
   }, [locale]);
 
-  const value = useMemo(() => ({ locale, path }), [locale, path]);
+  const value = useMemo(
+    () => ({ locale: locale || resolveEntryLocale(), path }),
+    [locale, path],
+  );
 
   // Bunker isolation: an authenticated admin is bounced back to /admin from the normal site,
   // unless they explicitly used the "Go to site" escape hatch (per-tab flag).
@@ -78,6 +83,13 @@ export default function LocaleLayout() {
     isAuthenticated &&
     String(user?.role || '').toUpperCase() === 'ADMIN' &&
     !isAdminEscaping();
+
+  if (!locale) {
+    const logical = location.pathname.startsWith('/') ? location.pathname : `/${location.pathname}`;
+    const target = localePath(resolveEntryLocale(), logical);
+    const suffix = `${location.search || ''}${location.hash || ''}`;
+    return <Navigate to={`${target}${suffix}`} replace />;
+  }
 
   return (
     <LocaleContext.Provider value={value}>
