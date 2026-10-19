@@ -94,13 +94,23 @@
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 4px;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.arena-navbar__icon-links {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 .arena-navbar__link-list::-webkit-scrollbar {
   display: none;
@@ -182,7 +192,7 @@
   gap: 2px;
   flex: 0 0 auto;
   min-width: 0;
-  margin-left: auto;
+  margin-left: 0;
   padding-right: 8px;
   padding-left: 8px;
 }

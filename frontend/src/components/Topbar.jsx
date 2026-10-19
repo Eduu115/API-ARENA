@@ -19,8 +19,8 @@ const MIN_RANKED_CHALLENGES = 3;
 const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
-  { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
+  { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "Replay", path: "/replay", icon: "replay", iconOnly: true },
 ];
 
@@ -29,10 +29,10 @@ const NAV_ITEMS_AUTH = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Submissions", path: "/submissions", icon: "submissions" },
   { label: "Friends", path: "/friends", icon: "friends" },
-  { label: "Social", path: "/social", icon: "social", beta: true, iconOnly: true },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
-  { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
+  { label: "Social", path: "/social", icon: "social", beta: true, iconOnly: true },
+  { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "Replay", path: "/replay", icon: "replay", iconOnly: true },
 ];
 
@@ -54,6 +54,8 @@ export default function Topbar({
   const [pushToasts, setPushToasts] = useState([]);
   const pushDismissRef = useRef(null);
   const navItems = isAuthenticated ? NAV_ITEMS_AUTH : NAV_ITEMS_GUEST;
+  const labeledNavItems = navItems.filter((item) => !item.iconOnly);
+  const iconNavItems = navItems.filter((item) => item.iconOnly);
   const { isDark, toggleTheme } = useTheme();
   const rating = user?.rating ?? 1000;
   const completedChallenges = Number(user?.totalChallengesCompleted ?? 0);
@@ -205,7 +207,7 @@ export default function Topbar({
           </div>
 
           <div className="arena-navbar__link-list">
-            {navItems.map((item) => renderNavLink(item))}
+            {labeledNavItems.map((item) => renderNavLink(item))}
             {isTeacher && (
               <Link
                 to={lp("/teacher")}
@@ -220,6 +222,9 @@ export default function Topbar({
                 <span className="arena-nav-link__label">Teacher</span>
               </Link>
             )}
+          </div>
+          <div className="arena-navbar__icon-links">
+            {iconNavItems.map((item) => renderNavLink(item))}
           </div>
 
           {isAuthenticated ? (
