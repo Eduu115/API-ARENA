@@ -223,6 +223,48 @@
   min-height: 100vh;
   background: var(--arena-bg-primary, #0a0e27);
 }
+.route-fallback__bar {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent 0%, var(--cyan, #00d9ff) 50%, transparent 100%);
+  background-size: 36% 100%;
+  background-repeat: no-repeat;
+  animation: route-fallback-scan 1.1s linear infinite;
+}
+@keyframes route-fallback-scan {
+  0% { background-position: -40% 0; }
+  100% { background-position: 140% 0; }
+}
+.route-fallback--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-family: var(--font-mono, "Share Tech Mono", monospace);
+  color: var(--muted, #8b93a7);
+}
+.route-fallback__msg {
+  margin: 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+.route-fallback__reload {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--cyan, #00d9ff);
+  color: var(--cyan, #00d9ff);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.route-fallback__reload:hover {
+  color: var(--text, #fff);
+}
 
 /*
  * Tube / CRT on page titles and the nav wordmark — same language as the landing:
