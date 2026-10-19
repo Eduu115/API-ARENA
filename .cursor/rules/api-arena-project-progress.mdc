@@ -127,6 +127,25 @@ Ver `docs/xp-elo-system.md`. (Sin cambio de reglas de negocio recientes.)
 
 ## Lo que falta (priorizado) y orden de magnitud
 
+### Próxima sesión (anotado 2026-10-19)
+
+Prod está en `60a97fe` (PR #100: CRT recortado + nav compacta + emails con logo/grid). **Nada pendiente de deploy.**
+
+Cerrar por hoy. Retomar por aquí, en este orden:
+
+| Ítem | Notas |
+|------|--------|
+| **T3** `/{locale}/teacher/apply` | Formulario de solicitud de profesor. La guía `/teachers` ya enlaza; la ruta 404. |
+| Aviso profesor al registrarse | In-app + email tras verificar. El front entiende `TEACHER_APPLY`; auth **no** dispara el aviso ni el correo. |
+| **About** copy real | Biografía, foto, motivación: placeholders `TODO(content)` hasta que el maintainer lo entregue. No inventar. |
+| Logo Gubia | Kit SVG oficial; ahora es wordmark + `https://gubiadigital.es`. |
+| **DeepL** | `DEEPL_API_KEY` solo en el `.env` del servidor (el maintainer la pone). No commitear. |
+| Social beta | Código en prod con `APP_SOCIAL_ENABLED=false`. Encender el flag cuando se quiera. |
+| **AA-115 fase 2** | Plan en `docs/DB-ARCHITECTURE-PLAN.md`. El SQL de normalización JSON **no** se ha aplicado. Backup antes. |
+| i18n EN\|ES | Solo Docs (+ trozos de auth/content). Fase 0 en `docs/BACKLOG-I18N-FULL-WEB.md` antes de más UI. |
+| E2E smoke cron | Workflow parado desde 2026-10-01 (inactividad GitHub). El script ya borra el usuario de prueba al salir. |
+| Agentes Cursor | ~22 chats `IDLE`/`ERROR` de tickets ya mergeados. Archivar en cursor.com/agents; no tienen trabajo. |
+
 Estimaciones **muy orientativas** (1 dev familiarizado con el repo; dependen de alcance y calidad “production-ready”).
 
 | Ítem | Notas | Duración estimada |
