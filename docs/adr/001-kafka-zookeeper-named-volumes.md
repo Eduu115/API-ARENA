@@ -1,6 +1,6 @@
 # ADR 001 — Named volumes for Kafka and ZooKeeper
 
-**Status:** Proposed (maintainer approval required — do not implement until approved)  
+**Status:** Accepted — implementation in `feat/d1-d2-isolation` / runbook `docs/runbooks/d1-d2-cutover.md` (cutover applies named volumes; anonymous cleanup after 48h soak)  
 **Date:** 2026-10-20  
 **Context:** Host resource / orphan-volume cleanup (shared prod host, 2026-10 incident analysis)
 
