@@ -75,8 +75,16 @@ public class SandboxService {
     @Value("${sandbox.allow-process-mode:false}")
     private boolean allowProcessMode;
 
-    @Value("${sandbox.dind.network:apiarena-network}")
+    /** Bridge network created inside the dedicated DinD daemon (not the host Compose network). */
+    @Value("${sandbox.dind.network:apiarena-candidates-internal}")
     private String dindNetwork;
+
+    /**
+     * Hostname that testing-service (and readiness probes) use to reach published candidate ports.
+     * Defaults to the Compose service name of the DinD sidecar.
+     */
+    @Value("${sandbox.dind.publish-host:sandbox-dind}")
+    private String dindPublishHost;
 
     @Value("${sandbox.dind.container-port:8080}")
     private int dindContainerPort;
@@ -312,10 +320,7 @@ public class SandboxService {
             Files.writeString(dockerfile, defaultCandidateDockerfile(), StandardCharsets.UTF_8);
 
             runDockerCommand(List.of("docker", "rm", "-f", containerName), workDir, 10, false);
-            if (!dockerNetworkExists(workDir, dindNetwork)) {
-                return failExecution(execution, "[BUILD] Docker network not found: " + dindNetwork,
-                        "Docker network not found: " + dindNetwork);
-            }
+            ensureCandidateNetwork(workDir);
 
             ensureBuildxBuilder(projectRoot);
             // buildx docker-container driver: memory/CPU capped; --load into host daemon for docker run.
@@ -350,6 +355,9 @@ public class SandboxService {
             runCmd.add(containerName);
             runCmd.add("--network");
             runCmd.add(dindNetwork);
+            // Publish container port on the DinD sidecar so testing reaches http://sandbox-dind:<hostPort>.
+            runCmd.add("-p");
+            runCmd.add(dindContainerPort + "");
             runCmd.add("--cpus");
             runCmd.add(String.valueOf(cpuLimit));
             runCmd.add("--memory");
@@ -376,7 +384,15 @@ public class SandboxService {
                 return failExecution(execution, buildLog.toString(), "Docker run failed");
             }
 
-            boolean ready = waitForCandidateReady(containerName, dindContainerPort);
+            int publishedPort = resolvePublishedPort(workDir, containerName, dindContainerPort);
+            if (publishedPort <= 0) {
+                runDockerCommand(List.of("docker", "rm", "-f", containerName), workDir, 10, false);
+                runDockerCommand(List.of("docker", "rmi", "-f", imageName), workDir, 10, false);
+                return failExecution(execution, buildLog.toString(),
+                        "Could not resolve published port for candidate on " + dindPublishHost);
+            }
+
+            boolean ready = waitForCandidateReady(dindPublishHost, publishedPort);
             if (!ready) {
                 try {
                     CommandResult logs = runDockerCommand(List.of("docker", "logs", "--tail", "200", containerName),
@@ -396,15 +412,18 @@ public class SandboxService {
                 return failExecution(execution, buildLog.toString(), "Candidate API failed to start");
             }
 
-            buildLog.append("[BUILD] Candidate container ready: ").append(containerName).append(":")
-                    .append(dindContainerPort).append("\n");
+            buildLog.append("[BUILD] Candidate ready at http://").append(dindPublishHost).append(":")
+                    .append(publishedPort).append(" (container ").append(containerName).append(")\n");
             execution.setBuildLogs(buildLog.toString());
             execution.setStatus(SandboxExecution.Status.RUNNING);
             execution.setImageName(imageName);
             execution.setContainerId(containerName);
-            execution.setExposedPort(dindContainerPort);
-            execution.setRuntimeLogs("[SANDBOX] DinD container started: " + containerName);
-            return SandboxExecutionDTO.fromEntity(executionRepository.save(execution));
+            execution.setExposedPort(publishedPort);
+            execution.setRuntimeLogs("[SANDBOX] DinD candidate published on " + dindPublishHost + ":" + publishedPort);
+            SandboxExecutionDTO dto = SandboxExecutionDTO.fromEntity(executionRepository.save(execution));
+            // fromEntity maps candidateHost from containerId; override for testing reachability.
+            dto.setCandidateHost(dindPublishHost);
+            return dto;
         } catch (Exception e) {
             log.error("Sandbox(DinD) build failed for {}", submissionId, e);
             buildLog.append("\n[BUILD] EXCEPTION: ").append(e.getMessage());
@@ -535,7 +554,23 @@ public class SandboxService {
         return new CommandResult(p.exitValue(), out);
     }
 
-    @SuppressWarnings("unused")
+    /** Create the in-DinD candidate bridge if missing (idempotent). */
+    private void ensureCandidateNetwork(Path workDir) throws IOException, InterruptedException {
+        if (dockerNetworkExists(workDir, dindNetwork)) {
+            return;
+        }
+        log.info("Creating candidate Docker network '{}' inside DinD", dindNetwork);
+        CommandResult create = runDockerCommand(
+                List.of("docker", "network", "create", dindNetwork),
+                workDir,
+                30,
+                true);
+        if (create.exitCode() != 0 && !dockerNetworkExists(workDir, dindNetwork)) {
+            throw new IllegalStateException(
+                    "Failed to create Docker network '" + dindNetwork + "': " + create.output());
+        }
+    }
+
     private boolean dockerNetworkExists(Path workDir, String networkName) {
         try {
             CommandResult result = runDockerCommand(
@@ -547,6 +582,37 @@ public class SandboxService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    /**
+     * Parse {@code docker port <ctr> <ctrPort>} → host port published on the DinD sidecar.
+     * Example line: {@code 0.0.0.0:32768}.
+     */
+    private int resolvePublishedPort(Path workDir, String containerName, int containerPort)
+            throws IOException, InterruptedException {
+        CommandResult result = runDockerCommand(
+                List.of("docker", "port", containerName, String.valueOf(containerPort)),
+                workDir,
+                10,
+                true);
+        if (result.exitCode() != 0 || result.output() == null || result.output().isBlank()) {
+            log.warn("docker port failed for {}:{}: {}", containerName, containerPort, result.output());
+            return -1;
+        }
+        for (String line : result.output().split("\\R")) {
+            String trimmed = line.trim();
+            int colon = trimmed.lastIndexOf(':');
+            if (colon < 0 || colon == trimmed.length() - 1) {
+                continue;
+            }
+            try {
+                return Integer.parseInt(trimmed.substring(colon + 1).trim());
+            } catch (NumberFormatException ignored) {
+                // try next line
+            }
+        }
+        log.warn("Could not parse docker port output for {}: {}", containerName, result.output());
+        return -1;
     }
 
     private record CommandResult(int exitCode, String output) {
@@ -622,7 +688,12 @@ public class SandboxService {
     public SandboxExecutionDTO getBySubmissionId(Long submissionId) {
         SandboxExecution execution = executionRepository.findBySubmissionId(submissionId)
                 .orElseThrow(() -> new IllegalArgumentException("Sandbox execution not found for submission: " + submissionId));
-        return SandboxExecutionDTO.fromEntity(execution);
+        SandboxExecutionDTO dto = SandboxExecutionDTO.fromEntity(execution);
+        if ("dind".equalsIgnoreCase(runnerMode)
+                && execution.getStatus() == SandboxExecution.Status.RUNNING) {
+            dto.setCandidateHost(dindPublishHost);
+        }
+        return dto;
     }
 
     @Transactional

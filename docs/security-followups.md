@@ -18,13 +18,11 @@ in BuildKit, which currently has network access (exfiltration, internal-network 
   network during build fails.
 
 ## #3b — Stop mounting the host Docker socket
-**Risk it closes:** `sandbox-service` mounts `/var/run/docker.sock`, so a compromise of that
-service equals root on the host.
+**Status:** Done (privileged DinD sidecar `sandbox-dind`; host socket removed). Follow-ups:
+TLS on `DOCKER_HOST`, prefer rootless DinD when ops cost allows. Runbook:
+`docs/runbooks/d1-d2-cutover.md`. ADR: `docs/adr/002-sandbox-docker-socket.md`.
 
-**Plan:**
-- Replace the socket mount with a dedicated rootless/remote DinD daemon
-  (`DOCKER_HOST=tcp://dind:2375` on an isolated network), or run the daemon rootless.
-- Validate the full build/run/cleanup cycle in staging before prod.
+**Risk it closed:** `sandbox-service` mounting `/var/run/docker.sock` = root on the host.
 
 ## #11 — `ddl-auto=validate` + migrations
 **Risk it closes:** `ddl-auto=update` lets the ORM mutate the schema implicitly.

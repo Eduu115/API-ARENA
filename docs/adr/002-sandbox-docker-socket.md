@@ -1,6 +1,6 @@
 # ADR 002 — sandbox-service and the host Docker socket
 
-**Status:** Proposed (maintainer approval required — do not implement until approved)  
+**Status:** Accepted — Option 2 (dedicated DinD sidecar `sandbox-dind`, no host docker.sock); cutover via `docs/runbooks/d1-d2-cutover.md`  
 **Date:** 2026-10-20  
 **Context:** Host blast-radius analysis on a shared machine (personal assistant, Nextcloud, NPM, other projects)
 

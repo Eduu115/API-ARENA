@@ -105,6 +105,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
       KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+      - zookeeper_log:/var/lib/zookeeper/log
     networks:
       - apiarena-network
     restart: unless-stopped
@@ -128,6 +131,8 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
     networks:
       - apiarena-network
     restart: unless-stopped
@@ -238,7 +243,8 @@ services:
       SERVICES_SANDBOX_URL: http://apiarena-sandbox:8084
       SERVICES_TESTING_URL: http://apiarena-testing:8085
       SERVICES_AI_REVIEW_URL: http://apiarena-ai-review:8086
-      SERVICES_CANDIDATE_HOST: apiarena-sandbox
+      # Fallback if sandbox omits candidateHost; D2 publishes on sandbox-dind:<port>.
+      SERVICES_CANDIDATE_HOST: sandbox-dind
       SERVICES_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       AI_REVIEW_ENABLED: ${AI_REVIEW_ENABLED:-true}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
@@ -257,6 +263,26 @@ services:
       - apiarena-network
     restart: unless-stopped
 
+  # Dedicated dockerd for candidate build/run (D2). Plain TCP 2375 only on the
+  # compose network — not published to the host. Prefer TLS in a later iteration.
+  sandbox-dind:
+    image: docker:27-dind
+    container_name: apiarena-sandbox-dind
+    privileged: true
+    mem_limit: 3g
+    memswap_limit: 3g
+    environment:
+      DOCKER_TLS_CERTDIR: ""
+    networks:
+      - apiarena-network
+    healthcheck:
+      test: ["CMD", "docker", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
   sandbox-service:
     <<: *java-limits
     build:
@@ -265,6 +291,7 @@ services:
     container_name: apiarena-sandbox
     depends_on:
       postgres: { condition: service_healthy }
+      sandbox-dind: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
       <<: [*db-pool, *java-tool-options]
@@ -273,12 +300,14 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       SANDBOX_RUNNER_MODE: ${SANDBOX_RUNNER_MODE:-dind}
-      # Isolated bridge: candidate cannot reach postgres/redis/kafka; sandbox + testing are on both networks.
-      SANDBOX_DIND_NETWORK: ${COMPOSE_PROJECT_NAME:-api-arena}_apiarena-candidate
+      # Candidate network lives inside sandbox-dind (not the host compose bridge).
+      SANDBOX_DIND_NETWORK: ${SANDBOX_DIND_NETWORK:-apiarena-candidates-internal}
+      SANDBOX_DIND_PUBLISH_HOST: ${SANDBOX_DIND_PUBLISH_HOST:-sandbox-dind}
       SANDBOX_DIND_CONTAINER_PORT: "8080"
       SANDBOX_DIND_PIDS_LIMIT: "256"
       SANDBOX_DIND_USE_INIT: ${SANDBOX_DIND_USE_INIT:-true}
       SANDBOX_DIND_NOFILE_ULIMIT: ${SANDBOX_DIND_NOFILE_ULIMIT:-8192:8192}
+      DOCKER_HOST: ${SANDBOX_DOCKER_HOST:-tcp://sandbox-dind:2375}
       SANDBOX_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       JWT_SECRET: ${JWT_SECRET}
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,prometheus
@@ -286,10 +315,8 @@ services:
       - "${MICROSERVICE_BIND_IP:-127.0.0.1}:${SANDBOX_HOST_PORT:-8084}:8084"
     volumes:
       - submission_uploads:/app/uploads
-      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - apiarena-network
-      - apiarena-candidate
     restart: unless-stopped
 
   ai-review-service:
@@ -333,8 +360,8 @@ services:
     ports:
       - "${MICROSERVICE_BIND_IP:-127.0.0.1}:${TESTING_HOST_PORT:-8085}:8085"
     networks:
+      # Reaches candidates via sandbox-dind published ports on apiarena-network.
       - apiarena-network
-      - apiarena-candidate
     restart: unless-stopped
 
   leaderboard-service:
@@ -566,6 +593,7 @@ services:
 networks:
   apiarena-network:
     driver: bridge
+  # Retained for rollback / stale container cleanup; candidates no longer use the host bridge (D2).
   apiarena-candidate:
     driver: bridge
     internal: true
@@ -578,3 +606,6 @@ volumes:
   submission_uploads:
   grafana_data:
   metrics_bi_exports:
+  kafka_data:
+  zookeeper_data:
+  zookeeper_log:
