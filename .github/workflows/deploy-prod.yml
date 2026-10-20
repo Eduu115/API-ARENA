@@ -28,7 +28,8 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/apiarena-deploy
           : > /tmp/apiarena-deploy/restart-counts-before.txt
-          for c in $(docker ps -a --filter 'name=apiarena-' --format '{{.Names}}' | sort); do
+          # Names must start with apiarena- (exclude host buildx_*apiarena-* leftovers).
+          for c in $(docker ps -a --format '{{.Names}}' | grep '^apiarena-' | sort); do
             count=$(docker inspect -f '{{.RestartCount}}' "$c" 2>/dev/null || echo 0)
             echo "$c $count" >> /tmp/apiarena-deploy/restart-counts-before.txt
           done
@@ -63,7 +64,7 @@ jobs:
       - name: Check memory stats and OOM
         run: |
           set -euo pipefail
-          names=$(docker ps -a --filter 'name=apiarena-' --format '{{.Names}}' | sort)
+          names=$(docker ps -a --filter 'name=apiarena-' --format '{{.Names}}' | grep -E '^apiarena-' | sort)
           if [ -z "$names" ]; then
             echo "No apiarena-* containers found" >&2
             exit 1
