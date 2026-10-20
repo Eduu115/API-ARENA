@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PostConstruct;
+
 import com.apiarena.sandboxservice.model.dto.BuildRequest;
 import com.apiarena.sandboxservice.model.dto.SandboxExecutionDTO;
 import com.apiarena.sandboxservice.model.entities.SandboxExecution;
@@ -54,6 +56,7 @@ public class SandboxService {
             "/",
     };
 
+    /** Serializes untrusted Maven/buildx builds (concurrency 1; N×1.5 GB would OOM the host). */
     private static final Object BUILD_LOCK = new Object();
 
     @Autowired
@@ -97,21 +100,44 @@ public class SandboxService {
     @Value("${sandbox.dind.nofile-ulimit:8192:8192}")
     private String dindNofileUlimit;
 
+    @Value("${sandbox.buildx.builder-name:apiarena-candidates}")
+    private String buildxBuilderName;
+
+    @Value("${sandbox.buildx.driver-opt:memory=1536m,memory-swap=1536m,cpu-quota=200000,cpu-period=100000}")
+    private String buildxDriverOpt;
+
+    @Value("${sandbox.buildx.keep-storage:2gb}")
+    private String buildxKeepStorage;
+
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(3))
             .build();
 
+    @PostConstruct
+    void initBuildxBuilder() {
+        if (!"dind".equalsIgnoreCase(runnerMode)) {
+            return;
+        }
+        try {
+            ensureBuildxBuilder(Path.of(System.getProperty("java.io.tmpdir")));
+        } catch (Exception e) {
+            // Retry on first build; do not block service startup if dockerd is briefly unavailable.
+            log.warn("buildx builder '{}' not ready at startup: {}", buildxBuilderName, e.getMessage());
+        }
+    }
+
     @Transactional
     public SandboxExecutionDTO buildAndRun(BuildRequest request) {
-        if ("dind".equalsIgnoreCase(runnerMode)) {
-            return buildAndRunDind(request);
-        }
-        if (!allowProcessMode) {
-            throw new IllegalStateException(
-                    "sandbox.runner.mode=" + runnerMode + " runs untrusted code on the host without isolation; "
-                            + "set sandbox.allow-process-mode=true to opt in (never in production).");
-        }
+        // One build at a time: process Maven and buildx both run untrusted pom plugins.
         synchronized (BUILD_LOCK) {
+            if ("dind".equalsIgnoreCase(runnerMode)) {
+                return buildAndRunDind(request);
+            }
+            if (!allowProcessMode) {
+                throw new IllegalStateException(
+                        "sandbox.runner.mode=" + runnerMode + " runs untrusted code on the host without isolation; "
+                                + "set sandbox.allow-process-mode=true to opt in (never in production).");
+            }
             return buildAndRunProcess(request);
         }
     }
@@ -291,12 +317,24 @@ public class SandboxService {
                         "Docker network not found: " + dindNetwork);
             }
 
+            ensureBuildxBuilder(projectRoot);
+            // buildx docker-container driver: memory/CPU capped; --load into host daemon for docker run.
+            long buildStartedMs = System.currentTimeMillis();
             CommandResult buildResult = runDockerCommand(
-                    List.of("docker", "build", "-t", imageName, "-f", dockerfile.toString(), projectRoot.toString()),
+                    List.of("docker", "buildx", "build",
+                            "--builder", buildxBuilderName,
+                            "--load",
+                            "-t", imageName,
+                            "-f", dockerfile.toString(),
+                            projectRoot.toString()),
                     projectRoot,
                     MAVEN_TIMEOUT_MIN * 60,
                     true);
+            long buildElapsedMs = System.currentTimeMillis() - buildStartedMs;
             buildLog.append(buildResult.output());
+            buildLog.append("[BUILD] buildx --load finished in ").append(buildElapsedMs).append(" ms (builder=")
+                    .append(buildxBuilderName).append(")\n");
+            pruneBuildxCache(projectRoot);
             if (buildResult.exitCode() != 0) {
                 return failExecution(execution, buildLog.toString(), "Docker build failed");
             }
@@ -432,6 +470,54 @@ public class SandboxService {
                 EXPOSE 8080
                 ENTRYPOINT ["sh","-c","java -jar /app/app.jar --server.port=${SERVER_PORT:-8080} --spring.main.banner-mode=off"]
                 """;
+    }
+
+    /**
+     * Idempotent: create limited buildx builder if missing.
+     * BuildKit in docker-container driver ignores host {@code docker build --memory}; limits come from driver-opt.
+     */
+    private void ensureBuildxBuilder(Path workDir) throws IOException, InterruptedException {
+        CommandResult inspect = runDockerCommand(
+                List.of("docker", "buildx", "inspect", buildxBuilderName),
+                workDir, 30, false);
+        if (inspect.exitCode() == 0) {
+            return;
+        }
+        log.info("Creating buildx builder '{}' with driver-opt={}", buildxBuilderName, buildxDriverOpt);
+        CommandResult create = runDockerCommand(
+                List.of("docker", "buildx", "create",
+                        "--name", buildxBuilderName,
+                        "--driver", "docker-container",
+                        "--driver-opt", buildxDriverOpt),
+                workDir, 60, true);
+        if (create.exitCode() != 0) {
+            // Race with another startup/create: treat existing builder as success.
+            CommandResult again = runDockerCommand(
+                    List.of("docker", "buildx", "inspect", buildxBuilderName),
+                    workDir, 30, false);
+            if (again.exitCode() == 0) {
+                return;
+            }
+            throw new IllegalStateException(
+                    "Failed to create buildx builder '" + buildxBuilderName + "': " + create.output());
+        }
+    }
+
+    /** docker-container BuildKit cache is not covered by daemon builder.gc — prune after each build. */
+    private void pruneBuildxCache(Path workDir) {
+        try {
+            CommandResult prune = runDockerCommand(
+                    List.of("docker", "buildx", "prune",
+                            "--builder", buildxBuilderName,
+                            "--keep-storage", buildxKeepStorage,
+                            "-f"),
+                    workDir, 120, false);
+            if (prune.exitCode() != 0) {
+                log.warn("buildx prune on '{}' exited {}: {}", buildxBuilderName, prune.exitCode(), prune.output());
+            }
+        } catch (Exception e) {
+            log.warn("buildx prune on '{}' failed: {}", buildxBuilderName, e.getMessage());
+        }
     }
 
     private CommandResult runDockerCommand(List<String> command, Path workDir, int timeoutSeconds, boolean captureOutput)

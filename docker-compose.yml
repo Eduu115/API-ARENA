@@ -5,10 +5,21 @@ x-db-pool: &db-pool
   SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: ${DB_POOL_MAX:-5}
   SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: ${DB_POOL_MIN_IDLE:-1}
 
+# Shared host: ceiling per JVM so a runaway service dies alone (not the host).
+# MaxRAMPercentage reads the cgroup limit; without it the heap would sit at ~25%.
+x-java-limits: &java-limits
+  mem_limit: 768m
+  memswap_limit: 768m
+
+x-java-tool-options: &java-tool-options
+  JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70 -XX:+ExitOnOutOfMemoryError"
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: apiarena-postgres
+    mem_limit: 512m
+    memswap_limit: 512m
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -30,6 +41,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: apiarena-redis
+    mem_limit: 128m
+    memswap_limit: 128m
     command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
       - "${MICROSERVICE_BIND_IP:-127.0.0.1}:${REDIS_HOST_PORT:-6379}:6379"
@@ -47,6 +60,10 @@ services:
   mongodb:
     image: mongo:7
     container_name: apiarena-mongo
+    mem_limit: 768m
+    memswap_limit: 768m
+    # Default WiredTiger cache is ~50% of (RAM − 1 GB); pin it for a shared host.
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
@@ -62,6 +79,8 @@ services:
   influxdb:
     image: influxdb:2.7-alpine
     container_name: apiarena-influxdb
+    mem_limit: 384m
+    memswap_limit: 384m
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUX_USER}
@@ -80,9 +99,12 @@ services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: apiarena-zookeeper
+    mem_limit: 384m
+    memswap_limit: 384m
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
     networks:
       - apiarena-network
     restart: unless-stopped
@@ -90,6 +112,8 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: apiarena-kafka
+    mem_limit: 1g
+    memswap_limit: 1g
     depends_on:
       - zookeeper
     ports:
@@ -103,11 +127,13 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
     networks:
       - apiarena-network
     restart: unless-stopped
 
   auth-service:
+    <<: *java-limits
     build:
       context: ./backend/auth-service
       dockerfile: Dockerfile
@@ -118,7 +144,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
@@ -155,6 +181,7 @@ services:
     restart: unless-stopped
 
   challenge-service:
+    <<: *java-limits
     build:
       context: ./backend/challenge-service
       dockerfile: Dockerfile
@@ -163,7 +190,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -179,6 +206,7 @@ services:
     restart: unless-stopped
 
   submission-service:
+    <<: *java-limits
     build:
       context: ./backend/submission-service
       dockerfile: Dockerfile
@@ -194,7 +222,7 @@ services:
       ai-review-service: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_DATA_REDIS_HOST: redis
@@ -230,6 +258,7 @@ services:
     restart: unless-stopped
 
   sandbox-service:
+    <<: *java-limits
     build:
       context: ./backend/sandbox-service
       dockerfile: Dockerfile
@@ -238,7 +267,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -264,11 +293,13 @@ services:
     restart: unless-stopped
 
   ai-review-service:
+    <<: *java-limits
     build:
       context: ./backend/ai-review-service
       dockerfile: Dockerfile
     container_name: apiarena-ai-review
     environment:
+      <<: *java-tool-options
       AI_REVIEW_INTERNAL_TOKEN: ${INTERNAL_SERVICE_TOKEN}
       AI_REVIEW_PROVIDER: ${AI_REVIEW_PROVIDER:-heuristic}
       AI_REVIEW_MODEL: ${AI_REVIEW_MODEL:-gemini-2.0-flash}
@@ -282,6 +313,7 @@ services:
     restart: unless-stopped
 
   testing-service:
+    <<: *java-limits
     build:
       context: ./backend/testing-service
       dockerfile: Dockerfile
@@ -290,7 +322,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -306,6 +338,7 @@ services:
     restart: unless-stopped
 
   leaderboard-service:
+    <<: *java-limits
     build:
       context: ./backend/leaderboard-service
       dockerfile: Dockerfile
@@ -315,7 +348,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -332,6 +365,7 @@ services:
     restart: unless-stopped
 
   notification-service:
+    <<: *java-limits
     build:
       context: ./backend/notification-service
       dockerfile: Dockerfile
@@ -341,7 +375,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -358,6 +392,7 @@ services:
     restart: unless-stopped
 
   social-service:
+    <<: *java-limits
     build:
       context: ./backend/social-service
       dockerfile: Dockerfile
@@ -367,7 +402,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
@@ -387,6 +422,7 @@ services:
     restart: unless-stopped
 
   metrics-service:
+    <<: *java-limits
     build:
       context: ./backend/metrics-service
       dockerfile: Dockerfile
@@ -396,7 +432,7 @@ services:
       kafka: { condition: service_started }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -417,6 +453,7 @@ services:
     restart: unless-stopped
 
   content-service:
+    <<: *java-limits
     build:
       context: ./backend/content-service
       dockerfile: Dockerfile
@@ -425,7 +462,7 @@ services:
       postgres: { condition: service_healthy }
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-apiarena}
-      <<: *db-pool
+      <<: [*db-pool, *java-tool-options]
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
@@ -442,10 +479,14 @@ services:
   prometheus:
     image: prom/prometheus:v2.54.1
     container_name: apiarena-prometheus
+    mem_limit: 384m
+    memswap_limit: 384m
     depends_on:
       - metrics-service
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+      # No named volume: keep TSDB from filling the container layer on the NVMe.
+      - --storage.tsdb.retention.size=1GB
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./docker/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
@@ -458,6 +499,8 @@ services:
   alertmanager:
     image: prom/alertmanager:v0.27.0
     container_name: apiarena-alertmanager
+    mem_limit: 64m
+    memswap_limit: 64m
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
     volumes:
@@ -471,6 +514,8 @@ services:
   grafana:
     image: grafana/grafana:11.2.0
     container_name: apiarena-grafana
+    mem_limit: 256m
+    memswap_limit: 256m
     depends_on:
       - prometheus
     environment:
@@ -500,6 +545,8 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY:-}
     container_name: apiarena-frontend
+    mem_limit: 128m
+    memswap_limit: 128m
     depends_on:
       - auth-service
       - challenge-service

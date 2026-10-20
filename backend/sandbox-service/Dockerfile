@@ -9,10 +9,11 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests -B
 
-# Stage 2: runtime — Maven + JDK + docker-cli para runner DinD
+# Stage 2: runtime — Maven + JDK + docker-cli (+ buildx) for DinD candidate builds
 FROM maven:3.9-eclipse-temurin-21-alpine
 
-RUN apk add --no-cache unzip docker-cli
+# buildx: candidate images build in a limited docker-container builder (see SandboxService)
+RUN apk add --no-cache unzip docker-cli docker-cli-buildx
 
 WORKDIR /app
 
