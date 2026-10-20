@@ -21,6 +21,20 @@ jobs:
     runs-on: [self-hosted, linux, x64, apiarena]
     timeout-minutes: 40
     steps:
+      # Baseline before recreate: catch restart loops that survive the deploy.
+      # Recreated containers reset RestartCount to 0; OOMKilled still catches those.
+      - name: Snapshot restart counts
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/apiarena-deploy
+          : > /tmp/apiarena-deploy/restart-counts-before.txt
+          for c in $(docker ps -a --filter 'name=apiarena-' --format '{{.Names}}' | sort); do
+            count=$(docker inspect -f '{{.RestartCount}}' "$c" 2>/dev/null || echo 0)
+            echo "$c $count" >> /tmp/apiarena-deploy/restart-counts-before.txt
+          done
+          echo "Restart counts before deploy:"
+          cat /tmp/apiarena-deploy/restart-counts-before.txt
+
       - name: Backup databases
         run: |
           set -euo pipefail
@@ -45,6 +59,47 @@ jobs:
           echo "Gateway health did not respond" >&2
           docker compose ps
           exit 1
+
+      - name: Check memory stats and OOM
+        run: |
+          set -euo pipefail
+          names=$(docker ps -a --filter 'name=apiarena-' --format '{{.Names}}' | sort)
+          if [ -z "$names" ]; then
+            echo "No apiarena-* containers found" >&2
+            exit 1
+          fi
+
+          echo "=== docker stats (apiarena-*) ==="
+          # shellcheck disable=SC2086
+          docker stats --no-stream $names
+
+          failed=0
+          declare -A before_counts
+          if [ -f /tmp/apiarena-deploy/restart-counts-before.txt ]; then
+            while read -r name count; do
+              [ -z "${name:-}" ] && continue
+              before_counts["$name"]=${count:-0}
+            done < /tmp/apiarena-deploy/restart-counts-before.txt
+          fi
+
+          for c in $names; do
+            oom=$(docker inspect -f '{{.State.OOMKilled}}' "$c")
+            after=$(docker inspect -f '{{.RestartCount}}' "$c")
+            before=${before_counts[$c]:-0}
+            if [ "$oom" = "true" ]; then
+              echo "FAIL: $c OOMKilled=true" >&2
+              failed=1
+            fi
+            if [ "$after" -gt "$before" ]; then
+              echo "FAIL: $c RestartCount rose ${before} -> ${after}" >&2
+              failed=1
+            fi
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            exit 1
+          fi
+          echo "No OOM kills; restart counts stable vs pre-deploy snapshot."
 
       # A failed `docker compose up` can leave freshly recreated containers in
       # "created" (frontend included), which takes the site down. Start whatever
