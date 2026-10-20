@@ -55,11 +55,20 @@ VITE_API_BASE_URL=
 Desde la raíz:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+docker compose up -d --build
 ```
 
-El override (`docker-compose.prod.yml`) quita los `ports:` del host para no exponer
-Postgres/Redis/Kafka ni los microservicios. NPM llega al frontend por la red de Docker.
+No hace falta un override de compose para “quitar puertos”: en Compose las listas
+`ports:` de un override **se concatenan** con las del base (hace falta
+`ports: !reset []` para vaciarlas). La protección real es el bind a loopback:
+
+- `MICROSERVICE_BIND_IP=127.0.0.1` (default en `.env.example`) para Java, Postgres,
+  Redis, Kafka, etc.
+- `BIND_IP=127.0.0.1` en producción si frontend/Prometheus/Grafana no deben
+  escucharse en la LAN (el default del compose es `0.0.0.0` para esos tres).
+
+NPM llega al frontend por la red de Docker (`apiarena-frontend:80`), no por el
+puerto publicado en el host.
 
 ## 4) Configurar Nginx Proxy Manager
 

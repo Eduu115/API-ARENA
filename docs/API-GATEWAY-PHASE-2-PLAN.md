@@ -18,7 +18,7 @@
 | **Frontend container nginx** | SPA + edge proxy `/api/*` and `/ws/notifications` to internal Docker DNS names (`apiarena-auth:8081`, etc.). |
 | **Browser / SPA** | Single origin via `frontend/src/lib/apiBase.js` — `VITE_API_BASE_URL` empty ⇒ relative `/api/...`. |
 | **Dev** | `frontend/vite.config.js` mirrors the same path prefixes to `localhost:808x`. |
-| **Docker Compose** | Java services on loopback by default (`MICROSERVICE_BIND_IP=127.0.0.1`); prod override `docker-compose.prod.yml` removes public `ports:`. |
+| **Docker Compose** | Java services on loopback by default (`MICROSERVICE_BIND_IP=127.0.0.1`). Host publish protection is that bind IP — not a compose override with `ports: []` (lists merge; former `docker-compose.prod.yml` was removed). |
 | **Host (NPM + Cloudflare)** | Single proxy host → `apiarena-frontend:80`. Doc: `docs/DEPLOY-CLOUDFLARE-NPM.md`. |
 | **Liveness** | `GET /health` on frontend nginx returns plain `healthy` (gateway container only, not backends). |
 
@@ -313,7 +313,7 @@ Estimated **2–3 days**. **Out of scope:** Phase 3 circuit breaker / progressiv
 
 | Step | Who | Action |
 |------|-----|--------|
-| Deploy | Maintainer | `git pull && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build frontend` |
+| Deploy | Maintainer | `git pull && docker compose up -d --build frontend` |
 | NPM / Cloudflare | Maintainer | **No change** if already single host → `apiarena-frontend:80` |
 | Firewall | Maintainer | **No change** (8081–8090 still closed) |
 | External monitoring | Maintainer (optional) | Point uptime check to `https://<domain>/api/gateway/health` expect `overall: up` |
