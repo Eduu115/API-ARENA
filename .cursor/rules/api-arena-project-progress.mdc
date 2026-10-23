@@ -27,7 +27,7 @@ alwaysApply: true
 - **Redis**: ✅ (auth rate-limit + submission cache)
 - **MongoDB**: ✅ **integrado** en submission-service (archivo de replay `replay_archives`; lectura si Postgres vacío tras retención)
 - **InfluxDB**: ✅ **integrado** en submission-service (serie `submission_pipeline`: duración, score, estado)
-- **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`); topic `apiarena.user.activity` (auth reward + leaderboard rank) → social-service when `APP_SOCIAL_ENABLED`; **named volumes** `kafka_data` / `zookeeper_data` / `zookeeper_log` (migración desde anónimos: `deploy/migrate-kafka-zk-named-volumes.sh`)
+- **Kafka + Zookeeper**: ✅ **evento real** submission completada → leaderboard + **notifications** (topic `apiarena.submissions.completed`); topic `apiarena.user.activity` (auth reward + leaderboard rank) → social-service when `APP_SOCIAL_ENABLED`; consumers idempotentes con **reintentos** (backoff 1s→8s, 4 intentos) y **DLT por servicio** `<topic>.<group>.DLT` (`KafkaErrorHandlingConfig`; JSON inválido va directo a DLT); **named volumes** `kafka_data` / `zookeeper_data` / `zookeeper_log` (migración desde anónimos: `deploy/migrate-kafka-zk-named-volumes.sh`)
 - **Prometheus + Grafana + Alertmanager**: ✅ `9090` / `3001` / `9093`; reglas `docker/prometheus/alerts.yml` (HTTP 5xx, heap JVM); datasource **InfluxDB** en Grafana (UID `influx-apiarena`; token alineado con `.env`); dashboards Operational Overview + Submission Pipeline Health
 - **Frontend (Nginx)**: ✅ puerto 3000; **edge proxy `/api/*` + `/ws/notifications`** a cada microservicio por la red interna (origen único; `VITE_API_BASE_URL` vacío = mismo origen; `api_proxy.conf` reenvía `X-Forwarded-For`/`X-Real-IP` para los rate limiters); microservicios Java publicados solo en loopback (`MICROSERVICE_BIND_IP=127.0.0.1` por defecto); dev: proxy equivalente en `vite.config.js`. Rutas **`/en/`** y **`/es/`** (redirect `/` → locale guardado o `Accept-Language`); SEO canonical + hreflang; nav/chrome labels siguen en inglés; **`LocaleLink`** + **`useNavigateLocalized`** en toda la app; sync `preferred_locale` ↔ URL vía `LocalePreferenceSync`
 
@@ -150,7 +150,7 @@ Estimaciones **muy orientativas** (1 dev familiarizado con el repo; dependen de 
 
 | Ítem | Notas | Duración estimada |
 |------|--------|-------------------|
-| Ampliar Kafka (más topics, DLQ, consumidores extra) | Opcional | **2–5 días** |
+| Ampliar Kafka (más topics, consumidores extra; DLT ya hecho, falta tooling de replay) | Opcional | **2–4 días** |
 | **Sandbox “duro”** (hardening final de aislamiento/red) | DinD base ya listo; faltan políticas avanzadas | **2–5 días** |
 | **metrics-service** + dashboards básicos | ✅ Entregado en v1, faltan dashboards de negocio avanzados | **2–4 días** |
 | **Notificaciones** | Push nativo / email / WebSocket tiempo real (v1 = in-app + Kafka ya hecho) | **1–2 semanas** |
