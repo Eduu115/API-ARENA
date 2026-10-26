@@ -54,13 +54,13 @@ function upsertJsonLd(data) {
  * Per-route SEO meta. `path` is the logical path without a locale prefix.
  * Canonical and hreflang follow the URL locale (`/en` and `/es`), not a hardcoded default.
  */
-export function usePageMeta({ title, description, path = "/", locale, jsonLd = null } = {}) {
+export function usePageMeta({ title, description, path = "/", locale, jsonLd = null, indexable } = {}) {
   const { locale: routeLocale } = useAppLocale();
   const lang = (locale || routeLocale || i18n.language || "en").startsWith("es") ? "es" : "en";
   const jsonLdJson = jsonLd ? JSON.stringify(jsonLd) : "";
 
   useEffect(() => {
-    const meta = buildHeadMeta({ title, description, path, locale: lang });
+    const meta = buildHeadMeta({ title, description, path, locale: lang, indexable });
     document.title = meta.title;
     document.documentElement.lang = meta.htmlLang;
     if (meta.description) upsertMeta("name", "description", meta.description);
@@ -78,5 +78,5 @@ export function usePageMeta({ title, description, path = "/", locale, jsonLd = n
     });
 
     upsertJsonLd(jsonLdJson ? JSON.parse(jsonLdJson) : graph(siteNodes(lang)));
-  }, [title, description, path, lang, jsonLdJson]);
+  }, [title, description, path, lang, jsonLdJson, indexable]);
 }

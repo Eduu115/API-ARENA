@@ -81,7 +81,11 @@ public class ChallengeController {
     @GetMapping("/slug/{slug}/preview")
     @Operation(summary = "Get challenge preview by slug", description = "Public summary without technical specs")
     public ResponseEntity<ChallengePreviewDTO> getChallengePreviewBySlug(@PathVariable String slug) {
-        return ResponseEntity.ok(challengeService.getChallengePreviewBySlug(slug));
+        try {
+            return ResponseEntity.ok(challengeService.getChallengePreviewBySlug(slug));
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, ex.getMessage());
+        }
     }
 
     @GetMapping("/slug/{slug}")

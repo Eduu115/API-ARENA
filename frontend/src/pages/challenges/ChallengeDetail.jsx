@@ -62,6 +62,7 @@ export default function ChallengeDetail() {
     title: previewTitle,
     description: previewDescription,
     path: previewPath,
+    indexable: error ? false : undefined,
     jsonLd: challengePreviewGraph(locale, {
       homeName: t('breadcrumb.home'),
       challengesName: t('breadcrumb.challenges'),
