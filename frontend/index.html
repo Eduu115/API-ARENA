@@ -13,10 +13,6 @@
     <meta name="description" content="API Arena is a free competitive platform where students and developers ship real Spring Boot APIs as a ZIP, get them built in an isolated sandbox, and climb XP and ELO rankings. Submissions are scored out of 1000: up to 800 from HTTP tests and up to 200 from an AI review." />
     <meta name="robots" content="index, follow" />
     <meta name="author" content="Gubia" />
-    <link rel="canonical" href="https://apiarena.net/en" />
-    <link rel="alternate" hreflang="en" href="https://apiarena.net/en" />
-    <link rel="alternate" hreflang="es" href="https://apiarena.net/es" />
-    <link rel="alternate" hreflang="x-default" href="https://apiarena.net/en" />
     <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />
     <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLM-readable extended site summary" />
     <meta name="theme-color" content="#0a0e1f" />
@@ -27,6 +23,35 @@
     <meta property="og:title" content="Compete. Build. Conquer. | API Arena" />
     <meta property="og:description" content="API Arena is a free competitive platform where students and developers ship real Spring Boot APIs as a ZIP, get them built in an isolated sandbox, and climb XP and ELO rankings. Submissions are scored out of 1000: up to 800 from HTTP tests and up to 200 from an AI review." />
     <meta property="og:url" content="https://apiarena.net/en" />
+    <!-- seo-boot: canonical follows the URL. A fixed /en link made Google treat every route as a duplicate of the homepage. -->
+    <script>
+      (function () {
+        var path = location.pathname || "/";
+        if (path.length > 1 && path.charAt(path.length - 1) === "/") path = path.slice(0, -1);
+        if (path === "/") path = "/en";
+        var origin = location.hostname === "apiarena.net" ? "https://apiarena.net" : location.origin;
+        var logical = path.replace(/^\/(en|es)(?=\/|$)/, "") || "/";
+        function abs(locale) {
+          return origin + (logical === "/" ? "/" + locale : "/" + locale + logical);
+        }
+        function esc(value) {
+          return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+        }
+        var self = origin + path;
+        var privatePath = /^\/(404|admin|dashboard|submissions|perfil|profile|friends|social|notifications|replay|teacher|verify-email|login|register|forgot-password|reset-password|multiplayer)(\/|$)/.test(logical);
+        var robots = privatePath || location.search ? "noindex, nofollow" : "index, follow";
+        var meta = document.querySelector('meta[name="robots"]');
+        if (meta) meta.setAttribute("content", robots);
+        var og = document.querySelector('meta[property="og:url"]');
+        if (og) og.setAttribute("content", self);
+        document.write(
+          '<link rel="canonical" href="' + esc(self) + '">' +
+          '<link rel="alternate" hreflang="en" href="' + esc(abs("en")) + '">' +
+          '<link rel="alternate" hreflang="es" href="' + esc(abs("es")) + '">' +
+          '<link rel="alternate" hreflang="x-default" href="' + esc(abs("en")) + '">'
+        );
+      })();
+    </script>
     <meta property="og:image" content="https://apiarena.net/og-image.png" />
     <meta property="og:image:alt" content="API Arena — Compete. Build. Conquer." />
     <meta property="og:image:width" content="1200" />

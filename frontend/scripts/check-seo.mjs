@@ -649,7 +649,8 @@ generated["index.html"] = html;
 for (const [rel, next] of Object.entries(generated)) syncFile(rel, next);
 
 const indexHtml = readFileSync(join(root, "index.html"), "utf8");
-if (!indexHtml.includes(`href="${absoluteUrl("en", "/")}"`)) fail("index.html canonical/hreflang is not /en");
+if (!indexHtml.includes("seo-boot")) fail("index.html is missing the URL canonical boot script");
+if (!indexHtml.includes("https://apiarena.net")) fail("index.html canonical origin is not apiarena.net");
 if (!indexHtml.includes('hreflang="es"') || !indexHtml.includes('hreflang="x-default"')) {
   fail("index.html is missing es or x-default hreflang");
 }
