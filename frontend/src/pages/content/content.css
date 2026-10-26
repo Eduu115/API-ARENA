@@ -1,23 +1,25 @@
 .content-wrap {
   max-width: 880px;
+  margin-inline: auto;
 }
 
 .content-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin: 0 0 22px;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 28px;
   border-bottom: 1px solid var(--dim);
 }
 
 .content-tab {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 1px;
+  font-size: 14px;
+  letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--white);
   text-decoration: none;
-  padding: 10px 14px;
+  padding: 12px 18px;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
@@ -147,6 +149,12 @@
 .rm-header {
   gap: 24px;
   flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+}
+
+.rm-header .rm-stat {
+  align-items: center;
 }
 
 .rm-stat {
