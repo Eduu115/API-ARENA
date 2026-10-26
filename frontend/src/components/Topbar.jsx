@@ -19,7 +19,7 @@ const MIN_RANKED_CHALLENGES = 3;
 const NAV_ITEMS_GUEST = [
   { label: "Challenges", path: "/challenges", icon: "challenges" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
-  { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
+  { label: "News & Upcoming", path: "/roadmap", icon: "news", matchContent: true },
   { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "Replay", path: "/replay", icon: "replay", iconOnly: true },
 ];
@@ -30,7 +30,7 @@ const NAV_ITEMS_AUTH = [
   { label: "Submissions", path: "/submissions", icon: "submissions" },
   { label: "Friends", path: "/friends", icon: "friends" },
   { label: "Leaderboard", path: "/leaderboard", icon: "leaderboard" },
-  { label: "News & Upcoming", path: "/news", icon: "news", matchContent: true },
+  { label: "News & Upcoming", path: "/roadmap", icon: "news", matchContent: true },
   { label: "Social", path: "/social", icon: "social", beta: true, iconOnly: true },
   { label: "Docs", path: "/docs", icon: "docs", iconOnly: true },
   { label: "Replay", path: "/replay", icon: "replay", iconOnly: true },
